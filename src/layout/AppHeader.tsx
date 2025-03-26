@@ -140,6 +140,8 @@ import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
+import Logo from "../images/logo.png";
+
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -220,17 +222,20 @@ const AppHeader: React.FC = () => {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="lg:hidden">
+          <Link to="/" className="lg:hidden flex items-center gap-2">
             <img
               className="dark:hidden"
-              src="./images/logo/logo.svg"
+              src={Logo}
               alt="Logo"
             />
             <img
               className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
+              src={Logo}
               alt="Logo"
             />
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">
+              Data-Bin
+            </span>
           </Link>
 
           {/* Application Menu Button */}

@@ -8,22 +8,17 @@ const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   return (
-    <div className="h-screen xl:flex">
-      {/* Sidebar & Backdrop (No scrolling here) */}
+    <div className="min-h-screen xl:flex">
       <div>
         <AppSidebar />
         <Backdrop />
       </div>
-
-      {/* Main Content Area (Only this should scroll) */}
       <div
-        className={`flex-1 transition-all duration-300 ease-in-out overflow-y-auto h-screen ${
-          isExpanded || isHovered ? "lg:ml-[250px]" : "lg:ml-[80px]"
+        className={`flex-1 transition-all duration-300 ease-in-out ${
+          isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]"
         } ${isMobileOpen ? "ml-0" : ""}`}
       >
         <AppHeader />
-
-        {/* Content Wrapper */}
         <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
           <Outlet />
         </div>
