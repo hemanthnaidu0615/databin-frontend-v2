@@ -1,6 +1,6 @@
 import React from "react";
-import { IconButton } from "@mui/material";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { Button } from "primereact/button";
+import { FaTimes } from "react-icons/fa"; // You can use react-icons for more flexibility
 
 interface WidgetCardProps {
   title: string;
@@ -24,18 +24,18 @@ const WidgetCard: React.FC<WidgetCardProps> = ({ title, children, onRemove }) =>
 
       {/* Remove Button (Only in Edit Mode) */}
       {onRemove && (
-        <IconButton
+        <Button
+          icon={<FaTimes />}
           onClick={onRemove}
           aria-label="Remove widget"
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            color: "red",
+          className="absolute top-2 right-2 p-0 text-red-500 hover:text-red-600"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            boxShadow: 'none',
+            padding: '0',
           }}
-        >
-          <RemoveCircleOutlineIcon fontSize="small" />
-        </IconButton>
+        />
       )}
     </div>
   );
