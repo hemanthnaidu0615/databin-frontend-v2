@@ -1,6 +1,5 @@
 import React from "react";
-import { IconButton } from "@mui/material";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { Button } from "primereact/button";
 
 // Importing widgets
 import StatisticsChart from "../StatisticsChart";
@@ -45,12 +44,11 @@ const WidgetGrid: React.FC<WidgetGridProps> = ({ selectedWidgets, removeWidget }
             <WidgetComponent />
 
             {/* Remove Button */}
-            <IconButton
-              onClick={() => removeWidget(widgetName)}
-              className="absolute top-2 right-2 text-red-500"
-            >
-              <RemoveCircleOutlineIcon fontSize="small" />
-            </IconButton>
+            <Button 
+              icon="pi pi-times" 
+              className="p-button-danger p-button-text absolute top-2 right-2" 
+              onClick={() => removeWidget(widgetName)} 
+            />
           </div>
         );
       })}

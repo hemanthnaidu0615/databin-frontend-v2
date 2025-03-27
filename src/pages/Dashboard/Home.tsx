@@ -11,6 +11,7 @@ const OrderProcessingTime = lazy(() => import("../../components/dashboard/Widget
 const OrderTrendsCategory = lazy(() => import("../../components/dashboard/Widgets/OrderTrendsCategory"));
 const OrderValueSegment = lazy(() => import("../../components/dashboard/Widgets/OrderValueSegment"));
 const RevenuePerCustomer = lazy(() => import("../../components/dashboard/Widgets/RevenuePerCustomer"));
+const SalesFunnel = lazy(() => import("../../components/dashboard/Widgets/SalesFunnel"));
 
 // Memoized Components
 const MemoizedEcommerceMetrics = memo(EcommerceMetrics);
@@ -35,6 +36,7 @@ export default function Home() {
     { Component: OrderTrendsCategory, span: "xl:col-span-4" },
     { Component: OrderValueSegment, span: "xl:col-span-4" },
     { Component: RevenuePerCustomer, span: "xl:col-span-6" },
+    { Component: SalesFunnel, span: "xl:col-span-6" },
   ], []);
 
   return (
@@ -88,10 +90,3 @@ const SkeletonLoader = () => (
     <div className="h-4 bg-gray-300 dark:bg-gray-600 w-1/2 rounded"></div>
   </div>
 );
-
-
-
-
-
-
-

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
+import { Dropdown } from "primereact/dropdown";
+import { Button } from "primereact/button";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import { Button } from "@mui/material";
 
 interface OrderTrackingProps {
   onRemove?: () => void;
@@ -86,9 +86,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
       {/* ✅ Restore Button (if removed) */}
       {!isVisible && (
         <div className="flex justify-center py-4">
-          <Button variant="contained" color="primary" onClick={restoreChart}>
-            Restore Chart
-          </Button>
+          <Button label="Restore Chart" className="p-button-primary" onClick={restoreChart} />
         </div>
       )}
 
@@ -112,7 +110,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
                   <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-5" />
                 </button>
                 {isOpen && (
-                  <Dropdown isOpen={true} onClose={closeDropdown} className="w-36 p-2">
+                  <Dropdown className="w-36 p-2">
                     <DropdownItem
                       onItemClick={closeDropdown} // ✅ Dropdown closes after clicking "View More"
                       className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
