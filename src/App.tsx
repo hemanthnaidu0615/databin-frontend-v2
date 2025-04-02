@@ -20,6 +20,12 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import WidgetSetup from "./components/dashboard/WidgetsetupHeader/WidgetSetup"; // Uncomment this import
 
+import OrderList from "./components/Orders/OrderList"; // Import OrderList component
+import OrderModal from "./components/Orders/OrderModal";
+import OrdersPage from "./components/Orders/OrdersPage"; 
+import OrderSummary from "./components/Orders/OrderSummary";
+
+
 export default function App() {
   return (
     <>
@@ -29,6 +35,14 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
+
+          {/* Orders Routes */}
+          <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/orders/list" element={<OrderList onOrderClick={(order) => console.log(order)} />} />
+            <Route path="/orders/modal" element={<OrderModal order={{ id: 1, name: "Sample Order" }} />} />
+            <Route path="/orders/summary" element={<OrderSummary />} />
+
+
 
             {/* Widget Setup Page */}
             <Route path="/widget-setup" element={<WidgetSetup />} /> {/* Added this route */}
