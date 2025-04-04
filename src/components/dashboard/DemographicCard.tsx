@@ -29,11 +29,12 @@ export default function DemographicCard({
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-  
+
         // Ensure data exists before updating state
         if (data && typeof data === "object") {
           setCustomerData({
-            returningCustomers: data.returning_customers ?? customerData.returningCustomers,
+            returningCustomers:
+              data.returning_customers ?? customerData.returningCustomers,
             newCustomers: data.new_customers ?? customerData.newCustomers,
             avgOrderValue: data.avg_order_value ?? customerData.avgOrderValue,
             highSpenders: data.high_spenders ?? customerData.highSpenders,
@@ -43,10 +44,9 @@ export default function DemographicCard({
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
   const closeDropdown = () => setIsOpen(false);
@@ -93,34 +93,17 @@ export default function DemographicCard({
         </div>
       </div>
 
-{/* Map Section */}
-<div className="border border-gray-200 dark:border-gray-800 rounded-xl w-full overflow-hidden p-3 sm:p-2 lg:p-3">
-  <div id="mapOne" className="relative w-full h-[160px]">
-    <div className="absolute inset-0 m-2 sm:m-3 lg:m-4">
-      <USMap />
-    </div>
-  </div>
-</div>
-
+      {/* Map Section */}
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl w-full overflow-hidden p-3 sm:p-2 lg:p-3">
+        <div id="mapOne" className="relative w-full h-[160px]">
+          <div className="absolute inset-0 m-2 sm:m-3 lg:m-4">
+            <USMap />
+          </div>
+        </div>
+      </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-3 gap-2 mt-2 text-gray-800 dark:text-white text-xs">
-  {[
-    { label: "Returning vs New", value: `${customerData.returningCustomers} / ${customerData.newCustomers}` },
-    { label: "Avg Order Value", value: `$${customerData.avgOrderValue.toFixed(2)}` },
-    { label: "High Spenders", value: customerData.highSpenders },
-  ].map((item, index) => (
-    <div 
-      key={index} 
-      className="flex flex-col justify-between p-2 border border-gray-200 dark:border-gray-800 rounded-md h-full text-center"
-    >
-      <h4 className="font-medium text-[11px]">{item.label}</h4>
-      <p className="text-sm font-semibold">{item.value}</p>
-    </div>
-  ))}
-</div>
-
-      <div className="grid grid-cols-3 gap-3 text-gray-800 dark:text-white/90 text-xs">
         {[
           {
             label: "Returning vs New",
@@ -134,9 +117,9 @@ export default function DemographicCard({
         ].map((item, index) => (
           <div
             key={index}
-            className="p-2 border border-gray-200 dark:border-gray-800 rounded-md"
+            className="flex flex-col justify-between p-2 border border-gray-200 dark:border-gray-800 rounded-md h-full text-center"
           >
-            <h4 className="font-medium">{item.label}</h4>
+            <h4 className="font-medium text-[11px]">{item.label}</h4>
             <p className="text-sm font-semibold">{item.value}</p>
           </div>
         ))}
