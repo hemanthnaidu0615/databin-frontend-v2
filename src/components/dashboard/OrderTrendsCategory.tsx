@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -11,52 +11,69 @@ type OrderTrendsCategoryProps = {
   onRemove?: () => void;
 };
 
+type ApiResponse = {
+  order_trends: {
+    [month: string]: Record<string, number>;
+  };
+};
+
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
   onViewMore,
   onRemove,
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [chartData, setChartData] = useState<{ categories: string[]; series: any[] }>({
+  const [chartData, setChartData] = useState<{
+    categories: string[];
+    series: { name: string; data: number[] }[];
+  }>({
     categories: [],
     series: [],
   });
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/order-trends-by-category")
-      .then((res) => res.json())
-      .then((data) => {
-        const trends = data.order_trends || {};
-        const allMonths = Object.keys(trends).sort();
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/order-trends-by-category"
+        );
+        const data: ApiResponse = await response.json();
 
+        const trends = data.order_trends;
+
+        const months = Object.keys(trends).sort(); // e.g. ["2025-03"]
         const categoryTotals: Record<string, number> = {};
 
-        allMonths.forEach((month) => {
+        // Step 1: Sum sales across months per category
+        for (const month of months) {
           const monthData = trends[month];
-          Object.entries(monthData).forEach(([category, value]) => {
-            const sales = typeof value === "number" ? value : parseFloat(value);
+          for (const [category, sales] of Object.entries(monthData)) {
             categoryTotals[category] = (categoryTotals[category] || 0) + sales;
-          });
-        });
+          }
+        }
 
+        // Step 2: Get top 3 categories by total sales
         const topCategories = Object.entries(categoryTotals)
-          .sort(([, a], [, b]) => b - a)
+          .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
           .map(([category]) => category);
 
+        // Step 3: Build chart data for those top 3 categories
         const series = topCategories.map((category) => ({
           name: category,
-          data: allMonths.map((month) => trends[month][category] || 0),
+          data: months.map((month) => trends[month]?.[category] || 0),
         }));
 
         setChartData({
-          categories: allMonths,
+          categories: months,
           series,
         });
-      })
-      .catch((err) => {
-        console.error("Failed to fetch order trends:", err);
-      });
+      } catch (error) {
+        console.error("Failed to fetch order trends:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const options: ApexOptions = {
@@ -67,10 +84,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     },
     xaxis: {
       categories: chartData.categories,
-      labels: { style: { colors: "#6B7280" } }, // Gray-500
+      labels: { style: { colors: "#6B7280" } },
     },
     yaxis: {
-      labels: { style: { colors: "#6B7280" } }, // Gray-500
+      labels: { style: { colors: "#6B7280" } },
     },
     stroke: { curve: "smooth", width: 2 },
     markers: { size: 4 },
@@ -87,7 +104,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             Order Trends by Product Category
           </h2>
 
-          {/* More Options Menu */}
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!isDropdownOpen)}
@@ -98,7 +114,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </button>
 
             {isDropdownOpen && (
-              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
+              <Dropdown
+                isOpen={isDropdownOpen}
+                onClose={() => setDropdownOpen(false)}
+              >
                 <DropdownItem
                   className="text-gray-700 dark:text-gray-300"
                   onItemClick={() => {
@@ -123,7 +142,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         </div>
       )}
 
-      {/* ApexCharts Line Chart */}
       <Chart
         options={options}
         series={chartData.series}
