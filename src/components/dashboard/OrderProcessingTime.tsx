@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../../ui/dropdown/Dropdown";
-import { DropdownItem } from "../../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../../icons";
+import { Dropdown } from "../ui/dropdown/Dropdown";
+import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { MoreDotIcon } from "../../icons";
 
 type OrderProcessingTimeProps = {
   size?: "small" | "full";
@@ -124,7 +124,7 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
   const series = [{ name: "Orders", data: data[timeFrame] }];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-6 sm:pt-6">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-10.5 sm:pt-10.5">
       {size === "full" && (
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">

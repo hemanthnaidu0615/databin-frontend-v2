@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../../ui/dropdown/Dropdown";
-import { DropdownItem } from "../../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../../icons";
+import { Dropdown } from "../ui/dropdown/Dropdown";
+import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { MoreDotIcon } from "../../icons";
 
 type ShipmentPerformanceProps = {
   size?: "small" | "full";
@@ -69,32 +69,29 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent p-5 dark:border-gray-800">
+    <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-            Shipment Performance
-          </h2>
-          <div className="relative inline-block">
-            <button ref={buttonRef} onClick={() => setDropdownOpen(!isDropdownOpen)}>
-              <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Shipment Performance</h2>
+          <div className="relative">
+            <button ref={buttonRef} onClick={() => setDropdownOpen(!isDropdownOpen)} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10">
+              <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </button>
+
             {isDropdownOpen && (
-              <div ref={dropdownRef} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-md rounded-lg z-50">
-                <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
-                  <DropdownItem onItemClick={() => { setDropdownOpen(false); onViewMore?.(); }}>
-                    View More
-                  </DropdownItem>
-                  <DropdownItem onItemClick={() => { setDropdownOpen(false); onRemove?.(); }}>
-                    Remove
-                  </DropdownItem>
-                </Dropdown>
-              </div>
+              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
+                <DropdownItem onItemClick={() => { setDropdownOpen(false); onViewMore?.(); }}>
+                  View More
+                </DropdownItem>
+                <DropdownItem onItemClick={() => { setDropdownOpen(false); onRemove?.(); }}>
+                  Remove
+                </DropdownItem>
+              </Dropdown>
             )}
           </div>
         </div>
       )}
-      <Chart options={barOptions} series={barSeries} type="bar" height={300} />
+      <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 150 : 300} />
     </div>
   );
 };

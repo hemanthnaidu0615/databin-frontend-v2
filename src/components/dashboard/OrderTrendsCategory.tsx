@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../../ui/dropdown/Dropdown";
-import { DropdownItem } from "../../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../../icons"; // More options icon
+import { Dropdown } from "../ui/dropdown/Dropdown";
+import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { MoreDotIcon } from "../../icons"; // More options icon
 
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
