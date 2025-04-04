@@ -34,67 +34,66 @@ export default function RecentOrders() {
   function closeDropdown() { setIsOpen(false); }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03] w-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">Recent Orders</h3>
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] w-full h-[350px]"> 
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Recent Orders</h3>
         <div className="relative inline-block">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-5" />
+            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
           </button>
-          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-36 p-2">
+          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
             <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">View More</DropdownItem>
             <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">Remove</DropdownItem>
           </Dropdown>
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="w-full">
+      {/* Table Container with fixed height */}
+      <div className="w-full overflow-y-auto max-h-[270px]">
         <Table className="w-full table-fixed">
-        <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
-  <TableRow>
-    <TableCell isHeader className="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 w-3/12 min-w-[120px]">
-      Product
-    </TableCell>
-    <TableCell isHeader className="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 w-2/12 min-w-[100px] hidden sm:table-cell">
-      Category
-    </TableCell>
-    <TableCell isHeader className="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-2/12 min-w-[90px] whitespace-nowrap">
-      Price
-    </TableCell>
-    <TableCell isHeader className="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-3/12 min-w-[100px] md:w-4/12 lg:w-2/12">
-      Status
-    </TableCell>
-    <TableCell isHeader className="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-0 min-w-[110px] hidden lg:table-cell">
-      Order Type
-    </TableCell>
-  </TableRow>
-</TableHeader>
+          <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
+            <TableRow>
+              <TableCell isHeader className="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 w-3/12 min-w-[120px]">
+                Product
+              </TableCell>
+              <TableCell isHeader className="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 w-2/12 min-w-[100px] hidden sm:table-cell">
+                Category
+              </TableCell>
+              <TableCell isHeader className="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-2/12 min-w-[90px] whitespace-nowrap">
+                Price
+              </TableCell>
+              <TableCell isHeader className="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-3/12 min-w-[100px] md:w-4/12 lg:w-2/12">
+                Status
+              </TableCell>
+              <TableCell isHeader className="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 w-0 min-w-[110px] hidden lg:table-cell">
+                Order Type
+              </TableCell>
+            </TableRow>
+          </TableHeader>
 
-<TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-  {tableData.map((product) => (
-    <TableRow key={product.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.05] transition">
-      <TableCell className="py-2 px-3 text-xs text-gray-800 dark:text-white/90 break-words">
-        {product.name}
-      </TableCell>
-      <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell">
-        {product.category}
-      </TableCell>
-      <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 text-center whitespace-nowrap">
-        {product.price}
-      </TableCell>
-      <TableCell className="py-2 px-3 text-center">
-        <Badge color={product.status === "Delivered" ? "success" : product.status === "Pending" ? "warning" : "error"}>
-          {product.status}
-        </Badge>
-      </TableCell>
-      <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 text-center hidden lg:table-cell">
-        {product.orderType}
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
-
+          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {tableData.map((product) => (
+              <TableRow key={product.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.05] transition">
+                <TableCell className="py-2 px-3 text-xs text-gray-800 dark:text-white/90 break-words">
+                  {product.name}
+                </TableCell>
+                <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell">
+                  {product.category}
+                </TableCell>
+                <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 text-center whitespace-nowrap">
+                  {product.price}
+                </TableCell>
+                <TableCell className="py-2 px-3 text-center">
+                  <Badge color={product.status === "Delivered" ? "success" : product.status === "Pending" ? "warning" : "error"}>
+                    {product.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 text-center hidden lg:table-cell">
+                  {product.orderType}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
         </Table>
       </div>
     </div>

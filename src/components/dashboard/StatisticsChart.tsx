@@ -13,28 +13,9 @@ interface StatisticsChartProps {
 export default function StatisticsChart({}: StatisticsChartProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const [tooltipPosition, setTooltipPosition] = useState("left-8 sm:left-12 md:left-16 lg:left-20");
   const [isOpen, setIsOpen] = useState(false);
 
   const years = Array.from({ length: 16 }, (_, i) => currentYear - 10 + i);
-
-  useEffect(() => {
-    const sidebar = document.getElementById("sidebar");
-    if (!sidebar) return;
-
-    const updateTooltipPosition = () => {
-      setTooltipPosition(
-        sidebar.classList.contains("expanded")
-          ? "left-16 sm:left-24 md:left-32 lg:left-40"
-          : "left-8 sm:left-12 md:left-16 lg:left-20"
-      );
-    };
-
-    updateTooltipPosition();
-    const observer = new MutationObserver(updateTooltipPosition);
-    observer.observe(sidebar, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
 
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
     setSelectedYear(Number(event.target.value));
@@ -72,53 +53,50 @@ export default function StatisticsChart({}: StatisticsChartProps) {
   function closeDropdown(): void {
     setIsOpen(false);
   }
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="w-full rounded-lg border border-gray-200 bg-white px-3 pt-3 pb-4 shadow-md dark:border-gray-800 dark:bg-gray-900 relative overflow-hidden">
-        <div className="flex justify-between">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
-            Sales & Revenue
-          </h3>
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900 w-full h-[350px]">
+      <div className="flex justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Sales & Revenue
+        </h3>
 
-          {/* Dropdown Actions */}
-          <div className="relative">
-            <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
-              <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-5" />
-            </button>
-            {isOpen && (
-              <Dropdown isOpen={true} onClose={() => setIsOpen(false)} className="w-36 p-2">
-                <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-
-                  View More
-                </DropdownItem>
-                <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-
-                  Remove
-                </DropdownItem>
-              </Dropdown>
-            )}
-          </div>
+        {/* Dropdown Actions */}
+        <div className="relative">
+          <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
+            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+          </button>
+          {isOpen && (
+            <Dropdown isOpen={true} onClose={closeDropdown} className="w-40 p-2">
+              <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                View More
+              </DropdownItem>
+              <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                Remove
+              </DropdownItem>
+            </Dropdown>
+          )}
         </div>
+      </div>
 
-        {/* Year Selector */}
-        <div className="flex items-center gap-2 mt-2">
-          <select
-            className="border rounded px-2 py-1 text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
-            value={selectedYear}
-            onChange={handleYearChange}
-          >
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Year Selector */}
+      <div className="flex items-center gap-2">
+        <select
+          className="border rounded px-2 py-1 text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+          value={selectedYear}
+          onChange={handleYearChange}
+        >
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        {/* Chart */}
-        <div className="w-full mt-3">
-          <Chart options={options} series={getChartData()} type="area" height={230} />
-        </div>
+      {/* Chart */}
+      <div className="w-full mt-3">
+        <Chart options={options} series={getChartData()} type="area" height={230} />
       </div>
     </div>
   );

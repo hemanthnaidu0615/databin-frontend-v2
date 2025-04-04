@@ -23,19 +23,19 @@ export default function DemographicCard({ onRemove, onViewMore }: DemographicCar
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-4 pt-4 w-full h-[346px]">
-      <div className="flex justify-between mb-4">
+    <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-default bg-white dark:bg-gray-900 rounded-xl w-full">
+      <div className="flex justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
             Customers Demographic
           </h3>
-          <p className="mt-1 text-gray-500 text-sm dark:text-gray-400">
+          <p className="mt-1 text-gray-500 text-xs dark:text-gray-400">
             Orders and revenue per state
           </p>
         </div>
         <div className="relative inline-block">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-5" />
           </button>
           <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-36 p-2">
             <DropdownItem
@@ -60,33 +60,24 @@ export default function DemographicCard({ onRemove, onViewMore }: DemographicCar
         </div>
       </div>
 
-{/* Map Section */}
-<div className="border border-gray-200 dark:border-gray-800 rounded-xl w-full overflow-hidden p-3 sm:p-2 lg:p-3">
-  <div id="mapOne" className="relative w-full h-[160px]">
-    <div className="absolute inset-0 m-2 sm:m-3 lg:m-4">
-      <USMap />
-    </div>
-  </div>
-</div>
+      <div className="px-3 py-3 my-3 overflow-hidden border border-gray-200 dark:border-gray-800 rounded-xl sm:px-5 w-full">
+        <div id="mapOne" className="h-[140px] w-full">
+          <USMap />
+        </div>
+      </div>
 
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-3 gap-2 mt-2 text-gray-800 dark:text-white text-xs">
-  {[
-    { label: "Returning vs New", value: `${customerData.returningCustomers} / ${customerData.newCustomers}` },
-    { label: "Avg Order Value", value: `$${customerData.avgOrderValue.toFixed(2)}` },
-    { label: "High Spenders", value: customerData.highSpenders },
-  ].map((item, index) => (
-    <div 
-      key={index} 
-      className="flex flex-col justify-between p-2 border border-gray-200 dark:border-gray-800 rounded-md h-full text-center"
-    >
-      <h4 className="font-medium text-[11px]">{item.label}</h4>
-      <p className="text-sm font-semibold">{item.value}</p>
-    </div>
-  ))}
-</div>
-
+      <div className="grid grid-cols-3 gap-3 text-gray-800 dark:text-white/90 text-xs">
+        {[
+          { label: "Returning vs New", value: `${customerData.returningCustomers} / ${customerData.newCustomers}` },
+          { label: "Avg Order Value", value: `$${customerData.avgOrderValue.toFixed(2)}` },
+          { label: "High Spenders", value: customerData.highSpenders },
+        ].map((item, index) => (
+          <div key={index} className="p-2 border border-gray-200 dark:border-gray-800 rounded-md">
+            <h4 className="font-medium">{item.label}</h4>
+            <p className="text-sm font-semibold">{item.value}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
