@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -11,27 +11,53 @@ type OrderTrendsCategoryProps = {
   onRemove?: () => void;
 };
 
-const dataMonthly = [
-  { month: "Jan", Electronics: 12000, Clothing: 8400, Groceries: 5000 },
-  { month: "Feb", Electronics: 9800, Clothing: 7000, Groceries: 6200 },
-  { month: "Mar", Electronics: 8700, Clothing: 9200, Groceries: 7500 },
-];
-
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
   onViewMore,
   onRemove,
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [chartData, setChartData] = useState<{ categories: string[]; series: any[] }>({
+    categories: [],
+    series: [],
+  });
 
-  const chartData = {
-    categories: dataMonthly.map((item) => item.month),
-    series: [
-      { name: "Electronics", data: dataMonthly.map((item) => item.Electronics) },
-      { name: "Clothing", data: dataMonthly.map((item) => item.Clothing) },
-      { name: "Groceries", data: dataMonthly.map((item) => item.Groceries) },
-    ],
-  };
+  useEffect(() => {
+    fetch("http://localhost:8080/api/order-trends-by-category")
+      .then((res) => res.json())
+      .then((data) => {
+        const trends = data.order_trends || {};
+        const allMonths = Object.keys(trends).sort();
+
+        const categoryTotals: Record<string, number> = {};
+
+        allMonths.forEach((month) => {
+          const monthData = trends[month];
+          Object.entries(monthData).forEach(([category, value]) => {
+            const sales = typeof value === "number" ? value : parseFloat(value);
+            categoryTotals[category] = (categoryTotals[category] || 0) + sales;
+          });
+        });
+
+        const topCategories = Object.entries(categoryTotals)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 3)
+          .map(([category]) => category);
+
+        const series = topCategories.map((category) => ({
+          name: category,
+          data: allMonths.map((month) => trends[month][category] || 0),
+        }));
+
+        setChartData({
+          categories: allMonths,
+          series,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to fetch order trends:", err);
+      });
+  }, []);
 
   const options: ApexOptions = {
     chart: {
@@ -98,7 +124,12 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       )}
 
       {/* ApexCharts Line Chart */}
-      <Chart options={options} series={chartData.series} type="line" height={size === "small" ? 150 : 300} />
+      <Chart
+        options={options}
+        series={chartData.series}
+        type="line"
+        height={size === "small" ? 150 : 300}
+      />
     </div>
   );
 };
