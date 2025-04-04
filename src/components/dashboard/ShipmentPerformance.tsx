@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -16,27 +16,45 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   onRemove,
   onViewMore,
 }) => {
-  const [timeFrame, setTimeFrame] = useState<"weekly" | "monthly">("weekly");
+  const [data, setData] = useState<{ carriers: string[]; standard: number[]; expedited: number[]; sameDay: number[] }>({
+    carriers: [],
+    standard: [],
+    expedited: [],
+    sameDay: [],
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  const data = {
-    weekly: {
-      carriers: ["FedEx", "UPS", "DHL"],
-      standard: [20, 15, 10],
-      expedited: [10, 12, 14],
-      sameDay: [5, 8, 11],
-    },
-    monthly: {
-      carriers: ["FedEx", "UPS", "DHL"],
-      standard: [80, 70, 60],
-      expedited: [40, 38, 36],
-      sameDay: [20, 25, 30],
-    },
-  };
+  useEffect(() => {
+    // Fetch shipment data from API
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/shipment-performance");
+        if (!response.ok) throw new Error("Failed to fetch shipment data");
+        const result = await response.json();
+        
+        const carriers = result.shipment_performance.map((item: any) => item.carrier);
+        const standard = result.shipment_performance.map((item: any) => item.standard);
+        const expedited = result.shipment_performance.map((item: any) => item.expedited);
+        const sameDay = result.shipment_performance.map((item: any) => item.same_day);
+
+        setData({ carriers, standard, expedited, sameDay });
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
+    // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -57,15 +75,15 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     chart: { type: "bar", stacked: true, toolbar: { show: false } },
     colors: ["#4CAF50", "#FF9800", "#2196F3"],
     plotOptions: { bar: { columnWidth: "50%" } },
-    xaxis: { categories: data[timeFrame].carriers, title: { text: "Carriers" } },
+    xaxis: { categories: data.carriers, title: { text: "Carriers" } },
     yaxis: { title: { text: "Number of Shipments" } },
     legend: { position: "top" },
   };
 
   const barSeries = [
-    { name: "Standard", data: data[timeFrame].standard },
-    { name: "Expedited", data: data[timeFrame].expedited },
-    { name: "Same-Day", data: data[timeFrame].sameDay },
+    { name: "Standard", data: data.standard },
+    { name: "Expedited", data: data.expedited },
+    { name: "Same-Day", data: data.sameDay },
   ];
 
   return (
@@ -91,7 +109,14 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
           </div>
         </div>
       )}
-      <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 150 : 300} />
+
+      {isLoading ? (
+        <p className="text-gray-600 dark:text-gray-300">Loading data...</p>
+      ) : error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : (
+        <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 150 : 300} />
+      )}
     </div>
   );
 };
