@@ -1,10 +1,6 @@
-
-
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation } from "react-router-dom";
 import Logo from "../images/logo.png";
- 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -17,53 +13,59 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
-} from "../icons";
+} from "../icons";  // Assuming icons are imported correctly
 import { useSidebar } from "../context/SidebarContext";
- 
+
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
- 
+
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    path: "/"
-    // subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  // },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Calendar",
-  //   path: "/calendar",
-  // },
-  // {
-  //   icon: <UserCircleIcon />,
-  //   name: "User Profile",
-  //   path: "/profile",
-  // },
-  // {
-  //   name: "Forms",
-  //   icon: <ListIcon />,
-  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  // },
-  // {
-  //   name: "Tables",
-  //   icon: <TableIcon />,
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  // },
-  // {
-  //   name: "Pages",
-  //   icon: <PageIcon />,
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
+    path: "/",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Orders",
+    subItems: [
+      { name: "Order Summary", path: "/orders/summary" },
+      { name: "Order List", path: "/Orders/OrderList" },
+      { name: "Order Modal", path: "/orders/modal" },
+      { name: "Sales Trends", path: "/orders/sales-trends" },
+    ],
+  },
+  {
+    icon: <CalenderIcon />,
+    name: "Fulfillment",
+    path: "/fulfillment",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Inventory",
+    path: "/inventory",
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Analytics",
+    path: "/analytics",
+  },
+  {
+    icon: <TableIcon />,
+    name: "Reports & Scheduler",
+    path: "/reports",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Returns (Future)",
+    path: "/returns",
   },
 ];
- 
+
 const othersItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -74,7 +76,7 @@ const othersItems: NavItem[] = [
     ],
   },
   {
-    icon: <BoxCubeIcon />,
+    icon: <TableIcon />,
     name: "UI Elements",
     subItems: [
       { name: "Alerts", path: "/alerts", pro: false },
@@ -94,26 +96,24 @@ const othersItems: NavItem[] = [
     ],
   },
 ];
- 
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
- 
+
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
     index: number;
   } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
+
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
- 
-  // const isActive = (path: string) => location.pathname === path;
+
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
   );
- 
+
   useEffect(() => {
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
@@ -132,12 +132,12 @@ const AppSidebar: React.FC = () => {
         }
       });
     });
- 
+
     if (!submenuMatched) {
       setOpenSubmenu(null);
     }
   }, [location, isActive]);
- 
+
   useEffect(() => {
     if (openSubmenu !== null) {
       const key = `${openSubmenu.type}-${openSubmenu.index}`;
@@ -149,7 +149,7 @@ const AppSidebar: React.FC = () => {
       }
     }
   }, [openSubmenu]);
- 
+
   const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
@@ -162,7 +162,7 @@ const AppSidebar: React.FC = () => {
       return { type: menuType, index };
     });
   };
- 
+
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
@@ -285,7 +285,7 @@ const AppSidebar: React.FC = () => {
       ))}
     </ul>
   );
- 
+
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
@@ -324,7 +324,7 @@ const AppSidebar: React.FC = () => {
                 height={32}
               />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Data-Bin
+                Data-Bin
               </span>
             </>
           ) : (
@@ -334,7 +334,6 @@ const AppSidebar: React.FC = () => {
               width={32}
               height={32}
             />
-            
           )}
         </Link>
       </div>
@@ -357,27 +356,11 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            {/* <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "justify-start"
-                }`}
-              >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
-            </div> */}
           </div>
         </nav>
       </div>
     </aside>
   );
 };
- 
+
 export default AppSidebar;

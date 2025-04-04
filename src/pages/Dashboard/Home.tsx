@@ -1,4 +1,4 @@
-import { lazy, Suspense, memo, useState, useEffect, useMemo, useDeferredValue } from "react";
+import { memo } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import EcommerceMetrics from "../../components/dashboard/SubHeader";
 import StatisticsChart from "../../components/dashboard/StatisticsChart";
@@ -6,12 +6,16 @@ import RecentOrders from "../../components/dashboard/RecentOrders";
 import OrderTracking from "../../components/dashboard/OrderTracking";
 import DemographicCard from "../../components/dashboard/DemographicCard";
 
-// Lazy Load Widgets
-const OrderProcessingTime = lazy(() => import("../../components/dashboard/Widgets/OrderProcessingTime"));
-const OrderTrendsCategory = lazy(() => import("../../components/dashboard/Widgets/OrderTrendsCategory"));
-const OrderValueSegment = lazy(() => import("../../components/dashboard/Widgets/OrderValueSegment"));
-const RevenuePerCustomer = lazy(() => import("../../components/dashboard/Widgets/RevenuePerCustomer"));
-const SalesFunnel = lazy(() => import("../../components/dashboard/Widgets/SalesFunnel"));
+// Direct Widget Imports
+import OrderProcessingTime from "../../components/dashboard/OrderProcessingTime";
+import OrderTrendsCategory from "../../components/dashboard/OrderTrendsCategory";
+import OrderValueSegment from "../../components/dashboard/OrderValueSegment";
+import RevenuePerCustomer from "../../components/dashboard/RevenuePerCustomer";
+import SalesFunnel from "../../components/dashboard/SalesFunnel";
+import InventoryHealth from "../../components/dashboard/InventoryHealth";
+import ShipmentPerformance from "../../components/dashboard/ShipmentPerformance";
+import CustomerSegmentation from "../../components/dashboard/ProfitabilityTable";
+import FulfillmentEfficiency from "../../components/dashboard/FulfillmentEfficiency";
 
 // Memoized Components
 const MemoizedEcommerceMetrics = memo(EcommerceMetrics);
@@ -20,25 +24,17 @@ const MemoizedRecentOrders = memo(RecentOrders);
 const MemoizedOrderTracking = memo(OrderTracking);
 const MemoizedDemographicCard = memo(DemographicCard);
 
+const MemoizedOrderProcessingTime = memo(OrderProcessingTime);
+const MemoizedOrderTrendsCategory = memo(OrderTrendsCategory);
+const MemoizedOrderValueSegment = memo(OrderValueSegment);
+const MemoizedRevenuePerCustomer = memo(RevenuePerCustomer);
+const MemoizedSalesFunnel = memo(SalesFunnel);
+const MemoizedInventoryHealth = memo(InventoryHealth);
+const MemoizedShipmentPerformance = memo(ShipmentPerformance);
+const MemoizedCustomerSegmentation = memo(CustomerSegmentation);
+const MemoizedFulfillmentEfficiency = memo(FulfillmentEfficiency);
+
 export default function Home() {
-  // State for widget loading
-  const [widgetsLoaded, setWidgetsLoaded] = useState(false);
-  const deferredWidgetsLoaded = useDeferredValue(widgetsLoaded); // Defers rendering for smoother UI
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setWidgetsLoaded(true), 800); // Reduced delay for better UX
-    return () => clearTimeout(timeout);
-  }, []);
-
-  // Memoized widget components
-  const widgetComponents = useMemo(() => [
-    { Component: OrderProcessingTime, span: "xl:col-span-4" },
-    { Component: OrderTrendsCategory, span: "xl:col-span-4" },
-    { Component: OrderValueSegment, span: "xl:col-span-4" },
-    { Component: RevenuePerCustomer, span: "xl:col-span-6" },
-    { Component: SalesFunnel, span: "xl:col-span-6" },
-  ], []);
-
   return (
     <>
       <PageMeta
@@ -48,17 +44,20 @@ export default function Home() {
 
       {/* Main Dashboard Content */}
       <div className="grid grid-cols-12 gap-4 md:gap-6 p-4">
+        {/* Header Metrics */}
         <div className="col-span-12">
           <MemoizedEcommerceMetrics />
         </div>
 
-        {/* Key Metrics Section */}
+        {/* Key Charts Section (Two per row) */}
         <div className="col-span-12 md:col-span-6 xl:col-span-6">
           <MemoizedStatisticsChart />
         </div>
         <div className="col-span-12 md:col-span-6 xl:col-span-6">
           <MemoizedRecentOrders />
         </div>
+
+        {/* Order Tracking & Demographics */}
         <div className="col-span-12 md:col-span-6 xl:col-span-6">
           <MemoizedOrderTracking />
         </div>
@@ -66,27 +65,37 @@ export default function Home() {
           <MemoizedDemographicCard />
         </div>
 
-        {/* Additional Widgets - Load After 0.8s */}
-        {deferredWidgetsLoaded && (
-          <div className="col-span-12 grid grid-cols-12 gap-4 md:gap-6">
-            {widgetComponents.map(({ Component, span }, index) => (
-              <div key={index} className={`col-span-12 md:col-span-6 ${span}`}>
-                <Suspense fallback={<SkeletonLoader />}>
-                  <Component />
-                </Suspense>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Main Widgets - 3 per row */}
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedOrderProcessingTime />
+        </div>
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedOrderTrendsCategory />
+        </div>
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedOrderValueSegment />
+        </div>
+
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedRevenuePerCustomer />
+        </div>
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedSalesFunnel />
+        </div>
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedInventoryHealth />
+        </div>
+
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedShipmentPerformance />
+        </div>
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedCustomerSegmentation />
+        </div>
+        <div className="col-span-12 md:col-span-4 xl:col-span-4">
+          <MemoizedFulfillmentEfficiency />
+        </div>
       </div>
     </>
   );
 }
-
-// Optimized Skeleton Loader
-const SkeletonLoader = () => (
-  <div className="p-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg">
-    <div className="h-5 bg-gray-300 dark:bg-gray-600 w-2/3 rounded mb-2"></div>
-    <div className="h-4 bg-gray-300 dark:bg-gray-600 w-1/2 rounded"></div>
-  </div>
-);
