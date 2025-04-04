@@ -18,7 +18,7 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import WidgetSetup from "./components/dashboard/WidgetsetupHeader/WidgetSetup"; // Uncomment this import
+// import WidgetSetup from "./components/dashboard/WidgetsetupHeader/WidgetSetup"; // Uncomment this import
 
 import OrderList from "./components/Orders/OrderList"; // Import OrderList component
 import OrderModal from "./components/Orders/OrderModal";
@@ -45,7 +45,7 @@ export default function App() {
 
 
             {/* Widget Setup Page */}
-            <Route path="/widget-setup" element={<WidgetSetup />} /> {/* Added this route */}
+            {/* <Route path="/widget-setup" element={<WidgetSetup />} />  */}
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
