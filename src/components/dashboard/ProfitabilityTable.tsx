@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
@@ -10,26 +10,42 @@ interface ProductData {
   popularity: number; // Value between 0 and 100
 }
 
-// Updated with 5 products
-const productData: ProductData[] = [
-  { id: 1, name: "Home Decor Range", salesPercentage: 46, popularity: 85 },
-  { id: 2, name: "Disney Princess Dress", salesPercentage: 17, popularity: 42 },
-  { id: 3, name: "Bathroom Essentials", salesPercentage: 19, popularity: 58 },
-  { id: 4, name: "Apple Smartwatch", salesPercentage: 29, popularity: 25 },
-  { id: 5, name: "Wireless Headphones", salesPercentage: 33, popularity: 72 },
-];
-
-// Function to get color based on popularity range
 const getPopularityColor = (popularity: number) => {
-  if (popularity <= 30) return "#EF4444"; // Red for Low Popularity
-  if (popularity <= 60) return "#3B82F6"; // Blue for Medium Popularity
-  return "#22C55E"; // Green for High Popularity
+  if (popularity <= 30) return "#EF4444";
+  if (popularity <= 60) return "#3B82F6";
+  return "#22C55E";
 };
 
 const ProfitabilityTable: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [productData, setProductData] = useState<ProductData[]>([]);
+
   const closeDropdown = () => setIsDropdownOpen(false);
   const removeWidget = () => console.log("Remove Widget");
+
+  useEffect(() => {
+    const fetchTopProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/top-sellers/top-products");
+        const json = await response.json();
+
+        if (json.top_products && Array.isArray(json.top_products)) {
+          const transformed = json.top_products.map((product: any, index: number) => ({
+            id: index + 1,
+            name: product.product_name,
+            salesPercentage: parseFloat(product.percentage), // e.g. "8.00%" => 8
+            popularity: Math.floor(Math.random() * 100), // You can replace this with actual logic if needed
+          }));
+
+          setProductData(transformed);
+        }
+      } catch (error) {
+        console.error("Failed to fetch top products:", error);
+      }
+    };
+
+    fetchTopProducts();
+  }, []);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900 p-5 w-full">
@@ -62,13 +78,11 @@ const ProfitabilityTable: React.FC = () => {
           const barColor = getPopularityColor(product.popularity);
           return (
             <div key={product.id} className="flex items-center justify-between py-2">
-              {/* Ranking and Product Name */}
               <div className="flex items-center space-x-3 w-1/4">
                 <span className="text-gray-500 dark:text-gray-400 font-medium">{`0${index + 1}`}</span>
                 <span className="text-gray-800 dark:text-white">{product.name}</span>
               </div>
 
-              {/* Popularity Bar */}
               <div className="flex-1 flex items-center space-x-2">
                 <div className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full relative">
                   <div
@@ -80,11 +94,10 @@ const ProfitabilityTable: React.FC = () => {
                   />
                 </div>
 
-                {/* Sales Percentage Badge - Matches Popularity Bar */}
                 <span
                   className="px-3 py-1 rounded-md text-white text-sm font-medium"
                   style={{
-                    backgroundColor: barColor, // Match bar color
+                    backgroundColor: barColor,
                   }}
                 >
                   {product.salesPercentage}%
