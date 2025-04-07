@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Dialog } from 'primereact/dialog'; // Import PrimeReact Dialog for the modal
-import { Button } from 'primereact/button'; // Import PrimeReact Button
 
 // Components
 import OrderSummary from './OrderSummary';

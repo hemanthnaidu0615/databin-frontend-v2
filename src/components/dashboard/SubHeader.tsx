@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Tag } from "primereact/tag";
-import { classNames } from "primereact/utils";
+
 import Badge from "../ui/badge/Badge";
 
 // Import images

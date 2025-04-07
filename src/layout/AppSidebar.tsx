@@ -7,12 +7,9 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
   PieChartIcon,
   PlugInIcon,
   TableIcon,
-  UserCircleIcon,
 } from "../icons";  // Assuming icons are imported correctly
 import { useSidebar } from "../context/SidebarContext";
 

@@ -40,7 +40,7 @@ const USMap: React.FC<USMapProps> = ({ mapColor }) => {
           },
         ],
       }}
-      onRegionTipShow={(e, el, code) => {
+      onRegionTipShow={(_, el, code) => {
         console.log("Tooltip triggered for:", code); // Debugging log
         if (stateData[code]) {
           console.log("State Data:", stateData[code]); // Debugging log
