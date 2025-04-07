@@ -95,6 +95,7 @@ export default function Home() {
         <div className="col-span-12 md:col-span-4 xl:col-span-4">
           <MemoizedFulfillmentEfficiency />
         </div>
+        
       </div>
     </>
   );

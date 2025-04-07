@@ -2,14 +2,14 @@ import { useState } from "react";
 import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
-import { Link } from "react-router-dom";
+
 
 interface HeaderProps {
   onClick?: () => void;
   onToggle: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
+const Header: React.FC<HeaderProps> = ({onToggle }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const toggleApplicationMenu = () => {

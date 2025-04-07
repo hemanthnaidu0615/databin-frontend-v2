@@ -16,7 +16,7 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
   onRemove,
   onViewMore,
 }) => {
-  const [timeFrame, setTimeFrame] = useState<"hourly" | "daily">("hourly");
+  const [timeFrame,] = useState<"hourly" | "daily">("hourly");
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
