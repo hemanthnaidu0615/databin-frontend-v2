@@ -1,99 +1,129 @@
-import React from "react";
-import { Calendar } from "primereact/calendar";
-import { MultiSelect } from "primereact/multiselect";
-import { AutoComplete } from "primereact/autocomplete";
+import React from 'react';
 
-export default function OrderFilters() {
-  const [dateRange, setDateRange] = React.useState<[Date | null, Date | null] | null>(null);
-  const [orderStatus, setOrderStatus] = React.useState<string[]>([]);
-  const [carrier, setCarrier] = React.useState<string | null>(null);
-  const [originCountry, setOriginCountry] = React.useState<string | null>(null);
-  const [originCity, setOriginCity] = React.useState<string | null>(null);
-  const [productCategories, setProductCategories] = React.useState<string[]>([]);
+interface OrderFiltersProps {
+  filters: {
+    dateRange: string;
+    status: string;
+    orderType: string;
+    paymentMethod: string;
+    priceRange: string;
+    carrier: string;
+    customer: string;
+    orderId: string;
+  };
+  onFilterChange: (field: string, value: string) => void;
+  onReset: () => void;
+  onApply: () => void; // ✅ added
+}
 
-  const orderStatusOptions = ["Pending", "Shipped", "Delayed", "Delivered", "Cancelled"];
-  const carriers = ["FedEx", "UPS", "DHL"];
-  const countries = ["USA", "Canada", "Germany"];
-  const cities = ["New York", "Berlin", "Toronto"];
-  const productCategoryOptions = ["Electronics", "Clothing", "Home Goods"];
+const OrderFilters: React.FC<OrderFiltersProps> = ({
+  filters,
+  onFilterChange,
+  onReset,
+  onApply, // ✅ added
+}) => {
+  const inputStyle =
+    'px-3 py-2 rounded border text-sm bg-white text-black border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Date Range */}
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-500 dark:text-gray-400 mb-1">Date Range</label>
-          <Calendar
-            value={dateRange}
-            onChange={(e) => setDateRange(e.value as [Date, Date])}
-            selectionMode="range"
-            placeholder="Select date range"
-            showIcon
-            className="w-full"
-          />
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center text-sm text-white">
+      <select
+        className={inputStyle}
+        value={filters.dateRange}
+        onChange={(e) => onFilterChange('dateRange', e.target.value)}
+      >
+        <option>Last 30 days</option>
+        <option>Last 7 days</option>
+        <option>Today</option>
+      </select>
 
-        {/* Order Status */}
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-500 dark:text-gray-400 mb-1">Order Status</label>
-          <MultiSelect
-            value={orderStatus}
-            options={orderStatusOptions}
-            onChange={(e) => setOrderStatus(e.value)}
-            placeholder="Select Status"
-            className="w-full"
-          />
-        </div>
+      <select
+        className={inputStyle}
+        value={filters.status}
+        onChange={(e) => onFilterChange('status', e.target.value)}
+      >
+        <option>All statuses</option>
+        <option>Delivered</option>
+        <option>Pending</option>
+        <option>Cancelled</option>
+      </select>
 
-        {/* Carrier */}
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-500 dark:text-gray-400 mb-1">Carrier</label>
-          <MultiSelect
-            value={carrier ? [carrier] : []}
-            options={carriers}
-            onChange={(e) => setCarrier(e.value[0] || null)}
-            placeholder="Select Carrier"
-            className="w-full"
-          />
-        </div>
+      <select
+        className={inputStyle}
+        value={filters.orderType}
+        onChange={(e) => onFilterChange('orderType', e.target.value)}
+      >
+        <option>All types</option>
+        <option>Online</option>
+        <option>In-Store</option>
+      </select>
 
-        {/* Origin Country */}
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-500 dark:text-gray-400 mb-1">Origin Country</label>
-          <MultiSelect
-            value={originCountry ? [originCountry] : []}
-            options={countries}
-            onChange={(e) => setOriginCountry(e.value[0] || null)}
-            placeholder="Select Country"
-            className="w-full"
-          />
-        </div>
+      <select
+        className={inputStyle}
+        value={filters.paymentMethod}
+        onChange={(e) => onFilterChange('paymentMethod', e.target.value)}
+      >
+        <option>All methods</option>
+        <option>Credit Card</option>
+        <option>PayPal</option>
+        <option>Cash</option>
+      </select>
 
-        {/* Origin City */}
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-500 dark:text-gray-400 mb-1">Origin City</label>
-          <AutoComplete
-            value={originCity}
-            suggestions={cities as any}
-            completeMethod={() => {}}
-            onChange={(e) => setOriginCity(e.value)}
-            placeholder="Type city"
-            className="w-full"
-          />
-        </div>
+      <select
+        className={inputStyle}
+        value={filters.priceRange}
+        onChange={(e) => onFilterChange('priceRange', e.target.value)}
+      >
+        <option>All prices</option>
+        <option>Under $50</option>
+        <option>$50 - $100</option>
+        <option>Over $100</option>
+      </select>
 
-        {/* Product Category */}
-        <div className="flex flex-col">
-          <label className="text-sm text-gray-500 dark:text-gray-400 mb-1">Product Category</label>
-          <MultiSelect
-            value={productCategories}
-            options={productCategoryOptions}
-            onChange={(e) => setProductCategories(e.value)}
-            placeholder="Select Category"
-            className="w-full"
-          />
-        </div>
+      <select
+        className={inputStyle}
+        value={filters.carrier}
+        onChange={(e) => onFilterChange('carrier', e.target.value)}
+      >
+        <option>All carriers</option>
+        <option>UPS</option>
+        <option>FedEx</option>
+        <option>DHL</option>
+      </select>
+
+      <input
+        type="text"
+        placeholder="Search customer"
+        className={inputStyle}
+        value={filters.customer}
+        onChange={(e) => onFilterChange('customer', e.target.value)}
+      />
+
+      <input
+        type="text"
+        placeholder="Search order ID"
+        className={inputStyle}
+        value={filters.orderId}
+        onChange={(e) => onFilterChange('orderId', e.target.value)}
+      />
+
+      {/* Action Buttons */}
+      <div className="col-span-full flex justify-end gap-2 mt-2">
+        <button
+          onClick={onReset}
+          className="px-4 py-2 rounded bg-gray-700 text-sm text-white hover:bg-gray-600 transition"
+        >
+          Reset Filters
+        </button>
+        <button
+          onClick={onApply}
+          className="px-4 py-2 rounded bg-blue-600 text-sm text-white hover:bg-blue-700 transition"
+        >
+          Apply Filters
+        </button>
       </div>
     </div>
   );
-}
+};
+
+export default OrderFilters;

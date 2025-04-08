@@ -3,13 +3,11 @@ import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 
-
 interface HeaderProps {
-  onClick?: () => void;
   onToggle: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({onToggle }) => {
+const Header: React.FC<HeaderProps> = ({ onToggle }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const toggleApplicationMenu = () => {
@@ -25,8 +23,9 @@ const Header: React.FC<HeaderProps> = ({onToggle }) => {
           <button
             className="flex items-center justify-center w-12 h-12 text-gray-600 rounded-lg dark:text-gray-400 lg:hidden hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={onToggle}
+            aria-label="Toggle Sidebar"
           >
-            <svg width="24" height="24" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="24" height="24" viewBox="0 0 16 12" fill="none">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -36,12 +35,13 @@ const Header: React.FC<HeaderProps> = ({onToggle }) => {
             </svg>
           </button>
 
-          {/* App Menu Toggle Button */}
+          {/* Application Menu Toggle Button */}
           <button
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-12 h-12 text-gray-700 rounded-lg dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 lg:hidden"
+            aria-label="Toggle Menu"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -54,15 +54,15 @@ const Header: React.FC<HeaderProps> = ({onToggle }) => {
 
         {/* Right Section */}
         <div
-          className={`flex items-center justify-between w-full gap-4 px-5 py-4 lg:flex ${isApplicationMenuOpen ? "flex" : "hidden"} shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+          className={`${
+            isApplicationMenuOpen ? "flex" : "hidden"
+          } flex-wrap items-center justify-between w-full gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0`}
         >
-          {/* Theme Toggle and Notification Menu */}
           <div className="flex items-center gap-4">
             <ThemeToggleButton />
             <NotificationDropdown />
           </div>
 
-          {/* User Dropdown */}
           <UserDropdown />
         </div>
       </div>
