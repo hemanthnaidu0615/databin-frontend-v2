@@ -29,13 +29,9 @@ const navItems: NavItem[] = [
   {
     icon: <BoxCubeIcon />,
     name: "Orders",
-    subItems: [
-      { name: "Order Summary", path: "/orders/summary" },
-      { name: "Order List", path: "/Orders/OrderList" },
-      { name: "Order Modal", path: "/orders/modal" },
-      { name: "Sales Trends", path: "/orders/sales-trends" },
-    ],
+    path: "/orders"
   },
+  
   {
     icon: <CalenderIcon />,
     name: "Fulfillment",
@@ -48,19 +44,15 @@ const navItems: NavItem[] = [
   },
   {
     icon: <PieChartIcon />,
-    name: "Analytics",
-    path: "/analytics",
+    name: "Shipments",
+    path: "/Shipments",
   },
   {
     icon: <TableIcon />,
     name: "Reports & Scheduler",
     path: "/reports",
   },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Returns (Future)",
-    path: "/returns",
-  },
+
 ];
 
 const othersItems: NavItem[] = [
