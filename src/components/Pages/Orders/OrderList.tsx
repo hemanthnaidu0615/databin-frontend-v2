@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { orders as allOrders, Order } from './ordersData';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa'; // Import icons from react-icons
 
 interface Props {
   orders?: Order[];
@@ -28,40 +29,48 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y dark:divide-gray-800">
-        <thead>
-          <tr className="text-left text-sm dark:text-gray-400">
-            <th className="py-3 px-4">Order ID</th>
-            <th className="py-3 px-4">Date</th>
-            <th className="py-3 px-4">Customer</th>
-            <th className="py-3 px-4">Product</th>
-            <th className="py-3 px-4">Total</th>
-            <th className="py-3 px-4">Status</th>
-            <th className="py-3 px-4">Payment</th>
-          </tr>
-        </thead>
-        <tbody className="text-sm dark:text-gray-400">
-          {orders.map((order) => (
-            <React.Fragment key={order.id}>
-              <tr
-                className="hover:dark:bg-white/[0.05] transition-colors cursor-pointer"
-                onClick={() => toggleExpand(order.id)}
-              >
-                <td className="py-3 px-4">{order.id}</td>
-                <td className="py-3 px-4">{order.date}</td>
-                <td className="py-3 px-4">{order.customer}</td>
-                <td className="py-3 px-4">{order.product}</td>
-                <td className="py-3 px-4">${order.total}</td>
-                <td className="py-3 px-4">
-                  <OrderStatusBadge status={order.status} />
-                </td>
-                <td className="py-3 px-4">{order.paymentMethod}</td>
-              </tr>
+      <table className="min-w-full divide-y dark:divide-gray-800 text-left"> {/* Added text-left */}
+<thead>
+  <tr className="text-left text-sm dark:text-gray-400">
+    <th className="py-3 px-4"> {/* No label for icon */}</th>
+    <th className="py-3 px-4">Order ID</th>
+    <th className="py-3 px-4">Date</th>
+    <th className="py-3 px-4">Customer</th>
+    <th className="py-3 px-4">Product</th>
+    <th className="py-3 px-4">Total</th>
+    <th className="py-3 px-4">Status</th>
+    <th className="py-3 px-4">Payment</th>
+  </tr>
+</thead>
+<tbody className="text-sm dark:text-gray-400">
+  {orders.map((order) => (
+    <React.Fragment key={order.id}>
+      <tr
+        className="hover:dark:bg-white/[0.05] transition-colors cursor-pointer"
+        onClick={() => toggleExpand(order.id)}
+      >
+        <td className="py-3 px-4">
+          {expandedOrderId === order.id ? (
+            <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+          ) : (
+            <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+          )}
+        </td>
+        <td className="py-3 px-4">{order.id}</td>
+        <td className="py-3 px-4">{order.date}</td>
+        <td className="py-3 px-4">{order.customer}</td>
+        <td className="py-3 px-4">{order.product}</td>
+        <td className="py-3 px-4">${order.total}</td>
+        <td className="py-3 px-4">
+          <OrderStatusBadge status={order.status} />
+        </td>
+        <td className="py-3 px-4">{order.paymentMethod}</td>
+      </tr>
 
-              {expandedOrderId === order.id && (
-                <tr>
-                  <td colSpan={7} className="px-4 pb-6 pt-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {expandedOrderId === order.id && (
+        <tr>
+          <td colSpan={8} className="px-4 pb-6 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 {/* 1. Order Summary */}
 <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Order Summary</h3>
