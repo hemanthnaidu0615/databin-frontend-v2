@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { orders as allOrders, Order } from './ordersData';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa'; // Import icons from react-icons
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { Paginator } from 'primereact/paginator';
 
 interface Props {
   orders?: Order[];
@@ -22,55 +23,65 @@ const OrderStatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => 
 
 const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(5);
 
   const toggleExpand = (id: string) => {
     setExpandedOrderId((prev) => (prev === id ? null : id));
   };
 
+  const onPageChange = (e: { first: number; rows: number }) => {
+    setFirst(e.first);
+    setRows(e.rows);
+    setExpandedOrderId(null);
+  };
+
+  const paginatedOrders = orders.slice(first, first + rows);
+
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y dark:divide-gray-800 text-left"> {/* Added text-left */}
-<thead>
-  <tr className="text-left text-sm dark:text-gray-400">
-    <th className="py-3 px-4"> {/* No label for icon */}</th>
-    <th className="py-3 px-4">Order ID</th>
-    <th className="py-3 px-4">Date</th>
-    <th className="py-3 px-4">Customer</th>
-    <th className="py-3 px-4">Product</th>
-    <th className="py-3 px-4">Total</th>
-    <th className="py-3 px-4">Status</th>
-    <th className="py-3 px-4">Payment</th>
-  </tr>
-</thead>
-<tbody className="text-sm dark:text-gray-400">
-  {orders.map((order) => (
-    <React.Fragment key={order.id}>
-      <tr
-        className="hover:dark:bg-white/[0.05] transition-colors cursor-pointer"
-        onClick={() => toggleExpand(order.id)}
-      >
-        <td className="py-3 px-4">
-          {expandedOrderId === order.id ? (
-            <FaChevronUp className="text-gray-500 dark:text-gray-400" />
-          ) : (
-            <FaChevronDown className="text-gray-500 dark:text-gray-400" />
-          )}
-        </td>
-        <td className="py-3 px-4">{order.id}</td>
-        <td className="py-3 px-4">{order.date}</td>
-        <td className="py-3 px-4">{order.customer}</td>
-        <td className="py-3 px-4">{order.product}</td>
-        <td className="py-3 px-4">${order.total}</td>
-        <td className="py-3 px-4">
-          <OrderStatusBadge status={order.status} />
-        </td>
-        <td className="py-3 px-4">{order.paymentMethod}</td>
-      </tr>
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-left">
+        <thead className="bg-gray-100 dark:bg-gray-900">
+          <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
+            <th className="py-3 px-4"></th>
+            <th className="py-3 px-4">Order ID</th>
+            <th className="py-3 px-4">Date</th>
+            <th className="py-3 px-4">Customer</th>
+            <th className="py-3 px-4">Product</th>
+            <th className="py-3 px-4">Total</th>
+            <th className="py-3 px-4">Status</th>
+            <th className="py-3 px-4">Payment</th>
+          </tr>
+        </thead>
+        <tbody className="text-sm text-gray-800 dark:text-gray-200">
+          {paginatedOrders.map((order) => (
+            <React.Fragment key={order.id}>
+              <tr
+                className="hover:bg-gray-50 hover:dark:bg-white/[0.05] transition-colors cursor-pointer"
+                onClick={() => toggleExpand(order.id)}
+              >
+                <td className="py-3 px-4">
+                  {expandedOrderId === order.id ? (
+                    <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+                  ) : (
+                    <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+                  )}
+                </td>
+                <td className="py-3 px-4">{order.id}</td>
+                <td className="py-3 px-4">{order.date}</td>
+                <td className="py-3 px-4">{order.customer}</td>
+                <td className="py-3 px-4">{order.product}</td>
+                <td className="py-3 px-4">${order.total}</td>
+                <td className="py-3 px-4">
+                  <OrderStatusBadge status={order.status} />
+                </td>
+                <td className="py-3 px-4">{order.paymentMethod}</td>
+              </tr>
 
-      {expandedOrderId === order.id && (
-        <tr>
-          <td colSpan={8} className="px-4 pb-6 pt-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {expandedOrderId === order.id && (
+                <tr>
+                  <td colSpan={8} className="px-4 pb-6 pt-2 bg-gray-50 dark:bg-gray-950 rounded-b-lg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 {/* 1. Order Summary */}
 <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Order Summary</h3>
@@ -289,6 +300,49 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
           ))}
         </tbody>
       </table>
+
+       {/* Paginator */}
+       <div className="p-4 bg-white dark:bg-gray-900 rounded-b-lg">
+  {/* Full paginator for screens >= sm */}
+  <div className="hidden sm:block dark:text-gray-100 
+                  [&_.p-paginator]:bg-white 
+                  [&_.p-paginator]:dark:bg-gray-900 
+                  [&_.p-paginator]:border-none">
+    <Paginator
+      first={first}
+      rows={rows}
+      totalRecords={orders.length}
+      onPageChange={onPageChange}
+      rowsPerPageOptions={[5, 10, 20]}
+      template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+      className="dark:text-gray-100 dark:bg-gray-900"
+    />
+  </div>
+
+  {/* Simple pagination for mobile (smaller than sm) */}
+  <div className="flex items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
+    <button 
+      onClick={() => onPageChange({ first: first - rows, rows })}
+      disabled={first === 0}
+      className="px-3 py-1 rounded disabled:opacity-50 dark:bg-gray-800 bg-gray-100"
+    >
+      Prev
+    </button>
+    <span>
+      Page {first / rows + 1} of {Math.ceil(orders.length / rows)}
+    </span>
+    <button 
+      onClick={() => onPageChange({ first: first + rows, rows })}
+      disabled={first + rows >= orders.length}
+      className="px-3 py-1 rounded disabled:opacity-50 dark:bg-gray-800 bg-gray-100"
+    >
+      Next
+    </button>
+  </div>
+</div>
+
+
     </div>
   );
 };
