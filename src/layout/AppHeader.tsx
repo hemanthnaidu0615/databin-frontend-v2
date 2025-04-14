@@ -25,8 +25,8 @@ const AppHeader: React.FC = () => {
   const dispatch = useDispatch();
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
-    new Date("2024-03-15"),
-    new Date("2024-03-16"),
+    new Date("2025-03-19"),
+    new Date("2025-03-20"),
   ]);
 
   const handleToggle = () => {
@@ -92,7 +92,7 @@ const AppHeader: React.FC = () => {
               )}
             </button>
 
-            <Link to="/" className="flex items-center gap-2 shrink-0">
+            <Link to="/" className="flex items-center gap-2 shrink-0 lg:hidden md:hidden">
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
               <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
