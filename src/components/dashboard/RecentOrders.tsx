@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Table,
   TableBody,
@@ -10,6 +11,12 @@ import Badge from "../ui/badge/Badge";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
+
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+};
 
 interface Order {
   order_id: number;
@@ -25,33 +32,43 @@ export default function RecentOrders() {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
   useEffect(() => {
     console.log("Fetching recent orders...");
 
-    fetch("http://localhost:8080/api/orders/recent-orders")
-      .then((response) => {
+    const fetchRecentOrders = async () => {
+      try {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+
+        const response = await fetch(
+          `http://localhost:8080/api/orders/recent-orders?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+        );
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.json();
-      })
-      .then((data: Order[]) => {
-        // Ensure price is a valid number
+
+        const data: Order[] = await response.json();
         const processedOrders = data.map((order) => ({
           ...order,
-          price:
-            typeof order.price === "number"
-              ? order.price
-              : parseFloat(order.price) || 0,
+          price: typeof order.price === "number" ? order.price : parseFloat(order.price) || 0,
         }));
-        console.log("Received orders:", processedOrders);
+
         setOrders(processedOrders);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to load orders. Please try again.");
-      });
-  }, []);
+      }
+    };
+
+    if (startDate && endDate) {
+      fetchRecentOrders();
+    }
+  }, [startDate, endDate]); // Re-run when startDate or endDate changes
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -63,7 +80,6 @@ export default function RecentOrders() {
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
-
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
           Recent Orders

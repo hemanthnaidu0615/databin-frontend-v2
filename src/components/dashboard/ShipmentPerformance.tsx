@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -9,6 +10,12 @@ type ShipmentPerformanceProps = {
   size?: "small" | "full";
   onRemove?: () => void;
   onViewMore?: () => void;
+};
+
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
 const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
@@ -29,14 +36,23 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
   useEffect(() => {
-    // Fetch shipment data from API
+    // Fetch shipment data from API with date range
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/shipment-performance");
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+
+        const response = await fetch(
+          `http://localhost:8080/api/shipment-performance?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+        );
         if (!response.ok) throw new Error("Failed to fetch shipment data");
         const result = await response.json();
-        
+
         const carriers = result.shipment_performance.map((item: any) => item.carrier);
         const standard = result.shipment_performance.map((item: any) => item.standard);
         const expedited = result.shipment_performance.map((item: any) => item.expedited);
@@ -50,8 +66,10 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
       }
     };
 
-    fetchData();
-  }, []);
+    if (startDate && endDate) {
+      fetchData();
+    }
+  }, [startDate, endDate]); // Re-run when startDate or endDate changes
 
   useEffect(() => {
     // Close dropdown when clicking outside

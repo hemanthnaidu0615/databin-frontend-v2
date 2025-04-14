@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons"; // More options icon
+
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+};
 
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
@@ -31,11 +38,19 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     series: [],
   });
 
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+
+        // Fetch data from API with date range
         const response = await fetch(
-          "http://localhost:8080/api/order-trends-by-category"
+          `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         const data: ApiResponse = await response.json();
 
@@ -73,8 +88,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       }
     };
 
-    fetchData();
-  }, []);
+    if (startDate && endDate) {
+      fetchData();
+    }
+  }, [startDate, endDate]); // Re-run when startDate or endDate changes
 
   const options: ApexOptions = {
     chart: {

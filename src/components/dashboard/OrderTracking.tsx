@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
@@ -6,6 +7,12 @@ import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
+
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+};
 
 interface OrderTrackingProps {
   onRemove?: () => void;
@@ -28,19 +35,40 @@ export default function OrderTracking(_: OrderTrackingProps) {
     return localStorage.getItem("orderTrackingVisible") !== "false";
   });
 
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
   useEffect(() => {
     localStorage.setItem("orderTrackingVisible", String(isVisible));
   }, [isVisible]);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/dashboard-kpi/total-orders")
-      .then(response => setTotalOrders(response.data.total_orders))
-      .catch(error => console.error("Error fetching total orders:", error));
+    async function fetchData() {
+      try {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
 
-    axios.get("http://localhost:8080/api/shipment-status/count")
-      .then(response => setOrderCounts(response.data))
-      .catch(error => console.error("Error fetching order status counts:", error));
-  }, []);
+        // Fetch total orders with date range
+        const totalOrdersResponse = await axios.get(
+          `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+        );
+        setTotalOrders(totalOrdersResponse.data.total_orders);
+
+        // Fetch order status counts with date range
+        const orderCountsResponse = await axios.get(
+          `http://localhost:8080/api/shipment-status/count?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+        );
+        setOrderCounts(orderCountsResponse.data);
+      } catch (error) {
+        console.error("Error fetching order data:", error);
+      }
+    }
+
+    if (startDate && endDate) {
+      fetchData();
+    }
+  }, [startDate, endDate]); // Re-run when startDate or endDate changes
 
   const progressPercentage =
     totalOrders > 0 ? ((orderCounts.Delivered + orderCounts.Refunded) / totalOrders) * 100 : 0;
@@ -151,7 +179,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
           </div>
 
           <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
-            {[
+            {[ 
               { label: "Pending", count: orderCounts.Pending, color: "text-yellow-500" },
               { label: "Shipped", count: orderCounts.Shipped, color: "text-blue-500" },
               { label: "Delivered", count: orderCounts.Delivered, color: "text-green-500" },
