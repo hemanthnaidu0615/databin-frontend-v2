@@ -25,8 +25,8 @@ const AppHeader: React.FC = () => {
   const dispatch = useDispatch();
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
-    new Date("2024-03-15"),
-    new Date("2024-03-16"),
+    new Date("2025-03-19"),
+    new Date("2025-03-20"),
   ]);
 
   const handleToggle = () => {
