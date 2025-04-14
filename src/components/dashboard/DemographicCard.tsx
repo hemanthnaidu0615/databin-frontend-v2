@@ -1,8 +1,16 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import Badge from "../ui/badge/Badge"; // Assuming you have the Badge component like in the other file
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 import USMap from "./CountryMap";
+
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+};
 
 interface DemographicCardProps {
   onRemove?: () => void;
@@ -21,10 +29,20 @@ export default function DemographicCard({
     highSpenders: 0,
   });
 
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchCustomerData() {
       try {
-        const response = await fetch("http://localhost:8080/api/sales/metrics");
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+
+        // Construct API URL with formatted start and end dates as query parameters
+        const url = `http://localhost:8080/api/sales/metrics?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`;
+
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -33,8 +51,7 @@ export default function DemographicCard({
         // Ensure data exists before updating state
         if (data && typeof data === "object") {
           setCustomerData({
-            returningCustomers:
-              data.returning_customers ?? customerData.returningCustomers,
+            returningCustomers: data.returning_customers ?? customerData.returningCustomers,
             newCustomers: data.new_customers ?? customerData.newCustomers,
             avgOrderValue: data.avg_order_value ?? customerData.avgOrderValue,
             highSpenders: data.high_spenders ?? customerData.highSpenders,
@@ -43,10 +60,12 @@ export default function DemographicCard({
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    if (startDate && endDate) {
+      fetchCustomerData();
+    }
+  }, [startDate, endDate]); // Re-run the effect when startDate or endDate changes
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
   const closeDropdown = () => setIsOpen(false);
@@ -104,7 +123,7 @@ export default function DemographicCard({
 
       {/* Key Metrics */}
       <div className="grid grid-cols-3 gap-2 mt-5 text-gray-800 dark:text-white text-xs">
-        {[
+        {[ 
           {
             label: "Returning vs New",
             value: `${customerData.returningCustomers} / ${customerData.newCustomers}`,

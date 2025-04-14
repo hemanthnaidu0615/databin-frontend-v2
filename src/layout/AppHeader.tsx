@@ -11,14 +11,22 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
+import { useDispatch } from "react-redux";
+import { setDates } from "../store/dateRangeSlice";
+
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<any>(null);
   const [enterpriseKey, setEnterpriseKey] = useState("AWW");
   const enterpriseKeys = ["ABC", "XYZ", "PQR"];
   const calendarRef = useRef<any>(null);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+  const dispatch = useDispatch();
+
+  const [dateRange, setDateRange] = useState<[Date, Date] | null>([
+    new Date("2024-03-15"),
+    new Date("2024-03-16"),
+  ]);
 
   const handleToggle = () => {
     if (window.innerWidth >= 991) {
@@ -33,9 +41,11 @@ const AppHeader: React.FC = () => {
   };
 
   const handleDateChange = (e: any) => {
-    setDateRange(e.value);
-    if (Array.isArray(e.value) && e.value[0] && e.value[1]) {
-      calendarRef.current?.hide?.();
+    const newDates = e.value;
+    setDateRange(newDates);
+    if (Array.isArray(newDates) && newDates[0] && newDates[1]) {
+      dispatch(setDates(newDates)); // store in redux
+      calendarRef.current?.hide?.(); // optional UI behavior
     }
   };
 
@@ -54,7 +64,7 @@ const AppHeader: React.FC = () => {
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-[99999] dark:border-gray-800 dark:bg-gray-900 lg:border-b">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         {/* Left Section */}
-        <div className="flex items-center justify-between  gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+        <div className="flex items-center justify-between gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
           {/* Sidebar Toggle */}
           <button
             className="items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-[99999] dark:border-gray-800 lg:flex dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
@@ -102,12 +112,10 @@ const AppHeader: React.FC = () => {
 
         {/* Right Section */}
         <div
-  className={`${
-    isApplicationMenuOpen ? "flex" : "hidden"
-  } flex-nowrap items-center justify-start w-full gap-4 px-3 py-3 shadow-theme-md sm:flex sm:justify-between sm:px-4 md:px-6 md:justify-center lg:justify-end lg:flex lg:shadow-none`}
->
-
-
+          className={`${
+            isApplicationMenuOpen ? "flex" : "hidden"
+          } flex-nowrap items-center justify-start w-full gap-4 px-3 py-3 shadow-theme-md sm:flex sm:justify-between sm:px-4 md:px-6 md:justify-center lg:justify-end lg:flex lg:shadow-none`}
+        >
           <div className="flex flex-wrap gap-3 w-full sm:w-auto sm:items-center">
             {/* Calendar Date Range Picker */}
             <Calendar
@@ -117,10 +125,12 @@ const AppHeader: React.FC = () => {
               onChange={handleDateChange}
               dateFormat="yy-mm-dd"
               placeholder="Select Date Range"
-              className="w-full sm:w-[220px]"
+              className="w-auto sm:w-[220px]"
               inputClassName="text-sm dark:bg-gray-900 dark:text-white"
               panelClassName="dark:bg-gray-900 dark:text-white z-50"
               showIcon
+              hideOnDateTimeSelect
+              hideOnRangeSelection
             />
 
             {/* Enterprise Key Dropdown */}
