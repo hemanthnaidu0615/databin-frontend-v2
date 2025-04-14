@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
+
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+};
 
 interface ProductData {
   id: number;
@@ -20,13 +27,23 @@ const ProfitabilityTable: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [productData, setProductData] = useState<ProductData[]>([]);
 
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
   const closeDropdown = () => setIsDropdownOpen(false);
   const removeWidget = () => console.log("Remove Widget");
 
   useEffect(() => {
     const fetchTopProducts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/top-sellers/top-products");
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+
+        // Fetch data from API with date range
+        const response = await fetch(
+          `http://localhost:8080/api/top-sellers/top-products?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+        );
         const json = await response.json();
 
         if (json.top_products && Array.isArray(json.top_products)) {
@@ -44,14 +61,16 @@ const ProfitabilityTable: React.FC = () => {
       }
     };
 
-    fetchTopProducts();
-  }, []);
+    if (startDate && endDate) {
+      fetchTopProducts();
+    }
+  }, [startDate, endDate]); // Re-run when startDate or endDate changes
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900 p-10 w-full">
       <div className="flex items-center justify-between mb-13">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-        ProfitabilityTable
+          Profitability Table
         </h3>
         <div className="relative">
           <button

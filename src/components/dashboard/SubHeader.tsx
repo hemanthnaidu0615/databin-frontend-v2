@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { useSelector } from "react-redux";
 import Badge from "../ui/badge/Badge";
 
 // Import images
@@ -9,78 +9,58 @@ import Inventory from "../../images/inventory.png";
 import LocalShipping from "../../images/local_shipping.png";
 import Warning from "../../images/warning.png";
 
+// Helper function to format date to match the API requirement
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+};
+
 export default function OrdersFulfillmentMetrics() {
   const [metrics, setMetrics] = useState([
     { icon: Inventory, label: "Total Orders", value: "-", isPositive: true },
-    {
-      icon: LocalShipping,
-      label: "Fulfillment Rate",
-      value: "-",
-      isPositive: false,
-    },
+    { icon: LocalShipping, label: "Fulfillment Rate", value: "-", isPositive: false },
     { icon: Warning, label: "Delayed Orders", value: "-", isPositive: true },
-    {
-      icon: LocalShipping,
-      label: "Orders in Transit",
-      value: "-",
-      isPositive: true,
-    },
+    { icon: LocalShipping, label: "Orders in Transit", value: "-", isPositive: true },
     { icon: Warning, label: "Inventory Alerts", value: "-", isWarning: true },
   ]);
+
+  // Access the date range from Redux store
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
 
   useEffect(() => {
     async function fetchMetrics() {
       try {
-        const responses = await Promise.all([
-          fetch("http://localhost:8080/api/dashboard-kpi/total-orders"),
-          fetch("http://localhost:8080/api/dashboard-kpi/fulfillment-rate"),
-          fetch(
-            "http://localhost:8080/api/dashboard-kpi/shipment-status-percentage"
-          ),
-          fetch("http://localhost:8080/api/dashboard-kpi/out-of-stock"),
-        ]);
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
 
+        // Construct the URLs with the startDate and endDate as query parameters
+        const urls = [
+          `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`,
+          `http://localhost:8080/api/dashboard-kpi/fulfillment-rate?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`,
+          `http://localhost:8080/api/dashboard-kpi/shipment-status-percentage?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`,
+          `http://localhost:8080/api/dashboard-kpi/out-of-stock?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+        ];
+
+        const responses = await Promise.all(urls.map((url) => fetch(url)));
         const data = await Promise.all(responses.map((res) => res.json()));
 
         setMetrics([
-          {
-            icon: Inventory,
-            label: "Total Orders",
-            value: data[0].total_orders,
-            isPositive: true,
-          },
-          {
-            icon: LocalShipping,
-            label: "Fulfillment Rate",
-            value: data[1].fulfillment_rate,
-            isPositive: false,
-          },
-          {
-            icon: Warning,
-            label: "Delayed Orders",
-            value: data[2].delayed_percentage,
-            isPositive: true,
-          },
-          {
-            icon: LocalShipping,
-            label: "Orders in Transit",
-            value: data[2].in_transit_orders,
-            isPositive: true,
-          },
-          {
-            icon: Warning,
-            label: "Inventory Alerts",
-            value: data[3].out_of_stock_count,
-            isWarning: true,
-          },
+          { icon: Inventory, label: "Total Orders", value: data[0].total_orders, isPositive: true },
+          { icon: LocalShipping, label: "Fulfillment Rate", value: data[1].fulfillment_rate, isPositive: false },
+          { icon: Warning, label: "Delayed Orders", value: data[2].delayed_percentage, isPositive: true },
+          { icon: LocalShipping, label: "Orders in Transit", value: data[2].in_transit_orders, isPositive: true },
+          { icon: Warning, label: "Inventory Alerts", value: data[3].out_of_stock_count, isWarning: true }
         ]);
       } catch (error) {
         console.error("Error fetching metrics:", error);
       }
     }
 
-    fetchMetrics();
-  }, []);
+    if (startDate && endDate) {
+      fetchMetrics();
+    }
+  }, [startDate, endDate]);
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pb-2 md:pb-4">
