@@ -6,26 +6,28 @@ import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import Logo from "../images/logo.png";
-import AppMobileRightSidebar from "./AppMobileRightSidebar"; // ✅ Add this
+import AppMobileRightSidebar from ".//AppMobileRightSidebar";
 
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
+import { useDispatch } from "react-redux";
+import { setDates } from "../store/dateRangeSlice";
+
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<any>(null);
   const [enterpriseKey, setEnterpriseKey] = useState("AWW");
   const enterpriseKeys = ["ABC", "XYZ", "PQR"];
   const calendarRef = useRef<any>(null);
 
-  const {
-    isMobileOpen,
-    toggleSidebar,
-    toggleMobileSidebar,
-    screenSize,
-    toggleMobileRightSidebar, // ✅ Access right sidebar toggle
-  } = useSidebar();
+  const { isMobileOpen, toggleSidebar, toggleMobileSidebar, screenSize, toggleMobileRightSidebar } = useSidebar();
+  const dispatch = useDispatch();
+
+  const [dateRange, setDateRange] = useState<[Date, Date] | null>([
+    new Date("2024-03-15"),
+    new Date("2024-03-16"),
+  ]);
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -40,9 +42,11 @@ const AppHeader: React.FC = () => {
   };
 
   const handleDateChange = (e: any) => {
-    setDateRange(e.value);
-    if (Array.isArray(e.value) && e.value[0] && e.value[1]) {
-      calendarRef.current?.hide?.();
+    const newDates = e.value;
+    setDateRange(newDates);
+    if (Array.isArray(newDates) && newDates[0] && newDates[1]) {
+      dispatch(setDates(newDates)); // ✅ Redux update
+      calendarRef.current?.hide?.(); // ✅ Optional hide
     }
   };
 
@@ -62,7 +66,6 @@ const AppHeader: React.FC = () => {
         <div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
           {/* Sidebar Toggle and Logo */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Hamburger - Always visible now for <1024px */}
             <button
               className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11"
               onClick={handleToggle}
@@ -96,10 +99,9 @@ const AppHeader: React.FC = () => {
                 Data-Bin
               </span>
             </Link>
-
           </div>
 
-          {/* Right Side Utilities - Hide on mobile, show otherwise */}
+          {/* Right Side Utilities */}
           {screenSize !== "mobile" ? (
             <div className="flex items-center flex-nowrap gap-3 w-auto min-w-0 shrink-0">
               <Calendar
@@ -113,6 +115,8 @@ const AppHeader: React.FC = () => {
                 inputClassName="text-sm dark:bg-gray-900 dark:text-white"
                 panelClassName="dark:bg-gray-900 dark:text-white z-50"
                 showIcon
+                hideOnDateTimeSelect
+                hideOnRangeSelection
               />
 
               <select
@@ -132,7 +136,6 @@ const AppHeader: React.FC = () => {
               <UserDropdown />
             </div>
           ) : (
-            // ✅ Right Sidebar Toggle Button (only on mobile)
             <button
               onClick={toggleMobileRightSidebar}
               className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
@@ -144,7 +147,7 @@ const AppHeader: React.FC = () => {
         </div>
       </header>
 
-      {/* ✅ Right Sidebar for mobile */}
+      {/* Mobile Right Sidebar */}
       <AppMobileRightSidebar />
     </>
   );
