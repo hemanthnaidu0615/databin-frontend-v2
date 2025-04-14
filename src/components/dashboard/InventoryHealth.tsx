@@ -49,8 +49,8 @@ const InventoryHealth: React.FC = () => {
   
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-6 sm:pt-6">
-      <div className="flex justify-between items-center mb-4">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-6 sm:pt-6 ">
+      <div className="flex justify-between items-center mb-9">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
           Inventory Turnover & Low Stock Alerts
         </h2>

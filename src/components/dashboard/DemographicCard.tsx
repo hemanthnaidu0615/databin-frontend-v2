@@ -52,8 +52,8 @@ export default function DemographicCard({
   const closeDropdown = () => setIsOpen(false);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-4 pt-4 w-full h-[346px]">
-      <div className="flex justify-between mb-4">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-4 pt-8 w-full ">
+      <div className="flex justify-between mb-12">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
             Customers Demographic
@@ -94,16 +94,16 @@ export default function DemographicCard({
       </div>
 
       {/* Map Section */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl w-full overflow-hidden p-3 sm:p-2 lg:p-3">
+      <div className="border border-gray-200 dark:border-gray-800 rounded-xl w-full overflow-hidden p-4 sm:p-3 lg:p-3">
         <div id="mapOne" className="relative w-full h-[160px]">
-          <div className="absolute inset-0 m-2 sm:m-3 lg:m-4">
+          <div className="absolute inset-0 m-5 sm:m-3 lg:m-4">
             <USMap />
           </div>
         </div>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-3 gap-2 mt-2 text-gray-800 dark:text-white text-xs">
+      <div className="grid grid-cols-3 gap-2 mt-5 text-gray-800 dark:text-white text-xs">
         {[
           {
             label: "Returning vs New",

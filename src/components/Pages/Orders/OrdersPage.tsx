@@ -72,7 +72,8 @@ const OrdersPage: React.FC = () => {
   return (
     <div className="p-6 dark:bg-white/[0.03] dark:text-white/90">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-white">Orders</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Orders</h1>
+
 
         <div className="flex gap-2">
           <button className="px-4 py-2 text-sm border border-white/20 text-white rounded-md hover:bg-white/10 transition">

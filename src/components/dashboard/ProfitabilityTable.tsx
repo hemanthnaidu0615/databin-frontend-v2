@@ -48,10 +48,10 @@ const ProfitabilityTable: React.FC = () => {
   }, []);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900 p-5 w-full">
-      <div className="flex items-center justify-between mb-4">
+    <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900 p-10 w-full">
+      <div className="flex items-center justify-between mb-13">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-          Top Products
+        ProfitabilityTable
         </h3>
         <div className="relative">
           <button

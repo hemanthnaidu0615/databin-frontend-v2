@@ -31,7 +31,6 @@ export default function StatisticsChart({}: StatisticsChartProps) {
     colors: ["#465FFF", "#9CB9FF", "#F59E0B"],
     chart: {
       fontFamily: "Outfit, sans-serif",
-      height: 260,
       type: "area",
       toolbar: { show: false },
     },
@@ -55,13 +54,12 @@ export default function StatisticsChart({}: StatisticsChartProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900 w-full h-[350px]">
+    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Sales & Revenue
         </h3>
 
-        {/* Dropdown Actions */}
         <div className="relative">
           <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
@@ -95,8 +93,8 @@ export default function StatisticsChart({}: StatisticsChartProps) {
       </div>
 
       {/* Chart */}
-      <div className="w-full mt-3">
-        <Chart options={options} series={getChartData()} type="area" height={230} />
+      <div className="flex-1 w-full mt-3">
+        <Chart options={options} series={getChartData()} type="area" height="100%" />
       </div>
     </div>
   );
