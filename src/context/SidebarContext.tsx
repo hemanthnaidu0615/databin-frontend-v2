@@ -12,6 +12,9 @@ type SidebarContextType = {
   setIsHovered: (isHovered: boolean) => void;
   setActiveItem: (item: string | null) => void;
   toggleSubmenu: (item: string) => void;
+  screenSize: "mobile" | "tablet" | "desktop"; // ✅ Already added
+  isMobileRightOpen: boolean; // ✅ NEW
+  toggleMobileRightSidebar: () => void; // ✅ NEW
 };
 
 // Create the SidebarContext
@@ -61,13 +64,47 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
+  // ✅ State for right-side mobile sidebar
+  const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
+
+  const toggleMobileRightSidebar = () => {
+    setIsMobileRightOpen((prev) => !prev);
+  };
+
   // Use the custom hook to check for mobile screens
   const isMobile = useIsMobile();
+
+  // ✅ New: screenSize state
+  const [screenSize, setScreenSize] = useState<"mobile" | "tablet" | "desktop">(
+    window.innerWidth < 768
+      ? "mobile"
+      : window.innerWidth < 1024
+      ? "tablet"
+      : "desktop"
+  );
+
+  // ✅ New: Update screenSize on resize
+  useEffect(() => {
+    const updateScreenSize = () => {
+      if (window.innerWidth < 768) {
+        setScreenSize("mobile");
+      } else if (window.innerWidth < 1024) {
+        setScreenSize("tablet");
+      } else {
+        setScreenSize("desktop");
+      }
+    };
+
+    updateScreenSize();
+    window.addEventListener("resize", updateScreenSize);
+    return () => window.removeEventListener("resize", updateScreenSize);
+  }, []);
 
   // Effect to update mobile state when the screen size changes
   useEffect(() => {
     if (!isMobile) {
-      setIsMobileOpen(false); // Ensure sidebar is closed on large screens
+      setIsMobileOpen(false); // Ensure left sidebar is closed on large screens
+      setIsMobileRightOpen(false); // ✅ Also close right sidebar
     }
   }, [isMobile]);
 
@@ -92,7 +129,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <SidebarContext.Provider
       value={{
-        isExpanded: isMobile ? false : isExpanded, // Adjust based on mobile state
+        isExpanded: isMobile ? false : isExpanded,
         isMobileOpen,
         isHovered,
         activeItem,
@@ -102,9 +139,12 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsHovered,
         setActiveItem,
         toggleSubmenu,
+        screenSize, // ✅ Passed in context
+        isMobileRightOpen, // ✅ NEW
+        toggleMobileRightSidebar, // ✅ NEW
       }}
     >
       {children}
     </SidebarContext.Provider>
-  );
+  );
 };

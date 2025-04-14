@@ -4,9 +4,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons"; // More options icon
+import { MoreDotIcon } from "../../icons";
 
-// Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
@@ -38,7 +37,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     series: [],
   });
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
@@ -48,18 +46,21 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
-        // Fetch data from API with date range
         const response = await fetch(
           `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         const data: ApiResponse = await response.json();
-
         const trends = data.order_trends;
+
+        if (!trends || Object.keys(trends).length === 0) {
+          setChartData({ categories: [], series: [] });
+          return;
+        }
 
         const months = Object.keys(trends).sort(); // e.g. ["2025-03"]
         const categoryTotals: Record<string, number> = {};
 
-        // Step 1: Sum sales across months per category
+        // Step 1: Calculate total per category
         for (const month of months) {
           const monthData = trends[month];
           for (const [category, sales] of Object.entries(monthData)) {
@@ -67,13 +68,13 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           }
         }
 
-        // Step 2: Get top 3 categories by total sales
+        // Step 2: Get top 3 categories
         const topCategories = Object.entries(categoryTotals)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
           .map(([category]) => category);
 
-        // Step 3: Build chart data for those top 3 categories
+        // Step 3: Construct chart series
         const series = topCategories.map((category) => ({
           name: category,
           data: months.map((month) => trends[month]?.[category] || 0),
@@ -91,7 +92,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]); // Re-run when startDate or endDate changes
+  }, [startDate, endDate]);
 
   const options: ApexOptions = {
     chart: {
@@ -131,10 +132,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </button>
 
             {isDropdownOpen && (
-              <Dropdown
-                isOpen={isDropdownOpen}
-                onClose={() => setDropdownOpen(false)}
-              >
+              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
                 <DropdownItem
                   className="text-gray-700 dark:text-gray-300"
                   onItemClick={() => {

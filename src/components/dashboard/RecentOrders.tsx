@@ -47,18 +47,23 @@ export default function RecentOrders() {
         const response = await fetch(
           `http://localhost:8080/api/orders/recent-orders?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
-
+        
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
-        const data: Order[] = await response.json();
+        
+        const rawData = await response.json();
+        const data: Order[] = Array.isArray(rawData)
+          ? rawData
+          : rawData.orders || [];
+        
         const processedOrders = data.map((order) => ({
           ...order,
           price: typeof order.price === "number" ? order.price : parseFloat(order.price) || 0,
         }));
-
+        
         setOrders(processedOrders);
+        
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to load orders. Please try again.");
