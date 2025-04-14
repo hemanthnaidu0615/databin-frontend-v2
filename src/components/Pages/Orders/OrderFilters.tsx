@@ -1,4 +1,9 @@
 import React from 'react';
+import { Calendar } from 'primereact/calendar';
+import 'primereact/resources/themes/lara-light-indigo/theme.css'; // or lara-dark-indigo
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+
 
 interface OrderFiltersProps {
   filters: {
@@ -8,6 +13,7 @@ interface OrderFiltersProps {
     paymentMethod: string;
     priceRange: string;
     carrier: string;
+    customDate?: string; // ✅ Added customDate property
     customer: string;
     orderId: string;
   };
@@ -27,15 +33,34 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center text-sm text-white">
-      <select
-        className={inputStyle}
-        value={filters.dateRange}
-        onChange={(e) => onFilterChange('dateRange', e.target.value)}
-      >
-        <option>Last 30 days</option>
-        <option>Last 7 days</option>
-        <option>Today</option>
-      </select>
+<div className="flex flex-col gap-2">
+  <select
+    className={inputStyle}
+    value={filters.dateRange}
+    onChange={(e) => onFilterChange('dateRange', e.target.value)}
+  >
+    <option value="Last 30 days">Last 30 days</option>
+    <option value="Last 7 days">Last 7 days</option>
+    <option value="custom">Pick a specific date</option>
+  </select>
+
+  {filters.dateRange === 'custom' && (
+    <Calendar
+      value={filters.customDate ? new Date(filters.customDate) : null}
+      onChange={(e) =>
+        onFilterChange('customDate', e.value ? e.value.toISOString() : '')
+      }
+      dateFormat="yy-mm-dd"
+      placeholder="Select a date"
+      showIcon
+      touchUI // ✅ mobile-optimized popover
+      panelClassName="p-2"
+      inputClassName={`${inputStyle} w-full`}
+      className="w-full"
+    />
+  )}
+</div>
+
 
       <select
         className={inputStyle}
@@ -127,3 +152,5 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
 };
 
 export default OrderFilters;
+
+
