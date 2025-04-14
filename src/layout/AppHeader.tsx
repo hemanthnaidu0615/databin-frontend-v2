@@ -92,7 +92,7 @@ const AppHeader: React.FC = () => {
               )}
             </button>
 
-            <Link to="/" className="flex items-center gap-2 shrink-0">
+            <Link to="/" className="flex items-center gap-2 shrink-0 lg:hidden md:hidden">
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
               <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
