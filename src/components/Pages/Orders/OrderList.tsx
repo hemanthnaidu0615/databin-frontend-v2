@@ -617,6 +617,17 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
 
         </>
       )}
+
+      {/* Optional Close Button at bottom */}
+<div className="mt-6 flex justify-end">
+  <button
+    onClick={() => setMobileOrder(null)}
+    className="rounded-xl px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-sm font-medium text-gray-800 dark:text-white transition"
+  >
+    Close
+  </button>
+</div>
+
     </Dialog.Panel>
   </div>
 </Dialog>

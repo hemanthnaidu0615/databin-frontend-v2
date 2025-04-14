@@ -75,17 +75,18 @@ const OrdersPage: React.FC = () => {
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Orders</h1>
 
 
-        <div className="flex gap-2">
-          <button className="px-4 py-2 text-sm border border-white/20 text-white rounded-md hover:bg-white/10 transition">
-            Export
-          </button>
-          <button className="px-4 py-2 text-sm border border-white/20 text-white rounded-md hover:bg-white/10 transition">
-            Print
-          </button>
-          <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-            + New Order
-          </button>
-        </div>
+      <div className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-2 sm:overflow-visible">
+  <button className="px-2 py-1 text-[11px] border border-white/20 text-white rounded-md hover:bg-white/10 transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+    Export
+  </button>
+  <button className="px-2 py-1 text-[11px] border border-white/20 text-white rounded-md hover:bg-white/10 transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+    Print
+  </button>
+  <button className="px-2 py-1 text-[11px] bg-blue-600 text-white rounded-md hover:bg-blue-700 transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+    + Order
+  </button>
+</div>
+
       </div>
 
       <OrderFilters
