@@ -5,6 +5,7 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  CopyIcon,
   GridIcon,
   HorizontaLDots,
   PieChartIcon,
@@ -31,22 +32,28 @@ const navItems: NavItem[] = [
     name: "Orders",
     path: "/orders"
   },
+  // {
+  //   icon: <CalenderIcon />,
+  //   name: "Fulfillment",
+  //   path: "/fulfillment",
+  // },
+
   
   {
-    icon: <CalenderIcon />,
-    name: "Fulfillment",
-    path: "/fulfillment",
+    icon: <CopyIcon />,
+    name: "Sales",
+    path: "/Sales",
   },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Inventory",
-    path: "/inventory",
-  },
-  {
-    icon: <PieChartIcon />,
-    name: "Shipments",
-    path: "/Shipments",
-  },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "Inventory",
+  //   path: "/inventory",
+  // },
+  // {
+  //   icon: <PieChartIcon />,
+  //   name: "Shipments",
+  //   path: "/Shipments",
+  // },
   {
     icon: <TableIcon />,
     name: "Reports & Scheduler",
