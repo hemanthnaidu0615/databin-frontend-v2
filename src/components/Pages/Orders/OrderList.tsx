@@ -22,18 +22,20 @@ const OrderStatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => 
 };
 
 const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
 
   const toggleExpand = (id: string) => {
-    setExpandedOrderId((prev) => (prev === id ? null : id));
+    setExpandedOrderIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
   };
 
   const onPageChange = (e: { first: number; rows: number }) => {
     setFirst(e.first);
     setRows(e.rows);
-    setExpandedOrderId(null);
+    setExpandedOrderIds([]); // collapse all on page change
   };
 
   const paginatedOrders = orders.slice(first, first + rows);
@@ -61,7 +63,7 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
                 onClick={() => toggleExpand(order.id)}
               >
                 <td className="py-3 px-4">
-                  {expandedOrderId === order.id ? (
+                  {expandedOrderIds.includes(order.id) ? (
                     <FaChevronUp className="text-gray-500 dark:text-gray-400" />
                   ) : (
                     <FaChevronDown className="text-gray-500 dark:text-gray-400" />
@@ -78,10 +80,11 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
                 <td className="py-3 px-4">{order.paymentMethod}</td>
               </tr>
 
-              {expandedOrderId === order.id && (
+              {expandedOrderIds.includes(order.id) && (
                 <tr>
                   <td colSpan={8} className="px-4 pb-6 pt-2 bg-gray-50 dark:bg-gray-950 rounded-b-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    
 {/* 1. Order Summary */}
 <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Order Summary</h3>
@@ -110,7 +113,8 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
 </div>
 
                       {/* 2. Customer Info */}
-                      <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
+{/* Web view - visible on md and up */}
+<div className="hidden md:block bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Customer Information</h3>
   <div className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
     <div className="flex justify-between items-center">
@@ -132,8 +136,9 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
   </div>
 </div>
 
+
                       {/* 3. Products */}
-                      <div className="bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1 md:col-span-2 xl:col-span-1">
+                      <div className="hidden md:block bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1 md:col-span-2 xl:col-span-1">
   <h3 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Products</h3>
 
   <div className="space-y-6">
@@ -155,31 +160,30 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
   </div>
 
   <hr className="border-gray-300 dark:border-white/10 my-5" />
+  </div>
 
   {/* Totals */}
-  <div className="space-y-2 text-sm">
-    <div className="flex justify-between">
-      <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-      <span className="text-gray-900 dark:text-white">
-        ${order.products.reduce((acc, p) => acc + p.qty * p.price, 0).toFixed(2)}
-      </span>
-    </div>
-    <div className="flex justify-between">
-      <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-      <span className="text-gray-900 dark:text-white">$0.00</span>
-    </div>
-    <div className="flex justify-between">
-      <span className="text-gray-600 dark:text-gray-400">Tax</span>
-      <span className="text-gray-900 dark:text-white">$104.91</span>
-    </div>
-    <div className="flex justify-between font-semibold text-base pt-3">
-      <span className="text-gray-900 dark:text-white">Total</span>
-      <span className="text-gray-900 dark:text-white">
-        ${(
-          order.products.reduce((acc, p) => acc + p.qty * p.price, 0) + 104.91
-        ).toFixed(2)}
-      </span>
-    </div>
+  {/* Web view - visible on md and up */}
+<div className="hidden md:block space-y-2 text-sm">
+  <div className="flex justify-between">
+    <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
+    <span className="text-gray-900 dark:text-white">
+      ${order.products.reduce((acc, p) => acc + p.qty * p.price, 0).toFixed(2)}
+    </span>
+  </div>
+  <div className="flex justify-between">
+    <span className="text-gray-600 dark:text-gray-400">Shipping</span>
+    <span className="text-gray-900 dark:text-white">$0.00</span>
+  </div>
+  <div className="flex justify-between">
+    <span className="text-gray-600 dark:text-gray-400">Tax</span>
+    <span className="text-gray-900 dark:text-white">$104.91</span>
+  </div>
+  <div className="flex justify-between font-semibold text-base pt-3">
+    <span className="text-gray-900 dark:text-white">Total</span>
+    <span className="text-gray-900 dark:text-white">
+      ${(order.products.reduce((acc, p) => acc + p.qty * p.price, 0) + 104.91).toFixed(2)}
+    </span>
   </div>
 </div>
 
