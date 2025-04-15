@@ -111,7 +111,7 @@ const AppHeader: React.FC = () => {
                 onChange={handleDateChange}
                 dateFormat="yy-mm-dd"
                 placeholder="Select Date Range"
-                className="w-[220px]"
+                className="w-[275px]"
                 inputClassName="text-sm dark:bg-gray-900 dark:text-white"
                 panelClassName="dark:bg-gray-900 dark:text-white z-50"
                 showIcon
