@@ -42,8 +42,27 @@ const navItems: NavItem[] = [
   {
     icon: <CopyIcon />,
     name: "Sales",
-    path: "/Sales",
+    path: "/sales", // base path
+    subItems: [
+      {
+        name: "Dashboard",
+        path: "/sales/dashboard",
+      },
+      {
+        name: "Analysis",
+        path: "/sales/analysis",
+      },
+      {
+        name: "Region",
+        path: "/sales/region",
+      },
+      {
+        name: "Flow",
+        path: "/sales/flow",
+      },
+    ],
   },
+  
   // {
   //   icon: <BoxCubeIcon />,
   //   name: "Inventory",
@@ -57,7 +76,7 @@ const navItems: NavItem[] = [
   {
     icon: <TableIcon />,
     name: "Reports & Scheduler",
-    path: "/reports",
+    path: "/scheduler",
   },
 
 ];
