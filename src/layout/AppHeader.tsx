@@ -6,7 +6,8 @@ import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import Logo from "../images/logo.png";
-import AppMobileRightSidebar from ".//AppMobileRightSidebar";
+import AppMobileRightSidebar from "./AppMobileRightSidebar";
+import './Style.css';
 
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";

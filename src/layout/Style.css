@@ -1,0 +1,13 @@
+/* Custom style for PrimeReact calendar icon */
+.p-calendar .p-datepicker-trigger {
+    background-color: #9614d0;
+    color: white;
+    border-radius: 0 0.375rem 0.375rem 0; /* Same as Tailwind's rounded-r */
+    padding: 0.5rem; /* match px-2 py-2 look */
+    transition: background-color 0.2s ease;
+    border: none;
+  }
+  
+  .p-calendar .p-datepicker-trigger:hover {
+    background-color: #660094; /* Slightly lighter for hover effect */
+  }
