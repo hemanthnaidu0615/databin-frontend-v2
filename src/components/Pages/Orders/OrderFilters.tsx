@@ -205,7 +205,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         </button>
         <button
           onClick={onApply}
-          className="px-4 py-2 rounded bg-blue-600 text-sm text-white hover:bg-blue-700 transition"
+          className="px-4 py-2 rounded bg-[#9614d0] text-sm text-white hover:bg-[#660094] transition"
         >
           Apply Filters
         </button>
