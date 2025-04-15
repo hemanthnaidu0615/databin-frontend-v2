@@ -20,6 +20,11 @@ import Home from "./pages/Dashboard/Home";
 
 // ✅ Corrected import
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
+import { SalesDashboard } from "./components/Pages/Sales/SalesDashboard";
+import { Analysis } from "./components/Pages/Sales/Analysis";
+import { SalesByRegion } from "./components/Pages/Sales/SalesByRegion";
+import SalesFlow from "./components/Pages/Sales/SalesFlow";
+import Scheduler  from "./components/Pages/Scheduler/Scheduler";
 
 export default function App() {
   return (
@@ -32,6 +37,17 @@ export default function App() {
 
           {/* ✅ Orders Page Route */}
           <Route path="/orders" element={<OrdersPage />} />
+
+          {/* Sales Pages */}
+          <Route path="/sales/dashboard" element={<SalesDashboard />} />
+          <Route path="/sales/analysis" element={<Analysis />} />
+          <Route path="/sales/region" element={<SalesByRegion />} />
+          <Route path="/sales/flow" element={<SalesFlow />} />
+
+          {/* Scheduler Page */}
+          <Route path="/scheduler" element={<Scheduler />} />
+
+          {/* Inventory Pages */}
 
           {/* Others Page */}
           <Route path="/profile" element={<UserProfiles />} />

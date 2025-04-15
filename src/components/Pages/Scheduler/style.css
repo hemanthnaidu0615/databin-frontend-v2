@@ -1,0 +1,147 @@
+/* Scheduler Page Style */
+.schedulerContainer {
+  display: flex;
+  flex-direction: column;
+  width:100%;
+  overflow: hidden;
+  height: 100%;/* Full height of the viewport */
+}
+
+.schedulerHeader {
+  display: flex;
+  width: 100%;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-bottom: 2px solid #dee2e6;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.schedulerHeaderButton {
+  margin: 0 1rem 0 1rem;
+  background-color: none !important;
+  color: #0a0a0a;
+}
+
+.schedulerHeaderButton:focus {
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.schedulerHeaderButton.active {
+  background-color: #ac6fda !important;
+  color: white !important;
+}
+
+.schedulerContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  width: 100%;
+  height: calc(100% - 3rem); /* Adjust for header height */
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.schedulerSplitScreen {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.schedulerPanel {
+  flex: 1;
+  margin: 0 1%;
+  overflow: hidden !important;
+}
+
+.create-scheduler-page .p-field {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.create-scheduler-page .p-field label {
+  margin-bottom: 0.5rem;
+}
+
+.vw-scheduler-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #f4f4f4;
+}
+
+.vw-scheduler-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.vw-scheduler-table-container {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.vw-scheduler-table {
+  background-color: white;
+  border-collapse: collapse;
+  width: 100%;
+  height: 100%; /* Ensures table stretches */
+  table-layout: fixed;
+  border: 1px solid #ddd;
+}
+
+.vw-scheduler-table .p-datatable-thead > tr > th,
+.vw-scheduler-table .p-datatable-tbody > tr > td {
+  text-align: left;
+  padding: 1rem;
+  word-wrap: break-word;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.vw-scheduler-table .p-datatable-thead > tr > th {
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+
+.vw-scheduler-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+}
+
+.vw-scheduler-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vw-scheduler-search-input {
+  flex: 1;
+  max-width: 300px;
+}
+
+.vw-scheduler-rows-dropdown {
+  min-width: 150px;
+}
+
+.vw-scheduler-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.vw-scheduler-action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
