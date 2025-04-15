@@ -62,8 +62,8 @@ const AppHeader: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 w-full bg-white border-gray-200 z-[99999] dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-        <div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
+<header className="w-full bg-white border-gray-200 z-[99999] dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+<div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
           {/* Sidebar Toggle and Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <button

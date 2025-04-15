@@ -25,6 +25,7 @@ import { Analysis } from "./components/Pages/Sales/Analysis";
 import { SalesByRegion } from "./components/Pages/Sales/SalesByRegion";
 import SalesFlow from "./components/Pages/Sales/SalesFlow";
 import Scheduler  from "./components/Pages/Scheduler/Scheduler";
+// import Sales from "./components/Pages/sales copy/Sales";
 
 export default function App() {
   return (
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/orders" element={<OrdersPage />} />
 
           {/* Sales Pages */}
+          {/* <Route path="/sales" element={<Sales />} /> */}
           <Route path="/sales/dashboard" element={<SalesDashboard />} />
           <Route path="/sales/analysis" element={<Analysis />} />
           <Route path="/sales/region" element={<SalesByRegion />} />

@@ -63,11 +63,11 @@ const navItems: NavItem[] = [
     ],
   },
   
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "Inventory",
-  //   path: "/inventory",
-  // },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Inventory",
+    path: "/sales",
+  },
   // {
   //   icon: <PieChartIcon />,
   //   name: "Shipments",
