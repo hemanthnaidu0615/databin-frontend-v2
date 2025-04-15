@@ -137,7 +137,7 @@ const InventoryHealth: React.FC = () => {
         height={300}
       />
 
-      <div className="mt-6">
+      <div className="mt-30">
         <h3 className="text-md font-semibold text-gray-700 dark:text-white">
           Low Stock Products
         </h3>
