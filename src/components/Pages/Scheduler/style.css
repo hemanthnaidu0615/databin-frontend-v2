@@ -145,3 +145,80 @@
   display: flex;
   gap: 0.5rem;
 }
+
+
+/* ---------------------- */
+/* Dark Theme Enhancements */
+/* ---------------------- */
+
+body.p-component.dark {
+  --surface-ground: #1f1f1f;
+  --surface-section: #2c2c2c;
+  --surface-border: #3c3c3c;
+  --surface-overlay: #2a2a2a;
+  --text-color: #f5f5f5;
+}
+
+/* Container */
+.vw-scheduler-container {
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+}
+
+/* Table Styling */
+.vw-scheduler-table {
+  background-color: var(--surface-section);
+  color: var(--text-color);
+}
+
+.vw-scheduler-table .p-datatable-thead > tr > th,
+.vw-scheduler-table .p-datatable-tbody > tr > td {
+  color: var(--text-color);
+  background-color: var(--surface-section);
+  border-color: var(--surface-border);
+}
+
+/* Header */
+.vw-scheduler-header {
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+  border-color: var(--surface-border);
+}
+
+.vw-scheduler-header h1 {
+  color: var(--text-color);
+}
+
+/* Inputs & Dropdowns */
+.vw-scheduler-search-input,
+.vw-scheduler-rows-dropdown .p-dropdown,
+.vw-scheduler-dialog-grid .vw-scheduler-form-field input,
+.vw-scheduler-dialog-grid .vw-scheduler-form-field .p-dropdown {
+  background-color: var(--surface-section);
+  color: var(--text-color);
+  border: 1px solid var(--surface-border);
+}
+
+/* Dropdown panel */
+.p-dropdown-panel {
+  background-color: var(--surface-overlay);
+  color: var(--text-color);
+}
+
+/* Dialogs */
+.p-dialog .p-dialog-content,
+.p-dialog .p-dialog-header {
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+}
+
+.p-dialog .p-button {
+  color: var(--text-color);
+}
+
+/* Buttons */
+.vw-scheduler-action-buttons .p-button-danger {
+  background-color: var(--red-500);
+  border: none;
+  color: white;
+}
