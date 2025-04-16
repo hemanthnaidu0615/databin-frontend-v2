@@ -15,13 +15,15 @@ const CompanySection: React.FC<Props> = ({ company }) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">{company}</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{company}</h2>
         <div className="flex space-x-2">
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`px-4 py-1 rounded-md text-sm ${
-                activeTab === tab ? 'bg-black text-white' : 'bg-gray-100'
+              className={`px-4 py-1 rounded-md text-sm transition-colors ${
+                activeTab === tab
+                  ? 'bg-black text-white dark:bg-white dark:text-black'
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
               }`}
               onClick={() => setActiveTab(tab)}
             >
