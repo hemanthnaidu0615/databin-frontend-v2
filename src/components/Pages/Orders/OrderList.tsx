@@ -328,9 +328,6 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
                           <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl">
                             Print Order
                           </button>
-                          <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl">
-                            Update Status
-                          </button>
                         </div>
                       </div>
 
@@ -604,11 +601,6 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
       className="w-full rounded-xl px-4 py-2 bg-white text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 transition-colors"
     >
       Print Order
-    </button>
-    <button
-      className="w-full rounded-xl px-4 py-2 bg-white text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 transition-colors"
-    >
-      Update Status
     </button>
   </div>
 </div>
