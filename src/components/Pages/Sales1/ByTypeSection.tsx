@@ -9,11 +9,16 @@ const dummyData = [
 const ByTypeSection: React.FC<{ company: string }> = () => (
   <div className="grid md:grid-cols-3 gap-4">
     {sections.map((title) => (
-      <div key={title} className="border rounded-xl shadow-sm overflow-hidden">
-        <div className="bg-violet-100 px-4 py-2 font-semibold text-gray-800">{title}</div>
+      <div
+        key={title}
+        className="border rounded-xl shadow-sm overflow-hidden dark:border-gray-700"
+      >
+        <div className="bg-violet-100 px-4 py-2 font-semibold text-gray-800 dark:bg-violet-950 dark:text-violet-100">
+          {title}
+        </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left bg-white">
+            <tr className="text-left bg-white dark:bg-gray-800 dark:text-gray-100">
               <th className="px-4 py-2 font-medium">Name</th>
               <th className="px-4 py-2 font-medium">Units</th>
               <th className="px-4 py-2 font-medium">Total</th>
@@ -21,10 +26,13 @@ const ByTypeSection: React.FC<{ company: string }> = () => (
           </thead>
           <tbody>
             {dummyData.map((row, idx) => (
-              <tr key={idx} className="border-t">
-                <td className="px-4 py-2">{row.name}</td>
-                <td className="px-4 py-2">{row.units}</td>
-                <td className="px-4 py-2">{row.total}</td>
+              <tr
+                key={idx}
+                className="border-t dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{row.name}</td>
+                <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{row.units}</td>
+                <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{row.total}</td>
               </tr>
             ))}
           </tbody>

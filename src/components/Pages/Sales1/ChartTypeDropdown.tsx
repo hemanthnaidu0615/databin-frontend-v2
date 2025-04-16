@@ -12,7 +12,7 @@ const ChartTypeDropdown: React.FC<Props> = ({ selectedChart, onChange }) => {
     <select
       value={selectedChart}
       onChange={(e) => onChange(e.target.value)}
-      className="px-4 py-2 rounded-md border bg-white"
+      className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
     >
       {chartOptions.map((chartType) => (
         <option key={chartType} value={chartType}>
