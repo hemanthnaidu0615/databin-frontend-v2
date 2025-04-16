@@ -17,10 +17,11 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import DummyDashboard from "./components/Pages/Sales1/DummyDashboard";
 
 // ✅ Corrected import
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
-import { SalesDashboard } from "./components/Pages/Sales/SalesDashboard";
+// import { SalesDashboard } from "./components/Pages/Sales/SalesDashboard";
 import { Analysis } from "./components/Pages/Sales/Analysis";
 import { SalesByRegion } from "./components/Pages/Sales/SalesByRegion";
 import SalesFlow from "./components/Pages/Sales/SalesFlow";
@@ -39,10 +40,12 @@ export default function App() {
           <Route path="/orders" element={<OrdersPage />} />
 
           {/* Sales Pages */}
-          <Route path="/sales/dashboard" element={<SalesDashboard />} />
+          {/* <Route path="/sales/dashboard" element={<SalesDashboard />} /> */}
           <Route path="/sales/analysis" element={<Analysis />} />
           <Route path="/sales/region" element={<SalesByRegion />} />
           <Route path="/sales/flow" element={<SalesFlow />} />
+
+          <Route path="/sales/dashboard" element={<DummyDashboard />} /> {/* SalesDashboard Route */}
 
           {/* Scheduler Page */}
           <Route path="/scheduler" element={<Scheduler />} />
