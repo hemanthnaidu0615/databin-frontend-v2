@@ -1,12 +1,17 @@
 import { ResponsiveLine } from "@nivo/line";
 
-export const LineChart = (props: any) => {
+interface LineChartProps {
+  data: any;
+  leftLegend?: string;
+  isDark?: boolean;
+  bottomLegend?: string;
+  length?: number;
+}
+
+export const LineChart = ({ data, leftLegend = "Value", isDark = false, bottomLegend = "Dates" }: LineChartProps) => {
   const formatYAxis = (value: any) => {
-    if (value >= 1000 && value < 1000000) {
-      return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
-    } else if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
-    }
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+    if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
     return value.toString();
   };
 
@@ -15,16 +20,47 @@ export const LineChart = (props: any) => {
     return parts.length === 3 ? parts[2] : value;
   };
 
+  const chartTheme = {
+    axis: {
+      ticks: {
+        text: {
+          fill: isDark ? "#E5E7EB" : "#4B5563",
+        },
+      },
+      legend: {
+        text: {
+          fill: isDark ? "#F9FAFB" : "#1F2937",
+        },
+      },
+    },
+    grid: {
+      line: {
+        stroke: isDark ? "#374151" : "#E5E7EB",
+        strokeWidth: 1,
+      },
+    },
+    legends: {
+      text: {
+        fill: isDark ? "#E5E7EB" : "#1F2937",
+      },
+    },
+    tooltip: {
+      container: {
+        background: isDark ? "#1F2937" : "#ffffff",
+        color: isDark ? "#F9FAFB" : "#1F2937",
+        fontSize: 12,
+        border: `1px solid ${isDark ? "#4B5563" : "#D1D5DB"}`,
+        borderRadius: 4,
+        padding: 8,
+      },
+    },
+  };
+
   return (
-    <div className="h-full w-full">
+    <div className="w-full h-[300px] sm:h-[400px] md:h-[500px] xl:h-[600px] overflow-hidden bg-white dark:bg-gray-900 rounded-lg p-4">
       <ResponsiveLine
-        data={props.data}
-        colors={[
-          "rgba(173, 99, 155, 0.65)",
-          "rgba(253, 88, 173, 0.8)",
-          "rgba(125, 221, 187, 0.68)",
-        ]}
-        margin={{ top: 10, right: 110, bottom: 60, left: 80 }}  
+        data={data}
+        margin={{ top: 10, right: 100, bottom: 60, left: 70 }}
         xScale={{ type: "point" }}
         yScale={{
           type: "linear",
@@ -33,65 +69,52 @@ export const LineChart = (props: any) => {
           stacked: true,
           reverse: false,
         }}
-        yFormat=" >-.2f"
         curve="cardinal"
         axisTop={null}
         axisRight={null}
         axisBottom={{
-          tickSize: 0.5,
-          tickPadding: 3,
+          tickSize: 0,
+          tickPadding: 6,
           tickRotation: -40,
-          legend: "Dates",  
-          legendOffset: 36,
+          legend: bottomLegend,
+          legendOffset: 40,
           legendPosition: "middle",
           format: formatXAxis,
         }}
         axisLeft={{
           tickSize: 3,
-          tickPadding: 4,
-          tickRotation: 0,
-          legend: props.leftLegend,  
-          legendOffset: -50,  
+          tickPadding: 6,
+          legend: leftLegend,
+          legendOffset: -50,
           legendPosition: "middle",
           format: formatYAxis,
         }}
         enableArea={true}
+        enablePoints={false}
         enableGridX={true}
         enableGridY={true}
-        theme={{
-          grid: {
-            line: {
-              stroke: "#f2f5fa",
-            },
-          },
-        }}
-        enablePoints={false}
-        pointSize={10}
-        pointColor={{ theme: "background" }}
-        pointBorderWidth={2}
-        pointBorderColor={{ from: "serieColor" }}
-        pointLabelYOffset={-12}
+        theme={chartTheme}
         useMesh={true}
+        colors={[
+          "rgba(173, 99, 155, 0.65)",
+          "rgba(253, 88, 173, 0.8)",
+          "rgba(125, 221, 187, 0.68)",
+        ]}
         legends={[
           {
             anchor: "right",
             direction: "column",
-            justify: false,
             translateX: 100,
-            translateY: -3,
-            itemsSpacing: 0,
-            itemDirection: "left-to-right",
             itemWidth: 80,
             itemHeight: 20,
             itemOpacity: 0.75,
             symbolSize: 12,
             symbolShape: "circle",
-            symbolBorderColor: "rgba(0, 0, 0, .5)",
             effects: [
               {
                 on: "hover",
                 style: {
-                  itemBackground: "rgba(0, 0, 0, .03)",
+                  itemBackground: isDark ? "#374151" : "#F3F4F6",
                   itemOpacity: 1,
                 },
               },
@@ -99,10 +122,18 @@ export const LineChart = (props: any) => {
           },
         ]}
         tooltip={({ point }) => (
-          <div style={{ background: 'white', padding: '5px', border: '1px solid black' }}>
-            <strong>Order Date:</strong> {formatXAxis(point.data.x)}
-            <br />
-            <strong>Order Amount:</strong> ${formatYAxis(point.data.y)}
+          <div
+            style={{
+              background: isDark ? "#1F2937" : "#ffffff",
+              color: isDark ? "#F9FAFB" : "#1F2937",
+              border: `1px solid ${isDark ? "#4B5563" : "#D1D5DB"}`,
+              borderRadius: 4,
+              padding: "6px",
+              fontSize: "0.75rem",
+            }}
+          >
+            <strong>Order Date:</strong> {formatXAxis(point.data.x)} <br />
+            <strong>Order Amount:</strong> {formatYAxis(point.data.y)}
           </div>
         )}
       />

@@ -4,38 +4,38 @@ import { useSelector } from "react-redux";
 import moment from "moment";
 
 export const BrandInfo = (props: any) => {
-  // const normalizedValue = Math.min(100, Math.max(0, props.progressbarValue));
-  const maxPossibleValue = 100000000; // Adjust this to your maximum possible value
+  const maxPossibleValue = 100000000; // Adjust as needed
   const normalizedValue = (props.progressbarValue / maxPossibleValue) * 100;
   const { dates } = useSelector((store: any) => store.dateRange);
 
   return (
-    <div className="card w-full h-full flex flex-col gap-2 p-2">
-      <div className="flex items-center w-[70%]">
-        <h2 className="text-md font-bold ml-2 ">{props.brandName}</h2>
+    <div className="card w-full h-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-sm">
+      {/* Brand Logo & Name */}
+      <div className="flex items-center gap-2">
+        <h2 className="text-base font-bold text-gray-800 dark:text-white">
+          {props.brandName}
+        </h2>
         <img
           src={props.logo}
-          alt=""
-          className="object-contain h-[17px] w-[50px] p-0"
-          height="17px"
+          alt={`${props.brandName} logo`}
+          className="object-contain h-5 w-14"
         />
       </div>
 
-      <div className="  bg-orange-100 flex flex-col gap-1 p-6 rounded-2xl w-[70%] text-left">
-        <p className="text-xs ">
-          {" "}
-          {moment(new Date(dates[0])).format("DD/MM/YYYY")} -{" "}
-          {moment(new Date(dates[1])).format("DD/MM/YYYY")}
+      {/* Date & Progress Value */}
+      <div className="flex flex-col gap-2 p-4 bg-orange-100 dark:bg-violet-950 rounded-2xl w-full sm:w-[70%] text-left">
+        <p className="text-xs text-gray-700 dark:text-gray-300">
+          {moment(dates[0]).format("DD/MM/YYYY")} - {moment(dates[1]).format("DD/MM/YYYY")}
         </p>
-        <h2 className="text-lg font-bold ">
-          $ {abbrvalue(props.progressbarValue)}
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          ${abbrvalue(props.progressbarValue)}
         </h2>
         <ProgressBar
           value={normalizedValue}
           showValue={false}
-          className="h-2 w-full mx-auto "
+          className="h-2 w-full"
           color="rgb(126 34 206)"
-        ></ProgressBar>
+        />
       </div>
     </div>
   );

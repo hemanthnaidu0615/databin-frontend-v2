@@ -66,36 +66,29 @@ export const SalesCardPie = (props: any) => {
   };
 
   return (
-    <div className="card border border-gray-200 shadow-lg rounded-lg flex py-1 px-2 m-2">
-      <div className="w-[20%] h-full">
+    <div className="card border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg rounded-lg flex flex-wrap md:flex-nowrap py-2 px-3 m-2 gap-2">
+      <div className="w-full md:w-[20%]">
         <BrandInfo
           brandName={props.brandName}
           logo={props.logo}
           progressbarValue={props.progressbarValue}
         />
       </div>
-      {chart === "Pie Chart" && (
-        <div className="w-[62%] min-h-56">
-          <PieChart data={props.dataForPieChart} logo={props.logo} />
-        </div>
-      )}
-      {chart === "Line Chart" && (
-        <div className="w-[62%] min-h-56">
+
+      <div className="w-full md:w-[62%] min-h-56">
+        {chart === "Pie Chart" && (
+          <PieChart data={props.dataForPieChart} />
+        )}
+        {chart === "Line Chart" && (
           <LineChart
             data={props.dataForLineChart}
             length={props.length}
             bottomLegend={props.bottomLegend}
             leftLegend={props.leftLegend}
           />
-        </div>
-      )}
-      {chart === "Bar Chart" && (
-        <div className="w-[62%] min-h-56">
-          <BarChart chartData={chartData} />
-        </div>
-      )}
-      {chart === "Table View" && (
-        <div className="w-[62%] min-h-56">
+        )}
+        {chart === "Bar Chart" && <BarChart chartData={chartData} />}
+        {chart === "Table View" && (
           <DataTable
             showGridlines
             scrollable
@@ -107,36 +100,37 @@ export const SalesCardPie = (props: any) => {
             <Column
               field="datetime"
               header="Date and Time"
-              pt={{ bodyCell: { className: "h-5 text-center" } }}
-              headerClassName="bg-purple-100"
+              pt={{ bodyCell: { className: "h-5 text-center dark:text-white" } }}
+              headerClassName="bg-purple-100 dark:bg-purple-900 text-black dark:text-white"
             />
             <Column
               field="original_order_total_amount"
               header="Order Total Amount"
               body={orderTotalAmountTemplate}
-              pt={{ bodyCell: { className: "h-5 text-center" } }}
-              headerClassName="bg-purple-100"
+              pt={{ bodyCell: { className: "h-5 text-center dark:text-white" } }}
+              headerClassName="bg-purple-100 dark:bg-purple-900 text-black dark:text-white"
             />
             <Column
               field="order_capture_channel"
               header="Order Capture Channel"
-              pt={{ bodyCell: { className: "h-5 text-center" } }}
-              headerClassName="bg-purple-100 text-left"
+              pt={{ bodyCell: { className: "h-5 text-center dark:text-white" } }}
+              headerClassName="bg-purple-100 dark:bg-purple-900 text-black dark:text-white"
             />
           </DataTable>
-        </div>
-      )}
-      <div className="flex">
+        )}
+      </div>
+
+      <div className="w-full md:w-auto flex items-start md:items-end">
         <Dropdown
           value={selectedChart}
           onChange={onChange}
           options={charts}
           optionLabel="name"
           placeholder={chart}
-          className="rounded-none ml-2 bg-transparent border-transparent h-6"
+          className="rounded-md ml-2 bg-white dark:bg-gray-800 text-xs border-gray-300 dark:border-gray-600"
           pt={{
-            input: { className: "text-xs p-0 pr-2" },
-            trigger: { className: "h-2 w-3 mt-1" },
+            input: { className: "text-xs p-1 dark:text-white" },
+            trigger: { className: "h-5 w-4" },
             root: { className: "p-1" },
           }}
         />

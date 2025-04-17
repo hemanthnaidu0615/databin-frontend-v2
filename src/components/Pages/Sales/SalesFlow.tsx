@@ -122,65 +122,58 @@ const SalesFlow = () => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col border-2 m-2 rounded-lg bg-white overflow-hidden">
-      <div className="w-full h-2 bg-purple-300 rounded-t-lg"></div>
-      <h1 className="font-semibold text-2xl text-violet-800 py-2 px-3">
-        Sales Flow
-      </h1>
-      <div className="flex-1 flex flex-col gap-20 shadow-lg rounded-lg border-slate-200 border-2">
-        <div className="flex justify-between items-center">
-          <div className="flex m-2 gap-2">
-            {buttonData.map((btn, index) => (
-              <Button
-              key={index}
-              className={`p-2 text-sm border-0 ${
-                activeType === btn.value ? 'bg-purple-600' : 'bg-purple-500'
-              }`}
-              onClick={() => handleSelectingType(btn.value)}
-              style={{
-                transition: "background-color 0.3s",
-              }}
-            >
-              {btn.name}
-            </Button>
-            ))}
-          </div>
-          {/* <Dropdown // Commented out
-            value={orientation}
-            options={orientationOptions}
-            onChange={(e) => setOrientation(e.value)}
-            placeholder="Select Orientation"
-            className="w-auto"
-          /> */}
-          <div className="flex items-center gap-2 mr-6">
-            <i className="pi pi-search-minus" onClick={decrementZoom}></i>
-            <Slider
-              value={zoomValue}
-              onChange={handleZoomChange}
-              className="w-32"
-              step={10}
-              min={0}
-              max={100}
-            />
-            <i className="pi pi-search-plus" onClick={incrementZoom}></i>
-          </div>
-        </div>
-        <div
-          className="overflow-auto flex-1"
-          style={{
-            height: "calc(100vh - 200px)", // Adjusted to always be visible
-            width: "auto", // Adjusted to always be visible
-          }}
-        >
-          <OrgChart data={convertData(data)} zoom={zoomValue} />
-          {/* {orientation === "vertical" ? (
-            <VerticalComponent data={convertData(data)} /> 
-          ) : (
-            <OrgChart data={convertData(data)} zoom={zoomValue} />
-          )} */}
-        </div>
+    <div className="flex-1 flex flex-col border-2 m-2 rounded-lg bg-white dark:bg-zinc-900 overflow-hidden">
+  {/* <div className="w-full h-2 bg-purple-300 dark:bg-purple-500 rounded-t-lg"></div> */}
+  <h1 className="font-semibold text-2xl text-black dark:text-white py-2 px-3">
+  Sales Flow
+</h1>
+
+
+  <div className="flex-1 flex flex-col gap-20 shadow-lg rounded-lg border-slate-200 dark:border-zinc-700 border-2">
+    <div className="flex justify-between items-center">
+      <div className="flex m-2 gap-2">
+        {buttonData.map((btn, index) => (
+          <Button
+            key={index}
+            className={`p-2 text-sm border-0 text-white ${
+              activeType === btn.value ? 'bg-purple-600' : 'bg-purple-500'
+            }`}
+            onClick={() => handleSelectingType(btn.value)}
+            style={{
+              transition: "background-color 0.3s",
+            }}
+          >
+            {btn.name}
+          </Button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 mr-6 text-zinc-900 dark:text-zinc-100">
+        <i className="pi pi-search-minus cursor-pointer" onClick={decrementZoom}></i>
+        <Slider
+          value={zoomValue}
+          onChange={handleZoomChange}
+          className="w-32"
+          step={10}
+          min={0}
+          max={100}
+        />
+        <i className="pi pi-search-plus cursor-pointer" onClick={incrementZoom}></i>
       </div>
     </div>
+
+    <div
+      className="overflow-auto flex-1"
+      style={{
+        height: "calc(100vh - 200px)",
+        width: "auto",
+      }}
+    >
+      <OrgChart data={convertData(data)} zoom={zoomValue} />
+    </div>
+  </div>
+</div>
+
   );
 };
 
