@@ -543,7 +543,7 @@ const exportExcel = () => {
   );
 
   return (
-    <div className="rounded-lg bg-white border-2 w-full overflow-y-auto">
+    <div className="rounded-lg bg-white border-2 w-auto overflow-y-auto">
       <div className="w-full h-2 bg-purple-300 rounded-t-lg"></div>
       <div className="flex gap-4 items-center px-3 py-2">
         <h1 className="text-2xl font-semibold text-md text-violet-800">

@@ -17,13 +17,15 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import DummyDashboard from "./components/Pages/Sales1/DummyDashboard";
+import DummyDashboard from "./components/Pages/Sales1/Dashboard/DummyDashboard";
+import InventoryPage from "./components/Pages/Inventory/InventoryPage";
+import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
 
 // ✅ Corrected import
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
 // import { SalesDashboard } from "./components/Pages/Sales/SalesDashboard";
 import { Analysis } from "./components/Pages/Sales/Analysis";
-import { SalesByRegion } from "./components/Pages/Sales/SalesByRegion";
+import  {SalesByRegion}  from "./components/Pages/Sales1/Region/SalesByRegion";
 import SalesFlow from "./components/Pages/Sales/SalesFlow";
 import Scheduler  from "./components/Pages/Scheduler/Scheduler";
 
@@ -42,15 +44,27 @@ export default function App() {
           {/* Sales Pages */}
           {/* <Route path="/sales/dashboard" element={<SalesDashboard />} /> */}
           <Route path="/sales/analysis" element={<Analysis />} />
-          <Route path="/sales/region" element={<SalesByRegion />} />
+          {/* <Route path="/sales/region" element={<SalesByRegion />} /> */}
           <Route path="/sales/flow" element={<SalesFlow />} />
 
           <Route path="/sales/dashboard" element={<DummyDashboard />} /> {/* SalesDashboard Route */}
+          <Route path="/sales/region" element={<SalesByRegion />} /> {/* SalesByRegion Route */}
+
+
+          {/* Inventory Pages */}
+          <Route path="/inventory" element={<InventoryPage />} />
+
+          {/* Shipment Pages */}
+          <Route path="/shipment" element={<ShipmentPage />} />
+
+          {/* Orders Pages */}
+
+         
 
           {/* Scheduler Page */}
           <Route path="/scheduler" element={<Scheduler />} />
 
-          {/* Inventory Pages */}
+          
 
           {/* Others Page */}
           <Route path="/profile" element={<UserProfiles />} />

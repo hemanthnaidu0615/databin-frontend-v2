@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Chart from 'react-apexcharts';
 import { useTheme } from 'next-themes';
 import { ApexOptions } from 'apexcharts';
@@ -35,11 +35,11 @@ const ChartSection: React.FC<Props> = ({ company }) => {
     series[2].data.slice(0, 4).reduce((a, b) => a + b, 0),
   ];
 
-  const getChartOptions = (type: 'bar' | 'line' | 'pie'): ApexOptions => {
-    const isDark = theme === 'dark';
-    const labelColor = isDark ? '#f1f5f9' : '#1e293b';
-    const gridColor = isDark ? '#334155' : '#e2e8f0';
+  const isDark = theme === 'dark';
+  const labelColor = isDark ? '#f1f5f9' : '#1e293b';
+  const gridColor = isDark ? '#334155' : '#e2e8f0';
 
+  const getChartOptions = (type: 'bar' | 'line' | 'pie'): ApexOptions => {
     const baseOptions: ApexOptions = {
       chart: {
         type,
@@ -51,9 +51,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         mode: isDark ? 'dark' : 'light',
       },
       legend: {
-        labels: {
-          colors: labelColor,
-        },
+        labels: { colors: labelColor },
         position: 'top',
       },
       grid: {
@@ -96,9 +94,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             columnWidth: '60%',
           },
         },
-        dataLabels: {
-          enabled: false,
-        },
+        dataLabels: { enabled: false },
       };
     }
 
@@ -111,6 +107,13 @@ const ChartSection: React.FC<Props> = ({ company }) => {
 
     return baseOptions;
   };
+
+  // 🔍 Dynamically calculate chart width (no overflow, no scrollbar)
+  const dynamicChartWidth = useMemo(() => {
+    const baseWidthPerCategory = 60; // pixels per bar group
+    const padding = 100;
+    return selectedChart === 'Pie' ? '100%' : `${categories.length * baseWidthPerCategory + padding}px`;
+  }, [categories.length, selectedChart]);
 
   return (
     <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-5 shadow-sm">
@@ -130,16 +133,18 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       </div>
 
       {(selectedChart === 'Bar' || selectedChart === 'Line' || selectedChart === 'Pie') && (
-        <div className="w-full h-[300px] sm:h-[400px] bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center p-2">
-          {selectedChart === 'Bar' && (
-            <Chart options={getChartOptions('bar')} series={series} type="bar" height="100%" width="100%" />
-          )}
-          {selectedChart === 'Line' && (
-            <Chart options={getChartOptions('line')} series={series} type="line" height="100%" width="100%" />
-          )}
-          {selectedChart === 'Pie' && (
-            <Chart options={getChartOptions('pie')} series={pieSeries} type="pie" height="100%" width="100%" />
-          )}
+        <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+          <div style={{ width: dynamicChartWidth, height: '400px' }}>
+            {selectedChart === 'Bar' && (
+              <Chart options={getChartOptions('bar')} series={series} type="bar" height="100%" width="100%" />
+            )}
+            {selectedChart === 'Line' && (
+              <Chart options={getChartOptions('line')} series={series} type="line" height="100%" width="100%" />
+            )}
+            {selectedChart === 'Pie' && (
+              <Chart options={getChartOptions('pie')} series={pieSeries} type="pie" height="100%" width="100%" />
+            )}
+          </div>
         </div>
       )}
 
