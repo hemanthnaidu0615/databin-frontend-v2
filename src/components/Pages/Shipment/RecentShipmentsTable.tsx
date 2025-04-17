@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
-import { Calendar } from 'primereact/calendar';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
@@ -63,24 +62,46 @@ const RecentShipmentsTable = () => {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md space-y-6">
+    <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md space-y-6 dark:border dark:border-gray-700">
+
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Recent Shipments</h2>
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
-          <Calendar value={dateRange} onChange={(e) => setDateRange(e.value)} selectionMode="range" className="w-full" showIcon />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+  <div>
+    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Carrier</label>
+    <Dropdown
+      value={selectedCarrier}
+      options={carriers}
+      onChange={(e) => setSelectedCarrier(e.value)}
+      placeholder="Select Carrier"
+      className="w-full"
+    />
+  </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Carrier</label>
-          <Dropdown value={selectedCarrier} options={carriers} onChange={(e) => setSelectedCarrier(e.value)} placeholder="Select Carrier" className="w-full" />
-        </div>
+  <div>
+    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipping Method</label>
+    <Dropdown
+      value={selectedMethod}
+      options={shippingMethods}
+      onChange={(e) => setSelectedMethod(e.value)}
+      placeholder="Select Method"
+      className="w-full"
+    />
+  </div>
 
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipping Method</label>
-          <Dropdown value={selectedMethod} options={shippingMethods} onChange={(e) => setSelectedMethod(e.value)} placeholder="Select Method" className="w-full" />
-        </div>
-      </div>
+  <div className="flex justify-end">
+    <button
+      onClick={() => {
+        setSelectedCarrier(null);
+        setSelectedMethod(null);
+      }}
+      className="text-sm px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+    >
+      Clear Filters
+    </button>
+  </div>
+</div>
+
 
       {/* Table */}
       <DataTable value={filteredData} paginator rows={5} stripedRows responsiveLayout="scroll" className="p-datatable-sm">

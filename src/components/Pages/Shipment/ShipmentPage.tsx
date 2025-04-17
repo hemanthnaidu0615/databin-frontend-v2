@@ -3,7 +3,7 @@ import React from 'react';
 import ShipmentStats from './ShipmentStats';
 import ShipmentCharts from './ShipmentCharts';
 import ReactShipmentsTable from './RecentShipmentsTable';
-import ShipmentTimelineChart from './ShipmentTimelineChart';
+// import ShipmentTimelineChart from './ShipmentTimelineChart';
 
 const ShipmentPage = () => {
   return (
@@ -24,7 +24,7 @@ const ShipmentPage = () => {
       <ReactShipmentsTable />
 
       {/* Timeline */}
-      <ShipmentTimelineChart />
+      {/* <ShipmentTimelineChart /> */}
     </div>
   );
 };
