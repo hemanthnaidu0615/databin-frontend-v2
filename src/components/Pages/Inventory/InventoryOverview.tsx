@@ -1,7 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 
-const InventoryOverview = () => {
+// Define the Filters type
+interface Filters {
+  selectedRegion: string;
+  selectedSource: string;
+  selectedLocation: string;
+}
+
+const InventoryOverview: React.FC<{ filters: Filters }> = ({ filters }) => {
+  // Data arrays should be defined before they are used
   const warehouseData = [
     { region: 'North', value: '+12%', color: 'text-green-500' },
     { region: 'East', value: '+8%', color: 'text-green-500' },
@@ -21,6 +29,20 @@ const InventoryOverview = () => {
     { product: 'Product C', stock: 0, date: '2025-04-25' },
   ];
 
+  // Filtered data states
+  const [filteredWarehouseData, setFilteredWarehouseData] = useState(warehouseData);
+  const [filteredAlertsData, setFilteredAlertsData] = useState(alertsData);
+
+  // Adjust warehouse data based on filters
+  useEffect(() => {
+    if (filters.selectedRegion) {
+      setFilteredWarehouseData(warehouseData.filter((item) => item.region === filters.selectedRegion));
+    } else {
+      setFilteredWarehouseData(warehouseData);
+    }
+    // Further filtering based on other fields (if needed) can be added here
+  }, [filters]);
+
   const warehouseChartOptions = {
     chart: {
       type: 'column',
@@ -35,7 +57,7 @@ const InventoryOverview = () => {
     },
     dataLabels: { enabled: false },
     xaxis: {
-      categories: warehouseData.map((d) => d.region),
+      categories: filteredWarehouseData.map((d) => d.region),
       labels: { style: { colors: '#ccc' } },
     },
     yaxis: {
@@ -49,7 +71,7 @@ const InventoryOverview = () => {
   const warehouseChartSeries = [
     {
       name: 'Change',
-      data: warehouseData.map((d) => parseFloat(d.value)),
+      data: filteredWarehouseData.map((d) => parseFloat(d.value)),
     },
   ];
 
@@ -96,7 +118,7 @@ const InventoryOverview = () => {
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Regional Performance</p>
 
         <div className="space-y-3 mb-6">
-          {warehouseData.map((item, idx) => (
+          {filteredWarehouseData.map((item, idx) => (
             <div key={idx} className="flex justify-between items-center text-sm">
               <span>{item.region}</span>
               <span className={`font-medium ${item.color}`}>{item.value}</span>
