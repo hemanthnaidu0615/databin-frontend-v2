@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Paginator } from 'primereact/paginator';
-import 'primereact/resources/themes/lara-dark-indigo/theme.css'; // Or light theme
+import 'primereact/resources/themes/lara-dark-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 
-const InventoryTable = () => {
+interface Filters {
+  selectedRegion: string;
+  selectedSource: string;
+  selectedLocation: string;
+}
+
+interface InventoryTableProps {
+  filters: Filters;
+}
+
+const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   const [inventoryItems, setInventoryItems] = useState<
     {
       name: string;
@@ -13,8 +23,11 @@ const InventoryTable = () => {
       warehouse: string;
       status: string;
       updated: string;
+      source: string;
+      states: string;
     }[]
   >([]);
+
   const [productSearch, setProductSearch] = useState('');
   const [skuSearch, setSkuSearch] = useState('');
   const [first, setFirst] = useState(0);
@@ -29,6 +42,8 @@ const InventoryTable = () => {
       warehouse: 'North',
       status: 'In Stock',
       updated: '2025-04-15',
+      source: 'Warehouse',
+      states: 'CA, TX, NY',
     },
     {
       name: 'Running Shoes',
@@ -38,108 +53,136 @@ const InventoryTable = () => {
       warehouse: 'South',
       status: 'Low Stock',
       updated: '2025-04-16',
+      source: 'Warehouse',
+      states: 'FL, GA',
     },
-    {
-      name: 'Coffee Mug',
-      sku: 'CM-019',
-      category: 'Kitchen',
-      stock: 0,
-      warehouse: 'East',
-      status: 'Out of Stock',
-      updated: '2025-04-10',
-    },
-    {
-      name: 'Smartwatch',
-      sku: 'SW-002',
-      category: 'Electronics',
-      stock: 80,
-      warehouse: 'West',
-      status: 'In Stock',
-      updated: '2025-04-14',
-    },
+
     {
       name: 'Bluetooth Speaker',
-      sku: 'BS-123',
+      sku: 'BS-345',
       category: 'Electronics',
-      stock: 5,
+      stock: 90,
       warehouse: 'East',
-      status: 'Low Stock',
+      status: 'In Stock',
       updated: '2025-04-12',
+      source: 'Warehouse',
+      states: 'NY, MA',
     },
     {
-      name: 'Gaming Mouse',
-      sku: 'GM-456',
-      category: 'Electronics',
+      name: 'Yoga Mat',
+      sku: 'YM-101',
+      category: 'Fitness',
+      stock: 20,
+      warehouse: 'West',
+      status: 'Low Stock',
+      updated: '2025-04-13',
+      source: 'Warehouse',
+      states: 'CA, AZ',
+    },
+    {
+      name: 'Laptop Backpack',
+      sku: 'LB-998',
+      category: 'Accessories',
       stock: 0,
       warehouse: 'North',
       status: 'Out of Stock',
       updated: '2025-04-11',
+      source: 'Warehouse',
+      states: 'IL, WI',
     },
     {
-        name: 'LED Monitor',
-        sku: 'LM-321',
-        category: 'Electronics',
-        stock: 42,
-        warehouse: 'West',
-        status: 'In Stock',
-        updated: '2025-04-16',
-      },
-      {
-        name: 'Yoga Mat',
-        sku: 'YM-876',
-        category: 'Fitness',
-        stock: 3,
-        warehouse: 'South',
-        status: 'Low Stock',
-        updated: '2025-04-15',
-      },
-      {
-        name: 'Water Bottle',
-        sku: 'WB-654',
-        category: 'Kitchen',
-        stock: 0,
-        warehouse: 'North',
-        status: 'Out of Stock',
-        updated: '2025-04-13',
-      },
-      {
-        name: 'Desk Lamp',
-        sku: 'DL-432',
-        category: 'Home Decor',
-        stock: 60,
-        warehouse: 'East',
-        status: 'In Stock',
-        updated: '2025-04-16',
-      },
-      {
-        name: 'Graphic T-Shirt',
-        sku: 'GT-777',
-        category: 'Apparel',
-        stock: 20,
-        warehouse: 'South',
-        status: 'In Stock',
-        updated: '2025-04-14',
-      },
-      {
-        name: 'Portable Charger',
-        sku: 'PC-999',
-        category: 'Electronics',
-        stock: 7,
-        warehouse: 'West',
-        status: 'Low Stock',
-        updated: '2025-04-15',
-      },
+      name: 'Ceramic Plate Set',
+      sku: 'CP-712',
+      category: 'Kitchen',
+      stock: 60,
+      warehouse: 'South',
+      status: 'In Stock',
+      updated: '2025-04-15',
+      source: 'Warehouse',
+      states: 'FL, NC',
+    },
+    {
+      name: 'LED Desk Lamp',
+      sku: 'DL-407',
+      category: 'Home',
+      stock: 5,
+      warehouse: 'East',
+      status: 'Low Stock',
+      updated: '2025-04-17',
+      source: 'Warehouse',
+      states: 'PA, NJ',
+    },
+    {
+      name: 'Men’s T-Shirt',
+      sku: 'MT-334',
+      category: 'Apparel',
+      stock: 110,
+      warehouse: 'West',
+      status: 'In Stock',
+      updated: '2025-04-18',
+      source: 'Warehouse',
+      states: 'NV, CA',
+    },
+    {
+      name: 'Electric Toothbrush',
+      sku: 'ET-566',
+      category: 'Personal Care',
+      stock: 0,
+      warehouse: 'North',
+      status: 'Out of Stock',
+      updated: '2025-04-10',
+      source: 'Warehouse',
+      states: 'OH, MI',
+    },
+    {
+      name: 'Baking Tray',
+      sku: 'BT-909',
+      category: 'Kitchen',
+      stock: 35,
+      warehouse: 'South',
+      status: 'Low Stock',
+      updated: '2025-04-14',
+      source: 'Warehouse',
+      states: 'TX, OK',
+    },
+    {
+      name: 'Noise Cancelling Earbuds',
+      sku: 'NE-321',
+      category: 'Electronics',
+      stock: 140,
+      warehouse: 'West',
+      status: 'In Stock',
+      updated: '2025-04-15',
+      source: 'Warehouse',
+      states: 'CA, OR',
+    },
+    {
+      name: 'Hiking Boots',
+      sku: 'HB-754',
+      category: 'Footwear',
+      stock: 45,
+      warehouse: 'East',
+      status: 'Low Stock',
+      updated: '2025-04-16',
+      source: 'Warehouse',
+      states: 'VA, MD',
+    },
+    
   ];
 
   useEffect(() => {
     const filtered = fullInventory.filter(
       (item) =>
         item.name.toLowerCase().includes(productSearch.toLowerCase()) &&
-        item.sku.toLowerCase().includes(skuSearch.toLowerCase())
+        item.sku.toLowerCase().includes(skuSearch.toLowerCase()) &&
+        (!filters.selectedRegion || item.warehouse === filters.selectedRegion) &&
+        (!filters.selectedSource || item.source === filters.selectedSource) &&
+        (!filters.selectedLocation || item.states.includes(filters.selectedLocation))
     );
+
     const paginated = filtered.slice(first, first + rows);
     setInventoryItems(paginated);
-  }, [productSearch, skuSearch, first, rows]);
+  }, [productSearch, skuSearch, first, rows, filters]);
 
   const statusColors = {
     'In Stock': 'text-green-500',
@@ -160,11 +203,20 @@ const InventoryTable = () => {
     return 0;
   };
 
+  const totalRecords = fullInventory.filter(
+    (item) =>
+      item.name.toLowerCase().includes(productSearch.toLowerCase()) &&
+      item.sku.toLowerCase().includes(skuSearch.toLowerCase()) &&
+      (!filters.selectedRegion || item.warehouse === filters.selectedRegion) &&
+      (!filters.selectedSource || item.source === filters.selectedSource) &&
+      (!filters.selectedLocation || item.states.includes(filters.selectedLocation))
+  ).length;
+
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+      {/* Filters */}
       <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Inventory List</h3>
-
         <div className="flex gap-2 flex-wrap">
           <input
             type="text"
@@ -183,8 +235,8 @@ const InventoryTable = () => {
         </div>
       </div>
 
+      {/* Table: Desktop */}
       <div className="overflow-hidden">
-        {/* Desktop Table */}
         <table className="hidden md:table min-w-full text-sm text-left">
           <thead className="text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
             <tr>
@@ -192,6 +244,8 @@ const InventoryTable = () => {
               <th className="py-2">SKU</th>
               <th className="py-2">Category</th>
               <th className="py-2">Warehouse</th>
+              <th className="py-2">Source</th>
+              <th className="py-2">State</th>
               <th className="py-2">Stock Level</th>
               <th className="py-2">Status</th>
               <th className="py-2">Last Updated</th>
@@ -201,6 +255,7 @@ const InventoryTable = () => {
             {inventoryItems.map((item, idx) => {
               const percent = getBarWidth(item.stock);
               const barColor = barColors[item.status as keyof typeof barColors];
+              const state = item.states || '—';
 
               return (
                 <tr key={idx} className="border-t dark:border-gray-700">
@@ -208,6 +263,8 @@ const InventoryTable = () => {
                   <td className="py-2">{item.sku}</td>
                   <td className="py-2">{item.category}</td>
                   <td className="py-2">{item.warehouse}</td>
+                  <td className="py-2">{item.source}</td>
+                  <td className="py-2">{state}</td>
                   <td className="py-2 w-45">
                     <div className="h-1.5 w-full bg-gray-300 dark:bg-gray-700 rounded-full">
                       <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${percent}%` }}></div>
@@ -222,44 +279,14 @@ const InventoryTable = () => {
             })}
           </tbody>
         </table>
-
-        {/* Mobile View */}
-        <div className="md:hidden flex flex-col gap-4">
-          {inventoryItems.map((item, idx) => {
-            const percent = getBarWidth(item.stock);
-            const barColor = barColors[item.status as keyof typeof barColors];
-
-            return (
-              <div key={idx} className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow border dark:border-gray-600">
-                <div className="text-base font-semibold text-gray-800 dark:text-white mb-2">{item.name}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300"><strong>SKU:</strong> {item.sku}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300"><strong>Category:</strong> {item.category}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300"><strong>Warehouse:</strong> {item.warehouse}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300 mt-2"><strong>Stock Level:</strong></div>
-                <div className="h-1.5 w-full bg-gray-300 dark:bg-gray-600 rounded-full mb-2">
-                  <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${percent}%` }}></div>
-                </div>
-                <div className={`text-sm font-medium ${statusColors[item.status as keyof typeof statusColors]}`}>
-                  {item.status}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Last Updated: {item.updated}</div>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
+      {/* Pagination */}
       <div className="mt-6">
         <Paginator
           first={first}
           rows={rows}
-          totalRecords={
-            fullInventory.filter(
-              (item) =>
-                item.name.toLowerCase().includes(productSearch.toLowerCase()) &&
-                item.sku.toLowerCase().includes(skuSearch.toLowerCase())
-            ).length
-          }
+          totalRecords={totalRecords}
           onPageChange={(e) => {
             setFirst(e.first);
             setRows(e.rows);
