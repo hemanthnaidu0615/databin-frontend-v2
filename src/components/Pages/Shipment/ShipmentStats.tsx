@@ -7,9 +7,9 @@ const stats = [
     title: 'Total Shipments',
     value: '1,562',
     icon: PrimeIcons.BOX,
-    trend: '+12%',
-    trendText: 'vs last period',
-    status: 'Improving',
+   
+    
+    
     accent: 'border-blue-500',
     barPercent: 70,
     iconColor: 'text-blue-500',
@@ -18,9 +18,9 @@ const stats = [
     title: 'On-Time Delivery',
     value: '92.3%',
     icon: PrimeIcons.CLOCK,
-    trend: '+3.1%',
-    trendText: 'from last period',
-    status: 'Stable',
+    
+    
+    
     accent: 'border-green-500',
     barPercent: 80,
     iconColor: 'text-green-500',
@@ -29,9 +29,9 @@ const stats = [
     title: 'Avg Delivery Time',
     value: '2.8 days',
     icon: PrimeIcons.SPINNER, // No BOLT, using SPINNER as similar
-    trend: '-0.5d',
-    trendText: 'faster',
-    status: 'Improved',
+    
+    
+    
     accent: 'border-cyan-500',
     barPercent: 65,
     iconColor: 'text-cyan-500',
@@ -40,9 +40,9 @@ const stats = [
     title: 'Delayed Shipments',
     value: '18',
     icon: PrimeIcons.EXCLAMATION_TRIANGLE,
-    trend: '+4',
-    trendText: 'vs last time',
-    status: 'Needs Review',
+    
+    
+    
     accent: 'border-red-500',
     barPercent: 40,
     iconColor: 'text-red-500',
@@ -83,13 +83,7 @@ const ShipmentStats = () => {
             />
           </div>
 
-          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-            <span>
-              {stat.trend}{' '}
-              <span className="opacity-75">{stat.trendText}</span>
-            </span>
-            <span className="font-semibold">{stat.status}</span>
-          </div>
+
         </div>
       ))}
     </div>

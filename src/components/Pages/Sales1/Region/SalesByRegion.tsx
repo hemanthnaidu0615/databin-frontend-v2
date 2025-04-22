@@ -204,9 +204,9 @@ const statess: Statess = {
   
     return (
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
-        <div className="w-full h-2 bg-purple-300 dark:bg-purple-800 rounded-t-lg" />
+        {/* <div className="w-full h-2 bg-purple-300 dark:bg-purple-800 rounded-t-lg" /> */}
         <div className="flex justify-between px-3 py-2">
-          <h1 className="text-2xl font-semibold text-md text-violet-800">Sales by Region</h1>
+          <h1 className="text-2xl font-semibold text-md font-semibold">Sales by Region</h1>
         </div>
         <div className="flex flex-col flex-1 shadow-lg rounded-lg border-2 border-slate-200 dark:border-slate-700 divide-y-2 divide-slate-200 dark:divide-slate-700 divide-dashed px-2 bg-white dark:bg-gray-900">
           <div className="flex justify-between p-2">
@@ -255,7 +255,7 @@ const statess: Statess = {
             <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
 
 
-              <h3 className="font-bold text-lg mb-2 text-violet-800">Top 10 Revenues</h3>
+              <h3 className="font-bold text-lg mb-2 font-semibold">Top 10 Revenues</h3>
               <DataTable value={tableData.slice(0, 10)} size="small" className="text-sm" showGridlines>
                 <Column
                   field="state"

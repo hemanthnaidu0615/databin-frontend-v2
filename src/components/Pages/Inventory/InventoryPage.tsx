@@ -8,8 +8,6 @@ const InventoryPage = () => {
   const [selectedSource, setSelectedSource] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
 
-
-
   const regionLocations: { [key: string]: string[] } = {
     North: [
       "Chicago, IL", "Minneapolis, MN", "Milwaukee, WI", "Detroit, MI", "Cleveland, OH",
@@ -28,7 +26,9 @@ const InventoryPage = () => {
       "Phoenix, AZ", "Las Vegas, NV", "Sacramento, CA", "Salt Lake City, UT", "Boise, ID"
     ]
   };
-  
+
+  // Combine all locations from all regions
+  const allLocations = Object.values(regionLocations).flat();
 
   const filters = { selectedRegion, selectedSource, selectedLocation };
 
@@ -41,7 +41,6 @@ const InventoryPage = () => {
           value={selectedRegion}
           onChange={(e) => {
             setSelectedRegion(e.target.value);
-            setSelectedSource('');
             setSelectedLocation('');
           }}
           className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
@@ -54,40 +53,41 @@ const InventoryPage = () => {
         </select>
 
         {/* Source Dropdown */}
-        {selectedRegion && (
-  <select
-    value={selectedSource}
-    onChange={(e) => setSelectedSource(e.target.value)}
-    className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
-  >
-    <option value="">All Sources</option>
-    <option value="Warehouse">Warehouse</option>
-  </select>
-)}
+        <select
+          value={selectedSource}
+          onChange={(e) => {
+            setSelectedSource(e.target.value);
+            setSelectedLocation('');
+          }}
+          className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
+        >
+          <option value="">All Sources</option>
+          <option value="Warehouse">Warehouse</option>
+        </select>
 
-
-        {/* Location Dropdown */}
-        {selectedRegion && (
-          <select
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
-          >
-            <option value="">All Locations</option>
-            {(regionLocations[selectedRegion] || []).map((loc, idx) => (
+        {/* Location Dropdown - shows only when source is Warehouse */}
+        <select
+          value={selectedLocation}
+          onChange={(e) => setSelectedLocation(e.target.value)}
+          className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
+          disabled={selectedSource !== 'Warehouse'}
+        >
+          <option value="">All Locations</option>
+          {selectedSource === 'Warehouse' &&
+            allLocations.map((loc, idx) => (
               <option key={idx} value={loc}>{loc}</option>
-            ))}
-          </select>
-        )}
+            ))
+          }
+        </select>
       </div>
 
       {/* Section 1: Top Summary Cards */}
-      <InventoryCards  />
+      <InventoryCards />
 
-      {/* Section 2: Overview Charts (Warehouse + Turnover) */}
+      {/* Section 2: Overview Charts */}
       <InventoryOverview filters={filters} />
 
-      {/* Section 3: Full Inventory List Table */}
+      {/* Section 3: Full Inventory Table */}
       <InventoryTable filters={filters} />
     </div>
   );

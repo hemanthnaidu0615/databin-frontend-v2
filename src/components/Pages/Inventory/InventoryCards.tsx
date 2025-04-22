@@ -1,7 +1,7 @@
 import React from 'react';
 
 const cardData = [
-  { label: 'Total Products', value: 1248, border: '#2979ff' },
+  { label: 'Total Products', value: 1248, border: '#8b5cf6' },
   { label: 'In Stock', value: 872, border: '#00c853' },
   { label: 'Low Stock', value: 340, border: '#ffc400' },
   { label: 'Out of Stock', value: 36, border: '#ff3d00' },
