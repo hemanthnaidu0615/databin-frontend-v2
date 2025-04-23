@@ -5,6 +5,7 @@ import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
+import axios from "axios";
 
 type ShipmentPerformanceProps = {
   size?: "small" | "full";
@@ -12,10 +13,10 @@ type ShipmentPerformanceProps = {
   onViewMore?: () => void;
 };
 
-// Helper function to format date to match the API requirement
-const formatDate = (date: string) => {
+// Full date formatting with time
+const formatDateTime = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
 };
 
 const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
@@ -36,31 +37,33 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
   useEffect(() => {
-    // Fetch shipment data from API with date range
     const fetchData = async () => {
       try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
+        setIsLoading(true);
+        const formattedStartDate = formatDateTime(startDate);
+        const formattedEndDate = formatDateTime(endDate);
 
-        const response = await fetch(
-          `http://localhost:8080/api/shipment-performance?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch shipment data");
-        const result = await response.json();
+        const res = await axios.get("http://localhost:8080/api/shipment-performance", {
+          params: {
+            startDate: formattedStartDate,
+            endDate: formattedEndDate,
+          },
+        });
 
-        const carriers = result.shipment_performance.map((item: any) => item.carrier);
-        const standard = result.shipment_performance.map((item: any) => item.standard);
-        const expedited = result.shipment_performance.map((item: any) => item.expedited);
-        const sameDay = result.shipment_performance.map((item: any) => item.same_day);
+        const responseData = res.data.shipment_performance;
+
+        const carriers = responseData.map((item: any) => item.carrier);
+        const standard = responseData.map((item: any) => item.standard);
+        const expedited = responseData.map((item: any) => item.expedited);
+        const sameDay = responseData.map((item: any) => item.same_day);
 
         setData({ carriers, standard, expedited, sameDay });
       } catch (err: any) {
-        setError(err.message);
+        setError(err.message || "Failed to fetch shipment data");
       } finally {
         setIsLoading(false);
       }
@@ -69,10 +72,9 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]); // Re-run when startDate or endDate changes
+  }, [startDate, endDate]);
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&

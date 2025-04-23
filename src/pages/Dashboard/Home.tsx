@@ -7,9 +7,9 @@ import OrderTracking from "../../components/dashboard/OrderTracking";
 import DemographicCard from "../../components/dashboard/DemographicCard";
 import OrderProcessingTime from "../../components/dashboard/OrderProcessingTime";
 import OrderTrendsCategory from "../../components/dashboard/OrderTrendsCategory";
-import OrderValueSegment from "../../components/dashboard/OrderValueSegment";
+// import OrderValueSegment from "../../components/dashboard/OrderValueSegment";
 import RevenuePerCustomer from "../../components/dashboard/RevenuePerCustomer";
-import SalesFunnel from "../../components/dashboard/SalesFunnel";
+// import SalesFunnel from "../../components/dashboard/SalesFunnel";
 import InventoryHealth from "../../components/dashboard/InventoryHealth";
 import ShipmentPerformance from "../../components/dashboard/ShipmentPerformance";
 import CustomerSegmentation from "../../components/dashboard/ProfitabilityTable";
@@ -24,9 +24,9 @@ const Memoized = {
   DemographicCard: memo(DemographicCard),
   OrderProcessingTime: memo(OrderProcessingTime),
   OrderTrendsCategory: memo(OrderTrendsCategory),
-  OrderValueSegment: memo(OrderValueSegment),
+  // OrderValueSegment: memo(OrderValueSegment),
   RevenuePerCustomer: memo(RevenuePerCustomer),
-  SalesFunnel: memo(SalesFunnel),
+  // SalesFunnel: memo(SalesFunnel),
   InventoryHealth: memo(InventoryHealth),
   ShipmentPerformance: memo(ShipmentPerformance),
   CustomerSegmentation: memo(CustomerSegmentation),
@@ -94,9 +94,10 @@ export default function Home() {
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
             <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.OrderValueSegment />
+              <Memoized.OrderTrendsCategory />
             </div>
           </div>
+
           <div className="w-full xl:w-1/2 h-full">
             <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
               <Memoized.DemographicCard />
@@ -105,10 +106,10 @@ export default function Home() {
         </div>
 
         {/* 🔄 Product Trends */}
-        <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
+        {/* <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
             <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.OrderTrendsCategory />
+              <Memoized.OrderValueSegment />
             </div>
           </div>
           <div className="w-full xl:w-1/2 h-full">
@@ -116,26 +117,26 @@ export default function Home() {
               <Memoized.SalesFunnel />
             </div>
           </div>
+        </div> */}
+
+        {/* 🧾 Top Row: Inventory + Customer Segmentation (side by side, matching height) */}
+        <div className="sm:col-span-6 xl:col-span-12">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+              <Memoized.InventoryHealth />
+            </div>
+            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+              <Memoized.CustomerSegmentation />
+            </div>
+          </div>
         </div>
-
-{/* 🧾 Top Row: Inventory + Customer Segmentation (side by side, matching height) */}
-<div className="sm:col-span-6 xl:col-span-12">
-  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-    <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-      <Memoized.InventoryHealth />
-    </div>
-    <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-      <Memoized.CustomerSegmentation />
-    </div>
-  </div>
-</div>
-
-{/* 🚚 Shipment Performance (half-width aligned) */}
-<div className="sm:col-span-6 xl:col-span-6 mt-4">
-  <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-    <Memoized.ShipmentPerformance />
-  </div>
-</div>
+                
+        {/* 🚚 Shipment Performance (half-width aligned) */}
+        <div className="sm:col-span-6 xl:col-span-6 mt-4">
+          <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <Memoized.ShipmentPerformance />
+          </div>
+        </div>
 
       </div>
     </>

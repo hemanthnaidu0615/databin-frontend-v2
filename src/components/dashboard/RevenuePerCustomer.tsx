@@ -65,12 +65,31 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
       type: "bar",
       toolbar: {
         show: true,
-        tools: { download: true, selection: false, zoom: false, zoomin: false, zoomout: false, pan: false, reset: false },
+        tools: {
+          download: true,
+          selection: false,
+          zoom: false,
+          zoomin: false,
+          zoomout: false,
+          pan: false,
+          reset: false,
+        },
       },
     },
-    xaxis: { categories: data.map((d) => d.customer) },
-    series: [{ name: "Revenue", data: data.map((d) => d.revenue) }],
+    xaxis: {
+      categories: data.map((d) => d.customer),
+    },
+    dataLabels: {
+      enabled: false, // ❌ disables value labels on top of bars
+    },
+    series: [
+      {
+        name: "Revenue",
+        data: data.map((d) => d.revenue),
+      },
+    ],
   };
+  
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
