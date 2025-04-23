@@ -28,6 +28,7 @@ import { Analysis } from "./components/Pages/Sales/Analysis";
 import  {SalesByRegion}  from "./components/Pages/Sales1/Region/SalesByRegion";
 import SalesFlow from "./components/Pages/Sales/SalesFlow";
 import Scheduler  from "./components/Pages/Scheduler/Scheduler";
+import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
 
 export default function App() {
   return (
@@ -57,7 +58,8 @@ export default function App() {
           {/* Shipment Pages */}
           <Route path="/shipment" element={<ShipmentPage />} />
 
-          {/* Orders Pages */}
+          {/* Fulfillment Pages */}
+          <Route path="/fulfillment" element={<FulfillmentPage />} />
 
          
 
