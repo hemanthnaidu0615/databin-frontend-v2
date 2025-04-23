@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 
 const BottleneckChart = () => {
-  const chartOptions: ApexOptions = {
+  const [isDark, setIsDark] = useState<boolean>(
+    typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+  );
+
+  const [chartOptions, setChartOptions] = useState<ApexOptions>({
     chart: {
       type: 'bar',
       height: 320,
       toolbar: { show: false },
+      background: 'transparent',
+      foreColor: isDark ? '#d1d5db' : '#333',
     },
     plotOptions: {
       bar: {
@@ -24,51 +30,91 @@ const BottleneckChart = () => {
     },
     colors: ['#9614d0'],
     xaxis: {
-      categories: ['Order Received', 'Picking', 'Packing', 'Ready to Ship', 'Shipping Label'],
+      categories: [
+        'Order Placed', 'Processing', 'Store Pickup', 'Ship to Home',
+        'Distribution Center', 'Warehouse', 'Vendor Drop Shipping',
+        'Same-Day Delivery', 'Locker Pickup', 'Curbside Pickup',
+      ],
       labels: {
         style: {
-          colors: '#a1a1aa',
+          colors: isDark ? '#d1d5db' : '#333',
         },
       },
     },
     yaxis: {
       labels: {
         style: {
-          colors: '#a1a1aa',
+          colors: isDark ? '#d1d5db' : '#333',
         },
       },
     },
     tooltip: {
       theme: 'dark',
     },
-    theme: {
-      mode: 'light',
+    grid: {
+      show: true,
+      borderColor: isDark ? '#3f3f46' : '#e5e7eb',
+      row: {
+        colors: ['transparent'],
+      },
     },
-  };
+    theme: {
+      mode: isDark ? 'dark' : 'light',
+    },
+  });
 
   const series = [
     {
       name: 'Avg Time (hrs)',
-      data: [3.2, 5.6, 2.4, 6.8, 4.1],
+      data: [3.2, 5.6, 2.4, 6.8, 4.5, 3.8, 5.2, 7.1, 4.3, 3.9],
     },
   ];
 
-  // Dynamic theme switch
-  const isDark =
-    typeof window !== 'undefined' &&
-    document.documentElement.classList.contains('dark');
+  useEffect(() => {
+    const dark = document.documentElement.classList.contains('dark');
+    setIsDark(dark);
 
-  if (isDark) {
-    chartOptions.theme!.mode = 'dark';
-    chartOptions.xaxis!.labels!.style!.colors = '#d1d5db';
-    if (!Array.isArray(chartOptions.yaxis)) {
-      chartOptions.yaxis!.labels!.style!.colors = '#d1d5db';
-    }
-  }
+    setChartOptions((prev) => ({
+      ...prev,
+      chart: {
+        ...prev.chart,
+        background: 'transparent',
+        foreColor: dark ? '#d1d5db' : '#333',
+      },
+      xaxis: {
+        ...prev.xaxis,
+        labels: {
+          style: {
+            colors: dark ? '#d1d5db' : '#333',
+          },
+        },
+      },
+      yaxis: {
+        ...prev.yaxis,
+        labels: {
+          style: {
+            colors: dark ? '#d1d5db' : '#333',
+          },
+        },
+      },
+      grid: {
+        show: true,
+        borderColor: dark ? '#3f3f46' : '#e5e7eb',
+        row: {
+          colors: ['transparent'],
+        },
+      },
+      theme: {
+        mode: dark ? 'dark' : 'light',
+      },
+    }));
+  }, []);
 
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">Bottleneck Analysis</h2>
+      <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+        Bottleneck Analysis
+      </h2>
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4">
         <ReactApexChart options={chartOptions} series={series} type="bar" height={320} />
       </div>

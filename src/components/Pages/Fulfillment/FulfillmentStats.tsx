@@ -4,56 +4,49 @@ const stats = [
   {
     title: 'Orders in Pipeline',
     value: 347,
-    change: '+12%',
-    positive: true,
+    icon: 'pi pi-inbox',
+    bg: 'bg-purple-600/20 text-purple-400',
+    borderColor: 'border-purple-500', // Added border color for purple
   },
   {
     title: 'Avg Fulfillment Time',
     value: '1.7 days',
-    change: '-0.3d',
-    positive: false,
+    icon: 'pi pi-clock',
+    bg: 'bg-green-600/20 text-green-400',
+    borderColor: 'border-green-500', // Added border color for green
   },
   {
     title: 'On-Time Rate',
     value: '92%',
-    change: '-3%',
-    positive: false,
+    icon: 'pi pi-check-circle',
+    bg: 'bg-yellow-600/20 text-yellow-400',
+    borderColor: 'border-yellow-500', // Added border color for yellow
   },
   {
     title: 'Awaiting Processing',
     value: 53,
-    change: '+8',
-    positive: false,
+    icon: 'pi pi-exclamation-circle',
+    bg: 'bg-red-600/20 text-red-400',
+    borderColor: 'border-red-500', // Added border color for red
   },
 ];
 
 const FulfillmentStats = () => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {stats.map((stat, index) => (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {stats.map((stat, i) => (
         <Card
-          key={index}
-          className="shadow-md rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4"
+          key={i}
+          className={`rounded-xl shadow-none px-2  transition-all duration-300 transform hover:scale-105 hover:shadow-lg bg-[#1f2937] hover:bg-[#273043] dark:bg-[#1f2937] dark:hover:bg-[#273043] text-white border-4 ${stat.borderColor} hover:border-opacity-80`}
         >
-          <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-            {stat.title}
-          </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {stat.value}
-          </div>
-          <div className="flex items-center gap-1 text-sm mt-1">
-            <i
-              className={`pi ${
-                stat.positive ? 'pi-arrow-up text-green-500' : 'pi-arrow-down text-red-500'
-              }`}
-            />
-            <span
-              className={`font-medium ${
-                stat.positive ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
-              {stat.change}
-            </span>
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-md flex items-center justify-center text-lg ${stat.bg}`}>
+              <i className={`${stat.icon}`} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold leading-tight">{stat.value}</span>
+              <span className="text-sm uppercase text-gray-400 tracking-wide">{stat.title}</span>
+            </div>
           </div>
         </Card>
       ))}
