@@ -82,9 +82,9 @@ const OrdersPage: React.FC = () => {
   <button className="px-2 py-1 text-[11px] border border-white/20 text-white rounded-md hover:bg-white/10 transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
     Print
   </button>
-  <button className="px-2 py-1 text-[11px] bg-[#9614d0] text-white rounded-md hover:bg-[#660094] transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
+  {/* <button className="px-2 py-1 text-[11px] bg-[#9614d0] text-white rounded-md hover:bg-[#660094] transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm">
     + Order
-  </button>
+  </button> */}
 </div>
 
       </div>
