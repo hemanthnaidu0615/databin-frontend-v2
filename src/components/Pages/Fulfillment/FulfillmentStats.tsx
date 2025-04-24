@@ -1,54 +1,70 @@
-import { Card } from 'primereact/card';
+import { PrimeIcons } from 'primereact/api';
+import 'primeicons/primeicons.css';
 
 const stats = [
   {
     title: 'Orders in Pipeline',
     value: 347,
-    icon: 'pi pi-inbox',
-    bg: 'bg-purple-600/20 text-purple-400',
-    borderColor: 'border-purple-500', // Added border color for purple
+    icon: PrimeIcons.INBOX,
+    accent: 'border-purple-500',
+    barColor: 'bg-purple-500',
+    iconColor: 'text-purple-500',
+    barPercent: 75,
   },
   {
     title: 'Avg Fulfillment Time',
     value: '1.7 days',
-    icon: 'pi pi-clock',
-    bg: 'bg-green-600/20 text-green-400',
-    borderColor: 'border-green-500', // Added border color for green
+    icon: PrimeIcons.CLOCK,
+    accent: 'border-green-500',
+    barColor: 'bg-green-500',
+    iconColor: 'text-green-500',
+    barPercent: 65,
   },
   {
     title: 'On-Time Rate',
     value: '92%',
-    icon: 'pi pi-check-circle',
-    bg: 'bg-yellow-600/20 text-yellow-400',
-    borderColor: 'border-yellow-500', // Added border color for yellow
+    icon: PrimeIcons.CHECK_CIRCLE,
+    accent: 'border-yellow-500',
+    barColor: 'bg-yellow-500',
+    iconColor: 'text-yellow-500',
+    barPercent: 80,
   },
   {
     title: 'Awaiting Processing',
     value: 53,
-    icon: 'pi pi-exclamation-circle',
-    bg: 'bg-red-600/20 text-red-400',
-    borderColor: 'border-red-500', // Added border color for red
+    icon: PrimeIcons.EXCLAMATION_CIRCLE,
+    accent: 'border-red-500',
+    barColor: 'bg-red-500',
+    iconColor: 'text-red-500',
+    barPercent: 40,
   },
 ];
 
 const FulfillmentStats = () => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {stats.map((stat, i) => (
-        <Card
-          key={i}
-          className={`rounded-xl shadow-none px-2  transition-all duration-300 transform hover:scale-105 hover:shadow-lg bg-[#1f2937] hover:bg-[#273043] dark:bg-[#1f2937] dark:hover:bg-[#273043] text-white border-4 ${stat.borderColor} hover:border-opacity-80`}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {stats.map((stat, index) => (
+        <div
+          key={index}
+          className={`relative flex flex-col justify-between gap-3 px-5 py-4 rounded-xl
+            bg-white dark:bg-[#111827] text-gray-900 dark:text-white
+            shadow-sm transition-transform transform hover:scale-[1.015]
+            border-l-4 ${stat.accent}`}
         >
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-md flex items-center justify-center text-lg ${stat.bg}`}>
-              <i className={`${stat.icon}`} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold leading-tight">{stat.value}</span>
-              <span className="text-sm uppercase text-gray-400 tracking-wide">{stat.title}</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
+            <span className="text-sm font-semibold">{stat.title}</span>
           </div>
-        </Card>
+
+          <div className="text-2xl font-extrabold">{stat.value}</div>
+
+          <div className="w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ease-out ${stat.barColor}`}
+              style={{ width: `${stat.barPercent}%` }}
+            />
+          </div>
+        </div>
       ))}
     </div>
   );
