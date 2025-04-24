@@ -43,7 +43,10 @@ const InventoryPage = () => {
             setSelectedRegion(e.target.value);
             setSelectedLocation('');
           }}
-          className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
+          className="px-4 py-2 text-sm rounded-md border 
+  bg-white text-black border-gray-300 
+  dark:bg-gray-800 dark:text-white dark:border-gray-600"
+
         >
           <option value="">All Regions</option>
           <option value="North">North</option>
@@ -59,7 +62,10 @@ const InventoryPage = () => {
             setSelectedSource(e.target.value);
             setSelectedLocation('');
           }}
-          className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
+          className="px-4 py-2 text-sm rounded-md border 
+  bg-white text-black border-gray-300 
+  dark:bg-gray-800 dark:text-white dark:border-gray-600"
+
         >
           <option value="">All Sources</option>
           <option value="Warehouse">Warehouse</option>
@@ -69,7 +75,10 @@ const InventoryPage = () => {
         <select
           value={selectedLocation}
           onChange={(e) => setSelectedLocation(e.target.value)}
-          className="px-4 py-2 text-sm rounded-md bg-gray-800 text-white border border-gray-600"
+          className="px-4 py-2 text-sm rounded-md border 
+  bg-white text-black border-gray-300 
+  dark:bg-gray-800 dark:text-white dark:border-gray-600"
+
           disabled={selectedSource !== 'Warehouse'}
         >
           <option value="">All Locations</option>

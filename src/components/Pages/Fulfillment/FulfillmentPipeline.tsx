@@ -1,75 +1,115 @@
 import React from 'react';
 
-const stages = [
-    { label: 'Order Received', count: 5000000, avg: '2.3 hrs' },
-    { label: 'Processing', count: 4500000, avg: '3.1 hrs' },
-    { label: 'Picking', count: 9700000, avg: '5.7 hrs' },
-    { label: 'Packing', count: 7100000, avg: '4.2 hrs' },
-    { label: 'Ready for Shipment', count: 8400000, avg: '6.8 hrs' },
-    { label: 'Shipped', count: 0, avg: '-' },
-  ];
-  
-  const currentStage = 2; // "Picking"
-  
-  const FulfillmentPipeline = () => {
-    return (
-      <div className="w-full py-6">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6 px-4">
-          Fulfillment Pipeline
-        </h2>
-  
-        <div className="flex items-center justify-center gap-4 px-4 overflow-x-auto">
-          {stages.map((stage, index) => {
-            const isCompleted = index < currentStage;
-            const isCurrent = index === currentStage;
-  
-            return (
-              <React.Fragment key={index}>
-                {/* Stage Box */}
-                <div className="flex flex-col items-center min-w-[160px]">
-                  <div
-                    className={`w-full max-w-[120px] p-4 rounded-lg text-center font-bold text-sm
-                      ${isCompleted ? 'bg-green-500 text-white' :
-                      isCurrent ? 'bg-purple-500 text-white' :
-                      'bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200'}
-                    `}
-                  >
-                    {stage.count.toLocaleString()}
-                  </div>
-                  <div className="mt-2 text-center text-sm text-gray-700 dark:text-gray-300 font-medium">
-                    {stage.label}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">{stage.avg}</div>
-                </div>
-  
-                {/* Arrow between stages */}
-                {index < stages.length - 1 && (
-                  <div className="flex items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-gray-400 dark:text-gray-500"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-  
-  export default FulfillmentPipeline;
+const fulfillmentStages = [
+  { label: 'Order Placed', count: 5000000, avg: '2.1 hrs' },
+  { label: 'Processing', count: 4800000, avg: '3.4 hrs' },
+  { label: 'Distribution Center', count: 4500000, avg: '2.9 hrs' },
+  { label: 'Warehouse', count: 4300000, avg: '4.1 hrs' },
+  { label: 'Same-Day Delivery', count: 3900000, avg: '5.2 hrs' },
+  { label: 'Curbside Pickup', count: 3700000, avg: '6.0 hrs' },
+];
+
+const finalStages = [
+  { label: 'Shipped', count: 3600000, avg: '–' },
+  { label: 'Cancelled', count: 120000, avg: '–' },
+  { label: 'Return Received', count: 45000, avg: '–' },
+];
+
+const currentFulfillmentStage = 2;
+
+const PipelineRow = ({
+  stages,
+  currentStage,
+  isFinal = false
+}: {
+  stages: { label: string; count: number; avg: string }[];
+  currentStage: number;
+  isFinal?: boolean;
+}) => {
+  return (
+    <div
+      className={`flex flex-wrap items-center ${
+        isFinal ? 'justify-center gap-x-4 gap-y-3' : 'justify-center gap-3'
+      } px-2 overflow-hidden max-w-screen-xl mx-auto`}
+    >
+      {stages.map((stage, index) => {
+        const isCompleted = index < currentStage;
+        const isCurrent = index === currentStage;
+
+        const bgColor = isFinal
+          ? 'bg-yellow-500'
+          : isCompleted
+          ? 'bg-emerald-600'
+          : isCurrent
+          ? 'bg-indigo-500'
+          : 'bg-slate-400 dark:bg-slate-600';
+
+        return (
+          <React.Fragment key={index}>
+            <div className="flex flex-col items-center min-w-[90px] w-[22vw] sm:w-[130px]">
+              <div
+                className={`w-full p-2 sm:p-3 rounded-md text-center font-bold text-[11px] sm:text-sm text-white ${bgColor}`}
+              >
+                {stage.count.toLocaleString()}
+              </div>
+              <div className="mt-1 text-center text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 font-medium">
+                {stage.label}
+              </div>
+              <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">{stage.avg}</div>
+            </div>
+
+            {!isFinal && index < stages.length - 1 && (
+              <div className="hidden sm:flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-gray-400 dark:text-gray-500"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
+
+const FulfillmentPipeline = () => {
+  return (
+    <div className="w-full py-6 space-y-10">
+      {/* Fulfillment Flow */}
+<div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
+  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+    Fulfillment Stages Pipeline
+  </h2>
+  <PipelineRow stages={fulfillmentStages} currentStage={currentFulfillmentStage} />
+</div>
+
+{/* Final Status Flow */}
+<div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
+  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+    Final Stages
+  </h2>
+  <PipelineRow stages={finalStages} currentStage={-1} isFinal />
+</div>
+
+    </div>
+  );
+};
+
+
+export default FulfillmentPipeline;
+
+
   
   
   
