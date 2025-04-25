@@ -5,7 +5,7 @@ import StatisticsChart from "../../components/dashboard/StatisticsChart";
 import RecentOrders from "../../components/dashboard/RecentOrders";
 import OrderTracking from "../../components/dashboard/OrderTracking";
 import DemographicCard from "../../components/dashboard/DemographicCard";
-import OrderProcessingTime from "../../components/dashboard/OrderProcessingTime";
+// import OrderProcessingTime from "../../components/dashboard/OrderProcessingTime";
 import OrderTrendsCategory from "../../components/dashboard/OrderTrendsCategory";
 // import OrderValueSegment from "../../components/dashboard/OrderValueSegment";
 import RevenuePerCustomer from "../../components/dashboard/RevenuePerCustomer";
@@ -22,7 +22,7 @@ const Memoized = {
   RecentOrders: memo(RecentOrders),
   OrderTracking: memo(OrderTracking),
   DemographicCard: memo(DemographicCard),
-  OrderProcessingTime: memo(OrderProcessingTime),
+  // OrderProcessingTime: memo(OrderProcessingTime),
   OrderTrendsCategory: memo(OrderTrendsCategory),
   // OrderValueSegment: memo(OrderValueSegment),
   RevenuePerCustomer: memo(RevenuePerCustomer),
@@ -79,10 +79,14 @@ export default function Home() {
         {/* 🛠 Operational Insights */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            {/* <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
               <Memoized.OrderProcessingTime />
-            </div>
+            </div> */}
+            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <Memoized.ShipmentPerformance />
           </div>
+          </div>
+          
           <div className="w-full xl:w-1/2 h-full">
             <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
               <Memoized.FulfillmentEfficiency />

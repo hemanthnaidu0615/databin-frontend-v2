@@ -169,7 +169,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border ${
+      className={`overflow-hidden rounded-xl border ${
         isDarkMode ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"
       } px-5 pt-5 sm:px-6 sm:pt-6`}
     >

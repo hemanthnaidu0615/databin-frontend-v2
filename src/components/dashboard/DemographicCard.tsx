@@ -71,7 +71,7 @@ export default function DemographicCard({
   const closeDropdown = () => setIsOpen(false);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-4 pt-8 w-full ">
+    <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-4 pt-8 w-full ">
       <div className="flex justify-between mb-12">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white">

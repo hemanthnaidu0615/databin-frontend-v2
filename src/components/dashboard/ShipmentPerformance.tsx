@@ -109,7 +109,7 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   return (
     <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-0">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Shipment Performance</h2>
           <div className="relative">
             <button ref={buttonRef} onClick={() => setDropdownOpen(!isDropdownOpen)} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10">
