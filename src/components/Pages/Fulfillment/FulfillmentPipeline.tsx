@@ -37,12 +37,12 @@ const PipelineRow = ({
         const isCurrent = index === currentStage;
 
         const bgColor = isFinal
-          ? 'bg-yellow-500'
+          ? 'bg-slate-400 dark:bg-slate-600'
           : isCompleted
-          ? 'bg-emerald-600'
+          ? 'bg-purple-500 '
           : isCurrent
-          ? 'bg-indigo-500'
-          : 'bg-slate-400 dark:bg-slate-600';
+          ? 'bg-emerald-600'
+          : ' bg-yellow-500';
 
         return (
           <React.Fragment key={index}>

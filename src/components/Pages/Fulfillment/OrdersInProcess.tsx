@@ -4,76 +4,204 @@ import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
+import { Dialog } from 'primereact/dialog';
+import { motion } from 'framer-motion';
+import { Paginator } from 'primereact/paginator';
 
 interface Order {
   id: string;
   customer: string;
-  status: string;
-  stage: string;
+  event: string;
   eta: string;
 }
 
 const dummyOrders: Order[] = [
-  { id: 'ORD-1001', customer: 'Alice Johnson', status: 'Processing', stage: 'Picking', eta: '2h' },
-  { id: 'ORD-1002', customer: 'David Miller', status: 'Shipped', stage: 'Shipping', eta: 'Delivered' },
-  { id: 'ORD-1003', customer: 'Megan Fox', status: 'Packing', stage: 'Packing', eta: '1h' },
-  { id: 'ORD-1004', customer: 'John Doe', status: 'Processing', stage: 'Order Received', eta: '4h' },
+  { id: 'ORD-1001', customer: 'Alice Johnson', event: 'Store Pickup', eta: '2h' },
+  { id: 'ORD-1002', customer: 'David Miller', event: 'Cancelled', eta: 'Delivered' },
+  { id: 'ORD-1003', customer: 'Megan Fox', event: 'Warehouse', eta: '1h' },
+  { id: 'ORD-1004', customer: 'John Doe', event: 'Order Placed', eta: '4h' },
+  { id: 'ORD-1005', customer: 'Sandra Lee', event: 'Vendor Drop Shipping', eta: '6h' },
+  { id: 'ORD-1006', customer: 'Brian O’Connor', event: 'Distribution Center', eta: '3h' },
+  { id: 'ORD-1007', customer: 'Michelle Chan', event: 'Same-Day Delivery', eta: '30m' },
+  { id: 'ORD-1008', customer: 'Carlos Ramirez', event: 'Locker Pickup', eta: 'Ready' },
+  { id: 'ORD-1009', customer: 'Tina Cohen', event: 'Curbside Pickup', eta: '45m' },
+  { id: 'ORD-1010', customer: 'Robert Langdon', event: 'Cancelled', eta: '-' },
+  { id: 'ORD-1011', customer: 'Emily Rose', event: 'Return Received', eta: '-' },
+  { id: 'ORD-1012', customer: 'Nathan Drake', event: 'Processing', eta: '1h' },
+  { id: 'ORD-1013', customer: 'Chloe Frazer', event: 'Shipped', eta: 'Delivered' },
+  { id: 'ORD-1014', customer: 'Lara Croft', event: 'Store Pickup', eta: 'Ready' },
+  { id: 'ORD-1015', customer: 'Marcus Holloway', event: 'Order Placed', eta: '5h' },
 ];
 
-const statusColors: Record<string, string> = {
-  Processing: 'blue',
-  Picking: 'orange',
-  Packing: 'purple',
-  Shipped: 'green',
+const mapEventToStatus = (event: string): string => {
+  switch (event) {
+    case 'Order Placed':
+    case 'Processing':
+    case 'Distribution Center':
+    case 'Warehouse':
+    case 'Vendor Drop Shipping':
+    case 'Ship to Home':
+      return 'Processing';
+    case 'Store Pickup':
+    case 'Locker Pickup':
+    case 'Curbside Pickup':
+      return 'Ready for Pickup';
+    case 'Same-Day Delivery':
+    case 'Shipped':
+      return 'Shipped';
+    case 'Cancelled':
+      return 'Cancelled';
+    case 'Return Received':
+      return 'Returned';
+    default:
+      return 'Unknown';
+  }
 };
 
 const OrdersInProcess = () => {
   const [globalFilter, setGlobalFilter] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [page, setPage] = useState(1);
+  const rows = 5;
 
   const header = (
-    <div className="flex justify-between items-center">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Orders in Process</h2>
-      <span className="p-input-icon-left">
-        <i className="pi pi-search text-gray-500" />
+    <div className="flex justify-between items-center gap-2 flex-wrap">
+      <h2 className="text-sm md:text-lg font-semibold">Orders in Process</h2>
+      <span className="p-input-icon-left w-full md:w-auto">
+        <i className="pi pi-search" />
         <InputText
           type="search"
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
           placeholder="Search Orders"
-          className="p-inputtext-sm"
+          className="p-inputtext-sm w-full"
+          style={{ paddingLeft: '2rem' }}
         />
       </span>
     </div>
   );
 
-  const statusTemplate = (rowData: Order) => (
-    <Tag value={rowData.status} severity={statusColors[rowData.status] as any || 'info'} />
+  const statusTemplate = (rowData: Order) => <Tag value={mapEventToStatus(rowData.event)} />;
+  const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
+
+  const handleViewClick = (order: Order) => {
+    setSelectedOrder(order);
+    setVisible(true);
+  };
+
+  const actionTemplate = (rowData: Order) => (
+    <Button
+      label="View"
+      icon="pi pi-eye"
+      className="p-button-sm p-button-text"
+      onClick={() => handleViewClick(rowData)}
+    />
   );
 
-  const actionTemplate = () => (
-    <Button label="View" icon="pi pi-eye" className="p-button-sm p-button-text" />
-  );
+  const handlePageChange = (direction: string) => {
+    if (direction === 'next' && page * rows < dummyOrders.length) {
+      setPage(page + 1);
+    } else if (direction === 'prev' && page > 1) {
+      setPage(page - 1);
+    }
+  };
 
   return (
     <div className="mt-6">
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4">
-        <DataTable
-          value={dummyOrders}
-          paginator
-          rows={5}
-          header={header}
-          globalFilter={globalFilter}
-          className="p-datatable-sm"
-          emptyMessage="No orders found."
-          responsiveLayout="scroll"
-        >
-          <Column field="id" header="Order ID" sortable />
-          <Column field="customer" header="Customer" sortable />
-          <Column field="status" header="Status" body={statusTemplate} sortable />
-          <Column field="stage" header="Current Stage" sortable />
-          <Column field="eta" header="ETA" sortable />
-          <Column header="Action" body={actionTemplate} />
-        </DataTable>
+      <div className="border rounded-xl shadow-sm p-4 overflow-x-auto bg-white dark:bg-gray-900">
+        {/* Desktop View */}
+        <div className="hidden sm:block">
+          <DataTable
+            value={dummyOrders.slice((page - 1) * rows, page * rows)}
+            paginator={false}
+            header={header}
+            globalFilter={globalFilter}
+            className="p-datatable-sm"
+            emptyMessage="No orders found."
+            responsiveLayout="scroll"
+            scrollable
+          >
+            <Column field="id" header="Order ID" sortable />
+            <Column header="Status" body={statusTemplate} sortable />
+            <Column field="event" header="Event" body={eventTemplate} sortable />
+            <Column field="eta" header="ETA" sortable />
+            <Column header="Action" body={actionTemplate} />
+          </DataTable>
+
+          {/* Desktop Pagination */}
+          <div className="hidden sm:block mt-4 p-4 bg-white dark:bg-gray-900 rounded-b-lg">
+            <Paginator
+              first={(page - 1) * rows}
+              rows={rows}
+              totalRecords={dummyOrders.length}
+              onPageChange={(e) => setPage(e.page + 1)}
+              rowsPerPageOptions={[5, 10, 20]}
+              template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+              className="dark:text-gray-100 dark:bg-gray-900 [&_.p-paginator]:bg-transparent [&_.p-paginator]:dark:bg-transparent [&_.p-paginator]:border-none"
+            />
+          </div>
+        </div>
+
+        {/* Mobile View */}
+        <div className="sm:hidden">
+          {dummyOrders.slice((page - 1) * rows, page * rows).map((order) => (
+            <div key={order.id} className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-semibold">Order ID: {order.id}</h3>
+                <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+              </div>
+              <p className="text-xs mt-1">Event: {order.event}</p>
+              <p className="text-xs">ETA: {order.eta}</p>
+              <div className="mt-2">
+                <Button
+                  label="View"
+                  icon="pi pi-eye"
+                  className="p-button-sm p-button-text"
+                  onClick={() => handleViewClick(order)}
+                />
+              </div>
+            </div>
+          ))}
+
+          {/* Mobile Pagination */}
+          <div className="block sm:hidden mt-4 flex justify-between items-center">
+            <Button
+              label="Previous"
+              icon="pi pi-chevron-left"
+              className="p-button-sm text-xs"
+              onClick={() => handlePageChange('prev')}
+              disabled={page === 1}
+            />
+            <span className="text-sm font-semibold">{`Page ${page} of ${Math.ceil(dummyOrders.length / rows)}`}</span>
+            <Button
+              label="Next"
+              icon="pi pi-chevron-right"
+              className="p-button-sm text-xs"
+              onClick={() => handlePageChange('next')}
+              disabled={page * rows >= dummyOrders.length}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Dialog Modal */}
+      <Dialog
+        header={`Order Details: ${selectedOrder?.id}`}
+        visible={visible}
+        onHide={() => setVisible(false)}
+        style={{ width: '40rem' }}
+        modal
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-6"
+        >
+          {/* Modal content goes here */}
+        </motion.div>
+      </Dialog>
     </div>
   );
 };
