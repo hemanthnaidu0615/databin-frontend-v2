@@ -51,6 +51,9 @@ const FulfillmentStats = () => {
             shadow-sm transition-transform transform hover:scale-[1.015]
             border-l-4 ${stat.accent}`}
         >
+
+
+          
           <div className="flex items-center gap-2">
             <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
             <span className="text-sm font-semibold">{stat.title}</span>
