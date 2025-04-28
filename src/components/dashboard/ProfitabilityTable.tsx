@@ -7,7 +7,9 @@ import { MoreDotIcon } from "../../icons";
 // Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
 interface ProductData {
@@ -42,17 +44,21 @@ const ProfitabilityTable: React.FC = () => {
 
         // Fetch data from API with date range
         const response = await fetch(
-          `http://localhost:8080/api/top-sellers/top-products?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/top-sellers/top-products?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         const json = await response.json();
 
         if (json.top_products && Array.isArray(json.top_products)) {
-          const transformed = json.top_products.map((product: any, index: number) => ({
-            id: index + 1,
-            name: product.product_name,
-            salesPercentage: parseFloat(product.percentage), // e.g. "8.00%" => 8
-            popularity: Math.floor(Math.random() * 100), // You can replace this with actual logic if needed
-          }));
+          const transformed = json.top_products.map(
+            (product: any, index: number) => ({
+              id: index + 1,
+              name: product.product_name,
+              salesPercentage: parseFloat(product.percentage), // e.g. "8.00%" => 8
+              popularity: Math.floor(Math.random() * 100), // You can replace this with actual logic if needed
+            })
+          );
 
           setProductData(transformed);
         }
@@ -80,11 +86,21 @@ const ProfitabilityTable: React.FC = () => {
             <MoreDotIcon className="text-gray-500 dark:text-gray-400 size-6" />
           </button>
           {isDropdownOpen && (
-            <Dropdown isOpen={isDropdownOpen} onClose={closeDropdown} className="w-40 p-2">
-              <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
+            <Dropdown
+              isOpen={isDropdownOpen}
+              onClose={closeDropdown}
+              className="w-40 p-2"
+            >
+              <DropdownItem
+                onItemClick={closeDropdown}
+                className="flex w-full font-normal text-left text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+              >
                 View More
               </DropdownItem>
-              <DropdownItem onItemClick={removeWidget} className="flex w-full font-normal text-left text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
+              <DropdownItem
+                onItemClick={removeWidget}
+                className="flex w-full font-normal text-left text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+              >
                 Remove
               </DropdownItem>
             </Dropdown>
@@ -96,10 +112,17 @@ const ProfitabilityTable: React.FC = () => {
         {productData.map((product, index) => {
           const barColor = getPopularityColor(product.popularity);
           return (
-            <div key={product.id} className="flex items-center justify-between py-2">
+            <div
+              key={product.id}
+              className="flex items-center justify-between py-2"
+            >
               <div className="flex items-center space-x-3 w-1/4">
-                <span className="text-gray-500 dark:text-gray-400 font-medium">{`0${index + 1}`}</span>
-                <span className="text-gray-800 dark:text-white">{product.name}</span>
+                <span className="text-gray-500 dark:text-gray-400 font-medium">{`0${
+                  index + 1
+                }`}</span>
+                <span className="text-gray-800 dark:text-white">
+                  {product.name}
+                </span>
               </div>
 
               <div className="flex-1 flex items-center space-x-2">

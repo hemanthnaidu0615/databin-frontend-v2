@@ -7,6 +7,7 @@ import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import Logo from "../images/logo.png";
 import AppMobileRightSidebar from ".//AppMobileRightSidebar";
+import { useLocation } from "react-router-dom";
 
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
@@ -21,13 +22,27 @@ const AppHeader: React.FC = () => {
   const enterpriseKeys = ["ABC", "XYZ", "PQR"];
   const calendarRef = useRef<any>(null);
 
-  const { isMobileOpen, toggleSidebar, toggleMobileSidebar, screenSize, toggleMobileRightSidebar } = useSidebar();
+  const {
+    isMobileOpen,
+    toggleSidebar,
+    toggleMobileSidebar,
+    screenSize,
+    toggleMobileRightSidebar,
+  } = useSidebar();
   const dispatch = useDispatch();
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
     new Date("2025-03-19"),
     new Date("2025-03-20"),
   ]);
+
+  const hideCalendarRoutes = ["/scheduler"];
+  const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler"];
+
+  const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
+  const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(
+    location.pathname
+  );
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -62,8 +77,8 @@ const AppHeader: React.FC = () => {
 
   return (
     <>
-<header className="w-full bg-white border-gray-200 z-[99999] dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-<div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
+      <header className="w-full bg-white border-gray-200 z-[99999] dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+        <div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
           {/* Sidebar Toggle and Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <button
@@ -92,9 +107,16 @@ const AppHeader: React.FC = () => {
               )}
             </button>
 
-            <Link to="/" className="flex items-center gap-2 shrink-0 lg:hidden md:hidden">
+            <Link
+              to="/"
+              className="flex items-center gap-2 shrink-0 lg:hidden md:hidden"
+            >
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
-              <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
+              <img
+                className="hidden dark:block w-6 h-6"
+                src={Logo}
+                alt="Logo"
+              />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
                 Data-Bin
               </span>
@@ -104,32 +126,36 @@ const AppHeader: React.FC = () => {
           {/* Right Side Utilities */}
           {screenSize !== "mobile" ? (
             <div className="flex items-center flex-nowrap gap-3 w-auto min-w-0 shrink-0">
-              <Calendar
-                ref={calendarRef}
-                value={dateRange}
-                selectionMode="range"
-                onChange={handleDateChange}
-                dateFormat="yy-mm-dd"
-                placeholder="Select Date Range"
-                className="w-[275px]"
-                inputClassName="text-sm dark:bg-gray-900 dark:text-white"
-                panelClassName="dark:bg-gray-900 dark:text-white z-50"
-                showIcon
-                hideOnDateTimeSelect
-                hideOnRangeSelection
-              />
+              {!shouldHideCalendar && (
+                <Calendar
+                  ref={calendarRef}
+                  value={dateRange}
+                  selectionMode="range"
+                  onChange={handleDateChange}
+                  dateFormat="yy-mm-dd"
+                  placeholder="Select Date Range"
+                  className="w-[275px]"
+                  inputClassName="text-sm dark:bg-gray-900 dark:text-white"
+                  panelClassName="dark:bg-gray-900 dark:text-white z-50"
+                  showIcon
+                  hideOnDateTimeSelect
+                  hideOnRangeSelection
+                />
+              )}
 
-              <select
-                value={enterpriseKey}
-                onChange={(e) => setEnterpriseKey(e.target.value)}
-                className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white text-sm"
-              >
-                {enterpriseKeys.map((key) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
+              {!shouldHideEnterpriseKey && (
+                <select
+                  value={enterpriseKey}
+                  onChange={(e) => setEnterpriseKey(e.target.value)}
+                  className="h-10 px-3 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white text-sm"
+                >
+                  {enterpriseKeys.map((key) => (
+                    <option key={key} value={key}>
+                      {key}
+                    </option>
+                  ))}
+                </select>
+              )}
 
               <ThemeToggleButton />
               <NotificationDropdown />
