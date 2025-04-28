@@ -4,13 +4,13 @@
 // import { Dropdown } from "../ui/dropdown/Dropdown";
 // import { DropdownItem } from "../ui/dropdown/DropdownItem";
 // import { MoreDotIcon } from "../../icons";
-
+ 
 // type OrderProcessingTimeProps = {
 //   size?: "small" | "full";
 //   onRemove?: () => void;
 //   onViewMore?: () => void;
 // };
-
+ 
 // const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
 //   size = "full",
 //   onRemove,
@@ -20,17 +20,17 @@
 //   const [isDropdownOpen, setDropdownOpen] = useState(false);
 //   const dropdownRef = useRef<HTMLDivElement | null>(null);
 //   const buttonRef = useRef<HTMLButtonElement | null>(null);
-
+ 
 //   const data = {
 //     hourly: [50, 120, 90, 40, 30, 15],
 //     daily: [200, 150, 100, 50],
 //   };
-
+ 
 //   const categories = {
 //     hourly: ["<1h", "1-3h", "3-6h", "6-12h", "12-24h", ">24h"],
 //     daily: ["<1 day", "1-3 days", "3-7 days", ">7 days"],
 //   };
-
+ 
 //   useEffect(() => {
 //     const handleClickOutside = (event: MouseEvent) => {
 //       if (
@@ -42,7 +42,7 @@
 //         setDropdownOpen(false);
 //       }
 //     };
-
+ 
 //     document.addEventListener("mousedown", handleClickOutside);
 //     return () => {
 //       document.removeEventListener("mousedown", handleClickOutside);
@@ -120,9 +120,9 @@
 //       },
 //     ],
 //   };
-
+ 
 //   const series = [{ name: "Orders", data: data[timeFrame] }];
-
+ 
 //   return (
 //     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-10.5 sm:pt-10.5">
 //       {size === "full" && (
@@ -130,7 +130,7 @@
 //           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
 //             Order Processing Time
 //           </h2>
-
+ 
 //           {/* More options dropdown */}
 //           <div className="relative inline-block">
 //             <button
@@ -140,7 +140,7 @@
 //             >
 //               <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
 //             </button>
-
+ 
 //             {isDropdownOpen && (
 //               <div
 //                 ref={dropdownRef}
@@ -171,11 +171,13 @@
 //           </div>
 //         </div>
 //       )}
-
+ 
 //       {/* Chart Component */}
 //       <Chart options={apexOptions} series={series} type="bar" height={size === "small" ? 200 : 300} />
 //     </div>
 //   );
 // };
-
+ 
 // export default OrderProcessingTime;
+ 
+ 

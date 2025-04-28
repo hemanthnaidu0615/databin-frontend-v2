@@ -7,36 +7,32 @@ const stats = [
     value: 347,
     icon: PrimeIcons.INBOX,
     accent: 'border-purple-500',
-    barColor: 'bg-purple-500',
     iconColor: 'text-purple-500',
-    barPercent: 75,
+    glowColor: '#8b5cf6', // Purple glow
   },
   {
     title: 'Avg Fulfillment Time',
     value: '1.7 days',
     icon: PrimeIcons.CLOCK,
     accent: 'border-green-500',
-    barColor: 'bg-green-500',
     iconColor: 'text-green-500',
-    barPercent: 65,
+    glowColor: '#00c853', // Green glow
   },
   {
     title: 'On-Time Rate',
     value: '92%',
     icon: PrimeIcons.CHECK_CIRCLE,
     accent: 'border-yellow-500',
-    barColor: 'bg-yellow-500',
     iconColor: 'text-yellow-500',
-    barPercent: 80,
+    glowColor: '#ffc400', // Yellow glow
   },
   {
     title: 'Awaiting Processing',
     value: 53,
     icon: PrimeIcons.EXCLAMATION_CIRCLE,
     accent: 'border-red-500',
-    barColor: 'bg-red-500',
     iconColor: 'text-red-500',
-    barPercent: 40,
+    glowColor: '#ff3d00', // Red glow
   },
 ];
 
@@ -46,27 +42,29 @@ const FulfillmentStats = () => {
       {stats.map((stat, index) => (
         <div
           key={index}
-          className={`relative flex flex-col justify-between gap-3 px-5 py-4 rounded-xl
-            bg-white dark:bg-[#111827] text-gray-900 dark:text-white
-            shadow-sm transition-transform transform hover:scale-[1.015]
+          className={`group relative flex flex-col justify-center gap-3 px-5 py-4 rounded-xl
+            bg-white dark:bg-white/10 text-gray-900 dark:text-white
+            shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-[1.015]
             border-l-4 ${stat.accent}`}
         >
 
+          {/* Border glow effect on hover */}
+          <div
+            className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
+            style={{
+              borderColor: stat.glowColor,
+              boxShadow: `0 0 15px ${stat.glowColor}`,
+            }}
+          ></div>
 
-          
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2  relative z-10">
+
+
             <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
             <span className="text-sm font-semibold">{stat.title}</span>
           </div>
 
-          <div className="text-2xl font-extrabold">{stat.value}</div>
-
-          <div className="w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ease-out ${stat.barColor}`}
-              style={{ width: `${stat.barPercent}%` }}
-            />
-          </div>
+          <div className="text-2xl font-extrabold relative z-10">{stat.value}</div>
         </div>
       ))}
     </div>

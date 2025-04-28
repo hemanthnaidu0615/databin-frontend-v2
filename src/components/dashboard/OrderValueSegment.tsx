@@ -4,13 +4,13 @@
 // import { Dropdown } from "../ui/dropdown/Dropdown";
 // import { DropdownItem } from "../ui/dropdown/DropdownItem";
 // import { MoreDotIcon } from "../../icons";
-
+ 
 // type OrderValueSegmentProps = {
 //   size?: "small" | "full";
 //   onViewMore?: () => void;
 //   onRemove?: () => void;
 // };
-
+ 
 // const data = {
 //   categories: ["Jan", "Feb", "Mar", "Apr"],
 //   series: [
@@ -18,7 +18,7 @@
 //     { name: "Returning", data: [2400, 1398, 9800, 3908] },
 //   ],
 // };
-
+ 
 // const OrderValueSegment: React.FC<OrderValueSegmentProps> = ({
 //   size = "full",
 //   onViewMore,
@@ -27,7 +27,7 @@
 //   const [isDropdownOpen, setDropdownOpen] = useState(false);
 //   const dropdownRef = useRef<HTMLDivElement | null>(null);
 //   const buttonRef = useRef<HTMLButtonElement | null>(null);
-
+ 
 //   useEffect(() => {
 //     const handleClickOutside = (event: MouseEvent) => {
 //       if (
@@ -39,13 +39,13 @@
 //         setDropdownOpen(false);
 //       }
 //     };
-
+ 
 //     document.addEventListener("mousedown", handleClickOutside);
 //     return () => {
 //       document.removeEventListener("mousedown", handleClickOutside);
 //     };
 //   }, []);
-
+ 
 //   const options: ApexOptions = {
 //     chart: { type: "bar", stacked: true },
 //     xaxis: { categories: data.categories },
@@ -53,7 +53,7 @@
 //     plotOptions: { bar: { horizontal: false, columnWidth: "50%" } },
 //     legend: { show: size === "full" },
 //   };
-
+ 
 //   return (
 //     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
 //       {size === "full" && (
@@ -61,11 +61,11 @@
 //           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
 //             Order Value by Customer Segment
 //           </h2>
-
+ 
 //           <button ref={buttonRef} className="p-2" onClick={() => setDropdownOpen(!isDropdownOpen)}>
 //             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
 //           </button>
-
+ 
 //           {isDropdownOpen && (
 //             <div ref={dropdownRef} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
 //               <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
@@ -80,18 +80,18 @@
 //           )}
 //         </div>
 //       )}
-
+ 
 //       <Chart options={options} series={data.series} type="bar" height={size === "small" ? 150 : 300} />
 //     </div>
 //   );
 // };
-
+ 
 // export default OrderValueSegment;
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
 // // import React, { useState } from "react";
 // // import Chart from "react-apexcharts";
 // // import { ApexOptions } from "apexcharts";
@@ -105,19 +105,19 @@
 // // import { Dropdown } from "../../ui/dropdown/Dropdown";
 // // import { DropdownItem } from "../../ui/dropdown/DropdownItem";
 // // import { MoreDotIcon } from "../../../icons";
-
+ 
 // // type OrderValueSegmentProps = {
 // //   size?: "small" | "full";
 // // };
-
+ 
 // // const OrderValueSegment: React.FC<OrderValueSegmentProps> = ({
 // //   size = "full",
 // // }) => {
 // //   const [timeFrame, setTimeFrame] = useState<keyof typeof chartData>("monthly");
 // //   const [isDropdownOpen, setDropdownOpen] = useState(false);
-
+ 
 // //   const closeDropdown = () => setDropdownOpen(false);
-
+ 
 // //   // Data for Charts
 // //   const chartData = {
 // //     monthly: {
@@ -137,7 +137,7 @@
 // //       ],
 // //     },
 // //   };
-
+ 
 // //   // ApexCharts Options
 // //   const options: ApexOptions = {
 // //     chart: { type: "bar", stacked: true },
@@ -146,7 +146,7 @@
 // //     theme: { mode: "dark" },
 // //     plotOptions: { bar: { horizontal: false, columnWidth: "50%" } },
 // //   };
-
+ 
 // //   return (
 // //     <div
 // //       className={`border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-default bg-white dark:bg-gray-900 rounded-xl`}
@@ -156,7 +156,7 @@
 // //           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
 // //             Order Value by Customer Segment
 // //           </h2>
-
+ 
 // //           <div className="flex items-center gap-3">
 // //             {/* Timeframe Selector */}
 // //             <FormControl size="small">
@@ -171,7 +171,7 @@
 // //                 <MenuItem value="quarterly">Quarterly</MenuItem>
 // //               </Select>
 // //             </FormControl>
-
+ 
 // //             {/* More Options Dropdown */}
 // //             <div className="relative">
 // //               <button
@@ -180,7 +180,7 @@
 // //               >
 // //                 <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
 // //               </button>
-
+ 
 // //               {isDropdownOpen && (
 // //                 <Dropdown isOpen={isDropdownOpen} onClose={closeDropdown}>
 // //                   <DropdownItem
@@ -201,7 +201,7 @@
 // //           </div>
 // //         </div>
 // //       )}
-
+ 
 // //       {/* ApexCharts */}
 // //       <Chart
 // //         options={options}
@@ -212,5 +212,5 @@
 // //     </div>
 // //   );
 // // };
-
+ 
 // // export default OrderValueSegment;

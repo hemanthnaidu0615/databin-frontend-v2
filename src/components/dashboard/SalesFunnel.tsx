@@ -3,34 +3,34 @@
 // import { DropdownItem } from "../ui/dropdown/DropdownItem";
 // import { MoreDotIcon } from "../../icons";
 // import Chart from "react-apexcharts";
-
+ 
 // const data = {
 //   categories: ["Viewed Product", "Added to Cart", "Initiated Checkout", "Purchased"],
 //   series: [{ name: "Sales Funnel", data: [4000, 3000, 2000, 1000] }],
 // };
-
+ 
 // type SalesFunnelProps = {
 //   size?: "small" | "full";
 // };
-
+ 
 // const SalesFunnel: React.FC<SalesFunnelProps> = ({ size = "full" }) => {
 //   const [isDropdownOpen, setDropdownOpen] = useState(false);
 //   const [isVisible, setIsVisible] = useState(true);
-
+ 
 //   const closeDropdown = () => setDropdownOpen(false);
 //   const removeChart = () => {
 //     setIsVisible(false);
 //     closeDropdown();
 //   };
 //   const restoreChart = () => setIsVisible(true);
-
+ 
 //   const options: ApexCharts.ApexOptions = {
 //     chart: { type: "bar" },
 //     xaxis: { categories: data.categories },
 //     plotOptions: { bar: { horizontal: true, barHeight: "50%" } },
 //     tooltip: { theme: "dark" },
 //   };
-
+ 
 //   return (
 //     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
 //       {!isVisible && (
@@ -40,7 +40,7 @@
 //           </button>
 //         </div>
 //       )}
-
+ 
 //       {isVisible && (
 //         <>
 //           {size === "full" && (
@@ -53,7 +53,7 @@
 //                 >
 //                   <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
 //                 </button>
-
+ 
 //                 {isDropdownOpen && (
 //                   <Dropdown isOpen={isDropdownOpen} onClose={closeDropdown} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
 //                     <DropdownItem onItemClick={closeDropdown}>View More</DropdownItem>
@@ -63,12 +63,14 @@
 //               </div>
 //             </div>
 //           )}
-
+ 
 //           <Chart options={options} series={data.series} type="bar" height={size === "small" ? 150 : 300} />
 //         </>
 //       )}
 //     </div>
 //   );
 // };
-
+ 
 // export default SalesFunnel;
+ 
+ 

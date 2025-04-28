@@ -114,8 +114,12 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
-      <div className="flex justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Sales & Revenue</h3>
+
+      <div className="flex justify-between mb-1">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Sales & Revenue
+        </h3>
+
 
         <div className="relative">
           <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>

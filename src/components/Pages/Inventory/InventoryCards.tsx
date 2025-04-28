@@ -68,16 +68,6 @@ const InventoryCards = () => {
               {card.value.toLocaleString()}
             </p>
 
-            {/* Progress bar */}
-            <div className="w-full h-2 bg-gray-200/60 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-700 ease-out"
-                style={{
-                  width: `${card.barPercent}%`,
-                  backgroundColor: card.border,
-                }}
-              />
-            </div>
           </div>
         </div>
       ))}
