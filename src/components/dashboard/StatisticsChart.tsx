@@ -1,4 +1,6 @@
-import { useState,  } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -10,6 +12,17 @@ interface StatisticsChartProps {
   onViewMore?: () => void;
 }
 
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+    .getDate()
+    .toString()
+    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
+};
+
 export default function StatisticsChart({}: StatisticsChartProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
@@ -17,14 +30,54 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
   const years = Array.from({ length: 16 }, (_, i) => currentYear - 10 + i);
 
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+
+  const [sales, setSales] = useState<number>(0);
+  const [forecastedSales, setForecastedSales] = useState<number>(0);
+  const [revenue, setRevenue] = useState<number[]>(new Array(12).fill(0));
+
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
     setSelectedYear(Number(event.target.value));
 
-  const getChartData = () => [
-    { name: "Sales", data: [180, 190, 170, 160, 175, 165, 170, 205, 230, 210, 240, 235] },
-    { name: "Revenue", data: [40, 30, 50, 40, 55, 40, 70, 100, 110, 120, 150, 140] },
-    { name: "Forecasted Sales", data: [190, 195, 180, 170, 180, 170, 175, 210, 235, 220, 250, 245] },
-  ];
+  const fetchChartData = async () => {
+    if (!startDate || !endDate) return;
+
+    const formattedStart = formatDate(startDate);
+    const formattedEnd = formatDate(endDate);
+
+    try {
+      const [salesRes, revenueRes, forecastedSalesRes] = await Promise.all([
+        axios.get("http://localhost:8080/api/sales-revenue/sales-data", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        }),
+        axios.get("http://localhost:8080/api/sales-revenue/revenue-trends", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        }),
+        axios.get("http://localhost:8080/api/sales-revenue/forecasted-sales", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        }),
+      ]);
+
+      setSales(salesRes.data.total_sales || 0);
+      setForecastedSales(forecastedSalesRes.data.forecasted_sales || 0);
+
+      // Map monthly revenue to corresponding months
+      const monthlyRevenueMap = new Array(12).fill(0);
+      revenueRes.data.revenue_trends.forEach((item: any) => {
+        const monthIndex = new Date(item.month).getMonth(); // 0-based index
+        monthlyRevenueMap[monthIndex] = item.monthly_revenue;
+      });
+
+      setRevenue(monthlyRevenueMap);
+    } catch (error) {
+      console.error("Error fetching statistics chart data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchChartData();
+  }, [startDate, endDate]);
 
   const options: ApexOptions = {
     legend: { show: true },
@@ -53,12 +106,20 @@ export default function StatisticsChart({}: StatisticsChartProps) {
     setIsOpen(false);
   }
 
+  const series = [
+    { name: "Sales", data: new Array(12).fill(sales / 12) }, // dummy split
+    { name: "Revenue", data: revenue },
+    { name: "Forecasted Sales", data: new Array(12).fill(forecastedSales / 12) }, // dummy split
+  ];
+
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
+
       <div className="flex justify-between mb-1">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Sales & Revenue
         </h3>
+
 
         <div className="relative">
           <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
@@ -94,7 +155,7 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
       {/* Chart */}
       <div className="flex-1 w-full mt-3">
-        <Chart options={options} series={getChartData()} type="area" height="100%" />
+        <Chart options={options} series={series} type="area" height="100%" />
       </div>
     </div>
   );

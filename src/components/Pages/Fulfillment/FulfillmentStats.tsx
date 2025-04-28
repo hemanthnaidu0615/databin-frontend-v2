@@ -47,6 +47,7 @@ const FulfillmentStats = () => {
             shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-[1.015]
             border-l-4 ${stat.accent}`}
         >
+
           {/* Border glow effect on hover */}
           <div
             className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
@@ -57,6 +58,8 @@ const FulfillmentStats = () => {
           ></div>
 
           <div className="flex items-center gap-2  relative z-10">
+
+
             <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
             <span className="text-sm font-semibold">{stat.title}</span>
           </div>

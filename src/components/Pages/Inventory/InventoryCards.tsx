@@ -68,7 +68,6 @@ const InventoryCards = () => {
               {card.value.toLocaleString()}
             </p>
 
-
           </div>
         </div>
       ))}

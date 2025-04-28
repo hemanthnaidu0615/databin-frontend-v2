@@ -64,9 +64,11 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
     chart: {
       type: "bar",
       toolbar: {
+
         show: false,
         tools: {
           download: false,
+
           selection: false,
           zoom: false,
           zoomin: false,
@@ -74,6 +76,7 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
           pan: false,
           reset: false,
         },
+
       },
     },
     xaxis: {
@@ -82,10 +85,21 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
         show: false, // 👈 disables the white hover line
       },
     },
+    plotOptions: {
+      bar: {
+        dataLabels: {
+          position: "top", // Example position, adjust as needed
+        },
+      },
+    },
+    dataLabels: {
+      enabled: false, // ❌ disables value labels on top of bars
+    },
     series: [{ name: "Revenue", data: data.map((d) => d.revenue) }],
   };
   
   
+
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">

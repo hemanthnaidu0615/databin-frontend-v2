@@ -34,6 +34,7 @@ const DemographicCard = () => {
     <div className="w-full p-4 bg-white dark:bg-gray-900 rounded-xl shadow">
       <div className="text-gray-900 dark:text-white  dark:bg-gray-900  font-semibold text-lg mb-2">
         Customers Demographic
+
       </div>
       <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
         Orders and revenue per state
@@ -131,115 +132,4 @@ const DemographicCard = () => {
 
 export default DemographicCard;
 
-// import { useState, useEffect } from "react";
-// import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-// import { Card } from "primereact/card"; // Import Card from PrimeReact
-// import { HiMenu } from "react-icons/hi"; // Import Menu icon from react-icons
 
-// const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
-
-// const dummyRevenueData: Record<string, number> = {
-//   California: 24000,
-//   Texas: 18000,
-//   Florida: 12000,
-//   Illinois: 8000,
-//   Georgia: 7000,
-//   Washington: 6500,
-//   Arizona: 5000,
-//   Colorado: 4800,
-//   Michigan: 4700,
-// };
-
-// const DemographicCard = () => {
-//   const [hoveredState, setHoveredState] = useState<string | null>(null);
-//   const [isDarkTheme, setIsDarkTheme] = useState(false);
-
-//   // Detect the current theme
-//   useEffect(() => {
-//     // Check if dark theme is applied (adjust this according to your theme logic)
-//     const theme = document.documentElement.classList.contains("dark");
-//     setIsDarkTheme(theme);
-//   }, []);
-
-//   const handleMouseEnter = (stateName: string) => {
-//     setHoveredState(stateName);
-//   };
-
-//   const handleMouseLeave = () => {
-//     setHoveredState(null);
-//   };
-
-//   return (
-//     <Card className="h-full w-full p-4">
-//       <div className="flex justify-between items-center mb-2">
-//         <div>
-//           <h2 className="text-lg font-semibold text-foreground">Customers Demographic</h2>
-//           <p className="text-muted-foreground text-sm">Orders and revenue per state</p>
-//         </div>
-//         <HiMenu className="text-muted-foreground h-5 w-5" /> {/* Using HiMenu from react-icons */}
-//       </div>
-
-//       <div className="w-full overflow-x-auto">
-//         <div className="min-w-[300px] w-full h-[250px] sm:h-[300px] relative">
-//           <ComposableMap projection="geoAlbersUsa" width={800} height={400} style={{ width: "100%", height: "100%" }}>
-//             <Geographies geography={geoUrl}>
-//               {({ geographies }) =>
-//                 geographies.map((geo) => {
-//                   const stateName = geo.properties.name;
-//                   return (
-//                     <Geography
-//                       key={geo.rsmKey}
-//                       geography={geo}
-//                       fill={isDarkTheme ? "#4B5563" : "#F3F4F6"} // Lighter fill in dark mode, white in light mode
-//                       stroke={isDarkTheme ? "#6B7280" : "#E5E7EB"} // Slightly darker stroke in dark mode, light in light mode
-//                       onMouseEnter={() => handleMouseEnter(stateName)}
-//                       onMouseLeave={handleMouseLeave}
-//                       style={{
-//                         default: { outline: "none" },
-//                         hover: {
-//                           fill: isDarkTheme ? "#60A5FA" : "#2563EB", // Brighter hover color for both themes
-//                           outline: "none",
-//                         },
-//                         pressed: { outline: "none" },
-//                       }}
-//                     />
-//                   );
-//                 })
-//               }
-//             </Geographies>
-//           </ComposableMap>
-
-//           {hoveredState && (
-//             <div
-//               className="absolute top-0 left-0 bg-white p-4 shadow-lg rounded-md"
-//               style={{ transform: "translate(50px, 50px)" }}
-//             >
-//               <h3 className="text-xl font-semibold">{hoveredState}</h3>
-//               <p className="text-sm text-muted-foreground">
-//                 Revenue: ${dummyRevenueData[hoveredState]}
-//               </p>
-//               <p className="text-sm text-muted-foreground">Orders: {Math.floor(Math.random() * 5000)}</p>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-
-//       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-//         <div>
-//           <p className="text-sm text-muted-foreground">Returning vs New</p>
-//           <p className="font-semibold text-lg text-foreground">0 / 17816</p>
-//         </div>
-//         <div>
-//           <p className="text-sm text-muted-foreground">Avg Order Value</p>
-//           <p className="font-semibold text-lg text-foreground">$15528.00</p>
-//         </div>
-//         <div>
-//           <p className="text-sm text-muted-foreground">High Spenders</p>
-//           <p className="font-semibold text-lg text-foreground">10</p>
-//         </div>
-//       </div>
-//     </Card>
-//   );
-// };
-
-// export default DemographicCard;
