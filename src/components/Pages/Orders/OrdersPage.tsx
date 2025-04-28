@@ -38,7 +38,8 @@ const OrdersPage: React.FC = () => {
   const filteredOrders = useMemo(() => {
     return allOrders.filter((order) => {
       const match = (field: string, filterKey: string) => {
-        const filterValue = filters[filterKey as keyof typeof filters].toLowerCase();
+        const filterValue =
+          filters[filterKey as keyof typeof filters].toLowerCase();
         if (filterValue === "" || filterValue.startsWith("all")) return true;
 
         const fieldValue = order[field as keyof typeof order];
@@ -84,7 +85,7 @@ const OrdersPage: React.FC = () => {
 
         {/* Actions: Export / Print */}
         <div className="flex flex-nowrap gap-1.5 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-2 sm:overflow-visible">
-          <button className="px-2 py-1 text-[11px] border rounded-md transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm text-black border-black/20 hover:bg-black/10 dark:text-white dark:border-white/20 dark:hover:bg-white/10">
+          <button className="px-2 py-1 text-[11px] border rounded-md transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm text-black  order-black/20 hover:bg-black/10 dark:text-white dark:border-white/20 dark:hover:bg-white/10">
             Export
           </button>
           <button className="px-2 py-1 text-[11px] border rounded-md transition whitespace-nowrap sm:px-4 sm:py-2 sm:text-sm text-black border-black/20 hover:bg-black/10 dark:text-white dark:border-white/20 dark:hover:bg-white/10">

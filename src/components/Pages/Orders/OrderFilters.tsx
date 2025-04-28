@@ -41,7 +41,9 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/order-filters/filter-values");
+        const res = await fetch(
+          "http://localhost:8080/api/order-filters/filter-values"
+        );
         const data = await res.json();
         setFilterOptions(data);
       } catch (error) {
@@ -55,7 +57,11 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start text-sm text-white relative">
       {/* Status Filter */}
-      <select className={inputStyle} value={filters.status} onChange={(e) => onFilterChange("status", e.target.value)}>
+      <select
+        className={inputStyle}
+        value={filters.status}
+        onChange={(e) => onFilterChange("status", e.target.value)}
+      >
         <option>All statuses</option>
         {filterOptions.statuses.map((status) => (
           <option key={status}>{status}</option>
@@ -63,7 +69,11 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       </select>
 
       {/* Order Type Filter */}
-      <select className={inputStyle} value={filters.orderType} onChange={(e) => onFilterChange("orderType", e.target.value)}>
+      <select
+        className={inputStyle}
+        value={filters.orderType}
+        onChange={(e) => onFilterChange("orderType", e.target.value)}
+      >
         <option>All types</option>
         {filterOptions.types.map((type) => (
           <option key={type}>{type}</option>
@@ -71,7 +81,11 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       </select>
 
       {/* Payment Method Filter */}
-      <select className={inputStyle} value={filters.paymentMethod} onChange={(e) => onFilterChange("paymentMethod", e.target.value)}>
+      <select
+        className={inputStyle}
+        value={filters.paymentMethod}
+        onChange={(e) => onFilterChange("paymentMethod", e.target.value)}
+      >
         <option>All methods</option>
         {filterOptions.methods.map((method) => (
           <option key={method}>{method}</option>
@@ -79,7 +93,11 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       </select>
 
       {/* Price Range Filter */}
-      <select className={inputStyle} value={filters.priceRange} onChange={(e) => onFilterChange("priceRange", e.target.value)}>
+      <select
+        className={inputStyle}
+        value={filters.priceRange}
+        onChange={(e) => onFilterChange("priceRange", e.target.value)}
+      >
         <option>All prices</option>
         <option>Under $50</option>
         <option>$50 - $100</option>
@@ -87,7 +105,11 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       </select>
 
       {/* Carrier Filter */}
-      <select className={inputStyle} value={filters.carrier} onChange={(e) => onFilterChange("carrier", e.target.value)}>
+      <select
+        className={inputStyle}
+        value={filters.carrier}
+        onChange={(e) => onFilterChange("carrier", e.target.value)}
+      >
         <option>All carriers</option>
         {filterOptions.carriers.map((carrier) => (
           <option key={carrier}>{carrier}</option>
@@ -114,10 +136,16 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
 
       {/* Action Buttons */}
       <div className="col-span-full flex justify-end gap-2 mt-2">
-        <button onClick={onReset} className="px-4 py-2 rounded bg-gray-700 text-sm text-white hover:bg-gray-600 transition">
+        <button
+          onClick={onReset}
+          className="px-4 py-2 rounded bg-gray-700 text-sm text-white hover:bg-gray-600 transition"
+        >
           Reset Filters
         </button>
-        <button onClick={onApply} className="px-4 py-2 rounded bg-[#9614d0] text-sm text-white hover:bg-[#660094] transition">
+        <button
+          onClick={onApply}
+          className="px-4 py-2 rounded bg-[#9614d0] text-sm text-white hover:bg-[#660094] transition"
+        >
           Apply Filters
         </button>
       </div>

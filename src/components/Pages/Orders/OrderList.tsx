@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { orders as allOrders, Order } from './ordersData';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Dialog } from '@headlessui/react';
 import { Paginator } from 'primereact/paginator';
@@ -8,12 +7,42 @@ interface Props {
   orders?: Order[];
 }
 
+// Order interface in OrdersPage.tsx
+interface Order {
+  id: string;
+  date: string;
+  customer: string;
+  email: string;  // Make sure these are included
+  phone: string;
+  address: string;
+  product: string;
+  total: number;
+  status: string;
+  paymentMethod: string;
+  orderType: string;
+  products: Product[];
+}
+
+interface Product {
+  name: string;
+  category: string;
+  qty: number;
+  unitPrice: number;  // Use unitPrice instead of price
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  specs?: string;
+}
+
+// Colors for order status
 const statusColors: Record<string, string> = {
   Delivered: 'bg-green-600',
   Pending: 'bg-yellow-500',
   Cancelled: 'bg-red-600',
 };
 
+// Badge component for displaying order status
 const OrderStatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => {
   return (
     <span className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}>
@@ -22,41 +51,66 @@ const OrderStatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => 
   );
 };
 
-const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
+const OrderList: React.FC<Props> = ({ orders = [] }) => {
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [mobileOrder, setMobileOrder] = useState<Order | null>(null);
-  const [showMobileDialog, setShowMobileDialog] = useState(false);
-  
+  const [ordersData, setOrdersData] = useState<Order[]>([]); // State to hold fetched orders
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
+    const fetchOrders = async () => {
+      try {
+        const response1 = await fetch('http://localhost:8080/api/orders/filtered?startDate=2025-03-20T00:00:00&endDate=2025-03-21T00:00:00');
+        const ordersData1 = await response1.json();
   
-      if (mobile && expandedOrderIds.length > 0 && !showMobileDialog) {
-        const firstExpandedId = expandedOrderIds[0];
-        const order = orders.find((o) => o.id === firstExpandedId);
-        if (order) {
-          setSelectedOrder(order);
-          setShowMobileDialog(true);
-        }
+        const response2 = await fetch('http://localhost:8080/api/orders/138717/details?startDate=2025-01-19%2000:00:00.000&endDate=2025-04-22%2023:59:59.9919');
+        const ordersData2 = await response2.json();
+  
+        const orders = [
+          ...ordersData1,
+          ordersData2.value ? JSON.parse(ordersData2.value).order_summary : []
+        ].map((order: any) => ({
+          id: order.order_id || order.order_summary?.order_id,
+          date: order.order_date || order.order_summary?.order_date,
+          customer: order.customer_info?.name || '',
+          email: order.customer_info?.email || '',  // Mapping the email from customer_info
+          phone: order.customer_info?.phone || '',  // Mapping the phone from customer_info
+          address: order.customer_info?.address || '',  // Mapping the address from customer_info
+          product: order.products?.[0]?.name || '',
+          total: order.products?.[0]?.total || 0,
+          status: order.order_summary?.status || '',
+          paymentMethod: order.order_summary?.payment_method || '',
+          orderType: order.order_summary?.order_type || '',
+          products: order.products?.map((prod: any) => ({
+            name: prod.name || '',
+            category: prod.category || '',
+            qty: prod.quantity || 1,
+            unitPrice: prod.unit_price || 0,
+            subtotal: prod.subtotal || 0,
+            shipping: prod.shipping || 0,
+            tax: prod.tax || 0,
+            total: prod.total || 0,
+          })) || [],
+        }));
+  
+        setOrdersData(orders);
+  
+      } catch (error) {
+        console.error("Error fetching orders:", error);
       }
     };
   
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [expandedOrderIds, orders, showMobileDialog]);
-  
+    fetchOrders();
+  }, []);
   
 
+
+  // Toggle expand state for orders
   const toggleExpand = (order: Order) => {
     if (isMobile) {
-      setMobileOrder(order);
+      setMobileOrder(order);  // Set the selected order for mobile view
     } else {
       setExpandedOrderIds((prev) =>
         prev.includes(order.id) ? prev.filter((i) => i !== order.id) : [...prev, order.id]
@@ -64,14 +118,16 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
     }
   };
 
+  // Handle page changes for pagination
   const onPageChange = (e: { first: number; rows: number }) => {
     setFirst(e.first);
     setRows(e.rows);
-    setExpandedOrderIds([]);
-    setMobileOrder(null);
+    setExpandedOrderIds([]);  // Clear expanded order IDs
+    setMobileOrder(null);  // Clear mobile selected order
   };
 
-  const paginatedOrders = orders.slice(first, first + rows);
+  // Paginate the orders for display
+  const paginatedOrders = ordersData.slice(first, first + rows);
 
   return (
     <>
@@ -160,7 +216,7 @@ const OrderList: React.FC<Props> = ({ orders = allOrders }) => {
     </div>
     <div className="flex justify-between items-center">
       <span className="text-gray-500 dark:text-gray-400">Email</span>
-      <span className="text-right text-gray-900 dark:text-white font-medium">john.smith@example.com</span>
+      <span className="text-right text-gray-900 dark:text-white font-medium">{order.customer}</span>
     </div>
     <div className="flex justify-between items-center">
       <span className="text-gray-500 dark:text-gray-400">Phone</span>
