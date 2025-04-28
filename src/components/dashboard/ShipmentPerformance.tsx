@@ -93,10 +93,15 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     chart: { type: "bar", stacked: true, toolbar: { show: false } },
     colors: ["#4CAF50", "#FF9800", "#2196F3"],
     plotOptions: { bar: { columnWidth: "50%" } },
-    xaxis: { categories: data.carriers, title: { text: "Carriers" } },
+    xaxis: {
+      categories: data.carriers,
+      title: { text: "Carriers" },
+      crosshairs: { show: false }, // 👈 added here to remove hover line
+    },
     yaxis: { title: { text: "Number of Shipments" } },
     legend: { position: "top" },
   };
+  
 
   const barSeries = [
     { name: "Standard", data: data.standard },

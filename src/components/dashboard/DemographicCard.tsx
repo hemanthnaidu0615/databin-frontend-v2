@@ -1,148 +1,245 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import Badge from "../ui/badge/Badge"; // Assuming you have the Badge component like in the other file
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
-import USMap from "./CountryMap";
+import { useTheme } from "next-themes";
+import { useState } from "react";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 
-// Helper function to format date to match the API requirement
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+
+// Dummy data for tooltip
+const dummyStateData: Record<string, { orders: number; revenue: number }> = {
+  California: { orders: 1200, revenue: 24000 },
+  Texas: { orders: 1000, revenue: 18000 },
+  Florida: { orders: 800, revenue: 12000 },
+  "New York": { orders: 650, revenue: 9500 },
+  Illinois: { orders: 600, revenue: 8000 },
+  Georgia: { orders: 580, revenue: 7500 },
+  Arizona: { orders: 560, revenue: 7200 },
+  Washington: { orders: 550, revenue: 7000 },
+  Colorado: { orders: 530, revenue: 6800 },
+  Michigan: { orders: 500, revenue: 6500 },
 };
 
-interface DemographicCardProps {
-  onRemove?: () => void;
-  onViewMore?: () => void;
-}
+const DemographicCard = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
-export default function DemographicCard({
-  onRemove,
-  onViewMore,
-}: DemographicCardProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [customerData, setCustomerData] = useState({
-    returningCustomers: 0,
-    newCustomers: 0,
-    avgOrderValue: 0,
-    highSpenders: 0,
-  });
-
-  // Access the date range from Redux store
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange;
-
-  useEffect(() => {
-    async function fetchCustomerData() {
-      try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
-
-        // Construct API URL with formatted start and end dates as query parameters
-        const url = `http://localhost:8080/api/sales/metrics?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        // Ensure data exists before updating state
-        if (data && typeof data === "object") {
-          setCustomerData({
-            returningCustomers: data.returning_customers ?? customerData.returningCustomers,
-            newCustomers: data.new_customers ?? customerData.newCustomers,
-            avgOrderValue: data.avg_order_value ?? customerData.avgOrderValue,
-            highSpenders: data.high_spenders ?? customerData.highSpenders,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    }
-
-    if (startDate && endDate) {
-      fetchCustomerData();
-    }
-  }, [startDate, endDate]); // Re-run the effect when startDate or endDate changes
-
-  const toggleDropdown = () => setIsOpen((prev) => !prev);
-  const closeDropdown = () => setIsOpen(false);
+  const [tooltip, setTooltip] = useState<{
+    name: string;
+    orders: number;
+    revenue: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-4 pt-8 w-full ">
-      <div className="flex justify-between mb-12">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-            Customers Demographic
-          </h3>
-          <p className="mt-1 text-gray-500 text-sm dark:text-gray-400">
-            Orders and revenue per state
+    <div className="w-full p-4 bg-white dark:bg-gray-900 rounded-xl shadow">
+      <div className="text-gray-900 dark:text-white  dark:bg-gray-900  font-semibold text-lg mb-2">
+        Customers Demographic
+      </div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        Orders and revenue per state
+      </div>
+
+      <div className="relative w-full aspect-[3/1.5]  bg-white dark:bg-gray-900  ">
+        <ComposableMap projection="geoAlbersUsa" width={1050} height={551}>
+          <Geographies geography={US_TOPO_JSON}>
+            {({ geographies }) =>
+              geographies.map((geo) => {
+                const stateName = geo.properties.name;
+                const data = dummyStateData[stateName] || {
+                  orders: 0,
+                  revenue: 0,
+                };
+
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    fill={isDark ? "#ffffff" : "#e0e0e0"} // White for dark theme, gray for light theme
+                    stroke="#473838" // Black stroke for both light and dark theme
+                    strokeWidth={0.5}
+                    onMouseEnter={(e) =>
+                      setTooltip({
+                        name: stateName,
+                        orders: data.orders,
+                        revenue: data.revenue,
+                        x: e.clientX,
+                        y: e.clientY,
+                      })
+                    }
+                    onMouseLeave={() => setTooltip(null)}
+                    style={{
+                      default: { outline: "none" },
+                      hover: { fill: "#4FD1C5", outline: "none" },
+                      pressed: { outline: "none" },
+                    }}
+                  />
+                );
+              })
+            }
+          </Geographies>
+        </ComposableMap>
+
+        {tooltip && (
+          <div
+            className="fixed z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
+            style={{
+              top: tooltip.y + 10,
+              left: tooltip.x + 10,
+              backgroundColor: isDark ? "#2d2d2d" : "#ffffff",
+              color: isDark ? "#ffffff" : "#000000",
+              border: `1px solid ${isDark ? "#444" : "#ccc"}`,
+              pointerEvents: "none",
+            }}
+          >
+            <strong>{tooltip.name}</strong>
+            {`\nOrders: ${
+              tooltip.orders
+            }\nRevenue: $${tooltip.revenue.toLocaleString()}`}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+        <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Returning vs New
+          </p>
+          <p className="text-lg font-semibold text-gray-800 dark:text-white">
+            0 / 17816
           </p>
         </div>
-        <div className="relative inline-block">
-          <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
-          </button>
-          <Dropdown
-            isOpen={isOpen}
-            onClose={closeDropdown}
-            className="w-36 p-2"
-          >
-            <DropdownItem
-              onItemClick={() => {
-                closeDropdown();
-                onViewMore && onViewMore();
-              }}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              View More
-            </DropdownItem>
-            <DropdownItem
-              onItemClick={() => {
-                closeDropdown();
-                onRemove && onRemove();
-              }}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              Remove
-            </DropdownItem>
-          </Dropdown>
+        <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Avg Order Value
+          </p>
+          <p className="text-lg font-semibold text-gray-800 dark:text-white">
+            $15,528.00
+          </p>
         </div>
-      </div>
-
-      {/* Map Section */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-xl w-full overflow-hidden p-4 sm:p-3 lg:p-3">
-        <div id="mapOne" className="relative w-full h-[160px]">
-          <div className="absolute inset-0 m-5 sm:m-3 lg:m-4">
-            <USMap />
-          </div>
+        <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            High Spenders
+          </p>
+          <p className="text-lg font-semibold text-gray-800 dark:text-white">
+            10
+          </p>
         </div>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-3 gap-2 mt-5 text-gray-800 dark:text-white text-xs">
-        {[ 
-          {
-            label: "Returning vs New",
-            value: `${customerData.returningCustomers} / ${customerData.newCustomers}`,
-          },
-          {
-            label: "Avg Order Value",
-            value: `$${customerData.avgOrderValue.toFixed(2)}`,
-          },
-          { label: "High Spenders", value: customerData.highSpenders },
-        ].map((item, index) => (
-          <div
-            key={index}
-            className="flex flex-col justify-between p-2 border border-gray-200 dark:border-gray-800 rounded-md h-full text-center"
-          >
-            <h4 className="font-medium text-[11px]">{item.label}</h4>
-            <p className="text-sm font-semibold">{item.value}</p>
-          </div>
-        ))}
       </div>
     </div>
   );
-}
+};
+
+export default DemographicCard;
+
+// import { useState, useEffect } from "react";
+// import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+// import { Card } from "primereact/card"; // Import Card from PrimeReact
+// import { HiMenu } from "react-icons/hi"; // Import Menu icon from react-icons
+
+// const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+
+// const dummyRevenueData: Record<string, number> = {
+//   California: 24000,
+//   Texas: 18000,
+//   Florida: 12000,
+//   Illinois: 8000,
+//   Georgia: 7000,
+//   Washington: 6500,
+//   Arizona: 5000,
+//   Colorado: 4800,
+//   Michigan: 4700,
+// };
+
+// const DemographicCard = () => {
+//   const [hoveredState, setHoveredState] = useState<string | null>(null);
+//   const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+//   // Detect the current theme
+//   useEffect(() => {
+//     // Check if dark theme is applied (adjust this according to your theme logic)
+//     const theme = document.documentElement.classList.contains("dark");
+//     setIsDarkTheme(theme);
+//   }, []);
+
+//   const handleMouseEnter = (stateName: string) => {
+//     setHoveredState(stateName);
+//   };
+
+//   const handleMouseLeave = () => {
+//     setHoveredState(null);
+//   };
+
+//   return (
+//     <Card className="h-full w-full p-4">
+//       <div className="flex justify-between items-center mb-2">
+//         <div>
+//           <h2 className="text-lg font-semibold text-foreground">Customers Demographic</h2>
+//           <p className="text-muted-foreground text-sm">Orders and revenue per state</p>
+//         </div>
+//         <HiMenu className="text-muted-foreground h-5 w-5" /> {/* Using HiMenu from react-icons */}
+//       </div>
+
+//       <div className="w-full overflow-x-auto">
+//         <div className="min-w-[300px] w-full h-[250px] sm:h-[300px] relative">
+//           <ComposableMap projection="geoAlbersUsa" width={800} height={400} style={{ width: "100%", height: "100%" }}>
+//             <Geographies geography={geoUrl}>
+//               {({ geographies }) =>
+//                 geographies.map((geo) => {
+//                   const stateName = geo.properties.name;
+//                   return (
+//                     <Geography
+//                       key={geo.rsmKey}
+//                       geography={geo}
+//                       fill={isDarkTheme ? "#4B5563" : "#F3F4F6"} // Lighter fill in dark mode, white in light mode
+//                       stroke={isDarkTheme ? "#6B7280" : "#E5E7EB"} // Slightly darker stroke in dark mode, light in light mode
+//                       onMouseEnter={() => handleMouseEnter(stateName)}
+//                       onMouseLeave={handleMouseLeave}
+//                       style={{
+//                         default: { outline: "none" },
+//                         hover: {
+//                           fill: isDarkTheme ? "#60A5FA" : "#2563EB", // Brighter hover color for both themes
+//                           outline: "none",
+//                         },
+//                         pressed: { outline: "none" },
+//                       }}
+//                     />
+//                   );
+//                 })
+//               }
+//             </Geographies>
+//           </ComposableMap>
+
+//           {hoveredState && (
+//             <div
+//               className="absolute top-0 left-0 bg-white p-4 shadow-lg rounded-md"
+//               style={{ transform: "translate(50px, 50px)" }}
+//             >
+//               <h3 className="text-xl font-semibold">{hoveredState}</h3>
+//               <p className="text-sm text-muted-foreground">
+//                 Revenue: ${dummyRevenueData[hoveredState]}
+//               </p>
+//               <p className="text-sm text-muted-foreground">Orders: {Math.floor(Math.random() * 5000)}</p>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+//         <div>
+//           <p className="text-sm text-muted-foreground">Returning vs New</p>
+//           <p className="font-semibold text-lg text-foreground">0 / 17816</p>
+//         </div>
+//         <div>
+//           <p className="text-sm text-muted-foreground">Avg Order Value</p>
+//           <p className="font-semibold text-lg text-foreground">$15528.00</p>
+//         </div>
+//         <div>
+//           <p className="text-sm text-muted-foreground">High Spenders</p>
+//           <p className="font-semibold text-lg text-foreground">10</p>
+//         </div>
+//       </div>
+//     </Card>
+//   );
+// };
+
+// export default DemographicCard;

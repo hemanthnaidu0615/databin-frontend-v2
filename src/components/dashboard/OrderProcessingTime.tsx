@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Dropdown } from "../ui/dropdown/Dropdown";
@@ -16,20 +16,22 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
   onRemove,
   onViewMore,
 }) => {
-  const [timeFrame,] = useState<"hourly" | "daily">("hourly");
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  const data = {
-    hourly: [50, 120, 90, 40, 30, 15],
-    daily: [200, 150, 100, 50],
-  };
+  // Dummy data structured like your API would return
+  const dummyData = [
+    { label: "<1h", count: 50 },
+    { label: "1-3h", count: 120 },
+    { label: "3-6h", count: 90 },
+    { label: "6-12h", count: 40 },
+    { label: "12-24h", count: 30 },
+    { label: ">24h", count: 15 },
+  ];
 
-  const categories = {
-    hourly: ["<1h", "1-3h", "3-6h", "6-12h", "12-24h", ">24h"],
-    daily: ["<1 day", "1-3 days", "3-7 days", ">7 days"],
-  };
+  const categories = dummyData.map((d) => d.label);
+  const values = dummyData.map((d) => d.count);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,29 +44,17 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
         setDropdownOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-// this is helpful for the user to view more details about the chart the small hamburger icon will be displayed on the top right corner of the chart
+
   const apexOptions: ApexOptions = {
     chart: {
       type: "bar",
-      toolbar: {
-        show: true,
-        tools: {
-          download: true, // Keep the download feature
-          selection: false,
-          zoom: false,
-          zoomin: false,
-          zoomout: false,
-          pan: false,
-          reset: false,
-        },
-      },
       fontFamily: "Outfit, sans-serif",
+      toolbar: { show: false },
     },
     colors: ["#465fff"],
     plotOptions: {
@@ -76,13 +66,16 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
       },
     },
     xaxis: {
-      categories: categories[timeFrame],
+      categories: categories,
       axisBorder: { show: false },
       axisTicks: { show: false },
       labels: {
         style: {
           fontSize: "12px",
         },
+      },
+      crosshairs: {
+        show: false, // 👈 Added here
       },
     },
     yaxis: {
@@ -103,25 +96,32 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
     },
     responsive: [
       {
-        breakpoint: 768, // Tablets
+        breakpoint: 768,
         options: {
           plotOptions: { bar: { columnWidth: "40%" } },
-          xaxis: { labels: { style: { fontSize: "10px" } } },
+          xaxis: { 
+            labels: { style: { fontSize: "10px" } },
+            crosshairs: { show: false }, // 👈 optional to repeat here for mobile safety
+          },
           yaxis: { labels: { style: { fontSize: "10px" } } },
         },
       },
       {
-        breakpoint: 480, // Mobile
+        breakpoint: 480,
         options: {
           plotOptions: { bar: { columnWidth: "35%" } },
-          xaxis: { labels: { style: { fontSize: "9px" } } },
+          xaxis: { 
+            labels: { style: { fontSize: "9px" } },
+            crosshairs: { show: false }, // 👈 optional to repeat here for mobile safety
+          },
           yaxis: { labels: { style: { fontSize: "9px" } } },
         },
       },
     ],
   };
+  
 
-  const series = [{ name: "Orders", data: data[timeFrame] }];
+  const series = [{ name: "Orders", data: values }];
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-10.5 sm:pt-10.5">
@@ -172,8 +172,13 @@ const OrderProcessingTime: React.FC<OrderProcessingTimeProps> = ({
         </div>
       )}
 
-      {/* Chart Component */}
-      <Chart options={apexOptions} series={series} type="bar" height={size === "small" ? 200 : 300} />
+      {/* Chart */}
+      <Chart
+        options={apexOptions}
+        series={series}
+        type="bar"
+        height={size === "small" ? 200 : 300}
+      />
     </div>
   );
 };

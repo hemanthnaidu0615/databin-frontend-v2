@@ -51,13 +51,14 @@ export default function Home() {
         {/* 📈 Sales & Revenue */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-2/3 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.StatisticsChart />
+          <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+          <Memoized.StatisticsChart />
             </div>
           </div>
           <div className="w-full xl:w-1/3 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.RevenuePerCustomer />
+          <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+          <Memoized.RevenuePerCustomer />
             </div>
           </div>
         </div>
@@ -65,12 +66,16 @@ export default function Home() {
         {/* 📦 Orders & Tracking */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-2/3 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.RecentOrders />
             </div>
           </div>
           <div className="w-full xl:w-1/3 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.OrderTracking />
             </div>
           </div>
@@ -79,12 +84,16 @@ export default function Home() {
         {/* 🛠 Operational Insights */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.OrderProcessingTime />
             </div>
           </div>
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.FulfillmentEfficiency />
             </div>
           </div>
@@ -93,12 +102,16 @@ export default function Home() {
         {/* 👥 Customer Insights */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.OrderValueSegment />
             </div>
           </div>
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.DemographicCard />
             </div>
           </div>
@@ -107,35 +120,45 @@ export default function Home() {
         {/* 🔄 Product Trends */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.OrderTrendsCategory />
             </div>
           </div>
           <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
               <Memoized.SalesFunnel />
             </div>
           </div>
         </div>
 
-{/* 🧾 Top Row: Inventory + Customer Segmentation (side by side, matching height) */}
-<div className="sm:col-span-6 xl:col-span-12">
-  <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-    <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-      <Memoized.InventoryHealth />
-    </div>
-    <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-      <Memoized.CustomerSegmentation />
-    </div>
-  </div>
-</div>
+        {/* 🧾 Top Row: Inventory + Customer Segmentation (side by side, matching height) */}
+        <div className="sm:col-span-6 xl:col-span-12">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
 
-{/* 🚚 Shipment Performance (half-width aligned) */}
-<div className="sm:col-span-6 xl:col-span-6 mt-4">
-  <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-    <Memoized.ShipmentPerformance />
-  </div>
-</div>
+
+              <Memoized.InventoryHealth />
+            </div>
+            <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
+              <Memoized.CustomerSegmentation />
+            </div>
+          </div>
+        </div>
+
+        {/* 🚚 Shipment Performance (half-width aligned) */}
+        <div className="sm:col-span-6 xl:col-span-6 mt-4">
+          <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+
+
+            <Memoized.ShipmentPerformance />
+          </div>
+        </div>
 
       </div>
     </>

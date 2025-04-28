@@ -99,6 +99,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       type: "line",
       height: size === "small" ? 150 : 300,
       zoom: { enabled: false },
+      toolbar: {
+        show: false, // Hide the toolbar (hamburger menu, zoom, etc.)
+      },
     },
     xaxis: {
       categories: chartData.categories,
@@ -110,8 +113,18 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     stroke: { curve: "smooth", width: 2 },
     markers: { size: 4 },
     colors: ["#6366F1", "#22C55E", "#EAB308"],
-    legend: { position: "top" },
+    legend: { position: "bottom" },
     tooltip: { theme: "light", x: { show: true } },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          plotOptions: { bar: { columnWidth: "35%" } },
+          xaxis: { labels: { style: { fontSize: "10px" } } },
+          yaxis: { labels: { style: { fontSize: "10px" } } },
+        },
+      },
+    ],
   };
 
   return (

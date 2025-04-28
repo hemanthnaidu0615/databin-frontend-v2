@@ -11,65 +11,67 @@ import React, {
 // Theme types
 type Theme = "light" | "dark";
 
-type ThemeContextType = {
+interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
-};
+}
 
 // Create context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Utility to apply PrimeReact theme dynamically
+// Apply PrimeReact theme dynamically
 const applyPrimeTheme = (theme: Theme) => {
   const themeName = theme === "dark" ? "lara-dark-indigo" : "lara-light-indigo";
   const themeUrl = `https://unpkg.com/primereact/resources/themes/${themeName}/theme.css`;
 
-  const existingLink = document.getElementById("theme-css") as HTMLLinkElement;
+  let linkElement = document.getElementById("theme-css") as HTMLLinkElement | null;
 
-  if (existingLink) {
-    existingLink.href = themeUrl;
-  } else {
-    const link = document.createElement("link");
-    link.id = "theme-css";
-    link.rel = "stylesheet";
-    link.href = themeUrl;
-    document.head.appendChild(link);
+  if (!linkElement) {
+    linkElement = document.createElement("link");
+    linkElement.id = "theme-css";
+    linkElement.rel = "stylesheet";
+    document.head.appendChild(linkElement);
   }
+
+  linkElement.href = themeUrl;
 };
 
 // ThemeProvider
-export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [isInitialized, setIsInitialized] = useState(false);
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useState<Theme | null>(null); // Initially set to null for proper hydration
 
-  // Load theme from localStorage
+  // Load theme once on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    const initialTheme = savedTheme || "light";
-    setTheme(initialTheme);
-    setIsInitialized(true);
+    const savedTheme = (localStorage.getItem("theme") as Theme) || "light";
+    setTheme(savedTheme);
   }, []);
 
-  // Apply theme when changed
+  // Apply theme when it changes
   useEffect(() => {
-    if (!isInitialized) return;
+    if (theme === null) return; // Wait until the theme is set
 
+    // Save to localStorage
     localStorage.setItem("theme", theme);
 
-    // Tailwind class
+    // Tailwind dark class toggle
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
 
-    // PrimeReact theme
+    // PrimeReact theme switch
     applyPrimeTheme(theme);
-  }, [theme, isInitialized]);
+  }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
+
+  // Loading state (avoid flickering on initial load)
+  if (theme === null) {
+    return <div>Loading...</div>; // Or a skeleton loader or any loading spinner
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -78,11 +80,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   );
 };
 
-// Custom hook to use the theme
+// Custom hook
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    throw new Error("useTheme must be used inside ThemeProvider");
   }
   return context;
 };

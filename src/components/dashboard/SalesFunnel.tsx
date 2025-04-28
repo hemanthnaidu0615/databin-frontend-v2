@@ -24,12 +24,27 @@ const SalesFunnel: React.FC<SalesFunnelProps> = ({ size = "full" }) => {
   };
   const restoreChart = () => setIsVisible(true);
 
-  const options: ApexCharts.ApexOptions = {
-    chart: { type: "bar" },
-    xaxis: { categories: data.categories },
-    plotOptions: { bar: { horizontal: true, barHeight: "50%" } },
-    tooltip: { theme: "dark" },
-  };
+const options: ApexCharts.ApexOptions = {
+  chart: {
+    type: "bar",
+    toolbar: {
+      show: false, // Hide the toolbar (hamburger menu, zoom, etc.)
+    },
+  },
+  xaxis: {
+    categories: data.categories,
+  },
+  plotOptions: {
+    bar: {
+      horizontal: true,
+      barHeight: "50%",
+    },
+  },
+  tooltip: {
+    theme: "dark",
+  },
+};
+
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">

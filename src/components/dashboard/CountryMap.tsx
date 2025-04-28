@@ -1,64 +1,69 @@
+import React from "react";
 import { VectorMap } from "@react-jvectormap/core";
 import { usMill } from "@react-jvectormap/unitedstates";
 
-interface USMapProps {
+type USMapProps = {
   mapColor?: string;
-}
+};
 
-// Dummy customer data per state
 const stateData: Record<
   string,
   { orders: number; revenue: string; customers: number }
 > = {
-  NY: { orders: 1234, revenue: "$45,678", customers: 500 },
-  CA: { orders: 2345, revenue: "$78,910", customers: 750 },
-  IL: { orders: 3456, revenue: "$56,789", customers: 620 },
-  TX: { orders: 2890, revenue: "$67,890", customers: 830 },
-  FL: { orders: 2100, revenue: "$48,550", customers: 410 },
+  CA: { orders: 1200, revenue: "$150K", customers: 900 },
+  TX: { orders: 950, revenue: "$110K", customers: 750 },
+  NY: { orders: 850, revenue: "$100K", customers: 680 },
+  FL: { orders: 800, revenue: "$95K", customers: 620 },
+  IL: { orders: 720, revenue: "$85K", customers: 590 },
+  // Add more state data here
 };
 
-const USMap: React.FC<USMapProps> = ({ mapColor }) => {
+const CountryMap: React.FC<USMapProps> = ({ mapColor }) => {
   return (
-    <VectorMap
-      map={usMill}
-      backgroundColor="transparent"
-      regionStyle={{
-        initial: { fill: mapColor || "#D0D5DD", stroke: "none" },
-        hover: { fill: "#465FFF", cursor: "pointer" },
-        selected: { fill: "#465FFF" },
-      }}
-      series={{
-        regions: [
-          {
-            values: Object.fromEntries(
-              Object.keys(stateData).map((key) => [
-                key,
-                parseFloat(stateData[key].revenue.replace(/[^0-9.-]+/g, "")),
-              ])
-            ),
-            attribute: "fill",
+    <div className="w-full h-full relative">
+      <VectorMap
+        map={usMill}
+        backgroundColor="transparent"
+        regionStyle={{
+          initial: {
+            fill: mapColor || "#D0D5DD",
+            stroke: "none",
           },
-        ],
-      }}
-      onRegionTipShow={(_, el, code) => {
-        console.log("Tooltip triggered for:", code); // Debugging log
-        if (stateData[code]) {
-          console.log("State Data:", stateData[code]); // Debugging log
-
-          (el as unknown as HTMLElement).innerHTML = `
-            <strong>${code}</strong><br/>
-            Orders: ${stateData[code].orders}<br/>
-            Revenue: ${stateData[code].revenue}<br/>
-            Customers: ${stateData[code].customers}
-          `;
-        }
-      }}
-      style={{
-        width: "100%",
-        height: "120px",
-      }}
-    />
+          hover: {
+            fill: "#465FFF",
+            cursor: "pointer",
+          },
+          selected: {
+            fill: "#465FFF",
+          },
+        }}
+        series={{
+          regions: [
+            {
+              values: Object.fromEntries(
+                Object.entries(stateData).map(([key, value]) => [
+                  key,
+                  parseFloat(value.revenue.replace(/[^0-9.-]+/g, "")),
+                ])
+              ),
+              attribute: "fill",
+            },
+          ],
+        }}
+        onRegionTipShow={(_, el, code) => {
+          const state = stateData[code];
+          if (state) {
+            (el as HTMLElement).innerHTML = `
+              <strong>${code}</strong><br/>
+              Orders: ${state.orders}<br/>
+              Revenue: ${state.revenue}<br/>
+              Customers: ${state.customers}
+            `;
+          }
+        }}
+      />
+    </div>
   );
 };
 
-export default USMap;
+export default CountryMap;
