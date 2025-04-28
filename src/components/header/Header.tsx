@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onToggle }) => {
   };
 
   return (
-    <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900">
+    <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900 ">
       <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
         {/* Left Section */}
         <div className="flex items-center justify-between w-full gap-4 px-4 py-4 border-b border-gray-200 dark:border-gray-800 lg:border-b-0 lg:px-0 lg:py-5">
