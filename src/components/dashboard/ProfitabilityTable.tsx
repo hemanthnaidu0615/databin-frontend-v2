@@ -4,7 +4,17 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 
-// Helper function to format date to match the API requirement
+interface ProductData {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  url: string;
+  salesPercentage: number;
+  popularity: number;
+  updateDate?: string;
+}
+
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -12,29 +22,30 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
-interface ProductData {
-  id: number;
-  name: string;
-  salesPercentage: number;
-  popularity: number; // Value between 0 and 100
-}
-
 const getPopularityColor = (popularity: number) => {
-  if (popularity <= 30) return "#EF4444";
-  if (popularity <= 60) return "#3B82F6";
-  return "#22C55E";
+  if (popularity <= 30) return "#EF4444"; // red
+  if (popularity <= 60) return "#3B82F6"; // blue
+  return "#22C55E"; // green
 };
 
 const ProfitabilityTable: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [productData, setProductData] = useState<ProductData[]>([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
   const closeDropdown = () => setIsDropdownOpen(false);
   const removeWidget = () => console.log("Remove Widget");
+
+  const moveLeft = () => {
+    setCarouselIndex((prev) => (prev === 0 ? productData.length - 1 : prev - 1));
+  };
+
+  const moveRight = () => {
+    setCarouselIndex((prev) => (prev === productData.length - 1 ? 0 : prev + 1));
+  };
 
   useEffect(() => {
     const fetchTopProducts = async () => {
@@ -42,7 +53,6 @@ const ProfitabilityTable: React.FC = () => {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
-        // Fetch data from API with date range
         const response = await fetch(
           `http://localhost:8080/api/top-sellers/top-products?startDate=${encodeURIComponent(
             formattedStartDate
@@ -51,15 +61,16 @@ const ProfitabilityTable: React.FC = () => {
         const json = await response.json();
 
         if (json.top_products && Array.isArray(json.top_products)) {
-          const transformed = json.top_products.map(
-            (product: any, index: number) => ({
-              id: index + 1,
-              name: product.product_name,
-              salesPercentage: parseFloat(product.percentage), // e.g. "8.00%" => 8
-              popularity: Math.floor(Math.random() * 100), // You can replace this with actual logic if needed
-            })
-          );
-
+          const transformed = json.top_products.map((product: any, index: number) => ({
+            id: index + 1,
+            name: product.product_name,
+            price: parseFloat(product.price ?? 0),
+            description: product.description ?? "No description available",
+            url: product.url ?? "#",
+            salesPercentage: parseFloat(product.percentage ?? 0),
+            popularity: Math.floor(Math.random() * 100),
+            updateDate: product.update_date,
+          }));
           setProductData(transformed);
         }
       } catch (error) {
@@ -70,11 +81,21 @@ const ProfitabilityTable: React.FC = () => {
     if (startDate && endDate) {
       fetchTopProducts();
     }
-  }, [startDate, endDate]); // Re-run when startDate or endDate changes
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") moveLeft();
+      if (e.key === "ArrowRight") moveRight();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [productData.length]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-md dark:border-gray-700 dark:bg-gray-900 p-10 w-full">
-      <div className="flex items-center justify-between mb-13">
+    <div className="overflow-hidden rounded-2xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-md p-6 w-full relative min-h-[600px]">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Profitability Table
         </h3>
@@ -108,46 +129,91 @@ const ProfitabilityTable: React.FC = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {productData.map((product, index) => {
-          const barColor = getPopularityColor(product.popularity);
-          return (
-            <div
-              key={product.id}
-              className="flex items-center justify-between py-2"
-            >
-              <div className="flex items-center space-x-3 w-1/4">
-                <span className="text-gray-500 dark:text-gray-400 font-medium">{`0${
-                  index + 1
-                }`}</span>
-                <span className="text-gray-800 dark:text-white">
-                  {product.name}
-                </span>
-              </div>
+      {/* Carousel */}
+      <div className="relative flex items-center justify-center w-full h-[450px] overflow-hidden">
+        {/* Left Arrow */}
+        <button
+          onClick={moveLeft}
+          className="absolute top-1/2 -translate-y-1/2 left-4 z-50 bg-black/30 dark:bg-white/20 hover:bg-black/50 dark:hover:bg-white/30 text-white dark:text-white rounded-full p-3 backdrop-blur-md transition shadow-lg"
+        >
+          <i className="pi pi-chevron-left text-2xl" />
+        </button>
 
-              <div className="flex-1 flex items-center space-x-2">
-                <div className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full relative">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${product.popularity}%`,
-                      backgroundColor: barColor,
-                    }}
-                  />
+        {/* Right Arrow */}
+        <button
+          onClick={moveRight}
+          className="absolute top-1/2 -translate-y-1/2 right-4 z-50 bg-black/30 dark:bg-white/20 hover:bg-black/50 dark:hover:bg-white/30 text-white dark:text-white rounded-full p-3 backdrop-blur-md transition shadow-lg"
+        >
+          <i className="pi pi-chevron-right text-2xl" />
+        </button>
+
+        {/* Cards */}
+        <div className="relative w-full h-full flex items-center justify-center perspective-1000">
+          {productData.slice(0, 10).map((product, index) => {
+            const offset = index - carouselIndex;
+            const isActive = offset === 0;
+            const popularityColor = getPopularityColor(product.popularity);
+
+            const styles = {
+              transform: `translateX(${offset * 300}px) rotateY(${offset * -30}deg) scale(${isActive ? 1 : 0.8})`,
+              zIndex: isActive ? 50 : 30 - Math.abs(offset),
+              opacity: Math.abs(offset) > 2 ? 0 : 1,
+              transition: "all 0.5s ease",
+              borderColor: popularityColor,
+              backgroundColor: `${popularityColor}20`, // Light transparent background
+            };
+
+            return (
+              <div
+                key={product.id}
+                className="absolute w-[260px] h-[370px] flex flex-col justify-between items-center p-4 rounded-2xl border transition-all duration-300 ease-in-out group"
+                style={styles}
+              >
+                {/* Border Glow Effect on Hover */}
+                <div
+                  className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
+                  style={{
+                    borderColor: popularityColor,
+                    boxShadow: `0 0 15px ${popularityColor}`,
+                  }}
+                ></div>
+
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                    {product.name}
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-1 truncate">
+                    {product.description.length > 50
+                      ? product.description.slice(0, 50) + "..."
+                      : product.description}
+                  </p>
+                  <p className="text-sm text-gray-700 dark:text-gray-400 mb-1">
+                    Price: ${product.price.toFixed(2)}
+                  </p>
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                    Sales: {product.salesPercentage}%
+                  </p>
                 </div>
 
-                <span
-                  className="px-3 py-1 rounded-md text-white text-sm font-medium"
-                  style={{
-                    backgroundColor: barColor,
-                  }}
-                >
-                  {product.salesPercentage}%
-                </span>
+                <div className="flex flex-col items-center">
+                  <span
+                    className="mt-2 px-4 py-1 rounded-full text-white text-sm font-medium"
+                    style={{
+                      backgroundColor: popularityColor,
+                    }}
+                  >
+                    Popularity: {product.popularity}
+                  </span>
+                  {product.updateDate && (
+                    <p className="text-xs mt-2 text-gray-500 dark:text-gray-400">
+                      Updated: {formatDate(product.updateDate)}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

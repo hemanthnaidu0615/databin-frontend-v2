@@ -101,7 +101,7 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
       crosshairs: { show: false }, // 👈 added here to remove hover line
     },
     yaxis: { title: { text: "Number of Shipments" } },
-    legend: { position: "top" },
+    legend: { position: "bottom" },
   };
   
 
