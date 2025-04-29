@@ -16,7 +16,15 @@ type ShipmentPerformanceProps = {
 // Full date formatting with time
 const formatDateTime = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
 const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
@@ -24,7 +32,12 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   onRemove,
   onViewMore,
 }) => {
-  const [data, setData] = useState<{ carriers: string[]; standard: number[]; expedited: number[]; sameDay: number[] }>({
+  const [data, setData] = useState<{
+    carriers: string[];
+    standard: number[];
+    expedited: number[];
+    sameDay: number[];
+  }>({
     carriers: [],
     standard: [],
     expedited: [],
@@ -47,12 +60,15 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
         const formattedStartDate = formatDateTime(startDate);
         const formattedEndDate = formatDateTime(endDate);
 
-        const res = await axios.get("http://localhost:8080/api/shipment-performance", {
-          params: {
-            startDate: formattedStartDate,
-            endDate: formattedEndDate,
-          },
-        });
+        const res = await axios.get(
+          "http://localhost:8080/api/shipment-performance",
+          {
+            params: {
+              startDate: formattedStartDate,
+              endDate: formattedEndDate,
+            },
+          }
+        );
 
         const responseData = res.data.shipment_performance;
 
@@ -97,13 +113,20 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     plotOptions: { bar: { columnWidth: "50%" } },
     xaxis: {
       categories: data.carriers,
-      title: { text: "Carriers" },
-      crosshairs: { show: false }, // 👈 added here to remove hover line
+      title: {
+        text: "Carriers",
+        style: { fontWeight: "normal" }, // 👈 Set fontWeight to normal here
+      },
+      crosshairs: { show: false },
     },
-    yaxis: { title: { text: "Number of Shipments" } },
+    yaxis: {
+      title: {
+        text: "Number of Shipments",
+        style: { fontWeight: "normal" }, // 👈 Set fontWeight to normal here
+      },
+    },
     legend: { position: "bottom" },
   };
-  
 
   const barSeries = [
     { name: "Standard", data: data.standard },
@@ -115,21 +138,38 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
         <div className="flex justify-between items-center mb-0">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Shipment Performance</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+            Shipment Performance
+          </h2>
           <div className="relative">
-            <button ref={buttonRef} onClick={() => setDropdownOpen(!isDropdownOpen)} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10">
+            <button
+              onClick={() => setDropdownOpen(!isDropdownOpen)}
+              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
+            >
               <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </button>
 
             {isDropdownOpen && (
-              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
-                <DropdownItem onItemClick={() => { setDropdownOpen(false); onViewMore?.(); }}>
+              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 py-2">
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onViewMore?.();
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10"
+                >
                   View More
-                </DropdownItem>
-                <DropdownItem onItemClick={() => { setDropdownOpen(false); onRemove?.(); }}>
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onRemove?.();
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10"
+                >
                   Remove
-                </DropdownItem>
-              </Dropdown>
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -140,7 +180,12 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
       ) : error ? (
         <p className="text-red-500">Error: {error}</p>
       ) : (
-        <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 150 : 300} />
+        <Chart
+          options={barOptions}
+          series={barSeries}
+          type="bar"
+          height={size === "small" ? 150 : 300}
+        />
       )}
     </div>
   );

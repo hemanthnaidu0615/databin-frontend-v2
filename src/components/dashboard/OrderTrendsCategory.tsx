@@ -117,7 +117,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         style: {
           color: "#9CA3AF", // Tailwind gray-400
           fontSize: "14px",
-          fontWeight: 400,  // <-- Not bold
+          fontWeight: 400, // <-- Not bold
         },
       },
       labels: { style: { colors: "#6B7280" } },
@@ -128,7 +128,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         style: {
           color: "#9CA3AF",
           fontSize: "14px",
-          fontWeight: 400,  // <-- Not bold
+          fontWeight: 400, // <-- Not bold
         },
       },
       labels: { style: { colors: "#6B7280" } },
@@ -149,7 +149,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       },
     ],
   };
-  
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
@@ -168,29 +168,26 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </button>
 
             {isDropdownOpen && (
-              <Dropdown
-                isOpen={isDropdownOpen}
-                onClose={() => setDropdownOpen(false)}
-              >
-                <DropdownItem
-                  className="text-gray-700 dark:text-gray-300"
-                  onItemClick={() => {
+              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50">
+                <button
+                  onClick={() => {
                     setDropdownOpen(false);
                     onViewMore?.();
                   }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
                 >
                   View More
-                </DropdownItem>
-                <DropdownItem
-                  className="text-gray-700 dark:text-gray-300"
-                  onItemClick={() => {
+                </button>
+                <button
+                  onClick={() => {
                     setDropdownOpen(false);
                     onRemove?.();
                   }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
                 >
                   Remove
-                </DropdownItem>
-              </Dropdown>
+                </button>
+              </div>
             )}
           </div>
         </div>

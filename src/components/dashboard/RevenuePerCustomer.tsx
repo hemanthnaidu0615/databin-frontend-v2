@@ -11,7 +11,15 @@ import { Column } from "primereact/column";
 // Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
 type RevenuePerCustomerProps = {
@@ -19,7 +27,10 @@ type RevenuePerCustomerProps = {
   hasTableRow?: boolean;
 };
 
-const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", hasTableRow = false }) => {
+const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
+  size = "full",
+  hasTableRow = false,
+}) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [data, setData] = useState<{ customer: string; revenue: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +48,9 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
         const formattedEndDate = formatDate(endDate);
 
         const response = await fetch(
-          `http://localhost:8080/api/revenue/top-customers?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/revenue/top-customers?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         if (!response.ok) throw new Error("Failed to fetch revenue data");
         const result = await response.json();
@@ -64,11 +77,9 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
     chart: {
       type: "bar",
       toolbar: {
-
         show: false,
         tools: {
           download: false,
-
           selection: false,
           zoom: false,
           zoomin: false,
@@ -76,36 +87,62 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
           pan: false,
           reset: false,
         },
-
       },
     },
     xaxis: {
       categories: data.map((d) => d.customer),
       crosshairs: {
-        show: false, // 👈 disables the white hover line
+        show: false,
+      },
+      title: {
+        text: "Customer",
+        style: {
+          fontWeight: "normal",
+          fontSize: "14px",
+          color: "#6B7280", // Tailwind's gray-500
+        },
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Revenue",
+        style: {
+          fontWeight: "normal",
+          fontSize: "14px",
+          color: "#6B7280",
+        },
       },
     },
     plotOptions: {
       bar: {
         dataLabels: {
-          position: "top", // Example position, adjust as needed
+          position: "top",
         },
       },
     },
     dataLabels: {
-      enabled: false, // ❌ disables value labels on top of bars
+      enabled: false,
     },
     series: [{ name: "Revenue", data: data.map((d) => d.revenue) }],
   };
-  
-  
 
+  function closeDropdown() {
+    setDropdownOpen(false);
+  }
+
+  function removeWidget() {
+    console.log("Widget removed");
+    // Add logic to remove the widget from the dashboard
+    // This could involve dispatching a Redux action or updating a parent component's state
+  }
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Revenue Per Customer</h2>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+            Revenue Per Customer
+          </h2>
 
           <div className="relative">
             <button
@@ -117,10 +154,27 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
             </button>
 
             {isDropdownOpen && (
-              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
-                <DropdownItem onItemClick={() => setDropdownOpen(false)}>View More</DropdownItem>
-                <DropdownItem onItemClick={() => setDropdownOpen(false)}>Remove</DropdownItem>
-              </Dropdown>
+              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    // Replace with actual handler if needed
+                    closeDropdown?.();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+                >
+                  View More
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    removeWidget?.();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
+                >
+                  Remove
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -132,7 +186,12 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({ size = "full", 
         <p className="text-red-500">Error: {error}</p>
       ) : (
         <>
-          <ApexCharts options={apexOptions} series={apexOptions.series} type="bar" height={size === "small" ? 150 : 300} />
+          <ApexCharts
+            options={apexOptions}
+            series={apexOptions.series}
+            type="bar"
+            height={size === "small" ? 150 : 300}
+          />
 
           {hasTableRow && (
             <DataTable value={data} className="mt-4">
