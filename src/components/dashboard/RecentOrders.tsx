@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Table,
   TableBody,
@@ -35,6 +36,9 @@ export default function RecentOrders() {
   // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+
+  // Initialize navigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log("Fetching recent orders...");
@@ -83,6 +87,12 @@ export default function RecentOrders() {
     setIsOpen(false);
   }
 
+  // Handle "View More" click
+  function handleViewMore() {
+    navigate("/orders"); // Redirect to the /orders page
+    closeDropdown();
+  }
+
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between mb-3">
@@ -99,7 +109,7 @@ export default function RecentOrders() {
             className="w-36 p-2"
           >
             <DropdownItem
-              onItemClick={closeDropdown}
+              onItemClick={handleViewMore} // Add the handler for "View More"
               className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               View More
@@ -178,13 +188,7 @@ export default function RecentOrders() {
                   </TableCell>
                   <TableCell className="py-2 px-3 text-center">
                     <Badge
-                      color={
-                        order.shipment_status === "Delivered"
-                          ? "success"
-                          : order.shipment_status === "Pending"
-                          ? "warning"
-                          : "error"
-                      }
+                      color={order.shipment_status === "Delivered" ? "success" : order.shipment_status === "Pending" ? "warning" : "error"}
                     >
                       {order.shipment_status}
                     </Badge>

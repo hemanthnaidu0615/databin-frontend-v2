@@ -94,7 +94,9 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         const picked = categories.map((date) => summary[date].Picked ?? 0);
         const packed = categories.map((date) => summary[date].Packed ?? 0);
         const shipped = categories.map((date) => summary[date].Shipped ?? 0);
-        const delivered = categories.map((date) => summary[date].Delivered ?? 0);
+        const delivered = categories.map(
+          (date) => summary[date].Delivered ?? 0
+        );
 
         setChartData({ categories, picked, packed, shipped, delivered });
       } catch (err: any) {
@@ -200,35 +202,41 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
               onClick={() => setDropdownOpen(!isDropdownOpen)}
             >
               <MoreDotIcon
-                className={`size-6 ${isDarkMode ? "text-gray-400 hover:text-gray-300" : "text-gray-500 hover:text-gray-700"}`}
+                className={`size-6 ${
+                  isDarkMode
+                    ? "text-gray-400 hover:text-gray-300"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               />
             </button>
 
             {isDropdownOpen && (
               <div
                 ref={dropdownRef}
-                className={`absolute right-0 mt-2 w-40 ${
-                  isDarkMode ? "bg-gray-800 text-gray-300" : "bg-white text-gray-600"
-                } shadow-md rounded-lg z-50`}
+                className={`absolute right-0 mt-2 w-40 rounded-lg shadow-md z-50 ${
+                  isDarkMode
+                    ? "bg-gray-800 text-gray-300"
+                    : "bg-white text-gray-600"
+                }`}
               >
-                <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
-                  <DropdownItem
-                    onItemClick={() => {
-                      setDropdownOpen(false);
-                      onViewMore?.();
-                    }}
-                  >
-                    View More
-                  </DropdownItem>
-                  <DropdownItem
-                    onItemClick={() => {
-                      setDropdownOpen(false);
-                      onRemove?.();
-                    }}
-                  >
-                    Remove
-                  </DropdownItem>
-                </Dropdown>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onViewMore?.();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-white/10"
+                >
+                  View More
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onRemove?.();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-white/10"
+                >
+                  Remove
+                </button>
               </div>
             )}
           </div>

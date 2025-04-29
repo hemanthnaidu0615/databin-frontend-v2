@@ -11,7 +11,15 @@ import { MoreDotIcon } from "../../icons";
 // Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
 };
 
 interface OrderTrackingProps {
@@ -51,13 +59,17 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
         // Fetch total orders with date range
         const totalOrdersResponse = await axios.get(
-          `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         setTotalOrders(totalOrdersResponse.data.total_orders);
 
         // Fetch order status counts with date range
         const orderCountsResponse = await axios.get(
-          `http://localhost:8080/api/shipment-status/count?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/shipment-status/count?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         setOrderCounts(orderCountsResponse.data);
       } catch (error) {
@@ -71,7 +83,9 @@ export default function OrderTracking(_: OrderTrackingProps) {
   }, [startDate, endDate]); // Re-run when startDate or endDate changes
 
   const progressPercentage =
-    totalOrders > 0 ? ((orderCounts.Delivered + orderCounts.Refunded) / totalOrders) * 100 : 0;
+    totalOrders > 0
+      ? ((orderCounts.Delivered + orderCounts.Refunded) / totalOrders) * 100
+      : 0;
   const series = [progressPercentage];
 
   const options: ApexOptions = {
@@ -126,7 +140,11 @@ export default function OrderTracking(_: OrderTrackingProps) {
     <div className="rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03] w-full max-w-full">
       {!isVisible && (
         <div className="flex justify-center py-4">
-          <Button label="Restore Chart" className="p-button-primary" onClick={restoreChart} />
+          <Button
+            label="Restore Chart"
+            className="p-button-primary"
+            onClick={restoreChart}
+          />
         </div>
       )}
 
@@ -143,25 +161,31 @@ export default function OrderTracking(_: OrderTrackingProps) {
                 </p>
               </div>
 
-              <div className="relative inline-block">
-                <button className="dropdown-toggle" onClick={toggleDropdown}>
+              <div className="relative inline-block text-left">
+                <button onClick={toggleDropdown}>
                   <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-5" />
                 </button>
+
                 {isOpen && (
-                  <Dropdown className="w-36 p-2">
-                    <DropdownItem
-                      onItemClick={closeDropdown}
-                      className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                    >
-                      View More
-                    </DropdownItem>
-                    <DropdownItem
-                      onItemClick={removeChart}
-                      className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                    >
-                      Remove
-                    </DropdownItem>
-                  </Dropdown>
+                  <div className="absolute right-0 z-10 mt-2 w-36 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          closeDropdown();
+                          _.onViewMore?.();
+                        }}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 w-full text-left"
+                      >
+                        View More
+                      </button>
+                      <button
+                        onClick={removeChart}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 w-full text-left"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -179,13 +203,37 @@ export default function OrderTracking(_: OrderTrackingProps) {
           </div>
 
           <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
-            {[ 
-              { label: "Pending", count: orderCounts.Pending, color: "text-yellow-500" },
-              { label: "Shipped", count: orderCounts.Shipped, color: "text-blue-500" },
-              { label: "Delivered", count: orderCounts.Delivered, color: "text-green-500" },
-              { label: "Canceled", count: orderCounts.Cancelled, color: "text-red-500" },
-              { label: "Returned", count: orderCounts["Return Received"], color: "text-purple-500" },
-              { label: "Refunded", count: orderCounts.Refunded, color: "text-teal-500" },
+            {[
+              {
+                label: "Pending",
+                count: orderCounts.Pending,
+                color: "text-yellow-500",
+              },
+              {
+                label: "Shipped",
+                count: orderCounts.Shipped,
+                color: "text-blue-500",
+              },
+              {
+                label: "Delivered",
+                count: orderCounts.Delivered,
+                color: "text-green-500",
+              },
+              {
+                label: "Canceled",
+                count: orderCounts.Cancelled,
+                color: "text-red-500",
+              },
+              {
+                label: "Returned",
+                count: orderCounts["Return Received"],
+                color: "text-purple-500",
+              },
+              {
+                label: "Refunded",
+                count: orderCounts.Refunded,
+                color: "text-teal-500",
+              },
             ].map((item, index) => (
               <div key={index} className="flex flex-col items-center">
                 <p className={`mb-1 text-xs ${item.color}`}>{item.label}</p>

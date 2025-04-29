@@ -149,35 +149,53 @@ const InventoryHealth: React.FC = () => {
     tooltip: { theme: isDarkMode ? "dark" : "light" },
   };
 
+  function onViewMore() {
+    console.log("View More clicked. Redirecting to detailed inventory page...");
+    // Example: Redirect to a detailed inventory page
+    window.location.href = "/inventory-details";
+  }
+
+  function onRemove() {
+    console.log("Remove clicked. Removing the inventory health widget...");
+    // Example: Remove the widget from the dashboard
+    alert("Inventory Health widget removed from the dashboard.");
+  }
+
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-transparent px-5 pt-5 dark:border-gray-800 sm:px-6 sm:pt-6">
       <div className="flex justify-between items-center mb-9">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
           Inventory Turnover & Low Stock Alerts
         </h2>
-        <div className="relative inline-block">
+        <div className="relative">
           <button
-            ref={buttonRef}
             onClick={() => setDropdownOpen(!isDropdownOpen)}
+            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
+            aria-label="More options"
           >
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+            <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           </button>
+
           {isDropdownOpen && (
-            <div
-              ref={dropdownRef}
-              className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-md rounded-lg z-50"
-            >
-              <Dropdown
-                isOpen={isDropdownOpen}
-                onClose={() => setDropdownOpen(false)}
+            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50">
+              <button
+                onClick={() => {
+                  setDropdownOpen(false);
+                  onViewMore?.();
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
               >
-                <DropdownItem onItemClick={() => setDropdownOpen(false)}>
-                  View More
-                </DropdownItem>
-                <DropdownItem onItemClick={() => setDropdownOpen(false)}>
-                  Remove
-                </DropdownItem>
-              </Dropdown>
+                View More
+              </button>
+              <button
+                onClick={() => {
+                  setDropdownOpen(false);
+                  onRemove?.();
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
+              >
+                Remove
+              </button>
             </div>
           )}
         </div>

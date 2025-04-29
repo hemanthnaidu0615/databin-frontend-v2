@@ -1,6 +1,8 @@
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import { MoreDotIcon } from "../../icons";
+import { Button } from "primereact/button";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
@@ -30,17 +32,73 @@ const DemographicCard = () => {
     y: number;
   } | null>(null);
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleViewMore = () => {
+    setDropdownOpen(false);
+    // your logic here
+    console.log("View More clicked");
+  };
+
+  const handleRemove = () => {
+    setDropdownOpen(false);
+    // your logic here
+    console.log("Remove clicked");
+  };
+
   return (
-    <div className="w-full p-4 bg-white dark:bg-gray-900 rounded-xl shadow">
-      <div className="text-gray-900 dark:text-white  dark:bg-gray-900  font-semibold text-lg mb-2">
-        Customers Demographic
+    <div className="w-full p-4 bg-white dark:bg-gray-900 rounded-xl shadow relative">
+      {/* Header with dropdown */}
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <div className="text-gray-900 dark:text-white font-semibold text-lg">
+            Customers Demographic
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Orders and revenue per state
+          </div>
+        </div>
+        <div className="relative inline-block text-left" ref={dropdownRef}>
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
+            aria-label="More options"
+          >
+            <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          </button>
 
-      </div>
-      <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-        Orders and revenue per state
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50">
+              <button
+                onClick={handleViewMore}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
+              >
+                View More
+              </button>
+              <button
+                onClick={handleRemove}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="relative w-full aspect-[3/1.5]  bg-white dark:bg-gray-900  ">
+      {/* Map */}
+      <div className="relative w-full aspect-[3/1.5] bg-white dark:bg-gray-900">
         <ComposableMap projection="geoAlbersUsa" width={1050} height={551}>
           <Geographies geography={US_TOPO_JSON}>
             {({ geographies }) =>
@@ -55,8 +113,8 @@ const DemographicCard = () => {
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill={isDark ? "#ffffff" : "#e0e0e0"} // White for dark theme, gray for light theme
-                    stroke="#473838" // Black stroke for both light and dark theme
+                    fill={isDark ? "#ffffff" : "#e0e0e0"}
+                    stroke="#473838"
                     strokeWidth={0.5}
                     onMouseEnter={(e) =>
                       setTooltip({
@@ -100,6 +158,7 @@ const DemographicCard = () => {
         )}
       </div>
 
+      {/* Footer Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -131,5 +190,3 @@ const DemographicCard = () => {
 };
 
 export default DemographicCard;
-
-
