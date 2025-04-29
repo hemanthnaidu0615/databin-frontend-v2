@@ -8,7 +8,15 @@ import { MoreDotIcon } from "../../icons";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -47,7 +55,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         const formattedEndDate = formatDate(endDate);
 
         const response = await fetch(
-          `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         const data: ApiResponse = await response.json();
         const trends = data.order_trends;
@@ -97,17 +107,30 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const options: ApexOptions = {
     chart: {
       type: "line",
-      height: size === "small" ? 150 : 300,
       zoom: { enabled: false },
-      toolbar: {
-        show: false, // Hide the toolbar (hamburger menu, zoom, etc.)
-      },
+      toolbar: { show: false },
     },
     xaxis: {
       categories: chartData.categories,
+      title: {
+        text: "Month", // X Axis Label
+        style: {
+          color: "#9CA3AF", // Tailwind gray-400
+          fontSize: "14px",
+          fontWeight: 400,  // <-- Not bold
+        },
+      },
       labels: { style: { colors: "#6B7280" } },
     },
     yaxis: {
+      title: {
+        text: "Order Amount", // Y Axis Label
+        style: {
+          color: "#9CA3AF",
+          fontSize: "14px",
+          fontWeight: 400,  // <-- Not bold
+        },
+      },
       labels: { style: { colors: "#6B7280" } },
     },
     stroke: { curve: "smooth", width: 2 },
@@ -126,7 +149,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       },
     ],
   };
-
+  
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
@@ -145,7 +168,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </button>
 
             {isDropdownOpen && (
-              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
+              <Dropdown
+                isOpen={isDropdownOpen}
+                onClose={() => setDropdownOpen(false)}
+              >
                 <DropdownItem
                   className="text-gray-700 dark:text-gray-300"
                   onItemClick={() => {
@@ -170,12 +196,16 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         </div>
       )}
 
-      <Chart
-        options={options}
-        series={chartData.series}
-        type="line"
-        height={size === "small" ? 150 : 300}
-      />
+      <div className="h-[400px] sm:h-[500px]">
+        {" "}
+        {/* Adjust height as needed */}
+        <Chart
+          options={options}
+          series={chartData.series}
+          type="line"
+          height="100%"
+        />
+      </div>
     </div>
   );
 };
