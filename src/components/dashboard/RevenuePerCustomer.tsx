@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import ApexCharts from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
@@ -31,7 +29,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   size = "full",
   hasTableRow = false,
 }) => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [data, setData] = useState<{ customer: string; revenue: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +36,13 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+
+  const navigate = useNavigate();
+
+  // View More function to navigate to /sales page
+  function onViewMore(): void {
+    navigate("/sales/dashboard");
+  }
 
   useEffect(() => {
     // Fetch revenue data from API with date range
@@ -126,16 +130,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     series: [{ name: "Revenue", data: data.map((d) => d.revenue) }],
   };
 
-  function closeDropdown() {
-    setDropdownOpen(false);
-  }
-
-  function removeWidget() {
-    console.log("Widget removed");
-    // Add logic to remove the widget from the dashboard
-    // This could involve dispatching a Redux action or updating a parent component's state
-  }
-
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
@@ -143,40 +137,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
             Revenue Per Customer
           </h2>
-
-          <div className="relative">
-            <button
-              onClick={() => setDropdownOpen(!isDropdownOpen)}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
-              aria-label="More options"
-            >
-              <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50">
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    // Replace with actual handler if needed
-                    closeDropdown?.();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-                >
-                  View More
-                </button>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    removeWidget?.();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       )}
 
@@ -199,6 +159,15 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
               <Column field="revenue" header="Revenue" />
             </DataTable>
           )}
+
+          {/* View More button */}
+          <button
+            onClick={onViewMore}
+            className="absolute top-4 right-4 text-xs font-medium hover:underline"
+            style={{ color: "#9614d0" }}
+          >
+            View More
+          </button>
         </>
       )}
     </div>

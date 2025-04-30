@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { MoreDotIcon } from "../../icons";
 import { Button } from "primereact/button";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
@@ -35,9 +36,15 @@ const DemographicCard = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Initialize useNavigate
+  const navigate = useNavigate();
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
@@ -47,13 +54,11 @@ const DemographicCard = () => {
 
   const handleViewMore = () => {
     setDropdownOpen(false);
-    // your logic here
-    console.log("View More clicked");
+    navigate("/sales/region"); // Navigate to /sales route
   };
 
   const handleRemove = () => {
     setDropdownOpen(false);
-    // your logic here
     console.log("Remove clicked");
   };
 
@@ -69,32 +74,14 @@ const DemographicCard = () => {
             Orders and revenue per state
           </div>
         </div>
-        <div className="relative inline-block text-left" ref={dropdownRef}>
-          <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
-            aria-label="More options"
-          >
-            <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-          </button>
 
-          {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50">
-              <button
-                onClick={handleViewMore}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-              >
-                View More
-              </button>
-              <button
-                onClick={handleRemove}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-              >
-                Remove
-              </button>
-            </div>
-          )}
-        </div>
+        <button
+          onClick={handleViewMore}
+          className="text-xs font-medium hover:underline"
+          style={{ color: "#9614d0" }}
+        >
+          View More
+        </button>
       </div>
 
       {/* Map */}

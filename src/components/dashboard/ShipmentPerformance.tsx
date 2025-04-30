@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 type ShipmentPerformanceProps = {
   size?: "small" | "full";
@@ -53,6 +51,9 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
+  // Initialize navigate
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -90,23 +91,6 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     }
   }, [startDate, endDate]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   const barOptions: ApexOptions = {
     chart: { type: "bar", stacked: true, toolbar: { show: false } },
     colors: ["#4CAF50", "#FF9800", "#2196F3"],
@@ -115,14 +99,14 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
       categories: data.carriers,
       title: {
         text: "Carriers",
-        style: { fontWeight: "normal" }, // 👈 Set fontWeight to normal here
+        style: { fontWeight: "normal" },
       },
       crosshairs: { show: false },
     },
     yaxis: {
       title: {
         text: "Number of Shipments",
-        style: { fontWeight: "normal" }, // 👈 Set fontWeight to normal here
+        style: { fontWeight: "normal" },
       },
     },
     legend: { position: "bottom" },
@@ -134,13 +118,21 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     { name: "Same-Day", data: data.sameDay },
   ];
 
+  // Handle "View More" button click
+  function handleViewMore() {
+    navigate("/shipment"); // Navigate to the /orders page
+  }
+
   return (
     <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-0">
+        <div className="flex justify-between items-center mb-16">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
             Shipment Performance
           </h2>
+
+          {/* Commented out Dropdown section */}
+          {/*
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!isDropdownOpen)}
@@ -172,6 +164,15 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
               </div>
             )}
           </div>
+          */}
+
+          {/* "View More" Button */}
+          <button
+            onClick={handleViewMore}
+            className="text-xs font-medium text-purple-600 hover:underline"
+          >
+            View More
+          </button>
         </div>
       )}
 

@@ -83,6 +83,9 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
     },
     xaxis: {
       categories: filteredData.map((d) => d.carrier),
+      crosshairs: {
+        show: false, // ✅ disables vertical hover line
+      },
       labels: {
         style: {
           colors: labelColor,
@@ -92,11 +95,27 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
       },
       axisBorder: { color: '#e5e7eb' },
       axisTicks: { color: '#e5e7eb' },
+      title: {
+        text: 'Carrier',
+        style: {
+          color: labelColor,
+          fontSize: '13px',
+          fontWeight: 500,
+        },
+      },
     },
     yaxis: {
       labels: {
         style: {
           colors: labelColor,
+          fontSize: '13px',
+          fontWeight: 500,
+        },
+      },
+      title: {
+        text: 'Number of Shipments',
+        style: {
+          color: labelColor,
           fontSize: '13px',
           fontWeight: 500,
         },
@@ -120,8 +139,19 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
         fontSize: '13px',
         fontFamily: 'Inter, sans-serif',
       },
+      x: {
+        show: true,
+      },
+      y: {
+        formatter: (val) => `${val} shipments`,
+      },
+      marker: { show: false },
+      fillSeriesColor: false,
+      followCursor: true,
     },
   };
+  
+  
 
   const carrierSeries = [
     {
