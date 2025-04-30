@@ -3,9 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 interface StatisticsChartProps {
   onRemove?: () => void;
@@ -145,8 +143,10 @@ export default function StatisticsChart({}: StatisticsChartProps) {
     },
   };
 
-  function closeDropdown(): void {
-    setIsOpen(false);
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  function handleViewMore() {
+    navigate("/sales/dashboard"); // Navigate to /sales route
   }
 
   const series = [
@@ -164,34 +164,14 @@ export default function StatisticsChart({}: StatisticsChartProps) {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Sales & Revenue
         </h3>
-
-        <div className="relative">
-          <button
-            className="dropdown-toggle"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="More options"
-          >
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
-          </button>
-
-          {isOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 p-2">
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  // Replace with actual handler if needed
-                  closeDropdown?.();
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-              >
-                View More
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">
-                Remove
-              </button>
-            </div>
-          )}
-        </div>
+        {/* View More Button */}
+        <button
+          onClick={handleViewMore}
+          className="text-xs font-medium hover:underline"
+          style={{ color: "#9614d0" }}
+        >
+          View More
+        </button>
       </div>
 
       {/* Year Selector */}

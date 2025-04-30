@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { MoreDotIcon } from "../../icons";
 import { useTheme } from "next-themes";
 
@@ -23,24 +22,24 @@ const formatDate = (date: string) => {
 
 const ProfitabilityTable: React.FC = () => {
   const { theme } = useTheme();
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [productData, setProductData] = useState<ProductData[]>([]);
   const [position, setPosition] = useState(1);
-
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+  const navigate = useNavigate();
 
   const closeDropdown = () => setIsDropdownOpen(false);
   const removeWidget = () => console.log("Remove Widget");
 
-  const moveLeft = () => {
-    setPosition((prev) => (prev === 1 ? productData.length : prev - 1));
+  const handleViewMore = () => {
+    navigate("/orders");
   };
 
-  const moveRight = () => {
+  const moveLeft = () =>
+    setPosition((prev) => (prev === 1 ? productData.length : prev - 1));
+  const moveRight = () =>
     setPosition((prev) => (prev === productData.length ? 1 : prev + 1));
-  };
 
   useEffect(() => {
     const fetchTopProducts = async () => {
@@ -66,7 +65,7 @@ const ProfitabilityTable: React.FC = () => {
               updateDate: product.update_date,
             })
           );
-          setProductData(transformed.slice(0, 5)); // show only 5
+          setProductData(transformed.slice(0, 5));
         }
       } catch (error) {
         console.error("Failed to fetch top products:", error);
@@ -87,35 +86,39 @@ const ProfitabilityTable: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [productData.length]);
 
-  // Auto-slide every 5 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      moveRight(); // Automatically move to the next slide
-    }, 5000); // 5000ms = 5 seconds
-
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    const interval = setInterval(() => moveRight(), 5000);
+    return () => clearInterval(interval);
   }, [productData.length]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-md p-6 w-full relative min-h-[600px]">
+    <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-          Profitability Table
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-md font-semibold text-gray-800 dark:text-white">
+          Top Selling Products
         </h3>
+        <button
+          onClick={handleViewMore}
+          className="text-xs font-medium hover:underline"
+          style={{ color: "#9614d0" }}
+        >
+          View More
+        </button>
+        {/* Dropdown (Commented) */}
+        {/*
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
           >
-            <MoreDotIcon className="text-gray-500 dark:text-gray-400 size-6" />
+            <MoreDotIcon className="text-gray-500 dark:text-gray-400 size-5" />
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50 p-2">
               <button
                 onClick={() => {
                   setIsDropdownOpen(false);
-                  // Replace with actual handler if needed
                   closeDropdown?.();
                 }}
                 className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
@@ -134,24 +137,28 @@ const ProfitabilityTable: React.FC = () => {
             </div>
           )}
         </div>
+        */}
       </div>
 
       {/* Carousel */}
       <div
-        className="relative flex items-center justify-center w-full h-[500px] overflow-hidden"
+        className="relative flex items-center justify-center w-full h-[360px] overflow-visible"
         style={{ perspective: "600px" }}
       >
-        {/* Radio Dots */}
-        <div className="absolute bottom-4 w-full flex justify-center gap-2 z-50">
+        {/* Dots Below */}
+        <div className="absolute -bottom-2 w-full flex justify-center gap-2 z-50">
           {productData.map((_, index) => (
-            <input
+            <button
               key={index}
-              type="radio"
-              checked={position === index + 1}
-              onChange={() => setPosition(index + 1)}
-              className={`w-3 h-3 rounded-full border-2 ${
-                theme === "dark" ? "border-gray-600" : "border-gray-300"
+              onClick={() => setPosition(index + 1)}
+              className={`w-3 h-3 rounded-full border-2 transition-colors ${
+                position === index + 1
+                  ? "bg-purple-600 border-purple-600"
+                  : theme === "dark"
+                  ? "border-gray-600"
+                  : "border-gray-300"
               }`}
+              aria-label={`Go to product ${index + 1}`}
             />
           ))}
         </div>
@@ -162,50 +169,50 @@ const ProfitabilityTable: React.FC = () => {
             const offset = i + 1;
             const r = offset - position;
             const abs = Math.abs(r);
-
-            const scale = abs === 0 ? 1.05 : 1 - abs * 0.05; // Apply scale effect to current product (popping effect)
+            const scale = abs === 0 ? 1.03 : 1 - abs * 0.04;
             const rotateY = -r * 15;
-            const translateX = r * 120;
+            const translateX = r * 100;
             const opacity = abs > 2 ? 0 : 1;
 
             return (
               <div
                 key={product.id}
-                className={`absolute w-[250px] h-[350px] flex flex-col justify-between items-center p-4 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800`}
+                onClick={() => setPosition(offset)}
+                className="cursor-pointer absolute w-[220px] h-[300px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800"
                 style={{
                   transform: `translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`,
                   zIndex: 100 - abs,
                   opacity,
-                  border: `2px solid ${abs === 0 ? "#9614d0" : "#8417b2"}`, // Main highlight color
+                  border: `2px solid ${abs === 0 ? "#9614d0" : "#8417b2"}`,
                   boxShadow: `0 0 10px ${abs === 0 ? "#9614d0" : "#8417b2"}40`,
-                  pointerEvents: abs === 0 ? "auto" : "none",
+                  pointerEvents: abs > 2 ? "none" : "auto",
                   transition:
                     "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out, border 0.3s ease-out, box-shadow 0.3s ease-out",
                 }}
               >
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
                     {product.name}
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-1 truncate">
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 truncate">
                     {product.description.length > 50
                       ? product.description.slice(0, 50) + "..."
                       : product.description}
                   </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-400 mb-1">
+                  <p className="text-xs text-gray-700 dark:text-gray-400">
                     Price: ${product.price.toFixed(2)}
                   </p>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center mt-2">
                   <span
-                    className="mt-2 px-4 py-1 rounded-full text-white text-sm font-medium"
+                    className="px-3 py-1 rounded-full text-white text-xs font-medium"
                     style={{ backgroundColor: "#9614d0" }}
                   >
-                    Top Selling Product {i + 1}
+                    Top Product #{i + 1}
                   </span>
                   {product.updateDate && (
-                    <p className="text-xs mt-2 text-gray-500 dark:text-gray-400">
+                    <p className="text-[10px] mt-2 text-gray-500 dark:text-gray-400">
                       Updated: {formatDate(product.updateDate)}
                     </p>
                   )}

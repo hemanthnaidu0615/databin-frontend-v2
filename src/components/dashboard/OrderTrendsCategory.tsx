@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+import { useNavigate } from "react-router-dom";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -39,7 +37,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [chartData, setChartData] = useState<{
     categories: string[];
-    series: { name: string; data: number[] }[];
+    series: { name: string; data: number[] }[]; 
   }>({
     categories: [],
     series: [],
@@ -47,6 +45,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,16 +149,21 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     ],
   };
 
+  const handleViewMore = () => {
+    navigate("/orders");
+  };
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-5">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
             Order Trends by Product Category
           </h2>
 
           <div className="relative">
-            <button
+            {/* Dropdown section commented out */}
+            {/* <button
               onClick={() => setDropdownOpen(!isDropdownOpen)}
               className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
               aria-label="More options"
@@ -188,14 +192,19 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
                   Remove
                 </button>
               </div>
-            )}
+            )} */}
+            <button
+              onClick={handleViewMore}
+              className="text-xs font-medium hover:underline"
+              style={{ color: "#9614d0" }}
+            >
+              View More
+            </button>
           </div>
         </div>
       )}
 
-      <div className="h-[400px] sm:h-[500px]">
-        {" "}
-        {/* Adjust height as needed */}
+      <div className="h-[350px] sm:h-[420px]">
         <Chart
           options={options}
           series={chartData.series}

@@ -47,12 +47,12 @@ export default function OrdersFulfillmentMetrics() {
       value: "-",
       glowColor: "#22C55E", // Green
     },
-    {
-      icon: Warning,
-      label: "Inventory Alerts",
-      value: "-",
-      glowColor: "#F59E0B", // Yellow
-    },
+    // {
+    //   icon: Warning,
+    //   label: "Inventory Alerts",
+    //   value: "-",
+    //   glowColor: "#F59E0B", // Yellow
+    // },
   ]);
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
@@ -108,12 +108,12 @@ export default function OrdersFulfillmentMetrics() {
             value: data[2].in_transit_orders,
             glowColor: "#22C55E",
           },
-          {
-            icon: Warning,
-            label: "Inventory Alerts",
-            value: data[3].out_of_stock_count,
-            glowColor: "#F59E0B",
-          },
+          // {
+          //   icon: Warning,
+          //   label: "Inventory Alerts",
+          //   value: data[3].out_of_stock_count,
+          //   glowColor: "#F59E0B",
+          // },
         ]);
       } catch (error) {
         console.error("Error fetching metrics:", error);
@@ -126,7 +126,9 @@ export default function OrdersFulfillmentMetrics() {
   }, [startDate, endDate]);
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pb-2 md:pb-4">
+    // <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pb-2 md:pb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+
       {metrics.map((item, index) => (
         <div
           key={index}

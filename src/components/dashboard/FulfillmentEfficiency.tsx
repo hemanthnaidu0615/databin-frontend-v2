@@ -4,10 +4,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 import { useTheme } from "next-themes";
+import { useNavigate } from "react-router-dom";
 
 // Utility to format date string (yyyy-mm-dd)
 const formatDate = (date: string) => {
@@ -30,6 +29,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 }) => {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+  const navigate = useNavigate();
 
   const [chartData, setChartData] = useState({
     categories: [] as string[],
@@ -179,6 +179,15 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     { name: "Delivered", data: chartData.delivered },
   ];
 
+  function handleViewMore(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    if (onViewMore) {
+      onViewMore();
+    } else {
+      navigate("/fulfillment");
+    }
+  }
+
   return (
     <div
       className={`overflow-hidden rounded-2xl border ${
@@ -196,7 +205,8 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           </h2>
 
           <div className="relative inline-block">
-            <button
+            {/* Dropdown section commented out */}
+            {/* <button
               ref={buttonRef}
               className="dropdown-toggle"
               onClick={() => setDropdownOpen(!isDropdownOpen)}
@@ -238,7 +248,14 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
                   Remove
                 </button>
               </div>
-            )}
+            )} */}
+            <button
+              onClick={handleViewMore}
+              className="text-xs font-medium hover:underline"
+              style={{ color: "#9614d0" }}
+            >
+              View More
+            </button>
           </div>
         </div>
       )}

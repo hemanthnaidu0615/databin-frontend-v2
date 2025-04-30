@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
 
-// Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -19,7 +17,7 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
     .getSeconds()
     .toString()
-    .padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+    .padStart(3, "0")}`;
 };
 
 interface OrderTrackingProps {
@@ -43,9 +41,10 @@ export default function OrderTracking(_: OrderTrackingProps) {
     return localStorage.getItem("orderTrackingVisible") !== "false";
   });
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     localStorage.setItem("orderTrackingVisible", String(isVisible));
@@ -57,7 +56,6 @@ export default function OrderTracking(_: OrderTrackingProps) {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
-        // Fetch total orders with date range
         const totalOrdersResponse = await axios.get(
           `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(
             formattedStartDate
@@ -65,7 +63,6 @@ export default function OrderTracking(_: OrderTrackingProps) {
         );
         setTotalOrders(totalOrdersResponse.data.total_orders);
 
-        // Fetch order status counts with date range
         const orderCountsResponse = await axios.get(
           `http://localhost:8080/api/shipment-status/count?startDate=${encodeURIComponent(
             formattedStartDate
@@ -80,7 +77,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]); // Re-run when startDate or endDate changes
+  }, [startDate, endDate]);
 
   const progressPercentage =
     totalOrders > 0
@@ -136,6 +133,11 @@ export default function OrderTracking(_: OrderTrackingProps) {
     setIsVisible(true);
   }
 
+  function handleViewMore() {
+    navigate("/orders");
+    closeDropdown();
+  }
+
   return (
     <div className="rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03] w-full max-w-full">
       {!isVisible && (
@@ -151,7 +153,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
       {isVisible && (
         <>
           <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
-            <div className="flex justify-between">
+            <div className="flex items-start justify-between">
               <div>
                 <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
                   Order Tracking
@@ -161,36 +163,16 @@ export default function OrderTracking(_: OrderTrackingProps) {
                 </p>
               </div>
 
-              <div className="relative inline-block text-left">
-                <button onClick={toggleDropdown}>
-                  <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-5" />
-                </button>
-
-                {isOpen && (
-                  <div className="absolute right-0 z-10 mt-2 w-36 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <div className="py-1">
-                      <button
-                        onClick={() => {
-                          closeDropdown();
-                          _.onViewMore?.();
-                        }}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 w-full text-left"
-                      >
-                        View More
-                      </button>
-                      <button
-                        onClick={removeChart}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 w-full text-left"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={handleViewMore}
+                className="text-xs font-medium hover:underline mt-1"
+                style={{ color: "#9614d0" }}
+              >
+                View More
+              </button>
             </div>
 
-            <div className="relative">
+            <div className="relative mt-4">
               <div className="max-h-[260px]" id="chartDarkStyle">
                 <Chart
                   options={options}
