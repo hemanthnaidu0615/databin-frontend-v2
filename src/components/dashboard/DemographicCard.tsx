@@ -63,8 +63,8 @@ const DemographicCard = () => {
   };
 
   return (
-    <div className="w-full p-4 bg-white dark:bg-gray-900 rounded-xl shadow relative">
-      {/* Header with dropdown */}
+<div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
+{/* Header with dropdown */}
       <div className="flex justify-between items-start mb-2">
         <div>
           <div className="text-gray-900 dark:text-white font-semibold text-lg">
