@@ -32,10 +32,9 @@ interface MapChartProps {
   markers5: any[];
   colorScale: (id: string) => string;
   revenueData: { [key: string]: string };
-  theme: "light" | "dark"; // ✅ Add this line
-  isDarkMode?: boolean; // ✅ Add this line
+  theme: "light" | "dark";
+  isDarkMode?: boolean;
 }
-
 
 interface Statess {
   [key: string]: string;
@@ -106,7 +105,7 @@ const MapChart: React.FC<MapChartProps> = ({
   markers5,
   colorScale,
   revenueData,
-  isDarkMode = false, // ✅ Default false
+  isDarkMode = false,
 }) => {
   const [tooltip, setTooltip] = useState<{
     display: boolean;
@@ -137,6 +136,10 @@ const MapChart: React.FC<MapChartProps> = ({
     setTooltip({ ...tooltip, display: false });
   };
 
+  const textColor = isDarkMode ? "#ffffff" : "#000000"; // text color for contrast
+
+  const mapBackground = isDarkMode ? "#1f2937" : "#F9FAFB"; // map background color based on theme
+
   return (
     <div className="h-full flex items-center justify-center relative">
       <ComposableMap projection="geoAlbersUsa" className="h-full">
@@ -165,8 +168,8 @@ const MapChart: React.FC<MapChartProps> = ({
                     strokeWidth={2}
                     style={{
                       default: {
-                        fill: isDarkMode ? "#374151" : "#E5E7EB",  // darker gray for dark mode
-                        stroke: isDarkMode ? "#6B7280" : "#9CA3AF", // lighter stroke for dark
+                        fill: mapBackground,  // Map background color set to match the theme
+                        stroke: isDarkMode ? "#6B7280" : "#9CA3AF", // lighter stroke for dark mode
                         strokeWidth: 0.5,
                       },
                       hover: {
@@ -178,7 +181,6 @@ const MapChart: React.FC<MapChartProps> = ({
                         fill: "#F53",
                       },
                     }}
-                    
                   />
                 );
               })}
@@ -192,7 +194,12 @@ const MapChart: React.FC<MapChartProps> = ({
                       centroid[0] < -67 &&
                       (Object.keys(offsets).indexOf(cur.id) === -1 ? (
                         <Marker coordinates={centroid}>
-                          <text y="2" fontSize={14} textAnchor="middle">
+                          <text
+                            y="2"
+                            fontSize={14}
+                            textAnchor="middle"
+                            fill={textColor} // Apply theme-based text color
+                          >
                             {cur.id}
                           </text>
                         </Marker>
@@ -213,6 +220,7 @@ const MapChart: React.FC<MapChartProps> = ({
                             textAnchor="middle"
                             fontSize={14}
                             alignmentBaseline="middle"
+                            fill={textColor} // Apply theme-based text color
                           >
                             {cur.id}
                           </text>
@@ -259,7 +267,7 @@ const MapChart: React.FC<MapChartProps> = ({
                   textAnchor="middle"
                   style={{
                     fontFamily: "system-ui",
-                    fill: "#5D5A6D",
+                    fill: textColor, // Apply theme-based text color here as well
                   }}
                 ></text>
               </Marker>
@@ -278,7 +286,7 @@ const MapChart: React.FC<MapChartProps> = ({
               tooltip.x + 200 > window.innerWidth ? "-100%" : "0"
             }, ${tooltip.y + 100 > window.innerHeight ? "-100%" : "0"})`,
             background: isDarkMode ? "#1f2937" : "white",
-            color: isDarkMode ? "#f9fafb" : "black",
+            color: isDarkMode ? "#f9fafb" : "black", // Tooltip text color
             padding: "5px",
             border: `1px solid ${isDarkMode ? "#4B5563" : "#ccc"}`,
             zIndex: 1000,

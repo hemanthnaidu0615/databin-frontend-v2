@@ -35,6 +35,13 @@ const BottleneckChart = () => {
         'Distribution Center', 'Warehouse', 'Vendor Drop Shipping',
         'Same-Day Delivery', 'Locker Pickup', 'Curbside Pickup',
       ],
+      title: {
+        text: 'Process Stage',
+        style: {
+          color: isDark ? '#d1d5db' : '#333',
+          fontWeight: 600,
+        },
+      },
       labels: {
         style: {
           colors: isDark ? '#d1d5db' : '#333',
@@ -42,6 +49,13 @@ const BottleneckChart = () => {
       },
     },
     yaxis: {
+      title: {
+        text: 'Avg Time (hrs)',
+        style: {
+          color: isDark ? '#d1d5db' : '#333',
+          fontWeight: 600,
+        },
+      },
       labels: {
         style: {
           colors: isDark ? '#d1d5db' : '#333',
@@ -83,6 +97,13 @@ const BottleneckChart = () => {
       },
       xaxis: {
         ...prev.xaxis,
+        title: {
+          text: 'Process Stage',
+          style: {
+            color: dark ? '#d1d5db' : '#333',
+            fontWeight: 600,
+          },
+        },
         labels: {
           style: {
             colors: dark ? '#d1d5db' : '#333',
@@ -91,6 +112,13 @@ const BottleneckChart = () => {
       },
       yaxis: {
         ...prev.yaxis,
+        title: {
+          text: 'Avg Time (hrs)',
+          style: {
+            color: dark ? '#d1d5db' : '#333',
+            fontWeight: 600,
+          },
+        },
         labels: {
           style: {
             colors: dark ? '#d1d5db' : '#333',

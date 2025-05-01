@@ -1,24 +1,25 @@
 import { useTheme } from "next-themes";
 import { useState, useRef, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { MoreDotIcon } from "../../icons";
-import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
-// Dummy data for tooltip
-const dummyStateData: Record<string, { orders: number; revenue: number }> = {
-  California: { orders: 1200, revenue: 24000 },
-  Texas: { orders: 1000, revenue: 18000 },
-  Florida: { orders: 800, revenue: 12000 },
-  "New York": { orders: 650, revenue: 9500 },
-  Illinois: { orders: 600, revenue: 8000 },
-  Georgia: { orders: 580, revenue: 7500 },
-  Arizona: { orders: 560, revenue: 7200 },
-  Washington: { orders: 550, revenue: 7000 },
-  Colorado: { orders: 530, revenue: 6800 },
-  Michigan: { orders: 500, revenue: 6500 },
+// Updated dummy data for tooltip with customers, revenue, and avgRevenue
+const dummyStateData: Record<
+  string,
+  { customers: number; revenue: number; avgRevenue: number }
+> = {
+  California: { customers: 1200, revenue: 24000, avgRevenue: 20 },
+  Texas: { customers: 1000, revenue: 18000, avgRevenue: 18 },
+  Florida: { customers: 800, revenue: 12000, avgRevenue: 15 },
+  "New York": { customers: 650, revenue: 9500, avgRevenue: 14.6 },
+  Illinois: { customers: 600, revenue: 8000, avgRevenue: 13.3 },
+  Georgia: { customers: 580, revenue: 7500, avgRevenue: 12.9 },
+  Arizona: { customers: 560, revenue: 7200, avgRevenue: 12.8 },
+  Washington: { customers: 550, revenue: 7000, avgRevenue: 12.7 },
+  Colorado: { customers: 530, revenue: 6800, avgRevenue: 12.8 },
+  Michigan: { customers: 500, revenue: 6500, avgRevenue: 13 },
 };
 
 const DemographicCard = () => {
@@ -27,16 +28,15 @@ const DemographicCard = () => {
 
   const [tooltip, setTooltip] = useState<{
     name: string;
-    orders: number;
+    customers: number;
     revenue: number;
+    avgRevenue: number;
     x: number;
     y: number;
   } | null>(null);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Initialize useNavigate
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,24 +54,19 @@ const DemographicCard = () => {
 
   const handleViewMore = () => {
     setDropdownOpen(false);
-    navigate("/sales/region"); // Navigate to /sales route
-  };
-
-  const handleRemove = () => {
-    setDropdownOpen(false);
-    console.log("Remove clicked");
+    navigate("/sales/region");
   };
 
   return (
-<div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
-{/* Header with dropdown */}
+    <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
+      {/* Header with dropdown */}
       <div className="flex justify-between items-start mb-2">
         <div>
           <div className="text-gray-900 dark:text-white font-semibold text-lg">
             Customers Demographic
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            Orders and revenue per state
+            Customers and revenue per state
           </div>
         </div>
 
@@ -92,8 +87,9 @@ const DemographicCard = () => {
               geographies.map((geo) => {
                 const stateName = geo.properties.name;
                 const data = dummyStateData[stateName] || {
-                  orders: 0,
+                  customers: 0,
                   revenue: 0,
+                  avgRevenue: 0,
                 };
 
                 return (
@@ -106,8 +102,9 @@ const DemographicCard = () => {
                     onMouseEnter={(e) =>
                       setTooltip({
                         name: stateName,
-                        orders: data.orders,
+                        customers: data.customers,
                         revenue: data.revenue,
+                        avgRevenue: data.avgRevenue,
                         x: e.clientX,
                         y: e.clientY,
                       })
@@ -138,9 +135,7 @@ const DemographicCard = () => {
             }}
           >
             <strong>{tooltip.name}</strong>
-            {`\nOrders: ${
-              tooltip.orders
-            }\nRevenue: $${tooltip.revenue.toLocaleString()}`}
+            {`\nCustomers: ${tooltip.customers}\nRevenue: $${tooltip.revenue.toLocaleString()}\nAvg Revenue: $${tooltip.avgRevenue.toLocaleString()}`}
           </div>
         )}
       </div>
