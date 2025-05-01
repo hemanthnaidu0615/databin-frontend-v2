@@ -72,6 +72,16 @@ const InventoryOverview: React.FC<{
     xaxis: {
       categories: filteredWarehouseData.map((d) => d.region),
       labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
+      crosshairs: {
+        show: true,
+        width: 1,
+        position: "back",
+        stroke: {
+          color: isDarkTheme ? "#4B5563" : "#D1D5DB", // gray-600 or gray-300
+          width: 1,
+          dashArray: 3,
+        },
+      },
       title: {
         text: "Region",
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
