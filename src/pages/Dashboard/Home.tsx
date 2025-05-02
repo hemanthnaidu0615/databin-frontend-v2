@@ -1,10 +1,10 @@
 import { memo } from "react";
 import PageMeta from "../../components/common/PageMeta";
-import EcommerceMetrics from "../../components/dashboard/SubHeader";
+import EcommerceMetrics from "../../components/dashboard/DashboardKPI";
 import StatisticsChart from "../../components/dashboard/StatisticsChart";
 import RecentOrders from "../../components/dashboard/RecentOrders";
 import OrderTracking from "../../components/dashboard/OrderTracking";
-import DemographicCard from "../../components/dashboard/DemographicCard";
+import DemographicCard from "../../components/dashboard/CustomerDemographic";
 // import OrderProcessingTime from "../../components/dashboard/OrderProcessingTime";
 import OrderTrendsCategory from "../../components/dashboard/OrderTrendsCategory";
 // import OrderValueSegment from "../../components/dashboard/OrderValueSegment";

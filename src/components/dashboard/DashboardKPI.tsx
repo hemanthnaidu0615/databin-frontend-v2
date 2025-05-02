@@ -64,7 +64,7 @@ export default function OrdersFulfillmentMetrics() {
       try {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
-
+  
         const urls = [
           `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(
             formattedStartDate
@@ -75,14 +75,11 @@ export default function OrdersFulfillmentMetrics() {
           `http://localhost:8080/api/dashboard-kpi/shipment-status-percentage?startDate=${encodeURIComponent(
             formattedStartDate
           )}&endDate=${encodeURIComponent(formattedEndDate)}`,
-          `http://localhost:8080/api/dashboard-kpi/out-of-stock?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`,
         ];
-
+  
         const responses = await Promise.all(urls.map((url) => fetch(url)));
         const data = await Promise.all(responses.map((res) => res.json()));
-
+  
         setMetrics([
           {
             icon: Inventory,
@@ -108,22 +105,17 @@ export default function OrdersFulfillmentMetrics() {
             value: data[2].in_transit_orders,
             glowColor: "#22C55E",
           },
-          // {
-          //   icon: Warning,
-          //   label: "Inventory Alerts",
-          //   value: data[3].out_of_stock_count,
-          //   glowColor: "#F59E0B",
-          // },
         ]);
       } catch (error) {
         console.error("Error fetching metrics:", error);
       }
     }
-
+  
     if (startDate && endDate) {
       fetchMetrics();
     }
   }, [startDate, endDate]);
+  
 
   return (
     // <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pb-2 md:pb-4">
