@@ -1,10 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import dateRangeReducer from "./dateRangeSlice";
+import enterpriseKeyReducer from "./enterpriseKeySlice";
 
 export const store = configureStore({
   reducer: {
     dateRange: dateRangeReducer,
-    // add more reducers here
+    enterpriseKey: enterpriseKeyReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
