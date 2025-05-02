@@ -181,19 +181,26 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
           Inventory List
         </h3>
         <div className="flex gap-2 flex-wrap items-center">
+          {/* Search Input */}
           <input
             type="text"
             placeholder="Search Product"
-            className="px-2 py-1 text-sm border dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 dark:text-white"
+            className="px-2 py-1 text-sm border rounded-md 
+               bg-white text-black border-gray-300 
+               dark:bg-gray-700 dark:text-white dark:border-gray-600"
             value={productSearch}
             onChange={(e) => setProductSearch(e.target.value)}
           />
 
           {/* Status Select */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-white">Status</span>
+            <span className="text-sm text-gray-800 dark:text-white">
+              Status
+            </span>
             <select
-              className="w-36 px-3 py-1 rounded-md text-sm bg-gray-800 text-white border border-white/30"
+              className="w-36 px-3 py-1 rounded-md text-sm 
+                 bg-white text-black border border-gray-300 
+                 dark:bg-gray-800 dark:text-white dark:border-white/30"
               value={selectedStatus || ""}
               onChange={(e) => {
                 setSelectedStatus(e.target.value || null);
@@ -211,9 +218,13 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
           {/* Category Select */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-white">Category</span>
+            <span className="text-sm text-gray-800 dark:text-white">
+              Category
+            </span>
             <select
-              className="w-36 px-3 py-1 rounded-md text-sm bg-gray-800 text-white border border-white/30"
+              className="w-36 px-3 py-1 rounded-md text-sm 
+                 bg-white text-black border border-gray-300 
+                 dark:bg-gray-800 dark:text-white dark:border-white/30"
               value={selectedCategory || ""}
               onChange={(e) => {
                 setSelectedCategory(e.target.value || null);
@@ -320,7 +331,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
             template="RowsPerPageDropdown CurrentPageReport PrevPageLink PageLinks NextPageLink"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
             rowsPerPageOptions={[5, 10, 20]}
-            className="w-full text-sm dark:text-white [&_.p-paginator-current]:text-sm [&_.p-dropdown]:py-1 [&_.p-paginator-pages]:gap-1 [&_.p-paginator-page]:!px-2 !rounded-md [&_.p-highlight]:bg-blue-600 [&_.p-highlight]:text-white"          />
+            className="w-full text-sm dark:text-white [&_.p-paginator-current]:text-sm [&_.p-dropdown]:py-1 [&_.p-paginator-pages]:gap-1 [&_.p-paginator-page]:!px-2 !rounded-md [&_.p-highlight]:bg-blue-600 [&_.p-highlight]:text-white"
+          />
         </div>
       </div>
 
