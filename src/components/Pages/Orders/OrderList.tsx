@@ -5,22 +5,55 @@ import { Dialog } from "@headlessui/react";
 import { Paginator } from "primereact/paginator";
 import { useSelector } from "react-redux";
 
-// Simulate an API call to fetch order details
-const fetchOrderDetails = (orderId: string, startDate: string, endDate: string) => {
-  return fetch(`http://localhost:8080/api/orders/${orderId}/details?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`)
-    .then((response) => response.json())
-    .then((data) => {
-      // Parse the 'value' field which contains stringified JSON
-      const parsedData = JSON.parse(data.value);
-      return parsedData;
-    })
-    .catch((err) => {
-      console.error(`Error fetching order details for order ${orderId}:`, err);
-      return null;
-    });
+export const fetchOrderDetails = async (
+  orderId: string
+): Promise<any | null> => {
+  try {
+    const response = await fetch(
+      `http://localhost:8080/api/orders/${orderId}/details`
+    );
+    const data = await response.json();
+
+    if (typeof data.value === "string") {
+      return JSON.parse(data.value);
+    }
+
+    return data.value ?? null;
+  } catch (error) {
+    console.error(`Error fetching details for order ${orderId}:`, error);
+    return null;
+  }
 };
 
+function cleanAndFormatPhoneNumber(rawPhone: string): string {
+  const digitsOnly = rawPhone.split(/[xX]|ext/)[0].replace(/[^\d]/g, "");
 
+  const normalized = digitsOnly.length === 10 ? "1" + digitsOnly : digitsOnly;
+
+  if (/^1\d{10}$/.test(normalized)) {
+    const country = "+1";
+    const area = normalized.slice(1, 4);
+    const middle = normalized.slice(4, 7);
+    const last = normalized.slice(7, 11);
+    return `${country} (${area}) ${middle}-${last}`;
+  }
+
+  return rawPhone;
+}
+function convertToUSD(rupees: number): number {
+  const exchangeRate = 0.012;
+  return rupees * exchangeRate;
+}
+
+function formatUSD(amount: number): string {
+  const usdAmount = convertToUSD(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(usdAmount);
+}
 
 interface Props {
   orders?: Order[];
@@ -28,11 +61,13 @@ interface Props {
 
 const statusColors: Record<string, string> = {
   Delivered: "bg-green-600",
-  Pending: "bg-yellow-500",
-  Cancelled: "bg-red-600",
+  "In Transit": "bg-yellow-500",
+  Delayed: "bg-red-600",
 };
 
-const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({ status }) => {
+const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({
+  status,
+}) => {
   return (
     <span
       className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}
@@ -44,44 +79,40 @@ const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({ status }) => 
 
 const OrderList: React.FC<Props> = ({ orders = [] }) => {
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
-  const [first, setFirst] = useState(0);  // First item on the page
-  const [rows, setRows] = useState(20);   // Number of rows per page (default to 20)
+  const [first, setFirst] = useState(0); // First item on the page
+  const [rows, setRows] = useState(20); // Number of rows per page (default to 20)
   const [isMobile, setIsMobile] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [mobileOrder, setMobileOrder] = useState<Order | null>(null);
   const [showMobileDialog, setShowMobileDialog] = useState(false);
   const [orderDetails, setOrderDetails] = useState<Map<string, any>>(new Map());
-  const [loadingOrderDetails, setLoadingOrderDetails] = useState<Map<string, boolean>>(new Map());
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState<
+    Map<string, boolean>
+  >(new Map());
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
-  // Fetch and Set Details on Order Expand
   const fetchAndSetDetails = useCallback(
     (orderId: string) => {
-      // Check if details are already fetched
-      if (orderDetails.has(orderId) || loadingOrderDetails.get(orderId)) {
-        return;  // Don't fetch again if details are already loaded or still loading
-      }
+      if (orderDetails.has(orderId) || loadingOrderDetails.get(orderId)) return;
 
-      // Mark the order as loading
       setLoadingOrderDetails((prev) => new Map(prev).set(orderId, true));
 
-      // Fetch order details
-      fetchOrderDetails(orderId, startDate, endDate).then((details) => {
-        setOrderDetails((prev) => new Map(prev).set(orderId, details));
+      fetchOrderDetails(orderId).then((details) => {
+        if (details) {
+          setOrderDetails((prev) => new Map(prev).set(orderId, details));
+        }
         setLoadingOrderDetails((prev) => new Map(prev).set(orderId, false));
       });
     },
-    [orderDetails, loadingOrderDetails, startDate, endDate] // Dependencies to ensure no unnecessary re-fetch
+    [orderDetails, loadingOrderDetails]
   );
 
   const toggleExpand = (order: Order) => {
     if (isMobile) {
-      // For mobile, just set the selected order and show the dialog
       setSelectedOrder(order);
-      setMobileOrder(order);  // Ensure mobile order is also updated
+      setMobileOrder(order);
     } else {
       setExpandedOrderIds((prev) =>
         prev.includes(order.id)
@@ -89,19 +120,17 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
           : [...prev, order.id]
       );
 
-      // Only fetch if not already fetched
       if (!expandedOrderIds.includes(order.id) && !orderDetails.has(order.id)) {
         fetchAndSetDetails(order.id);
       }
     }
   };
 
-  // Handle page change for pagination
   const onPageChange = (e: { first: number; rows: number }) => {
     setFirst(e.first);
-    setRows(e.rows);  // Adjust number of rows per page
-    setExpandedOrderIds([]);  // Clear expanded orders when changing page
-    setMobileOrder(null);      // Clear mobile order
+    setRows(e.rows);
+    setExpandedOrderIds([]);
+    setMobileOrder(null);
   };
 
   const paginatedOrders = orders.slice(first, first + rows);
@@ -148,7 +177,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                     {order.product}
                   </td>
                   <td className="py-3 px-4 hidden md:table-cell">
-                    ${order.total}
+                    {formatUSD(order.total)}
                   </td>
                   <td className="py-3 px-4 hidden md:table-cell">
                     <OrderStatusBadge status={order.status} />
@@ -208,7 +237,8 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 Order Type
                               </span>
                               <span className="text-right text-gray-900 dark:text-white font-medium">
-                              {orderDetails.get(order.id)?.order_summary?.order_type ?? "N/A"}
+                                {orderDetails.get(order.id)?.order_summary
+                                  ?.order_type ?? "N/A"}
                               </span>
                             </div>
                           </div>
@@ -233,7 +263,8 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 Email
                               </span>
                               <span className="text-right text-gray-900 dark:text-white font-medium">
-                                {order.customer}
+                                {orderDetails.get(order.id)?.customer_info
+                                  ?.email ?? "N/A"}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
@@ -241,7 +272,10 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 Phone
                               </span>
                               <span className="text-right text-gray-900 dark:text-white font-medium">
-                                +1 (555) 123-4567
+                                {cleanAndFormatPhoneNumber(
+                                  orderDetails.get(order.id)?.customer_info
+                                    ?.phone ?? ""
+                                ) || "N/A"}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
@@ -249,135 +283,187 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 Address
                               </span>
                               <span className="text-right text-gray-900 dark:text-white font-medium">
-                                123 Main St, SF
+                                {orderDetails.get(order.id)?.customer_info
+                                  ?.address ?? "N/A"}
                               </span>
                             </div>
                           </div>
                         </div>
 
-                        {/* 3. Products */}
+                        {/* Products Section */}
                         <div className="hidden md:block bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1">
                           <h3 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">
                             Products
                           </h3>
 
                           <div className="space-y-6">
-                            {order.products.map((product, i) => (
-                              <div
-                                key={i}
-                                className="border-b border-gray-200 dark:border-white/10 pb-4 last:border-none last:pb-0"
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="text-base font-medium text-gray-900 dark:text-white">
-                                      {product.name}
+                            {(
+                              orderDetails.get(order.id)?.products ||
+                              order.products ||
+                              []
+                            ).map((product: any, i: number) => {
+                              const quantity = product.quantity ?? product.qty;
+                              const unitPrice =
+                                product.unit_price ?? product.price;
+                              const totalPrice = quantity * unitPrice;
+
+                              return (
+                                <div
+                                  key={i}
+                                  className="border-b border-gray-200 dark:border-white/10 pb-4 last:border-none last:pb-0"
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <div className="text-base font-medium text-gray-900 dark:text-white">
+                                        {product.name}
+                                      </div>
+                                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        {product.category ||
+                                          product.specs ||
+                                          ""}
+                                      </div>
+                                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        Qty: {quantity}
+                                      </div>
+                                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                                        Unit Price: {formatUSD(unitPrice)}
+                                      </div>
                                     </div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                      {product.specs}
+                                    <div className="text-right text-gray-900 dark:text-white font-semibold">
+                                      {formatUSD(totalPrice)}
                                     </div>
-                                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                      Qty: {product.qty}
-                                    </div>
-                                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                                      Unit Price: ${product.price.toFixed(2)}
-                                    </div>
-                                  </div>
-                                  <div className="text-right text-gray-900 dark:text-white font-semibold">
-                                    ${(product.price * product.qty).toFixed(2)}
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
 
                           <hr className="border-gray-300 dark:border-white/10 my-5" />
 
                           {/* Totals */}
-                          {/* Web view - visible on md and up */}
                           <div className="hidden md:block space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">
-                                Subtotal
+                            {(() => {
+                              const products =
+                                orderDetails.get(order.id)?.products ||
+                                order.products ||
+                                [];
+
+                              const subtotal = products.reduce(
+                                (acc: number, p: any) =>
+                                  acc +
+                                  (p.quantity ?? p.qty) *
+                                    (p.unit_price ?? p.price),
+                                0
+                              );
+
+                              const shipping = products.reduce(
+                                (acc: number, p: any) =>
+                                  acc + (p.shipping ?? 0),
+                                0
+                              );
+                              const tax = products.reduce(
+                                (acc: number, p: any) => acc + (p.tax ?? 0),
+                                0
+                              );
+                              const total =
+                                products.reduce(
+                                  (acc: number, p: any) => acc + (p.total ?? 0),
+                                  0
+                                ) || subtotal + shipping + tax;
+
+                              return (
+                                <>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Subtotal
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {formatUSD(subtotal)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Shipping
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {formatUSD(shipping)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Tax
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {formatUSD(tax)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between font-semibold text-base pt-3">
+                                    <span className="text-gray-900 dark:text-white">
+                                      Total
+                                    </span>
+                                    <span className="text-gray-900 dark:text-white">
+                                      {formatUSD(total)}
+                                    </span>
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+
+                        {/* 4. Shipping Information */}
+                        <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                            Shipping Information
+                          </h3>
+                          <div className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">
+                                Carrier
                               </span>
-                              <span className="text-gray-900 dark:text-white">
-                                $
-                                {order.products
-                                  .reduce((acc, p) => acc + p.qty * p.price, 0)
-                                  .toFixed(2)}
+                              <span className="text-right text-gray-900 dark:text-white font-medium">
+                                {orderDetails.get(order.id)?.shipping_info
+                                  ?.carrier ?? "N/A"}
                               </span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">
-                                Shipping
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">
+                                Tracking #
                               </span>
-                              <span className="text-gray-900 dark:text-white">
-                                $0.00
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600 dark:text-gray-400">
-                                Tax
-                              </span>
-                              <span className="text-gray-900 dark:text-white">
-                                $104.91
+                              <span className="text-right text-gray-900 dark:text-white font-medium">
+                                {orderDetails.get(order.id)?.shipping_info
+                                  ?.tracking_id ?? "N/A"}
                               </span>
                             </div>
-                            <div className="flex justify-between font-semibold text-base pt-3">
-                              <span className="text-gray-900 dark:text-white">
-                                Total
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">
+                                Method
                               </span>
-                              <span className="text-gray-900 dark:text-white">
-                                $
-                                {(
-                                  order.products.reduce(
-                                    (acc, p) => acc + p.qty * p.price,
-                                    0
-                                  ) + 104.91
-                                ).toFixed(2)}
+                              <span className="text-right text-gray-900 dark:text-white font-medium">
+                                {orderDetails.get(order.id)?.shipping_info
+                                  ?.method ?? "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">
+                                ETA
+                              </span>
+                              <span className="text-right text-gray-900 dark:text-white font-medium">
+                                {orderDetails.get(order.id)?.shipping_info
+                                  ?.eta ?? "N/A"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">
+                                Delivered
+                              </span>
+                              <span className="text-right text-gray-900 dark:text-white font-medium">
+                                {orderDetails.get(order.id)?.shipping_info
+                                  ?.delivered ?? "N/A"}
                               </span>
                             </div>
                           </div>
                         </div>
-
-{/* 4. Shipping Information */}
-<div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
-  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-    Shipping Information
-  </h3>
-  <div className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
-    <div className="flex justify-between items-center">
-      <span className="text-gray-500 dark:text-gray-400">Carrier</span>
-      <span className="text-right text-gray-900 dark:text-white font-medium">
-      {orderDetails.get(order.id)?.shipping_info?.carrier ?? "N/A"}
-      </span>
-    </div>
-    <div className="flex justify-between items-center">
-      <span className="text-gray-500 dark:text-gray-400">Tracking #</span>
-      <span className="text-right text-gray-900 dark:text-white font-medium">
-      {orderDetails.get(order.id)?.shipping_info?.tracking_id ?? "N/A"}
-      </span>
-    </div>
-    <div className="flex justify-between items-center">
-      <span className="text-gray-500 dark:text-gray-400">Method</span>
-      <span className="text-right text-gray-900 dark:text-white font-medium">
-      {orderDetails.get(order.id)?.shipping_info?.method ?? "N/A"}
-      </span>
-    </div>
-    <div className="flex justify-between items-center">
-      <span className="text-gray-500 dark:text-gray-400">ETA</span>
-      <span className="text-right text-gray-900 dark:text-white font-medium">
-      {orderDetails.get(order.id)?.shipping_info?.eta ?? "N/A"}
-      </span>
-    </div>
-    <div className="flex justify-between items-center">
-      <span className="text-gray-500 dark:text-gray-400">Delivered</span>
-      <span className="text-right text-gray-900 dark:text-white font-medium">
-      {orderDetails.get(order.id)?.shipping_info?.delivered ?? "N/A"}
-      </span>
-    </div>
-  </div>
-</div>
-
 
                         {/* 5. Fulfillment Timeline */}
                         <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
@@ -386,12 +472,11 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                           </h3>
 
                           {(() => {
-                            // Define dynamic steps based on order status
                             let steps: {
                               label: string;
                               date: string;
                               complete: boolean;
-                              cancelled?: boolean;
+                              Delayed?: boolean;
                             }[] = [];
 
                             if (order.status === "Delivered") {
@@ -412,7 +497,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                   complete: true,
                                 },
                               ];
-                            } else if (order.status === "Pending") {
+                            } else if (order.status === "In Transit") {
                               steps = [
                                 {
                                   label: "Order Placed",
@@ -422,7 +507,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 {
                                   label: "Payment Confirmed",
                                   date: "",
-                                  complete: false,
+                                  complete: true,
                                 },
                                 {
                                   label: "Delivered",
@@ -430,7 +515,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                   complete: false,
                                 },
                               ];
-                            } else if (order.status === "Cancelled") {
+                            } else if (order.status === "Delayed") {
                               steps = [
                                 {
                                   label: "Order Placed",
@@ -443,10 +528,10 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                   complete: true,
                                 },
                                 {
-                                  label: "Cancelled",
+                                  label: "Delayed",
                                   date: "Apr 04",
                                   complete: false,
-                                  cancelled: true,
+                                  Delayed: true,
                                 },
                               ];
                             }
@@ -460,7 +545,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                     )}
                                     <span
                                       className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
-                                        step.cancelled
+                                        step.Delayed
                                           ? "bg-red-500 border-red-500"
                                           : step.complete
                                           ? "bg-green-500 border-green-500"
@@ -470,7 +555,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                     <div className="ml-4">
                                       <p
                                         className={`text-sm font-medium ${
-                                          step.cancelled
+                                          step.Delayed
                                             ? "text-red-600 dark:text-red-400"
                                             : "text-gray-800 dark:text-white"
                                         }`}
@@ -478,7 +563,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                         {step.label}
                                       </p>
                                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                                        {step.date || "Pending"}
+                                        {step.date || "In Transit"}
                                       </p>
                                     </div>
                                   </div>
@@ -525,7 +610,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
               rows={rows}
               totalRecords={orders.length}
               onPageChange={onPageChange}
-              rowsPerPageOptions={[5, 10, 20]}
+              rowsPerPageOptions={[20, 50, 100]}
               template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
               className="dark:text-gray-100 dark:bg-gray-900"
@@ -635,7 +720,8 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                             Email
                           </span>
                           <span className="text-right font-medium text-gray-900 dark:text-white">
-                            john.smith@example.com
+                            {orderDetails.get(mobileOrder.id)?.customer_info
+                              ?.email ?? "N/A"}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -643,7 +729,10 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                             Phone
                           </span>
                           <span className="text-right font-medium text-gray-900 dark:text-white">
-                            +1 (555) 123-4567
+                            {cleanAndFormatPhoneNumber(
+                              orderDetails.get(mobileOrder.id)?.customer_info
+                                ?.phone ?? ""
+                            ) || "N/A"}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -651,7 +740,8 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                             Address
                           </span>
                           <span className="text-right font-medium text-gray-900 dark:text-white">
-                            123 Main St, SF
+                            {orderDetails.get(mobileOrder.id)?.customer_info
+                              ?.address ?? "N/A"}
                           </span>
                         </div>
                       </div>
@@ -788,7 +878,6 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                         </div>
                       </div>
                     </div>
-
                     {/* Fulfillment Timeline */}
                     <div className="mt-6 bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -796,36 +885,39 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                       </h3>
                       <div className="relative pl-6">
                         {(() => {
+                          const status = mobileOrder?.status;
+                          const orderDate = mobileOrder?.date || "N/A";
+
                           let steps: {
                             label: string;
                             date: string;
                             complete: boolean;
-                            cancelled?: boolean;
+                            Delayed?: boolean;
                           }[] = [];
 
-                          if (mobileOrder?.status === "Delivered") {
+                          if (status === "Delivered") {
                             steps = [
                               {
                                 label: "Order Placed",
-                                date: mobileOrder.date,
+                                date: orderDate,
                                 complete: true,
                               },
                               {
                                 label: "Payment Confirmed",
-                                date: mobileOrder.date,
+                                date: orderDate,
                                 complete: true,
                               },
                               {
                                 label: "Delivered",
-                                date: "Apr 04",
+                                date: "Apr 04, 2025",
                                 complete: true,
                               },
                             ];
-                          } else if (mobileOrder?.status === "Pending") {
+                          } else if (status === "In Transit") {
                             steps = [
                               {
                                 label: "Order Placed",
-                                date: mobileOrder.date,
+                                date: orderDate,
                                 complete: true,
                               },
                               {
@@ -835,35 +927,35 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                               },
                               { label: "Delivered", date: "", complete: false },
                             ];
-                          } else if (mobileOrder?.status === "Cancelled") {
+                          } else if (status === "Delayed") {
                             steps = [
                               {
                                 label: "Order Placed",
-                                date: mobileOrder.date,
+                                date: orderDate,
                                 complete: true,
                               },
                               {
                                 label: "Payment Confirmed",
-                                date: mobileOrder.date,
+                                date: orderDate,
                                 complete: true,
                               },
                               {
-                                label: "Cancelled",
-                                date: "Apr 04",
+                                label: "Delayed",
+                                date: "Apr 04, 2025",
                                 complete: false,
-                                cancelled: true,
+                                Delayed: true,
                               },
                             ];
                           }
 
-                          return steps.map((step, idx, arr) => (
+                          return steps.map((step, idx) => (
                             <div key={idx} className="relative pb-8">
-                              {idx !== arr.length - 1 && (
+                              {idx !== steps.length - 1 && (
                                 <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                               )}
                               <span
                                 className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
-                                  step.cancelled
+                                  step.Delayed
                                     ? "bg-red-500 border-red-500"
                                     : step.complete
                                     ? "bg-green-500 border-green-500"
@@ -873,7 +965,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                               <div className="ml-4">
                                 <p
                                   className={`text-sm font-medium ${
-                                    step.cancelled
+                                    step.Delayed
                                       ? "text-red-600 dark:text-red-400"
                                       : "text-gray-800 dark:text-white"
                                   }`}
@@ -881,7 +973,8 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                   {step.label}
                                 </p>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  {step.date || "Pending"}
+                                  {step.date ||
+                                    (step.Delayed ? "Delayed" : "In Progress")}
                                 </p>
                               </div>
                             </div>

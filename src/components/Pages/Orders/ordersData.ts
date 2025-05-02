@@ -3,7 +3,7 @@ import axios from "axios";
 export interface Product {
   name: string;
   specs: string;
-  status: 'Delivered' | 'Pending' | 'Cancelled' | 'In Transit';
+  status: "Delivered" | "Pending" | "Cancelled" | "In Transit";
   qty: number;
   price: number;
   estimatedDelivery?: string;
@@ -15,9 +15,9 @@ export interface Order {
   customer: string;
   product: string;
   total: number;
-  status: 'Delivered' | 'Pending' | 'Cancelled' | 'In Transit';
+  status: "Delivered" | "Delayed" | "In Transit";
   orderType?: string;
-  paymentMethod: 'Credit Card' | 'PayPal' | 'Google Pay';
+  paymentMethod: "Credit Card" | "PayPal" | "Google Pay";
   products: Product[];
   shippingInfo?: {
     carrier: string | null;
@@ -47,74 +47,78 @@ export const fetchOrders = async (
   searchCustomer?: string,
   searchOrderId?: string
 ): Promise<Order[]> => {
-  try {
-    if (!startDate || !endDate || isNaN(Date.parse(startDate)) || isNaN(Date.parse(endDate))) {
-      throw new Error("Invalid date range");
-    }
+  if (
+    !startDate ||
+    !endDate ||
+    isNaN(Date.parse(startDate)) ||
+    isNaN(Date.parse(endDate))
+  ) {
+    throw new Error("Invalid date range");
+  }
 
-    const response = await axios.get("http://localhost:8080/api/orders/filtered", {
-      params: {
-        startDate,
-        endDate,
-        status,
-        orderType,
-        paymentMethod,
-        carrier,
-        searchCustomer,
-        searchOrderId,
-      },
-    });
+  try {
+    const response = await axios.get(
+      "http://localhost:8080/api/orders/filtered",
+      {
+        params: {
+          startDate,
+          endDate,
+          status,
+          orderType,
+          paymentMethod,
+          carrier,
+          searchCustomer,
+          searchOrderId,
+        },
+      }
+    );
 
     const filteredOrders = response.data;
-
-    if (!Array.isArray(filteredOrders)) {
-      console.error("Expected an array but received:", filteredOrders);
-      return [];
-    }
+    if (!Array.isArray(filteredOrders)) return [];
 
     return filteredOrders.map((order: any): Order => {
       const summary = order.order_summary ?? {};
-      const products = Array.isArray(order.products) ? order.products : [];
+      const products = order.products ?? [];
+      const customerInfo = order.customer_info ?? {};
+      const shipping = order.shipping_info ?? {};
+      const timeline = order.fulfillment_timeline ?? {};
 
       return {
-        id: summary.order_id ?? order.order_id,
-        date: new Date(summary.order_date ?? order.order_date).toISOString().split("T")[0],
-        customer: order.customer_info?.name ?? order.customer_name ?? "Unknown",
+        id: String(summary.order_id ?? order.order_id),
+        date: new Date(summary.order_date ?? order.order_date)
+          .toISOString()
+          .split("T")[0],
+        customer: customerInfo.name ?? order.customer_name ?? "Unknown",
         product: order.product_name ?? products[0]?.name ?? "N/A",
         total: products[0]?.total ?? order.total ?? 0,
         status: summary.status ?? order.shipment_status ?? "Pending",
-        paymentMethod: summary.payment_method ?? order.payment_method ?? "PayPal",
+        paymentMethod:
+          summary.payment_method ?? order.payment_method ?? "PayPal",
         orderType: summary.order_type ?? "Online",
         products: products.map((p: any) => ({
           name: p.name,
           specs: p.category ?? "",
           status: summary.status ?? "Pending",
-          qty: p.quantity,
-          price: p.unit_price,
-          estimatedDelivery: order.shipping_info?.eta,
+          qty: p.quantity ?? 0,
+          price: p.unit_price ?? 0,
+          estimatedDelivery: shipping.eta ?? null,
         })),
-        shippingInfo: order.shipping_info
-          ? {
-              carrier: order.shipping_info.carrier,
-              trackingId: order.shipping_info.tracking_id,
-              eta: order.shipping_info.eta,
-              delivered: order.shipping_info.delivered,
-            }
-          : undefined,
-        fulfillmentTimeline: order.fulfillment_timeline
-          ? {
-              orderPlaced: order.fulfillment_timeline.order_placed,
-              paymentConfirmed: order.fulfillment_timeline.payment_confirmed,
-              delivered: order.fulfillment_timeline.delivered,
-            }
-          : undefined,
-        customerDetails: order.customer_info
-          ? {
-              email: order.customer_info.email,
-              phone: order.customer_info.phone,
-              address: order.customer_info.address,
-            }
-          : undefined,
+        shippingInfo: {
+          carrier: shipping.carrier ?? null,
+          trackingId: shipping.tracking_id ?? null,
+          eta: shipping.eta ?? null,
+          delivered: shipping.delivered ?? null,
+        },
+        fulfillmentTimeline: {
+          orderPlaced: timeline.order_placed ?? null,
+          paymentConfirmed: timeline.payment_confirmed ?? null,
+          delivered: timeline.delivered ?? null,
+        },
+        customerDetails: {
+          email: customerInfo.email ?? null,
+          phone: customerInfo.phone ?? null,
+          address: customerInfo.address ?? null,
+        },
       };
     });
   } catch (error) {

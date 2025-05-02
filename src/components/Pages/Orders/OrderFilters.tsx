@@ -24,7 +24,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   const inputStyle =
     "px-3 py-2 rounded border text-sm bg-white text-black border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
-  // Local state for dynamic dropdown values
   const [filterOptions, setFilterOptions] = useState<{
     types: string[];
     methods: string[];
@@ -37,7 +36,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
     carriers: [],
   });
 
-  // Fetch filter dropdown values from API
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
@@ -55,8 +53,8 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   }, []);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start text-sm text-white relative">
-      {/* Status Filter */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start text-sm text-white">
+      {/* Status */}
       <select
         className={inputStyle}
         value={filters.status}
@@ -68,7 +66,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         ))}
       </select>
 
-      {/* Order Type Filter */}
+      {/* Order Type */}
       <select
         className={inputStyle}
         value={filters.orderType}
@@ -80,7 +78,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         ))}
       </select>
 
-      {/* Payment Method Filter */}
+      {/* Payment Method */}
       <select
         className={inputStyle}
         value={filters.paymentMethod}
@@ -92,7 +90,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         ))}
       </select>
 
-      {/* Price Range Filter */}
+      {/* Price Range in USD */}
       <select
         className={inputStyle}
         value={filters.priceRange}
@@ -100,11 +98,12 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       >
         <option>All prices</option>
         <option>Under $50</option>
-        <option>$50 - $100</option>
-        <option>Over $100</option>
+        <option>$50 - $200</option>
+        <option>$200 - $500</option>
+        <option>Over $500</option>
       </select>
 
-      {/* Carrier Filter */}
+      {/* Carrier */}
       <select
         className={inputStyle}
         value={filters.carrier}
@@ -116,7 +115,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         ))}
       </select>
 
-      {/* Customer Search Field */}
+      {/* Customer */}
       <input
         type="text"
         placeholder="Search customer"
@@ -125,7 +124,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         onChange={(e) => onFilterChange("customer", e.target.value)}
       />
 
-      {/* Order ID Search Field */}
+      {/* Order ID */}
       <input
         type="text"
         placeholder="Search order ID"
@@ -134,7 +133,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         onChange={(e) => onFilterChange("orderId", e.target.value)}
       />
 
-      {/* Action Buttons */}
+      {/* Buttons */}
       <div className="col-span-full flex justify-end gap-2 mt-2">
         <button
           onClick={onReset}
