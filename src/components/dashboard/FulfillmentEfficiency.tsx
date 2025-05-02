@@ -1,13 +1,14 @@
 "use client";
-
+ 
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { MoreDotIcon } from "../../icons";
-import { useTheme } from "next-themes";
+import { useTheme } from "../../context/ThemeContext";
+ 
 import { useNavigate } from "react-router-dom";
-
+ 
 // Utility to format date string (yyyy-mm-dd)
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -15,13 +16,13 @@ const formatDate = (date: string) => {
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
-
+ 
 type FulfillmentEfficiencyProps = {
   size?: "small" | "full";
   onRemove?: () => void;
   onViewMore?: () => void;
 };
-
+ 
 const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   size = "full",
   onRemove,
@@ -30,7 +31,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const navigate = useNavigate();
-
+ 
   const [chartData, setChartData] = useState({
     categories: [] as string[],
     picked: [] as number[],
@@ -38,18 +39,18 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     shipped: [] as number[],
     delivered: [] as number[],
   });
-
+ 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-
+ 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-
+ 
   // Get start and end date from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange || [];
-
+ 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -61,35 +62,35 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         setDropdownOpen(false);
       }
     };
-
+ 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       if (!startDate || !endDate) return;
-
+ 
       setIsLoading(true);
       setError(null);
-
+ 
       try {
         const formattedStart = `${formatDate(startDate)} 00:00:00.000`;
         const formattedEnd = `${formatDate(endDate)} 23:59:59.999`;
-
+ 
         const response = await fetch(
           `http://localhost:8080/api/fulfillment-efficiency/summary?startDate=${encodeURIComponent(
             formattedStart
           )}&endDate=${encodeURIComponent(formattedEnd)}`
         );
-
+ 
         if (!response.ok) throw new Error("Failed to fetch fulfillment data");
-
+ 
         const result = await response.json();
         const summary = result.fulfillment_summary;
-
+ 
         const categories = Object.keys(summary);
         const picked = categories.map((date) => summary[date].Picked ?? 0);
         const packed = categories.map((date) => summary[date].Packed ?? 0);
@@ -97,7 +98,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         const delivered = categories.map(
           (date) => summary[date].Delivered ?? 0
         );
-
+ 
         setChartData({ categories, picked, packed, shipped, delivered });
       } catch (err: any) {
         setError(err.message || "Something went wrong");
@@ -105,10 +106,10 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         setIsLoading(false);
       }
     };
-
+ 
     fetchData();
   }, [startDate, endDate]);
-
+ 
   const apexOptions: ApexOptions = {
     chart: {
       type: "bar",
@@ -171,14 +172,14 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     tooltip: { theme: isDarkMode ? "dark" : "light" },
     responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
   };
-
+ 
   const series = [
     { name: "Picked", data: chartData.picked },
     { name: "Packed", data: chartData.packed },
     { name: "Shipped", data: chartData.shipped },
     { name: "Delivered", data: chartData.delivered },
   ];
-
+ 
   function handleViewMore(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
     event.preventDefault();
     if (onViewMore) {
@@ -187,7 +188,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       navigate("/fulfillment");
     }
   }
-
+ 
   return (
     <div
       className={`overflow-hidden rounded-2xl border ${
@@ -203,7 +204,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           >
             Fulfillment Efficiency Tracker
           </h2>
-
+ 
           <div className="relative inline-block">
             {/* Dropdown section commented out */}
             {/* <button
@@ -219,7 +220,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
                 }`}
               />
             </button>
-
+ 
             {isDropdownOpen && (
               <div
                 ref={dropdownRef}
@@ -259,7 +260,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           </div>
         </div>
       )}
-
+ 
       {isLoading ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
       ) : error ? (
@@ -275,5 +276,6 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     </div>
   );
 };
-
+ 
 export default FulfillmentEfficiency;
+

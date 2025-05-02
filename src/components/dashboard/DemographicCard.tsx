@@ -1,11 +1,10 @@
 import { useTheme } from "next-themes";
 import { useState, useRef, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
-// Updated dummy data for tooltip with customers, revenue, and avgRevenue
 const dummyStateData: Record<
   string,
   { customers: number; revenue: number; avgRevenue: number }
@@ -35,32 +34,16 @@ const DemographicCard = () => {
     y: number;
   } | null>(null);
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleViewMore = () => {
-    setDropdownOpen(false);
     navigate("/sales/region");
   };
 
   return (
     <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
-      {/* Header with dropdown */}
-      <div className="flex justify-between items-start mb-2">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-8">
         <div>
           <div className="text-gray-900 dark:text-white font-semibold text-lg">
             Customers Demographic
@@ -80,8 +63,13 @@ const DemographicCard = () => {
       </div>
 
       {/* Map */}
-      <div className="relative w-full aspect-[3/1.5] bg-white dark:bg-gray-900">
-        <ComposableMap projection="geoAlbersUsa" width={1050} height={551}>
+      <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
+      <ComposableMap
+          projection="geoAlbersUsa"
+          width={980}
+          height={520}
+          style={{ width: "100%", height: "auto" }}
+        >
           <Geographies geography={US_TOPO_JSON}>
             {({ geographies }) =>
               geographies.map((geo) => {
@@ -141,7 +129,7 @@ const DemographicCard = () => {
       </div>
 
       {/* Footer Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 ">
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Returning vs New
