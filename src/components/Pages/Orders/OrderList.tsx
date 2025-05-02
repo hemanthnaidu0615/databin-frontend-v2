@@ -617,25 +617,51 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
             />
           </div>
 
-          {/* Simple pagination for mobile (smaller than sm) */}
-          <div className="flex items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
-            <button
-              onClick={() => onPageChange({ first: first - rows, rows })}
+          {/* Custom Simple Pagination for Mobile (smaller than sm) */}
+<div className="flex flex-col sm:flex-row sm:items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
+  {/* Rows per page dropdown */}
+  <div className="flex items-center gap-2">
+    <label htmlFor="mobileRows" className="whitespace-nowrap">Rows per page:</label>
+    <select
+      id="mobileRows"
+      value={rows}
+      onChange={(e) => {
+        setRows(Number(e.target.value));
+        setFirst(0); // reset to first page
+      }}
+      className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+    >
+      {[5, 10, 20, 50].map((option) => (
+        <option key={option} value={option}>{option}</option>
+      ))}
+    </select>
+  </div>
+
+  {/* Pagination controls */}
+  <div className="flex w-full sm:w-auto justify-between items-center">
+    {/* Left - Prev */}
+    <button
+      onClick={() => onPageChange({ first: Math.max(0, first - rows), rows })}
+              
               disabled={first === 0}
-              className="px-3 py-1 rounded disabled:opacity-50 dark:bg-gray-800 bg-gray-100"
-            >
+              className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+              >
               Prev
             </button>
-            <span>
-              Page {first / rows + 1} of {Math.ceil(orders.length / rows)}
-            </span>
-            <button
-              onClick={() => onPageChange({ first: first + rows, rows })}
+            {/* Center - Page Indicator */}
+    <div className="text-center flex-1 text-sm">
+      Page {Math.floor(first / rows) + 1} of {Math.ceil(orders.length / rows)}
+    </div>
+
+    {/* Right - Next */}
+    <button
+      onClick={() => onPageChange({ first: first + rows < orders.length ? first + rows : first, rows })}
               disabled={first + rows >= orders.length}
-              className="px-3 py-1 rounded disabled:opacity-50 dark:bg-gray-800 bg-gray-100"
-            >
+              className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+              >
               Next
             </button>
+          </div>
           </div>
 
           <Dialog

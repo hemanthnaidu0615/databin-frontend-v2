@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Table,
   TableBody,
@@ -15,7 +16,9 @@ import { MoreDotIcon } from "../../icons";
 // Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
 interface Order {
@@ -36,6 +39,9 @@ export default function RecentOrders() {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
+  // Initialize navigate
+  const navigate = useNavigate();
+
   useEffect(() => {
     console.log("Fetching recent orders...");
 
@@ -45,25 +51,29 @@ export default function RecentOrders() {
         const formattedEndDate = formatDate(endDate);
 
         const response = await fetch(
-          `http://localhost:8080/api/orders/recent-orders?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/orders/recent-orders?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        
+
         const rawData = await response.json();
         const data: Order[] = Array.isArray(rawData)
           ? rawData
           : rawData.orders || [];
-        
+
         const processedOrders = data.map((order) => ({
           ...order,
-          price: typeof order.price === "number" ? order.price : parseFloat(order.price) || 0,
+          price:
+            typeof order.price === "number"
+              ? order.price
+              : parseFloat(order.price) || 0,
         }));
-        
+
         setOrders(processedOrders);
-        
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to load orders. Please try again.");
@@ -83,35 +93,51 @@ export default function RecentOrders() {
     setIsOpen(false);
   }
 
+  // Handle "View More" click
+  function handleViewMore() {
+    navigate("/orders"); // Redirect to the /orders page
+    closeDropdown();
+  }
+
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
           Recent Orders
         </h3>
-        <div className="relative inline-block">
-          <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
-          </button>
-          <Dropdown
-            isOpen={isOpen}
-            onClose={closeDropdown}
-            className="w-36 p-2"
-          >
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              View More
-            </DropdownItem>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              Remove
-            </DropdownItem>
-          </Dropdown>
-        </div>
+        {/* 
+<div className="relative inline-block">
+  <button className="dropdown-toggle" onClick={toggleDropdown}>
+    <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+  </button>
+  <Dropdown
+    isOpen={isOpen}
+    onClose={closeDropdown}
+    className="w-36 p-2"
+  >
+    <DropdownItem
+      onItemClick={handleViewMore}
+      className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+    >
+      View More
+    </DropdownItem>
+    <DropdownItem
+      onItemClick={closeDropdown}
+      className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+    >
+      Remove
+    </DropdownItem>
+  </Dropdown>
+</div>
+*/}
+
+        <button
+          onClick={handleViewMore}
+          className="text-xs font-medium hover:underline"
+          style={{ color: "#9614d0" }}
+        >
+          View More
+        </button>
       </div>
 
       <div className="w-full">

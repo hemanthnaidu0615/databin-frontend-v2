@@ -77,7 +77,7 @@ const AppHeader: React.FC = () => {
 
   return (
     <>
-      <header className="w-full bg-white border-gray-200 z-[99999] dark:border-gray-800 dark:bg-gray-900 lg:border-b">
+      <header className="sticky top-0 z-[99999] w-full bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90">
         <div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
           {/* Sidebar Toggle and Logo */}
           <div className="flex items-center gap-3 shrink-0">

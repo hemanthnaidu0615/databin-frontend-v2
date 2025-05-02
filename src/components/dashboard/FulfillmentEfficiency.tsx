@@ -1,11 +1,13 @@
+"use client";
+ 
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "../../icons";
-import { useTheme } from "next-themes";
+import { useTheme } from "../../context/ThemeContext";
+ 
+import { useNavigate } from "react-router-dom";
  
 // Utility to format date string (yyyy-mm-dd)
 const formatDate = (date: string) => {
@@ -26,7 +28,9 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   onRemove,
   onViewMore,
 }) => {
-  const {theme} = useTheme();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+  const navigate = useNavigate();
  
   const [chartData, setChartData] = useState({
     categories: [] as string[],
@@ -39,16 +43,13 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(
-    document.documentElement.classList.contains("dark")
-  );
  
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
  
-  // 🧠 Get start and end date from Redux
+  // Get start and end date from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange;
+  const [startDate, endDate] = dateRange || [];
  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -62,30 +63,22 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       }
     };
  
-    const observer = new MutationObserver(() => {
-      setIsDarkMode(document.documentElement.classList.contains("dark"));
-    });
- 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
- 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      observer.disconnect();
     };
   }, []);
  
   useEffect(() => {
     const fetchData = async () => {
+      if (!startDate || !endDate) return;
+ 
       setIsLoading(true);
       setError(null);
  
       try {
         const formattedStart = `${formatDate(startDate)} 00:00:00.000`;
-        const formattedEnd = `${formatDate(endDate)} 23:59:59.9919`;
+        const formattedEnd = `${formatDate(endDate)} 23:59:59.999`;
  
         const response = await fetch(
           `http://localhost:8080/api/fulfillment-efficiency/summary?startDate=${encodeURIComponent(
@@ -99,22 +92,22 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         const summary = result.fulfillment_summary;
  
         const categories = Object.keys(summary);
-        const picked = categories.map((date) => summary[date].Picked);
-        const packed = categories.map((date) => summary[date].Packed);
-        const shipped = categories.map((date) => summary[date].Shipped);
-        const delivered = categories.map((date) => summary[date].Delivered);
+        const picked = categories.map((date) => summary[date].Picked ?? 0);
+        const packed = categories.map((date) => summary[date].Packed ?? 0);
+        const shipped = categories.map((date) => summary[date].Shipped ?? 0);
+        const delivered = categories.map(
+          (date) => summary[date].Delivered ?? 0
+        );
  
         setChartData({ categories, picked, packed, shipped, delivered });
       } catch (err: any) {
-        setError(err.message);
+        setError(err.message || "Something went wrong");
       } finally {
         setIsLoading(false);
       }
     };
  
-    if (startDate && endDate) {
-      fetchData();
-    }
+    fetchData();
   }, [startDate, endDate]);
  
   const apexOptions: ApexOptions = {
@@ -132,29 +125,29 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         columnWidth: "60%",
       },
     },
+    fill: {
+      opacity: 1,
+    },
     grid: {
       borderColor: isDarkMode ? "#374151" : "#E5E7EB",
       strokeDashArray: 5,
     },
     xaxis: {
       categories: chartData.categories,
-      crosshairs: {
-        show: false,
-      },
- 
+      crosshairs: { show: false },
       title: {
         text: "Day",
         offsetY: 10,
         style: {
           fontSize: "16px",
           fontWeight: 700,
-          color: theme === "dark" ? "#F3F4F6" : "#1F2937",
+          color: isDarkMode ? "#F3F4F6" : "#1F2937",
         },
       },
       labels: {
         style: {
           fontSize: "12px",
-          colors: theme === "dark" ? "#D1D5DB" : "#4B5563",
+          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
         },
       },
     },
@@ -166,13 +159,13 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         style: {
           fontSize: "16px",
           fontWeight: 700,
-          color: theme === "dark" ? "#F3F4F6" : "#1F2937",
+          color: isDarkMode ? "#F3F4F6" : "#1F2937",
         },
       },
       labels: {
         style: {
           fontSize: "12px",
-          colors: theme === "dark" ? "#D1D5DB" : "#4B5563",
+          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
         },
       },
     },
@@ -187,11 +180,19 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     { name: "Delivered", data: chartData.delivered },
   ];
  
+  function handleViewMore(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    if (onViewMore) {
+      onViewMore();
+    } else {
+      navigate("/fulfillment");
+    }
+  }
+ 
   return (
     <div
       className={`overflow-hidden rounded-2xl border ${
         isDarkMode ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"
- 
       } px-5 pt-5 sm:px-6 sm:pt-6`}
     >
       {size === "full" && (
@@ -200,51 +201,62 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
             className={`text-lg font-semibold ${
               isDarkMode ? "text-white" : "text-gray-800"
             }`}
->
+          >
             Fulfillment Efficiency Tracker
           </h2>
  
           <div className="relative inline-block">
-            <button
+            {/* Dropdown section commented out */}
+            {/* <button
               ref={buttonRef}
               className="dropdown-toggle"
               onClick={() => setDropdownOpen(!isDropdownOpen)}
             >
               <MoreDotIcon
-                className={`size-6 ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-500 hover:text-gray-700"}`}
+                className={`size-6 ${
+                  isDarkMode
+                    ? "text-gray-400 hover:text-gray-300"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               />
             </button>
  
             {isDropdownOpen && (
               <div
                 ref={dropdownRef}
-                className={`absolute right-0 mt-2 w-40 ${
-                  theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-white text-gray-600"
-                } shadow-md rounded-lg z-50`}
+                className={`absolute right-0 mt-2 w-40 rounded-lg shadow-md z-50 ${
+                  isDarkMode
+                    ? "bg-gray-800 text-gray-300"
+                    : "bg-white text-gray-600"
+                }`}
               >
-                <Dropdown
-                  isOpen={isDropdownOpen}
-                  onClose={() => setDropdownOpen(false)}
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onViewMore?.();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-white/10"
                 >
-                  <DropdownItem
-                    onItemClick={() => {
-                      setDropdownOpen(false);
-                      onViewMore?.();
-                    }}
-                  >
-                    View More
-                  </DropdownItem>
-                  <DropdownItem
-                    onItemClick={() => {
-                      setDropdownOpen(false);
-                      onRemove?.();
-                    }}
-                  >
-                    Remove
-                  </DropdownItem>
-                </Dropdown>
+                  View More
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    onRemove?.();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-white/10"
+                >
+                  Remove
+                </button>
               </div>
-            )}
+            )} */}
+            <button
+              onClick={handleViewMore}
+              className="text-xs font-medium hover:underline"
+              style={{ color: "#9614d0" }}
+            >
+              View More
+            </button>
           </div>
         </div>
       )}
@@ -266,3 +278,4 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 };
  
 export default FulfillmentEfficiency;
+

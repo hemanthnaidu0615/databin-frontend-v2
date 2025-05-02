@@ -2,13 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+import { useNavigate } from "react-router-dom";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -31,7 +37,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [chartData, setChartData] = useState<{
     categories: string[];
-    series: { name: string; data: number[] }[];
+    series: { name: string; data: number[] }[]; 
   }>({
     categories: [],
     series: [],
@@ -39,6 +45,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +54,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         const formattedEndDate = formatDate(endDate);
 
         const response = await fetch(
-          `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(formattedStartDate)}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         const data: ApiResponse = await response.json();
         const trends = data.order_trends;
@@ -97,17 +106,30 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const options: ApexOptions = {
     chart: {
       type: "line",
-      height: size === "small" ? 150 : 300,
       zoom: { enabled: false },
-      toolbar: {
-        show: false, // Hide the toolbar (hamburger menu, zoom, etc.)
-      },
+      toolbar: { show: false },
     },
     xaxis: {
       categories: chartData.categories,
+      title: {
+        text: "Month", // X Axis Label
+        style: {
+          color: "#9CA3AF", // Tailwind gray-400
+          fontSize: "14px",
+          fontWeight: 400, // <-- Not bold
+        },
+      },
       labels: { style: { colors: "#6B7280" } },
     },
     yaxis: {
+      title: {
+        text: "Order Amount", // Y Axis Label
+        style: {
+          color: "#9CA3AF",
+          fontSize: "14px",
+          fontWeight: 400, // <-- Not bold
+        },
+      },
       labels: { style: { colors: "#6B7280" } },
     },
     stroke: { curve: "smooth", width: 2 },
@@ -127,16 +149,21 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     ],
   };
 
+  const handleViewMore = () => {
+    navigate("/orders");
+  };
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-8">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
             Order Trends by Product Category
           </h2>
 
           <div className="relative">
-            <button
+            {/* Dropdown section commented out */}
+            {/* <button
               onClick={() => setDropdownOpen(!isDropdownOpen)}
               className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
               aria-label="More options"
@@ -145,37 +172,46 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </button>
 
             {isDropdownOpen && (
-              <Dropdown isOpen={isDropdownOpen} onClose={() => setDropdownOpen(false)}>
-                <DropdownItem
-                  className="text-gray-700 dark:text-gray-300"
-                  onItemClick={() => {
+              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50">
+                <button
+                  onClick={() => {
                     setDropdownOpen(false);
                     onViewMore?.();
                   }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
                 >
                   View More
-                </DropdownItem>
-                <DropdownItem
-                  className="text-gray-700 dark:text-gray-300"
-                  onItemClick={() => {
+                </button>
+                <button
+                  onClick={() => {
                     setDropdownOpen(false);
                     onRemove?.();
                   }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
                 >
                   Remove
-                </DropdownItem>
-              </Dropdown>
-            )}
+                </button>
+              </div>
+            )} */}
+            <button
+              onClick={handleViewMore}
+              className="text-xs font-medium hover:underline"
+              style={{ color: "#9614d0" }}
+            >
+              View More
+            </button>
           </div>
         </div>
       )}
 
-      <Chart
-        options={options}
-        series={chartData.series}
-        type="line"
-        height={size === "small" ? 150 : 300}
-      />
+      <div className="h-[420px] sm:h-[490px]">
+        <Chart
+          options={options}
+          series={chartData.series}
+          type="line"
+          height="100%"
+        />
+      </div>
     </div>
   );
 };

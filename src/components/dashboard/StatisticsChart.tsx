@@ -3,9 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 interface StatisticsChartProps {
   onRemove?: () => void;
@@ -14,13 +12,15 @@ interface StatisticsChartProps {
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
-    .getMinutes()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
     .toString()
-    .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
 export default function StatisticsChart({}: StatisticsChartProps) {
@@ -89,53 +89,89 @@ export default function StatisticsChart({}: StatisticsChartProps) {
     },
     stroke: { curve: "smooth", width: [2, 2, 2] },
     fill: { type: "gradient", gradient: { opacityFrom: 0.65, opacityTo: 0 } },
-    markers: { size: 3, strokeColors: "#fff", strokeWidth: 2, hover: { size: 5 } },
-    grid: { xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } },
+    markers: {
+      size: 3,
+      strokeColors: "#fff",
+      strokeWidth: 2,
+      hover: { size: 5 },
+    },
+    grid: {
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+    },
     dataLabels: { enabled: false },
     tooltip: { enabled: true },
     xaxis: {
       type: "category",
-      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      categories: [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ],
       axisBorder: { show: false },
       axisTicks: { show: false },
+      title: {
+        text: "Month",
+        style: {
+          fontSize: "14px",
+          fontWeight: "normal",
+          color: "#6B7280", // Tailwind gray-500
+        },
+      },
     },
-    yaxis: { labels: { style: { fontSize: "11px", colors: ["#6B7280"] } } },
+    yaxis: {
+      labels: {
+        style: { fontSize: "11px", colors: ["#6B7280"] },
+      },
+      title: {
+        text: "Value",
+        style: {
+          fontSize: "14px",
+          fontWeight: "normal",
+          color: "#6B7280",
+        },
+      },
+    },
   };
 
-  function closeDropdown(): void {
-    setIsOpen(false);
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  function handleViewMore() {
+    navigate("/sales/dashboard"); // Navigate to /sales route
   }
 
   const series = [
     { name: "Sales", data: new Array(12).fill(sales / 12) }, // dummy split
     { name: "Revenue", data: revenue },
-    { name: "Forecasted Sales", data: new Array(12).fill(forecastedSales / 12) }, // dummy split
+    {
+      name: "Forecasted Sales",
+      data: new Array(12).fill(forecastedSales / 12),
+    }, // dummy split
   ];
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
-
       <div className="flex justify-between mb-1">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Sales & Revenue
         </h3>
-
-
-        <div className="relative">
-          <button className="dropdown-toggle" onClick={() => setIsOpen(!isOpen)}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
-          </button>
-          {isOpen && (
-            <Dropdown isOpen={true} onClose={closeDropdown} className="w-40 p-2">
-              <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-                View More
-              </DropdownItem>
-              <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-                Remove
-              </DropdownItem>
-            </Dropdown>
-          )}
-        </div>
+        {/* View More Button */}
+        <button
+          onClick={handleViewMore}
+          className="text-xs font-medium hover:underline"
+          style={{ color: "#9614d0" }}
+        >
+          View More
+        </button>
       </div>
 
       {/* Year Selector */}
