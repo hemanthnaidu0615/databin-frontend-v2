@@ -21,11 +21,27 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
+function convertToUSD(rupees: number): number {
+  const exchangeRate = 0.012;
+  return rupees * exchangeRate;
+}
+
+function formatUSD(amount: number): string {
+  const usdAmount = convertToUSD(amount);
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(usdAmount);
+}
+
+
 interface Order {
   order_id: number;
   product_name: string;
-  category: string;
-  price: number;
+  category_name: string;
+  unit_price: number;
   shipment_status: "Delivered" | "Pending" | "Canceled";
   order_type: "Online" | "In-Store" | "Wholesale";
 }
@@ -68,9 +84,9 @@ export default function RecentOrders() {
         const processedOrders = data.map((order) => ({
           ...order,
           price:
-            typeof order.price === "number"
-              ? order.price
-              : parseFloat(order.price) || 0,
+            typeof order.unit_price === "number"
+              ? order.unit_price
+              : parseFloat(order.unit_price) || 0,
         }));
 
         setOrders(processedOrders);
@@ -197,10 +213,10 @@ export default function RecentOrders() {
                     {order.product_name}
                   </TableCell>
                   <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell">
-                    {order.category}
+                    {order.category_name}
                   </TableCell>
                   <TableCell className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400 text-center whitespace-nowrap">
-                    {order.price.toFixed(2)}
+                    {formatUSD(order.unit_price)}
                   </TableCell>
                   <TableCell className="py-2 px-3 text-center">
                     <Badge
