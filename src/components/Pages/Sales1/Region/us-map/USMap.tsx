@@ -107,12 +107,12 @@ const MapChart: React.FC<MapChartProps> = ({
   revenueData,
   isDarkMode = false,
 }) => {
-  const [tooltip, setTooltip] = useState<{
-    display: boolean;
-    content: string;
-    x: number;
-    y: number;
-  }>({ display: false, content: "", x: 0, y: 0 });
+  const [tooltip, setTooltip] = useState({
+    display: false,
+    content: "",
+    x: 0,
+    y: 0,
+  });
 
   const handleMouseEnter = (
     e: React.MouseEvent<SVGGeometryElement, MouseEvent>,
@@ -120,9 +120,14 @@ const MapChart: React.FC<MapChartProps> = ({
   ) => {
     const { clientX, clientY } = e;
 
-    const dataString = revenueData?.[stateName] || "No data";
-    const [revenuePart, quantityPart] = dataString.split(" + ");
-    const content = `${stateName}\n----------------------- \n${revenuePart || "No data"}\n${quantityPart || "No data"}`;
+    const dataString = revenueData?.[stateName] || "";
+    const values = dataString
+      .split(" + ")
+      .filter((value) => value && value.trim() !== "")
+      .slice(0, 3); // limit to 3 values max
+
+    const contentLines = [stateName, ...values];
+    const content = contentLines.join("\n");
 
     setTooltip({
       display: true,
@@ -136,9 +141,8 @@ const MapChart: React.FC<MapChartProps> = ({
     setTooltip({ ...tooltip, display: false });
   };
 
-  const textColor = isDarkMode ? "#ffffff" : "#000000"; // text color for contrast
-
-  const mapBackground = isDarkMode ? "#1f2937" : "#F9FAFB"; // map background color based on theme
+  const textColor = isDarkMode ? "#ffffff" : "#000000";
+  const mapBackground = isDarkMode ? "#1f2937" : "#F9FAFB";
 
   return (
     <div className="h-full flex items-center justify-center relative">
@@ -148,12 +152,11 @@ const MapChart: React.FC<MapChartProps> = ({
             <>
               {geographies.map((geo: any) => {
                 const stateId =
-                  Object?.entries(states)?.find(
+                  Object.entries(states).find(
                     (s) => s[1] === geo.properties.name
                   ) || [];
-                const idValue: any =
-                  allStates?.find((s) => s.id === stateId[0])?.id || 0;
-
+                const idValue =
+                  allStates.find((s) => s.id === stateId[0])?.id || 0;
                 const color = colorScale(idValue as any);
                 const stateName = statess[idValue] || geo.properties.name;
 
@@ -168,8 +171,8 @@ const MapChart: React.FC<MapChartProps> = ({
                     strokeWidth={2}
                     style={{
                       default: {
-                        fill: mapBackground,  // Map background color set to match the theme
-                        stroke: isDarkMode ? "#6B7280" : "#9CA3AF", // lighter stroke for dark mode
+                        fill: mapBackground,
+                        stroke: isDarkMode ? "#6B7280" : "#9CA3AF",
                         strokeWidth: 0.5,
                       },
                       hover: {
@@ -198,7 +201,7 @@ const MapChart: React.FC<MapChartProps> = ({
                             y="2"
                             fontSize={14}
                             textAnchor="middle"
-                            fill={textColor} // Apply theme-based text color
+                            fill={textColor}
                           >
                             {cur.id}
                           </text>
@@ -220,7 +223,11 @@ const MapChart: React.FC<MapChartProps> = ({
                             textAnchor="middle"
                             fontSize={14}
                             alignmentBaseline="middle"
-                            fill={textColor} // Apply theme-based text color
+                            fill={
+                              isDarkMode && offsets[cur.id as keyof typeof offsets]
+                                ? "#ffffff"
+                                : "#000000"
+                            }
                           >
                             {cur.id}
                           </text>
@@ -263,13 +270,6 @@ const MapChart: React.FC<MapChartProps> = ({
                   }
                   strokeWidth={2}
                 />
-                <text
-                  textAnchor="middle"
-                  style={{
-                    fontFamily: "system-ui",
-                    fill: textColor, // Apply theme-based text color here as well
-                  }}
-                ></text>
               </Marker>
             ))
         )}
@@ -286,7 +286,7 @@ const MapChart: React.FC<MapChartProps> = ({
               tooltip.x + 200 > window.innerWidth ? "-100%" : "0"
             }, ${tooltip.y + 100 > window.innerHeight ? "-100%" : "0"})`,
             background: isDarkMode ? "#1f2937" : "white",
-            color: isDarkMode ? "#f9fafb" : "black", // Tooltip text color
+            color: isDarkMode ? "#f9fafb" : "black",
             padding: "5px",
             border: `1px solid ${isDarkMode ? "#4B5563" : "#ccc"}`,
             zIndex: 1000,

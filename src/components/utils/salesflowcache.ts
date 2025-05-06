@@ -1,28 +1,37 @@
 import { TreeNode } from "primereact/treenode";
+
 type CacheItem = {
-    data: TreeNode[];
-  };
-  
-  const CACHE_KEY_PREFIX = "sales_flow_cache_";
-  
- export const setCache = (key: string, data: TreeNode[]) => {
-    const cacheItem: CacheItem = { data };
-    try {
-      localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(cacheItem));
-    } catch (error) {
-      console.error("Error saving data to localStorage:", error);
-    }
-  };
-  
- export const getCache = (key: string): CacheItem | null => {
-    const cachedItem = localStorage.getItem(CACHE_KEY_PREFIX + key);
-    if (!cachedItem) return null;
-  
-    try {
-      const parsedItem: CacheItem = JSON.parse(cachedItem);
-      return parsedItem;
-    } catch (error) {
-      console.error("Failed to parse cached item:", error);
-      return null;
-    }
-  };
+  data: TreeNode[];
+};
+
+const CACHE_KEY_PREFIX = "sales_flow_cache_";
+
+/**
+ * Stores data in localStorage with a prefixed key.
+ */
+export const setCache = (key: string, data: TreeNode[]): void => {
+  const cacheItem: CacheItem = { data };
+
+  try {
+    const serialized = JSON.stringify(cacheItem);
+    localStorage.setItem(CACHE_KEY_PREFIX + key, serialized);
+  } catch (error) {
+    console.error("[SalesFlow Cache] Failed to save data:", error);
+  }
+};
+
+/**
+ * Retrieves data from localStorage by key.
+ */
+export const getCache = (key: string): CacheItem | null => {
+  const cachedItem = localStorage.getItem(CACHE_KEY_PREFIX + key);
+  if (!cachedItem) return null;
+
+  try {
+    const parsed: CacheItem = JSON.parse(cachedItem);
+    return parsed;
+  } catch (error) {
+    console.error("[SalesFlow Cache] Failed to parse cached item:", error);
+    return null;
+  }
+};
