@@ -37,7 +37,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [chartData, setChartData] = useState<{
     categories: string[];
-    series: { name: string; data: number[] }[]; 
+    series: { name: string; data: number[] }[];
   }>({
     categories: [],
     series: [],
@@ -45,6 +45,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,10 +54,23 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
+        // Construct the API URL with the enterpriseKey if it exists
+        const params = new URLSearchParams({
+          startDate: encodeURIComponent(formattedStartDate),
+          endDate: encodeURIComponent(formattedEndDate),
+        });
+
+        // Append enterpriseKey if it's available and valid
+        if (
+          enterpriseKey &&
+          enterpriseKey.trim() !== "" &&
+          enterpriseKey.toLowerCase() !== "all"
+        ) {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+
         const response = await fetch(
-          `http://localhost:8080/api/order-trends-by-category?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/order-trends-by-category?${params.toString()}`
         );
         const data: ApiResponse = await response.json();
         const trends = data.order_trends;
@@ -101,7 +115,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, enterpriseKey]);
 
   const options: ApexOptions = {
     chart: {
