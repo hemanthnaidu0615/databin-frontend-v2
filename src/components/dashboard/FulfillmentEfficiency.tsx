@@ -196,7 +196,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       } px-5 pt-5 sm:px-6 sm:pt-6`}
     >
       {size === "full" && (
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-21">
           <h2
             className={`text-lg font-semibold ${
               isDarkMode ? "text-white" : "text-gray-800"

@@ -1,26 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
+import AppMobileRightSidebar from "./AppMobileRightSidebar";
 import Logo from "../images/logo.png";
-import AppMobileRightSidebar from ".//AppMobileRightSidebar";
-import { useLocation } from "react-router-dom";
+
+import { useDispatch } from "react-redux";
+import { setDates } from "../store/dateRangeSlice";
+import { setEnterpriseKey as setEnterpriseKeyRedux } from "../store/enterpriseKeySlice";
+import { axiosInstance } from "../axios";
 
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
-import { useDispatch } from "react-redux";
-import { setDates } from "../store/dateRangeSlice";
-
-const AppHeader: React.FC = () => {
+const Navbar: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [enterpriseKey, setEnterpriseKey] = useState("AWW");
-  const enterpriseKeys = ["ABC", "XYZ", "PQR"];
+  const [enterpriseKey, setEnterpriseKey] = useState("all");
+  const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
   const calendarRef = useRef<any>(null);
+  const dispatch = useDispatch();
+  const location = useLocation();
 
   const {
     isMobileOpen,
@@ -29,7 +32,6 @@ const AppHeader: React.FC = () => {
     screenSize,
     toggleMobileRightSidebar,
   } = useSidebar();
-  const dispatch = useDispatch();
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
     new Date("2025-03-19"),
@@ -38,11 +40,27 @@ const AppHeader: React.FC = () => {
 
   const hideCalendarRoutes = ["/scheduler"];
   const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler"];
-
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
-  const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(
-    location.pathname
-  );
+  const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
+
+  useEffect(() => {
+    const fetchEnterpriseKeys = async () => {
+      try {
+        const response = await axiosInstance.get("/global-filter/enterprise-keys");
+        const keys = response.data.enterprise_keys || [];
+        setEnterpriseKeys(["All", ...keys]);
+      } catch (error) {
+        console.error("Failed to fetch enterprise keys:", error);
+        setEnterpriseKeys(["All"]);
+      }
+    };
+
+    fetchEnterpriseKeys();
+  }, []);
+
+  useEffect(() => {
+    dispatch(setEnterpriseKeyRedux(enterpriseKey));
+  }, [enterpriseKey]);
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -60,8 +78,8 @@ const AppHeader: React.FC = () => {
     const newDates = e.value;
     setDateRange(newDates);
     if (Array.isArray(newDates) && newDates[0] && newDates[1]) {
-      dispatch(setDates(newDates)); // ✅ Redux update
-      calendarRef.current?.hide?.(); // ✅ Optional hide
+      dispatch(setDates(newDates));
+      calendarRef.current?.hide?.();
     }
   };
 
@@ -79,7 +97,6 @@ const AppHeader: React.FC = () => {
     <>
       <header className="sticky top-0 z-[99999] w-full bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90">
         <div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
-          {/* Sidebar Toggle and Logo */}
           <div className="flex items-center gap-3 shrink-0">
             <button
               className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11"
@@ -107,23 +124,15 @@ const AppHeader: React.FC = () => {
               )}
             </button>
 
-            <Link
-              to="/"
-              className="flex items-center gap-2 shrink-0 lg:hidden md:hidden"
-            >
+            <Link to="/" className="flex items-center gap-2 shrink-0 lg:hidden md:hidden">
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
-              <img
-                className="hidden dark:block w-6 h-6"
-                src={Logo}
-                alt="Logo"
-              />
+              <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
                 Data-Bin
               </span>
             </Link>
           </div>
 
-          {/* Right Side Utilities */}
           {screenSize !== "mobile" ? (
             <div className="flex items-center flex-nowrap gap-3 w-auto min-w-0 shrink-0">
               {!shouldHideCalendar && (
@@ -173,10 +182,9 @@ const AppHeader: React.FC = () => {
         </div>
       </header>
 
-      {/* Mobile Right Sidebar */}
       <AppMobileRightSidebar />
     </>
   );
 };
 
-export default AppHeader;
+export default Navbar;

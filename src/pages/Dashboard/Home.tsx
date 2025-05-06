@@ -1,7 +1,7 @@
 import { memo } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import EcommerceMetrics from "../../components/dashboard/DashboardKPI";
-import StatisticsChart from "../../components/dashboard/StatisticsChart";
+import StatisticsChart from "../../components/dashboard/SalesAndRevenue";
 import RecentOrders from "../../components/dashboard/RecentOrders";
 import OrderTracking from "../../components/dashboard/OrderTracking";
 import DemographicCard from "../../components/dashboard/CustomerDemographic";
@@ -12,7 +12,7 @@ import RevenuePerCustomer from "../../components/dashboard/RevenuePerCustomer";
 // import SalesFunnel from "../../components/dashboard/SalesFunnel";
 // import InventoryHealth from "../../components/dashboard/InventoryHealth";
 import ShipmentPerformance from "../../components/dashboard/ShipmentPerformance";
-import CustomerSegmentation from "../../components/dashboard/ProfitabilityTable";
+import CustomerSegmentation from "../../components/dashboard/BestSelling";
 import FulfillmentEfficiency from "../../components/dashboard/FulfillmentEfficiency";
 
 // Memoized components
