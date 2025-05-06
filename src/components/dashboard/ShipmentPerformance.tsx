@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-
-type ShipmentPerformanceProps = {
-  size?: "small" | "full";
-  onRemove?: () => void;
-  onViewMore?: () => void;
-};
+import { Button } from "primereact/button";  // For the button to restore chart visibility
 
 // Full date formatting with time
 const formatDateTime = (date: string) => {
@@ -25,10 +20,8 @@ const formatDateTime = (date: string) => {
     .padStart(2, "0")}.000`;
 };
 
-const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
-  size = "full",
-  onRemove,
-  onViewMore,
+const ShipmentPerformance: React.FC<{ size?: "small" | "full"; onRemove?: () => void; onViewMore?: () => void; }> = ({
+  size = "full", onRemove, onViewMore,
 }) => {
   const [data, setData] = useState<{
     carriers: string[];
@@ -44,15 +37,21 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [isVisible, setIsVisible] = useState(() => {
+    return localStorage.getItem("shipmentPerformanceVisible") !== "false";
+  });
+  
+  const [isOpen, setIsOpen] = useState(false);
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
 
-  // Initialize navigate
   const navigate = useNavigate();
+
+  useEffect(() => {
+    localStorage.setItem("shipmentPerformanceVisible", String(isVisible));
+  }, [isVisible]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,15 +60,18 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
         const formattedStartDate = formatDateTime(startDate);
         const formattedEndDate = formatDateTime(endDate);
 
-        const res = await axios.get(
-          "http://localhost:8080/api/shipment-performance",
-          {
-            params: {
-              startDate: formattedStartDate,
-              endDate: formattedEndDate,
-            },
-          }
-        );
+        const params = new URLSearchParams({
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        });
+
+        if (enterpriseKey && enterpriseKey.trim() !== "" && enterpriseKey.toLowerCase() !== "all") {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+
+        const res = await axios.get("http://localhost:8080/api/shipment-performance", {
+          params,
+        });
 
         const responseData = res.data.shipment_performance;
 
@@ -89,7 +91,7 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, enterpriseKey]);
 
   const barOptions: ApexOptions = {
     chart: { type: "bar", stacked: true, toolbar: { show: false } },
@@ -119,74 +121,59 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   ];
 
   // Handle "View More" button click
-  function handleViewMore() {
-    navigate("/shipment"); // Navigate to the /orders page
-  }
+  const handleViewMore = () => {
+    navigate("/shipment");
+  };
+
+  // Toggle chart visibility
+  const restoreChart = () => setIsVisible(true);
+  const removeChart = () => setIsVisible(false);
 
   return (
     <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
-      {size === "full" && (
-        <div className="flex justify-between items-center mb-16">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-            Shipment Performance
-          </h2>
-
-          {/* Commented out Dropdown section */}
-          {/*
-          <div className="relative">
-            <button
-              onClick={() => setDropdownOpen(!isDropdownOpen)}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
-            >
-              <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 py-2">
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    onViewMore?.();
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10"
-                >
-                  View More
-                </button>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    onRemove?.();
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
-          </div>
-          */}
-
-          {/* "View More" Button */}
-          <button
-            onClick={handleViewMore}
-            className="text-xs font-medium text-purple-600 hover:underline"
-          >
-            View More
-          </button>
+      {!isVisible && (
+        <div className="flex justify-center py-4">
+          <Button label="Restore Chart" className="p-button-primary" onClick={restoreChart} />
         </div>
       )}
 
-      {isLoading ? (
-        <p className="text-gray-600 dark:text-gray-300">Loading data...</p>
-      ) : error ? (
-        <p className="text-red-500">Error: {error}</p>
-      ) : (
-        <Chart
-          options={barOptions}
-          series={barSeries}
-          type="bar"
-          height={size === "small" ? 150 : 300}
-        />
+      {isVisible && (
+        <>
+          <div className="flex justify-between items-center mb-16">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+              Shipment Performance
+            </h2>
+
+            <button
+              onClick={handleViewMore}
+              className="text-xs font-medium text-purple-600 hover:underline"
+            >
+              View More
+            </button>
+          </div>
+
+          {isLoading ? (
+            <p className="text-gray-600 dark:text-gray-300">Loading data...</p>
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : (
+            <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 150 : 300} />
+          )}
+
+          <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
+            {[{ label: "Standard", count: data.standard.reduce((a, b) => a + b, 0) },
+              { label: "Expedited", count: data.expedited.reduce((a, b) => a + b, 0) },
+              { label: "Same-Day", count: data.sameDay.reduce((a, b) => a + b, 0) },
+            ].map((item, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <p className="mb-1 text-xs text-gray-500">{item.label}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                  {item.count}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
