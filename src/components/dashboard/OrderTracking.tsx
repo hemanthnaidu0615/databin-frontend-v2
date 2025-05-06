@@ -42,6 +42,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
   });
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
@@ -56,17 +57,26 @@ export default function OrderTracking(_: OrderTrackingProps) {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
+        const params = new URLSearchParams({
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        });
+
+        if (
+          enterpriseKey &&
+          enterpriseKey.trim() !== "" &&
+          enterpriseKey.toLowerCase() !== "all"
+        ) {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+
         const totalOrdersResponse = await axios.get(
-          `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/dashboard-kpi/total-orders?${params.toString()}`
         );
         setTotalOrders(totalOrdersResponse.data.total_orders);
 
         const orderCountsResponse = await axios.get(
-          `http://localhost:8080/api/shipment-status/count?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/shipment-status/count?${params.toString()}`
         );
         setOrderCounts(orderCountsResponse.data);
       } catch (error) {
@@ -77,7 +87,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, enterpriseKey]);
 
   const progressPercentage =
     totalOrders > 0
