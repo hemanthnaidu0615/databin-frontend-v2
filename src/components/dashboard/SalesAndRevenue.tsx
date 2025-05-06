@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 interface StatisticsChartProps {
   onRemove?: () => void;
@@ -24,52 +24,55 @@ const formatDate = (date: string) => {
 };
 
 export default function StatisticsChart({}: StatisticsChartProps) {
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const [isOpen, setIsOpen] = useState(false);
-
-  const years = Array.from({ length: 16 }, (_, i) => currentYear - 10 + i);
+  const navigate = useNavigate();
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key); // Get the enterprise key from the Redux store
+
   const [startDate, endDate] = dateRange;
 
-  const [sales, setSales] = useState<number>(0);
-  const [forecastedSales, setForecastedSales] = useState<number>(0);
+  const [salesByMonth, setSalesByMonth] = useState<number[]>(new Array(12).fill(0));
+  const [forecastedSales, setForecastedSales] = useState<number[]>(new Array(12).fill(0));
   const [revenue, setRevenue] = useState<number[]>(new Array(12).fill(0));
 
-  const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
-    setSelectedYear(Number(event.target.value));
-
   const fetchChartData = async () => {
-    if (!startDate || !endDate) return;
+    if (!startDate || !endDate) return; // Ensure start and end dates are provided
 
     const formattedStart = formatDate(startDate);
     const formattedEnd = formatDate(endDate);
 
+    // Define the API call params conditionally based on whether enterpriseKey exists
+    const apiParams = enterpriseKey
+      ? { startDate: formattedStart, endDate: formattedEnd, enterpriseKey }
+      : { startDate: formattedStart, endDate: formattedEnd }; // If no enterpriseKey, exclude it
+
     try {
       const [salesRes, revenueRes, forecastedSalesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/sales-revenue/sales-data", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
-        }),
-        axios.get("http://localhost:8080/api/sales-revenue/revenue-trends", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
-        }),
-        axios.get("http://localhost:8080/api/sales-revenue/forecasted-sales", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
-        }),
+        axios.get("http://localhost:8080/api/sales-revenue/sales-data", { params: apiParams }),
+        axios.get("http://localhost:8080/api/sales-revenue/revenue-trends", { params: apiParams }),
+        axios.get("http://localhost:8080/api/sales-revenue/forecasted-sales", { params: apiParams }),
       ]);
 
-      setSales(salesRes.data.total_sales || 0);
-      setForecastedSales(forecastedSalesRes.data.forecasted_sales || 0);
+      const salesMap = new Array(12).fill(0);
+      salesRes.data.sales_data.forEach((item: any) => {
+        const monthIndex = new Date(item.month).getMonth();
+        salesMap[monthIndex] = item.total_sales;
+      });
+      setSalesByMonth(salesMap);
 
-      // Map monthly revenue to corresponding months
       const monthlyRevenueMap = new Array(12).fill(0);
       revenueRes.data.revenue_trends.forEach((item: any) => {
-        const monthIndex = new Date(item.month).getMonth(); // 0-based index
+        const monthIndex = new Date(item.month).getMonth();
         monthlyRevenueMap[monthIndex] = item.monthly_revenue;
       });
-
       setRevenue(monthlyRevenueMap);
+
+      const forecastMap = new Array(12).fill(0);
+      forecastedSalesRes.data.forecasted_sales.forEach((item: any) => {
+        const monthIndex = new Date(item.month).getMonth();
+        forecastMap[monthIndex] = item.forecasted_sales;
+      });
+      setForecastedSales(forecastMap);
     } catch (error) {
       console.error("Error fetching statistics chart data:", error);
     }
@@ -77,7 +80,13 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
   useEffect(() => {
     fetchChartData();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, enterpriseKey]); // Add enterpriseKey as a dependency
+
+  const formatValue = (value: number) => {
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+    if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+    return value.toFixed(0);
+  };
 
   const options: ApexOptions = {
     legend: { show: true },
@@ -100,7 +109,12 @@ export default function StatisticsChart({}: StatisticsChartProps) {
       yaxis: { lines: { show: true } },
     },
     dataLabels: { enabled: false },
-    tooltip: { enabled: true },
+    tooltip: {
+      enabled: true,
+      y: {
+        formatter: formatValue,
+      },
+    },
     xaxis: {
       type: "category",
       categories: [
@@ -124,13 +138,14 @@ export default function StatisticsChart({}: StatisticsChartProps) {
         style: {
           fontSize: "14px",
           fontWeight: "normal",
-          color: "#6B7280", // Tailwind gray-500
+          color: "#6B7280",
         },
       },
     },
     yaxis: {
       labels: {
         style: { fontSize: "11px", colors: ["#6B7280"] },
+        formatter: formatValue,
       },
       title: {
         text: "Value",
@@ -143,19 +158,17 @@ export default function StatisticsChart({}: StatisticsChartProps) {
     },
   };
 
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  function handleViewMore() {
-    navigate("/sales/dashboard"); // Navigate to /sales route
-  }
+  const handleViewMore = () => {
+    navigate("/sales/dashboard");
+  };
 
   const series = [
-    { name: "Sales", data: new Array(12).fill(sales / 12) }, // dummy split
+    { name: "Sales", data: salesByMonth },
     { name: "Revenue", data: revenue },
     {
       name: "Forecasted Sales",
-      data: new Array(12).fill(forecastedSales / 12),
-    }, // dummy split
+      data: forecastedSales,
+    },
   ];
 
   return (
@@ -164,7 +177,6 @@ export default function StatisticsChart({}: StatisticsChartProps) {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Sales & Revenue
         </h3>
-        {/* View More Button */}
         <button
           onClick={handleViewMore}
           className="text-xs font-medium hover:underline"
@@ -174,22 +186,6 @@ export default function StatisticsChart({}: StatisticsChartProps) {
         </button>
       </div>
 
-      {/* Year Selector */}
-      <div className="flex items-center gap-2">
-        <select
-          className="border rounded px-2 py-1 text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
-          value={selectedYear}
-          onChange={handleYearChange}
-        >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Chart */}
       <div className="flex-1 w-full mt-3">
         <Chart options={options} series={series} type="area" height="100%" />
       </div>
