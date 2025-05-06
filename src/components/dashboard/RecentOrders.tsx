@@ -55,32 +55,46 @@ export default function RecentOrders() {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
 
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+
+
   // Initialize navigate
   const navigate = useNavigate();
 
   useEffect(() => {
     console.log("Fetching recent orders...");
-
+  
     const fetchRecentOrders = async () => {
       try {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
-
-        const response = await fetch(
-          `http://localhost:8080/api/orders/recent-orders?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
-        );
-
+  
+        const params = new URLSearchParams({
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        });
+  
+        if (
+          enterpriseKey &&
+          enterpriseKey.trim() !== "" &&
+          enterpriseKey.toLowerCase() !== "all"
+        ) {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+  
+        const url = `http://localhost:8080/api/orders/recent-orders?${params.toString()}`;
+  
+        const response = await fetch(url);
+  
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
+  
         const rawData = await response.json();
         const data: Order[] = Array.isArray(rawData)
           ? rawData
           : rawData.orders || [];
-
+  
         const processedOrders = data.map((order) => ({
           ...order,
           price:
@@ -88,18 +102,19 @@ export default function RecentOrders() {
               ? order.unit_price
               : parseFloat(order.unit_price) || 0,
         }));
-
+  
         setOrders(processedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to load orders. Please try again.");
       }
     };
-
+  
     if (startDate && endDate) {
       fetchRecentOrders();
     }
-  }, [startDate, endDate]); // Re-run when startDate or endDate changes
+  }, [startDate, endDate, enterpriseKey]); // ← add enterpriseKey to dependencies
+  // Re-run when startDate or endDate changes
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
