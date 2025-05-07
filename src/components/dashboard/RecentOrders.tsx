@@ -53,6 +53,7 @@ export default function RecentOrders() {
 
   // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
 
   // Initialize navigate
@@ -66,10 +67,17 @@ export default function RecentOrders() {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
+        const params = new URLSearchParams({
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        });
+    
+        if (enterpriseKey) {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+    
         const response = await fetch(
-          `http://localhost:8080/api/orders/recent-orders?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/orders/recent-orders?${params.toString()}`
         );
 
         if (!response.ok) {
@@ -121,8 +129,8 @@ export default function RecentOrders() {
         <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
           Recent Orders
         </h3>
-        {/* 
-<div className="relative inline-block">
+        
+{/* <div className="relative inline-block">
   <button className="dropdown-toggle" onClick={toggleDropdown}>
     <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
   </button>
@@ -144,8 +152,8 @@ export default function RecentOrders() {
       Remove
     </DropdownItem>
   </Dropdown>
-</div>
-*/}
+</div> */}
+
 
         <button
           onClick={handleViewMore}
