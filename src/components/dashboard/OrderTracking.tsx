@@ -7,6 +7,11 @@ import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { MoreDotIcon } from "../../icons";
 
+const formatValue = (value: number) => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  return value.toFixed(0);
+};
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -230,7 +235,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
               <div key={index} className="flex flex-col items-center">
                 <p className={`mb-1 text-xs ${item.color}`}>{item.label}</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                  {item.count}
+                  {formatValue(item.count)}
                 </p>
               </div>
             ))}
