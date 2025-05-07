@@ -6,6 +6,12 @@ import Inventory from "../../images/inventory.png";
 import LocalShipping from "../../images/local_shipping.png";
 import Warning from "../../images/warning.png";
 
+const formatValue = (value: number) => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  return value.toFixed(0);
+};
+
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -84,7 +90,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: Inventory,
             label: "Total Orders",
-            value: data[0].total_orders,
+            value: formatValue(data[0].total_orders),
             glowColor: "#22C55E",
           },
           {
@@ -102,7 +108,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: LocalShipping,
             label: "Orders in Transit",
-            value: data[2].in_transit_orders,
+            value: formatValue(data[2].in_transit_orders),
             glowColor: "#22C55E",
           },
         ]);
