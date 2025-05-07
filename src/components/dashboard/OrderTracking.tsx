@@ -7,6 +7,11 @@ import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { MoreDotIcon } from "../../icons";
 
+const formatValue = (value: number) => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  return value.toFixed(0);
+};
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -42,6 +47,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
   });
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
@@ -56,17 +62,22 @@ export default function OrderTracking(_: OrderTrackingProps) {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
+        const params = new URLSearchParams({
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        });
+
+        if (enterpriseKey) {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+
         const totalOrdersResponse = await axios.get(
-          `http://localhost:8080/api/dashboard-kpi/total-orders?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/dashboard-kpi/total-orders?${params.toString()}`
         );
         setTotalOrders(totalOrdersResponse.data.total_orders);
 
         const orderCountsResponse = await axios.get(
-          `http://localhost:8080/api/shipment-status/count?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
+          `http://localhost:8080/api/shipment-status/count?${params.toString()}`
         );
         setOrderCounts(orderCountsResponse.data);
       } catch (error) {
@@ -77,7 +88,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
     if (startDate && endDate) {
       fetchData();
     }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, enterpriseKey]);
 
   const progressPercentage =
     totalOrders > 0
@@ -220,7 +231,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
               <div key={index} className="flex flex-col items-center">
                 <p className={`mb-1 text-xs ${item.color}`}>{item.label}</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                  {item.count}
+                  {formatValue(item.count)}
                 </p>
               </div>
             ))}
