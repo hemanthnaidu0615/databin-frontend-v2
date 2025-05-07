@@ -14,7 +14,7 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
     .getSeconds()
     .toString()
-    .padStart(2, "0")}.${d.getMilliseconds().toString().padStart(3, "0")}`;
+    .padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -27,6 +27,16 @@ type ApiResponse = {
   order_trends: {
     [month: string]: Record<string, number>;
   };
+};
+
+// Conversion Rate: INR to USD
+const INR_TO_USD = 1 / 83.3;
+
+const formatValue = (value: number) => {
+  const usd = value * INR_TO_USD;
+  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}m`;
+  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}k`;
+  return `$${usd.toFixed(0)}`;
 };
 
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
@@ -54,13 +64,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
-        // Construct the API URL with the enterpriseKey if it exists
         const params = new URLSearchParams({
           startDate: encodeURIComponent(formattedStartDate),
           endDate: encodeURIComponent(formattedEndDate),
         });
 
-        // Append enterpriseKey if it's available and valid
         if (
           enterpriseKey &&
           enterpriseKey.trim() !== "" &&
@@ -80,10 +88,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           return;
         }
 
-        const months = Object.keys(trends).sort(); // e.g. ["2025-03"]
+        const months = Object.keys(trends).sort();
         const categoryTotals: Record<string, number> = {};
 
-        // Step 1: Calculate total per category
         for (const month of months) {
           const monthData = trends[month];
           for (const [category, sales] of Object.entries(monthData)) {
@@ -91,13 +98,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           }
         }
 
-        // Step 2: Get top 3 categories
         const topCategories = Object.entries(categoryTotals)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
           .map(([category]) => category);
 
-        // Step 3: Construct chart series
         const series = topCategories.map((category) => ({
           name: category,
           data: months.map((month) => trends[month]?.[category] || 0),
@@ -126,11 +131,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     xaxis: {
       categories: chartData.categories,
       title: {
-        text: "Month", // X Axis Label
+        text: "Month",
         style: {
-          color: "#9CA3AF", // Tailwind gray-400
+          color: "#9CA3AF",
           fontSize: "14px",
-          fontWeight: 400, // <-- Not bold
+          fontWeight: 400,
         },
       },
       labels: { style: { colors: "#6B7280" } },
@@ -141,16 +146,25 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         style: {
           color: "#9CA3AF",
           fontSize: "14px",
-          fontWeight: 400, // <-- Not bold
+          fontWeight: 400,
         },
       },
-      labels: { style: { colors: "#6B7280" } },
+      labels: {
+        style: { colors: "#6B7280" },
+        formatter: formatValue,
+      },
+    },
+    tooltip: {
+      theme: "light",
+      x: { show: true },
+      y: {
+        formatter: formatValue,
+      },
     },
     stroke: { curve: "smooth", width: 2 },
     markers: { size: 4 },
     colors: ["#6366F1", "#22C55E", "#EAB308"],
     legend: { position: "bottom" },
-    tooltip: { theme: "light", x: { show: true } },
     responsive: [
       {
         breakpoint: 768,
@@ -174,7 +188,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
             Order Trends by Product Category
           </h2>
-
           <div className="relative">
             {/* Dropdown section commented out */}
             {/* <button
