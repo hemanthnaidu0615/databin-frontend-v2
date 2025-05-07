@@ -15,64 +15,54 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}.000`;
 };
 
-export default function StatisticsChart({}: StatisticsChartProps) {
+export default function StatisticsChart({ }: StatisticsChartProps) {
   const navigate = useNavigate();
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key); // Get the enterprise key from the Redux store
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
   const [startDate, endDate] = dateRange;
 
   const [salesByMonth, setSalesByMonth] = useState<number[]>(new Array(12).fill(0));
-  const [forecastedSales, setForecastedSales] = useState<number[]>(new Array(12).fill(0));
   const [revenue, setRevenue] = useState<number[]>(new Array(12).fill(0));
 
   const fetchChartData = async () => {
-    if (!startDate || !endDate) return; // Ensure start and end dates are provided
+    if (!startDate || !endDate) return;
 
     const formattedStart = formatDate(startDate);
     const formattedEnd = formatDate(endDate);
 
-    // Define the API call params conditionally based on whether enterpriseKey exists
     const apiParams = enterpriseKey
       ? { startDate: formattedStart, endDate: formattedEnd, enterpriseKey }
-      : { startDate: formattedStart, endDate: formattedEnd }; // If no enterpriseKey, exclude it
+      : { startDate: formattedStart, endDate: formattedEnd };
 
     try {
-      const [salesRes, revenueRes, forecastedSalesRes] = await Promise.all([
+      const [salesRes, revenueRes] = await Promise.all([
         axios.get("http://localhost:8080/api/sales-revenue/sales-data", { params: apiParams }),
         axios.get("http://localhost:8080/api/sales-revenue/revenue-trends", { params: apiParams }),
-        axios.get("http://localhost:8080/api/sales-revenue/forecasted-sales", { params: apiParams }),
       ]);
 
       const salesMap = new Array(12).fill(0);
-      salesRes.data.sales_data.forEach((item: any) => {
+      (salesRes.data as { sales_data: { month: string; total_sales: number }[] }).sales_data.forEach((item) => {
         const monthIndex = new Date(item.month).getMonth();
         salesMap[monthIndex] = item.total_sales;
       });
       setSalesByMonth(salesMap);
 
       const monthlyRevenueMap = new Array(12).fill(0);
-      revenueRes.data.revenue_trends.forEach((item: any) => {
+      (revenueRes.data as { revenue_trends: { month: string; monthly_revenue: number }[] }).revenue_trends.forEach((item) => {
         const monthIndex = new Date(item.month).getMonth();
         monthlyRevenueMap[monthIndex] = item.monthly_revenue;
       });
       setRevenue(monthlyRevenueMap);
-
-      const forecastMap = new Array(12).fill(0);
-      forecastedSalesRes.data.forecasted_sales.forEach((item: any) => {
-        const monthIndex = new Date(item.month).getMonth();
-        forecastMap[monthIndex] = item.forecasted_sales;
-      });
-      setForecastedSales(forecastMap);
     } catch (error) {
       console.error("Error fetching statistics chart data:", error);
     }
@@ -80,7 +70,7 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
   useEffect(() => {
     fetchChartData();
-  }, [startDate, endDate, enterpriseKey]); // Add enterpriseKey as a dependency
+  }, [startDate, endDate, enterpriseKey]);
 
   const formatValue = (value: number) => {
     if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
@@ -90,13 +80,13 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
   const options: ApexOptions = {
     legend: { show: true },
-    colors: ["#465FFF", "#9CB9FF", "#F59E0B"],
+    colors: ["#9614d0", "#d5baff"], // Removed forecasted sales color
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "area",
       toolbar: { show: false },
     },
-    stroke: { curve: "smooth", width: [2, 2, 2] },
+    stroke: { curve: "smooth", width: [2, 2] },
     fill: { type: "gradient", gradient: { opacityFrom: 0.65, opacityTo: 0 } },
     markers: {
       size: 3,
@@ -165,14 +155,10 @@ export default function StatisticsChart({}: StatisticsChartProps) {
   const series = [
     { name: "Sales", data: salesByMonth },
     { name: "Revenue", data: revenue },
-    {
-      name: "Forecasted Sales",
-      data: forecastedSales,
-    },
   ];
 
   return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
+    <div className="min-h-[400px] flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex justify-between mb-1">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           Sales & Revenue

@@ -19,7 +19,7 @@ import "primeicons/primeicons.css";
 
 const Navbar: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [enterpriseKey, setEnterpriseKey] = useState("all");
+  const [enterpriseKey, setEnterpriseKey] = useState("All");
   const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
   const calendarRef = useRef<any>(null);
   const dispatch = useDispatch();
@@ -47,8 +47,8 @@ const Navbar: React.FC = () => {
     const fetchEnterpriseKeys = async () => {
       try {
         const response = await axiosInstance.get("/global-filter/enterprise-keys");
-        const keys = response.data.enterprise_keys || [];
-        setEnterpriseKeys(["All", ...keys]);
+        const keys = (response.data as { enterprise_keys: string[] }).enterprise_keys || [];
+        setEnterpriseKeys(["All", ...keys]); // "All" is your default/global option
       } catch (error) {
         console.error("Failed to fetch enterprise keys:", error);
         setEnterpriseKeys(["All"]);
@@ -59,7 +59,12 @@ const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(setEnterpriseKeyRedux(enterpriseKey));
+    // Only set the enterpriseKey in Redux if not "All"
+    if (enterpriseKey === "All") {
+      dispatch(setEnterpriseKeyRedux("")); // Or null depending on how your API expects "no key"
+    } else {
+      dispatch(setEnterpriseKeyRedux(enterpriseKey));
+    }
   }, [enterpriseKey]);
 
   const handleToggle = () => {
@@ -77,8 +82,11 @@ const Navbar: React.FC = () => {
   const handleDateChange = (e: any) => {
     const newDates = e.value;
     setDateRange(newDates);
+
     if (Array.isArray(newDates) && newDates[0] && newDates[1]) {
       dispatch(setDates(newDates));
+
+      // Auto-hide calendar popover
       calendarRef.current?.hide?.();
     }
   };
