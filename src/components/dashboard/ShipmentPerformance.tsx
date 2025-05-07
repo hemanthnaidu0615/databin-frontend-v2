@@ -70,11 +70,7 @@ const ShipmentPerformance: React.FC<{
           endDate: formattedEndDate,
         });
 
-        if (
-          enterpriseKey &&
-          enterpriseKey.trim() !== "" &&
-          enterpriseKey.toLowerCase() !== "all"
-        ) {
+        if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
 

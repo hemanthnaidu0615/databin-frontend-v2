@@ -88,11 +88,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           endDate: formattedEnd,
         });
 
-        if (
-          enterpriseKey &&
-          enterpriseKey.trim() !== "" &&
-          enterpriseKey.toLowerCase() !== "all"
-        ) {
+        if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
 

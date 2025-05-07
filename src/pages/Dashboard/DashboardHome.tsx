@@ -138,13 +138,6 @@ export default function Home() {
                 <Memoized.CustomerSegmentation />
               </div>
             </div>
-
-            {/* 🚚 Shipment Performance Widget */}
-            <div className="col-span-1">
-              <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
-                <Memoized.ShipmentPerformance />
-              </div>
-            </div>
           </div>
         </div>
       </div>

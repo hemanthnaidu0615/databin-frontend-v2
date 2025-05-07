@@ -69,11 +69,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           endDate: encodeURIComponent(formattedEndDate),
         });
 
-        if (
-          enterpriseKey &&
-          enterpriseKey.trim() !== "" &&
-          enterpriseKey.toLowerCase() !== "all"
-        ) {
+        if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
 

@@ -16,7 +16,7 @@ import BasicTables from "./pages/Tables/BasicTables";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
-import Home from "./pages/Dashboard/Home";
+import Home from "./pages/Dashboard/DashboardHome";
 import DummyDashboard from "./components/Pages/Sales1/Dashboard/DummyDashboard";
 import InventoryPage from "./components/Pages/Inventory/InventoryPage";
 import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
