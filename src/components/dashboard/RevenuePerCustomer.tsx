@@ -6,18 +6,16 @@ import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-// Helper function to format date to match the API requirement
+// Helper function to format date to match API format
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+    .getDate()
     .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
+    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
 };
 
 type RevenuePerCustomerProps = {
@@ -33,102 +31,112 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
 
-  // View More function to navigate to /sales page
-  function onViewMore(): void {
-    navigate("/sales/dashboard");
-  }
+
+  const formatValue = (Revenue: number) => {
+    if (Revenue >= 1_000_000) return (Revenue / 1_000_000).toFixed(1) + "m";
+    if (Revenue >= 1_000) return (Revenue / 1_000).toFixed(1) + "k";
+    return Revenue.toFixed(0);
+  };
+
+  const fetchData = async () => {
+    if (!startDate || !endDate) return;
+
+    const formattedStart = formatDate(startDate);
+    const formattedEnd = formatDate(endDate);
+
+    // Build query params with conditional logic for enterpriseKey
+    const params = new URLSearchParams({
+      startDate: formattedStart,
+      endDate: formattedEnd,
+    });
+
+    // if (enterpriseKey && enterpriseKey !== "All") {
+    //   params.append("enterpriseKey", enterpriseKey);
+    // }
+
+    if (enterpriseKey) {
+      params.append("enterpriseKey", enterpriseKey);
+    }
+
+    try {
+      setIsLoading(true);
+
+      const response = await fetch(
+        `http://localhost:8080/api/revenue/top-customers?${params.toString()}`
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch revenue data");
+
+      const result = await response.json();
+
+      const formattedData = result.top_customers.map((item: any) => ({
+        customer: item.customer_name,
+        revenue: item.revenue,
+      }));
+
+      setData(formattedData);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Fetch revenue data from API with date range
-    const fetchData = async () => {
-      try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
-
-        const response = await fetch(
-          `http://localhost:8080/api/revenue/top-customers?startDate=${encodeURIComponent(
-            formattedStartDate
-          )}&endDate=${encodeURIComponent(formattedEndDate)}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch revenue data");
-        const result = await response.json();
-
-        const formattedData = result.top_customers.map((item: any) => ({
-          customer: item.customer_name,
-          revenue: item.revenue,
-        }));
-
-        setData(formattedData);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (startDate && endDate) {
-      fetchData();
-    }
-  }, [startDate, endDate]); // Re-run when startDate or endDate changes
+    fetchData();
+  }, [startDate, endDate, enterpriseKey]);
 
   const apexOptions: ApexOptions = {
     chart: {
       type: "bar",
-      toolbar: {
-        show: false,
-        tools: {
-          download: false,
-          selection: false,
-          zoom: false,
-          zoomin: false,
-          zoomout: false,
-          pan: false,
-          reset: false,
-        },
-      },
+      toolbar: { show: false },
     },
+    // colors: ["#9614d0"],
     xaxis: {
       categories: data.map((d) => d.customer),
-      crosshairs: {
-        show: false,
-      },
       title: {
         text: "Customer",
-        style: {
-          fontWeight: "normal",
-          fontSize: "14px",
-          color: "#6B7280", // Tailwind's gray-500
-        },
+        style: { fontWeight: "normal", fontSize: "14px", color: "#9614d0" },
+      },
+      tooltip: {
+        enabled: false, // disables the crosshair line
+      },
+      crosshairs: {
+        show: false, // completely disables the crosshair line
       },
     },
     yaxis: {
       title: {
         text: "Revenue",
-        style: {
-          fontWeight: "normal",
-          fontSize: "14px",
-          color: "#6B7280",
-        },
+        style: { fontWeight: "normal", fontSize: "14px", color: "#9614d0" },
+      },
+      labels: {
+        formatter: formatValue,
       },
     },
     plotOptions: {
       bar: {
-        dataLabels: {
-          position: "top",
-        },
+        dataLabels: { position: "top" },
       },
     },
-    dataLabels: {
-      enabled: false,
+    dataLabels: { enabled: false },
+    tooltip: {
+      x: { show: false }, // optional: disables tooltip on x-axis hover
+      y: {
+        formatter: formatValue,
+      },
     },
     series: [{ name: "Revenue", data: data.map((d) => d.revenue) }],
   };
+
+
+  const onViewMore = () => navigate("/sales/dashboard");
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
@@ -160,7 +168,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
             </DataTable>
           )}
 
-          {/* View More button */}
           <button
             onClick={onViewMore}
             className="absolute top-4 right-4 text-xs font-medium hover:underline"
