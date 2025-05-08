@@ -20,6 +20,21 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
+function convertToUSD(rupees: number): number {
+  const exchangeRate = 0.012; // Adjust this if needed
+  return rupees * exchangeRate;
+}
+
+function formatUSD(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+
 const ProfitabilityTable: React.FC = () => {
   const { theme } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -200,7 +215,7 @@ const ProfitabilityTable: React.FC = () => {
                       : product.description}
                   </p>
                   <p className="text-xs text-gray-700 dark:text-gray-400">
-                    Price: ${product.price.toFixed(2)}
+                    Price: {formatUSD(convertToUSD(product.price))}
                   </p>
                 </div>
 
