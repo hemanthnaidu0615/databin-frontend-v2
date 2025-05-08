@@ -20,6 +20,21 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
+function convertToUSD(rupees: number): number {
+  const exchangeRate = 0.012; // Adjust this if needed
+  return rupees * exchangeRate;
+}
+
+function formatUSD(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+
 const ProfitabilityTable: React.FC = () => {
   const { theme } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,7 +42,6 @@ const ProfitabilityTable: React.FC = () => {
   const [position, setPosition] = useState(1);
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
   const closeDropdown = () => setIsDropdownOpen(false);
@@ -47,21 +61,14 @@ const ProfitabilityTable: React.FC = () => {
       try {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
-  
-        const params = new URLSearchParams({
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        });
-  
-        if (enterpriseKey && enterpriseKey !== "All") {
-          params.append("enterpriseKey", enterpriseKey);
-        }
-  
+
         const response = await fetch(
-          `http://localhost:8080/api/top-sellers/top-products?${params.toString()}`
+          `http://localhost:8080/api/top-sellers/top-products?startDate=${encodeURIComponent(
+            formattedStartDate
+          )}&endDate=${encodeURIComponent(formattedEndDate)}`
         );
         const json = await response.json();
-  
+
         if (json.top_products && Array.isArray(json.top_products)) {
           const transformed = json.top_products.map(
             (product: any, index: number) => ({
@@ -79,12 +86,11 @@ const ProfitabilityTable: React.FC = () => {
         console.error("Failed to fetch top products:", error);
       }
     };
-  
+
     if (startDate && endDate) {
       fetchTopProducts();
     }
-  }, [startDate, endDate, enterpriseKey]); 
-  
+  }, [startDate, endDate]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -209,7 +215,7 @@ const ProfitabilityTable: React.FC = () => {
                       : product.description}
                   </p>
                   <p className="text-xs text-gray-700 dark:text-gray-400">
-                    Price: ${product.price.toFixed(2)}
+                    Price: {formatUSD(convertToUSD(product.price))}
                   </p>
                 </div>
 
