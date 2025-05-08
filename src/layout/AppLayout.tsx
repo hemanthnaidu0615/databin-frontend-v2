@@ -4,13 +4,25 @@ import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
 
-const LayoutContent: React.FC = () => {
+type User = {
+  id: number;
+  role_id: number | null;
+  role: string;
+  token: string;
+};
+
+interface AppLayoutProps {
+  user: User | null;
+}
+
+// Modify LayoutContent to accept the 'user' prop
+const LayoutContent: React.FC<{ user: User | null }> = ({ user }) => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   return (
     <div className="min-h-screen xl:flex">
       <div>
-        <AppSidebar />
+        <AppSidebar  /> {/* Pass the user to AppSidebar */}
         <Backdrop />
       </div>
       <div
@@ -18,7 +30,7 @@ const LayoutContent: React.FC = () => {
           isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]"
         } ${isMobileOpen ? "ml-0" : ""}`}
       >
-        <AppHeader />
+        <AppHeader user={user} /> {/* Pass the user to AppHeader */}
         <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
           <Outlet />
         </div>
@@ -27,10 +39,11 @@ const LayoutContent: React.FC = () => {
   );
 };
 
-const AppLayout: React.FC = () => {
+const AppLayout: React.FC<AppLayoutProps> = ({ user }) => {
+  console.log('AppLayout user:', user);
   return (
     <SidebarProvider>
-      <LayoutContent />
+      <LayoutContent user={user} /> {/* Pass the user to LayoutContent */}
     </SidebarProvider>
   );
 };

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../images/logo.png";
+import { useAuth } from "../context/useAuth";
+
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -11,16 +13,30 @@ import {
   PieChartIcon,
   PlugInIcon,
   TableIcon,
-} from "../icons";  // Assuming icons are imported correctly
+} from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[]; 
 };
 
+
+interface User {
+  role_identifier: string | null;
+  // Include other properties from the user object if needed
+}
+
+const AppSidebar: React.FC = () => {
+  const { user } = useAuth(); // Assuming useAuth provides the user context
+  const role = user?.role || ''; // Now 'role' is derived from 'user' returned by useAuth
+ // or whatever your key is
+console.log("My role is", role);
+console.log('User:', user); 
+console.log('User from useAuth:', user);
+console.log('Sidebar rendering. User:', user);
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
@@ -30,19 +46,12 @@ const navItems: NavItem[] = [
   {
     icon: <BoxCubeIcon />,
     name: "Orders",
-    path: "/orders"
+    path: "/orders",
   },
-  // {
-  //   icon: <CalenderIcon />,
-  //   name: "Fulfillment",
-  //   path: "/fulfillment",
-  // },
-
-  
   {
     icon: <CopyIcon />,
     name: "Sales",
-    path: "/sales", // base path
+    path: "/sales",
     subItems: [
       {
         name: "Dashboard",
@@ -62,24 +71,25 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  
-  // {
-  //   icon: <BoxCubeIcon />,
-  //   name: "Inventory",
-  //   path: "/inventory",
-  // },
-  // {
-  //   icon: <PieChartIcon />,
-  //   name: "Shipments",
-  //   path: "/Shipments",
-  // },
   {
     icon: <TableIcon />,
     name: "Reports & Scheduler",
     path: "/scheduler",
   },
-
+  // {
+  //   icon: <TableIcon />,
+  //   name: "User Management",
+  //   path: "/UserManagement",
+  // },
+  ...(role === 'admin' || role=== 'manager'
+    ? [{
+        icon: <TableIcon />,
+        name: "User Management",
+        path: "/UserManagement",
+      }]
+    : []),
 ];
+
 
 const othersItems: NavItem[] = [
   {
@@ -112,7 +122,7 @@ const othersItems: NavItem[] = [
   },
 ];
 
-const AppSidebar: React.FC = () => {
+
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
 

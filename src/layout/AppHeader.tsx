@@ -14,8 +14,14 @@ import "primeicons/primeicons.css";
 
 import { useDispatch } from "react-redux";
 import { setDates } from "../store/dateRangeSlice";
+import { User } from '../types'; 
 
-const AppHeader: React.FC = () => {
+interface AppHeaderProps {
+  user: User | null;
+}
+
+const AppHeader: React.FC<AppHeaderProps> = ({ user }) => {
+  
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [enterpriseKey, setEnterpriseKey] = useState("AWW");
   const enterpriseKeys = ["ABC", "XYZ", "PQR"];
