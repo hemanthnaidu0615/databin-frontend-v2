@@ -71,7 +71,7 @@ export const fetchOrders = async (
           carrier,
           searchCustomer,
           searchOrderId,
-          enterpriseKey, // ✅ sent as a query param here
+          enterpriseKey,
         },
       });
 
