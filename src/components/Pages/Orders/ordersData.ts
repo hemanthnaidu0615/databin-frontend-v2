@@ -45,7 +45,9 @@ export const fetchOrders = async (
   paymentMethod?: string,
   carrier?: string,
   searchCustomer?: string,
-  searchOrderId?: string
+  searchOrderId?: string,
+  enterpriseKey?: string
+
 ): Promise<Order[]> => {
   if (
     !startDate ||
@@ -69,9 +71,9 @@ export const fetchOrders = async (
           carrier,
           searchCustomer,
           searchOrderId,
+          enterpriseKey,
         },
-      }
-    );
+      });
 
     const filteredOrders = response.data;
     if (!Array.isArray(filteredOrders)) return [];
