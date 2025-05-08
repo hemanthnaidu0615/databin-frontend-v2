@@ -53,6 +53,13 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   // Get enterpriseKey from Redux
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
+
+  const formatValue = (Orders: number) => {
+    if (Orders >= 1_000_000) return (Orders / 1_000_000).toFixed(1) + "m";
+    if (Orders >= 1_000) return (Orders / 1_000).toFixed(1) + "k";
+    return Orders.toFixed(0);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -173,6 +180,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         },
       },
       labels: {
+        formatter: formatValue,
         style: {
           fontSize: "12px",
           colors: isDarkMode ? "#D1D5DB" : "#4B5563",
