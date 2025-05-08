@@ -5,13 +5,13 @@ import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
-import { MoreDotIcon } from "../../icons";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
   return value.toFixed(0);
 };
+
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -33,12 +33,9 @@ interface OrderTrackingProps {
 export default function OrderTracking(_: OrderTrackingProps) {
   const [totalOrders, setTotalOrders] = useState(0);
   const [orderCounts, setOrderCounts] = useState({
-    Pending: 0,
     Shipped: 0,
-    Delivered: 0,
     Cancelled: 0,
     "Return Received": 0,
-    Refunded: 0,
   });
 
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +76,14 @@ export default function OrderTracking(_: OrderTrackingProps) {
         const orderCountsResponse = await axios.get(
           `http://localhost:8080/api/shipment-status/count?${params.toString()}`
         );
-        setOrderCounts(orderCountsResponse.data);
+
+        const counts = orderCountsResponse.data;
+
+        setOrderCounts({
+          Shipped: counts.Shipped || 0,
+          Cancelled: counts.Cancelled || 0,
+          "Return Received": counts.Returned || 0, // remapped from "Returned"
+        });
       } catch (error) {
         console.error("Error fetching order data:", error);
       }
@@ -92,7 +96,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
   const progressPercentage =
     totalOrders > 0
-      ? ((orderCounts.Delivered + orderCounts.Refunded) / totalOrders) * 100
+      ? ((orderCounts.Shipped + orderCounts["Return Received"]) / totalOrders) * 100
       : 0;
   const series = [progressPercentage];
 
@@ -196,38 +200,21 @@ export default function OrderTracking(_: OrderTrackingProps) {
           </div>
 
           <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
-            {[
-              {
-                label: "Pending",
-                count: orderCounts.Pending,
-                color: "text-yellow-500",
-              },
-              {
-                label: "Shipped",
-                count: orderCounts.Shipped,
-                color: "text-blue-500",
-              },
-              {
-                label: "Delivered",
-                count: orderCounts.Delivered,
-                color: "text-green-500",
-              },
-              {
-                label: "Canceled",
-                count: orderCounts.Cancelled,
-                color: "text-red-500",
-              },
-              {
-                label: "Returned",
-                count: orderCounts["Return Received"],
-                color: "text-purple-500",
-              },
-              {
-                label: "Refunded",
-                count: orderCounts.Refunded,
-                color: "text-teal-500",
-              },
-            ].map((item, index) => (
+            {[{
+              label: "Shipped",
+              count: orderCounts.Shipped,
+              color: "text-green-500",
+            }, 
+            {
+              label: "Canceled",
+              count: orderCounts.Cancelled,
+              color: "text-red-500",
+            }, 
+            {
+              label: "Returned",
+              count: orderCounts["Return Received"],
+              color: "text-yellow-500",
+            }].map((item, index) => (
               <div key={index} className="flex flex-col items-center">
                 <p className={`mb-1 text-xs ${item.color}`}>{item.label}</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
