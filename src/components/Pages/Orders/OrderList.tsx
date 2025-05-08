@@ -3,7 +3,7 @@ import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { Paginator } from "primereact/paginator";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 
 export const fetchOrderDetails = async (
   orderId: string
@@ -90,8 +90,9 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
     Map<string, boolean>
   >(new Map());
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange;
+
+
+
 
   const fetchAndSetDetails = useCallback(
     (orderId: string) => {
