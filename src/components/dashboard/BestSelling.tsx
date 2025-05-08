@@ -68,7 +68,7 @@ const ProfitabilityTable: React.FC = () => {
           endDate: formattedEndDate,
         });
 
-        if (enterpriseKey && enterpriseKey !== "All") {
+        if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
 
