@@ -54,9 +54,7 @@ export default function RecentOrders() {
   // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
-
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
-
 
   // Initialize navigate
   const navigate = useNavigate();
@@ -74,17 +72,13 @@ export default function RecentOrders() {
           endDate: formattedEndDate,
         });
   
-        if (
-          enterpriseKey &&
-          enterpriseKey.trim() !== "" &&
-          enterpriseKey.toLowerCase() !== "all"
-        ) {
+        if (enterpriseKey && enterpriseKey !== "All") {
           params.append("enterpriseKey", enterpriseKey);
         }
   
-        const url = `http://localhost:8080/api/orders/recent-orders?${params.toString()}`;
-  
-        const response = await fetch(url);
+        const response = await fetch(
+          `http://localhost:8080/api/orders/recent-orders?${params.toString()}`
+        );
   
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -113,9 +107,8 @@ export default function RecentOrders() {
     if (startDate && endDate) {
       fetchRecentOrders();
     }
-  }, [startDate, endDate, enterpriseKey]); // ← add enterpriseKey to dependencies
-  // Re-run when startDate or endDate changes
-
+  }, [startDate, endDate, enterpriseKey]); 
+  
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
