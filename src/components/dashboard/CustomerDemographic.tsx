@@ -1,29 +1,100 @@
 import { useTheme } from "next-themes";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const INR_TO_USD = 1 / 83.3;
 
-const dummyStateData: Record<
-  string,
-  { customers: number; revenue: number; avgRevenue: number }
-> = {
-  California: { customers: 1200, revenue: 24000, avgRevenue: 20 },
-  Texas: { customers: 1000, revenue: 18000, avgRevenue: 18 },
-  Florida: { customers: 800, revenue: 12000, avgRevenue: 15 },
-  "New York": { customers: 650, revenue: 9500, avgRevenue: 14.6 },
-  Illinois: { customers: 600, revenue: 8000, avgRevenue: 13.3 },
-  Georgia: { customers: 580, revenue: 7500, avgRevenue: 12.9 },
-  Arizona: { customers: 560, revenue: 7200, avgRevenue: 12.8 },
-  Washington: { customers: 550, revenue: 7000, avgRevenue: 12.7 },
-  Colorado: { customers: 530, revenue: 6800, avgRevenue: 12.8 },
-  Michigan: { customers: 500, revenue: 6500, avgRevenue: 13 },
+// Canonical list of US state names used in the map
+const CANONICAL_STATES = [
+  "Alabama",
+  "Alaska",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "Florida",
+  "Georgia",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
+];
+
+// Map lowercase/variant names to canonical names
+const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
+  acc[name.toLowerCase()] = name;
+  return acc;
+}, {} as Record<string, string>);
+
+const formatValue = (value: number) => {
+  const usd = value * INR_TO_USD;
+  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}m`;
+  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}k`;
+  return `$${usd.toFixed(0)}`;
+};
+
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}`;
 };
 
 const DemographicCard = () => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+  const navigate = useNavigate();
+
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [startDate, endDate] = dateRange;
 
   const [tooltip, setTooltip] = useState<{
     name: string;
@@ -34,7 +105,88 @@ const DemographicCard = () => {
     y: number;
   } | null>(null);
 
-  const navigate = useNavigate();
+  const [stateData, setStateData] = useState<
+    Record<string, { customers: number; revenue: number; avgRevenue: number }>
+  >({});
+
+  const [metrics, setMetrics] = useState({
+    newCustomers: 0,
+    returningCustomers: 0,
+    avgOrderValue: 0,
+    highSpenders: 0,
+  });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const formattedStart = formatDate(startDate);
+        const formattedEnd = formatDate(endDate);
+        const params = new URLSearchParams({
+          startDate: formattedStart,
+          endDate: formattedEnd,
+        });
+        if (enterpriseKey) {
+          params.append("enterpriseKey", enterpriseKey);
+        }
+
+        const [mapRes, metricRes] = await Promise.all([
+          fetch(
+            `http://localhost:8080/api/sales/map-metrics?${params.toString()}`
+          ),
+          fetch(`http://localhost:8080/api/sales/metrics?${params.toString()}`),
+        ]);
+
+        const mapData = await mapRes.json();
+        const metricsData = await metricRes.json();
+
+        const formatted: Record<
+          string,
+          { customers: number; revenue: number; avgRevenue: number }
+        > = {};
+
+        if (Array.isArray(mapData)) {
+          mapData.forEach((row) => {
+            const raw = row.state?.trim().toLowerCase();
+            const canonicalName = STATE_NAME_MAP[raw];
+
+            if (!canonicalName) {
+              console.warn(
+                `State name mismatch: "${row.state}" not found in map.`
+              );
+              return;
+            }
+
+            const customers = row.total_customers || 0;
+            const avgRevenue = row.average_revenue || 0;
+            const revenue = customers * avgRevenue;
+
+            formatted[canonicalName] = {
+              customers,
+              revenue,
+              avgRevenue,
+            };
+          });
+
+          setStateData(formatted);
+        }
+
+        if (metricsData) {
+          setMetrics({
+            newCustomers: metricsData.new_customers || 0,
+            returningCustomers: metricsData.returning_customers || 0,
+            avgOrderValue: metricsData.avg_order_value || 0,
+            highSpenders: metricsData.high_spenders || 0,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load sales data:", err);
+      }
+    }
+
+    if (startDate && endDate) {
+      fetchData();
+    }
+  }, [startDate, endDate, enterpriseKey]);
 
   const handleViewMore = () => {
     navigate("/sales/region");
@@ -42,7 +194,6 @@ const DemographicCard = () => {
 
   return (
     <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
-      {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
           <div className="text-gray-900 dark:text-white font-semibold text-lg">
@@ -52,7 +203,6 @@ const DemographicCard = () => {
             Customers and revenue per state
           </div>
         </div>
-
         <button
           onClick={handleViewMore}
           className="text-xs font-medium hover:underline"
@@ -62,9 +212,8 @@ const DemographicCard = () => {
         </button>
       </div>
 
-      {/* Map */}
       <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
-      <ComposableMap
+        <ComposableMap
           projection="geoAlbersUsa"
           width={980}
           height={520}
@@ -74,7 +223,7 @@ const DemographicCard = () => {
             {({ geographies }) =>
               geographies.map((geo) => {
                 const stateName = geo.properties.name;
-                const data = dummyStateData[stateName] || {
+                const data = stateData[stateName] || {
                   customers: 0,
                   revenue: 0,
                   avgRevenue: 0,
@@ -123,19 +272,20 @@ const DemographicCard = () => {
             }}
           >
             <strong>{tooltip.name}</strong>
-            {`\nCustomers: ${tooltip.customers}\nRevenue: $${tooltip.revenue.toLocaleString()}\nAvg Revenue: $${tooltip.avgRevenue.toLocaleString()}`}
+            {`\nCustomers: ${tooltip.customers}\nRevenue: ${formatValue(
+              tooltip.revenue
+            )}\nAvg Revenue: ${formatValue(tooltip.avgRevenue)}`}
           </div>
         )}
       </div>
 
-      {/* Footer Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 ">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Returning vs New
           </p>
           <p className="text-lg font-semibold text-gray-800 dark:text-white">
-            0 / 17816
+            {metrics.returningCustomers} / {metrics.newCustomers}
           </p>
         </div>
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -143,7 +293,7 @@ const DemographicCard = () => {
             Avg Order Value
           </p>
           <p className="text-lg font-semibold text-gray-800 dark:text-white">
-            $15,528.00
+            {formatValue(metrics.avgOrderValue)}
           </p>
         </div>
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
@@ -151,7 +301,7 @@ const DemographicCard = () => {
             High Spenders
           </p>
           <p className="text-lg font-semibold text-gray-800 dark:text-white">
-            10
+            {metrics.highSpenders}
           </p>
         </div>
       </div>
