@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
+import { useSelector } from 'react-redux';
 
 const BottleneckChart = () => {
   const [isDark, setIsDark] = useState<boolean>(
     typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
   );
-
   const [chartOptions, setChartOptions] = useState<ApexOptions>({
     chart: {
       type: 'bar',
@@ -30,11 +30,7 @@ const BottleneckChart = () => {
     },
     colors: ['#9614d0'],
     xaxis: {
-      categories: [
-        'Order Placed', 'Processing', 'Store Pickup', 'Ship to Home',
-        'Distribution Center', 'Warehouse', 'Vendor Drop Shipping',
-        'Same-Day Delivery', 'Locker Pickup', 'Curbside Pickup',
-      ],
+      categories: [],
       title: {
         text: 'Process Stage',
         style: {
@@ -77,12 +73,22 @@ const BottleneckChart = () => {
     },
   });
 
-  const series = [
+  const [series, setSeries] = useState([
     {
       name: 'Avg Time (hrs)',
-      data: [3.2, 5.6, 2.4, 6.8, 4.5, 3.8, 5.2, 7.1, 4.3, 3.9],
+      data: [],
     },
-  ];
+  ]);
+
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [startDate, endDate] = dateRange || [];
+
+  const formatDate = (date: Date) =>
+    `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date
+      .getDate()
+      .toString()
+      .padStart(2, '0')}`;
 
   useEffect(() => {
     const dark = document.documentElement.classList.contains('dark');
@@ -137,6 +143,53 @@ const BottleneckChart = () => {
       },
     }));
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!startDate || !endDate) return;
+
+      const formattedStart = formatDate(new Date(startDate));
+      const formattedEnd = formatDate(new Date(endDate));
+
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      if (enterpriseKey) {
+        params.append('enterpriseKey', enterpriseKey);
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/fulfillment/bottleneck-analysis?${params.toString()}`
+        );
+        const data = await response.json();
+
+        const categories = data.map((item: any) => item.process_stage);
+        const values = data.map((item: any) => parseFloat(item.avg_time.toFixed(2)));
+
+        setChartOptions((prev) => ({
+          ...prev,
+          xaxis: {
+            ...prev.xaxis,
+            categories,
+          },
+        }));
+
+        setSeries([
+          {
+            name: 'Avg Time (hrs)',
+            data: values,
+          },
+        ]);
+      } catch (error) {
+        console.error('Failed to fetch bottleneck analysis data:', error);
+      }
+    };
+
+    fetchData();
+  }, [startDate, endDate, enterpriseKey]);
 
   return (
     <div className="mt-6">

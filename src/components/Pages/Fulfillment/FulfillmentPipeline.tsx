@@ -1,28 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
-const fulfillmentStages = [
-  { label: 'Order Placed', count: 5000000, avg: '2.1 hrs' },
-  { label: 'Processing', count: 4800000, avg: '3.4 hrs' },
-  { label: 'Distribution Center', count: 4500000, avg: '2.9 hrs' },
-  { label: 'Warehouse', count: 4300000, avg: '4.1 hrs' },
-  { label: 'Same-Day Delivery', count: 3900000, avg: '5.2 hrs' },
-  { label: 'Curbside Pickup', count: 3700000, avg: '6.0 hrs' },
-];
-
-const finalStages = [
-  { label: 'Shipped', count: 3600000, avg: '–' },
-  { label: 'Cancelled', count: 120000, avg: '–' },
-  { label: 'Return Received', count: 45000, avg: '–' },
-];
-
-const currentFulfillmentStage = 2;
-
+// PipelineRow Component
 const PipelineRow = ({
   stages,
   currentStage,
   isFinal = false
 }: {
-  stages: { label: string; count: number; avg: string }[];
+  stages: { stage_name: string; orders_count: number; avg_duration_hours?: number }[];
   currentStage: number;
   isFinal?: boolean;
 }) => {
@@ -50,12 +35,14 @@ const PipelineRow = ({
               <div
                 className={`w-full p-2 sm:p-3 rounded-md text-center font-bold text-[11px] sm:text-sm text-white ${bgColor}`}
               >
-                {stage.count.toLocaleString()}
+                {stage.orders_count.toLocaleString()}
               </div>
               <div className="mt-1 text-center text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 font-medium">
-                {stage.label}
+                {stage.stage_name}
               </div>
-              <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">{stage.avg}</div>
+              <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
+                {isFinal ? '–' : (stage.avg_duration_hours?.toFixed(1) ?? '–') + ' hrs'}
+              </div>
             </div>
 
             {!isFinal && index < stages.length - 1 && (
@@ -83,31 +70,77 @@ const PipelineRow = ({
   );
 };
 
+// Main Component
 const FulfillmentPipeline = () => {
+  const [stagesData, setStagesData] = useState<any[]>([]);
+  const [finalStagesData, setFinalStagesData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange;
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!startDate || !endDate) return;
+
+      try {
+        setLoading(true);
+
+        const baseParams = `startDate=${startDate}&endDate=${endDate}`;
+        const entParam = enterpriseKey ? `&enterpriseKey=${enterpriseKey}` : '';
+
+        const stagesRes = await fetch(
+          `http://localhost:8080/api/fulfillment/stages-pipeline?${baseParams}${entParam}`
+        );
+        const finalRes = await fetch(
+          `http://localhost:8080/api/fulfillment/final-stages?${baseParams}${entParam}`
+        );
+
+        if (!stagesRes.ok || !finalRes.ok) throw new Error('Failed to fetch fulfillment data.');
+
+        const stages = await stagesRes.json();
+        const finals = await finalRes.json();
+
+        setStagesData(stages);
+        setFinalStagesData(finals);
+      } catch (err: any) {
+        setError(err.message || 'Error loading data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [startDate, endDate, enterpriseKey]);
+
+  if (loading) return <p>Loading fulfillment pipeline...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <div className="w-full py-6 space-y-10">
       {/* Fulfillment Flow */}
-<div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
-    Fulfillment Stages Pipeline
-  </h2>
-  <PipelineRow stages={fulfillmentStages} currentStage={currentFulfillmentStage} />
-</div>
+      <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          Fulfillment Stages Pipeline
+        </h2>
+        <PipelineRow stages={stagesData} currentStage={2} />
+      </div>
 
-{/* Final Status Flow */}
-<div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
-    Final Stages
-  </h2>
-  <PipelineRow stages={finalStages} currentStage={-1} isFinal />
-</div>
-
+      {/* Final Status Flow */}
+      <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
+          Final Stages
+        </h2>
+        <PipelineRow stages={finalStagesData} currentStage={-1} isFinal />
+      </div>
     </div>
   );
 };
 
-
 export default FulfillmentPipeline;
+
 
 
   
