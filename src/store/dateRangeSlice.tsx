@@ -12,7 +12,7 @@ const dateRangeSlice = createSlice({
   reducers: {
     setDates: (state, action) => {
       // Ensure payload is converted to string format
-      state.dates = action.payload.map((date) => new Date(date).toISOString());
+      state.dates = action.payload.map((date: string) => new Date(date).toISOString());
     },
   },
 });

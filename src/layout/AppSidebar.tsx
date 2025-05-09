@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
       },
       {
         name: "Analysis",
-        path: "/sales/analysis",
+        path:  "/sales/analysis",
       },
       {
         name: "Region",

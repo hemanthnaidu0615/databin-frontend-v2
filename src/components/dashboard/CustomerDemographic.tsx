@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { useNavigate } from "react-router-dom";
 

@@ -7,7 +7,7 @@ import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import Logo from "../images/logo.png";
 import AppMobileRightSidebar from ".//AppMobileRightSidebar";
-import { useLocation } from "react-router-dom";
+
 
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
@@ -17,7 +17,7 @@ import { useDispatch } from "react-redux";
 import { setDates } from "../store/dateRangeSlice";
 
 const AppHeader: React.FC = () => {
-  const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+ 
   const [enterpriseKey, setEnterpriseKey] = useState("AWW");
   const enterpriseKeys = ["ABC", "XYZ", "PQR"];
   const calendarRef = useRef<any>(null);
@@ -52,9 +52,7 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  const toggleApplicationMenu = () => {
-    setApplicationMenuOpen(!isApplicationMenuOpen);
-  };
+
 
   const handleDateChange = (e: any) => {
     const newDates = e.value;

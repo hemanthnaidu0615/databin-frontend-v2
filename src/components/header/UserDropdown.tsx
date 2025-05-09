@@ -59,7 +59,7 @@ export default function UserDropdown() {
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400 prblm"
+        className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-2 overflow-hidden rounded-full h-8 w-8">
           <img src="/images/user/owner.jpg" alt="User" />
@@ -89,7 +89,7 @@ export default function UserDropdown() {
         createPortal(
           <div
             ref={dropdownRef}
-            className="z-[99999] w-[260px]"
+            className="z-[100010] w-[260px]"
             style={{
               position: "absolute",
               top: position.top,

@@ -5,7 +5,6 @@ import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
-import { MoreDotIcon } from "../../icons";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -36,7 +35,6 @@ export default function OrderTracking(_: OrderTrackingProps) {
     Refunded: 0,
   });
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(() => {
     return localStorage.getItem("orderTrackingVisible") !== "false";
   });
@@ -116,26 +114,12 @@ export default function OrderTracking(_: OrderTrackingProps) {
     labels: ["Progress"],
   };
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
-  function removeChart() {
-    setIsVisible(false);
-    closeDropdown();
-  }
-
   function restoreChart() {
     setIsVisible(true);
   }
 
   function handleViewMore() {
     navigate("/orders");
-    closeDropdown();
   }
 
   return (

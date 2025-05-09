@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import { MoreDotIcon } from "../../icons";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 
 interface ProductData {
@@ -22,15 +21,11 @@ const formatDate = (date: string) => {
 
 const ProfitabilityTable: React.FC = () => {
   const { theme } = useTheme();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [productData, setProductData] = useState<ProductData[]>([]);
   const [position, setPosition] = useState(1);
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
-
-  const closeDropdown = () => setIsDropdownOpen(false);
-  const removeWidget = () => console.log("Remove Widget");
 
   const handleViewMore = () => {
     navigate("/orders");
@@ -105,39 +100,6 @@ const ProfitabilityTable: React.FC = () => {
         >
           View More
         </button>
-        {/* Dropdown (Commented) */}
-        {/*
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-          >
-            <MoreDotIcon className="text-gray-500 dark:text-gray-400 size-5" />
-          </button>
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50 p-2">
-              <button
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  closeDropdown?.();
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-              >
-                View More
-              </button>
-              <button
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  removeWidget?.();
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700"
-              >
-                Remove
-              </button>
-            </div>
-          )}
-        </div>
-        */}
       </div>
 
       {/* Carousel */}

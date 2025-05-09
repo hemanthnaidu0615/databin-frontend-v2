@@ -31,10 +31,9 @@ type ApiResponse = {
 
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
-  onViewMore,
-  onRemove,
+  
 }) => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  
   const [chartData, setChartData] = useState<{
     categories: string[];
     series: { name: string; data: number[] }[]; 

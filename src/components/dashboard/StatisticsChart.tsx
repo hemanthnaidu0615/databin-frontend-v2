@@ -26,7 +26,7 @@ const formatDate = (date: string) => {
 export default function StatisticsChart({}: StatisticsChartProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const [isOpen, setIsOpen] = useState(false);
+  ;
 
   const years = Array.from({ length: 16 }, (_, i) => currentYear - 10 + i);
 

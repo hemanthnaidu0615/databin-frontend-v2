@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
@@ -27,8 +27,7 @@ const formatDateTime = (date: string) => {
 
 const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
   size = "full",
-  onRemove,
-  onViewMore,
+
 }) => {
   const [data, setData] = useState<{
     carriers: string[];
@@ -44,9 +43,7 @@ const ShipmentPerformance: React.FC<ShipmentPerformanceProps> = ({
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
+
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;

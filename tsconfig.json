@@ -1,7 +1,7 @@
 {
-  "files": [],
+  "files": [],                    // No root files directly included; relies on referenced configs
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./tsconfig.app.json" },   // Reference to application config
+    { "path": "./tsconfig.node.json" }   // Reference to node tooling or server config
   ]
 }

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { Paginator } from "primereact/paginator";
-import { useSelector } from "react-redux";
+
 
 export const fetchOrderDetails = async (
   orderId: string
@@ -27,7 +27,6 @@ export const fetchOrderDetails = async (
 
 function cleanAndFormatPhoneNumber(rawPhone: string): string {
   const digitsOnly = rawPhone.split(/[xX]|ext/)[0].replace(/[^\d]/g, "");
-
   const normalized = digitsOnly.length === 10 ? "1" + digitsOnly : digitsOnly;
 
   if (/^1\d{10}$/.test(normalized)) {
@@ -40,6 +39,7 @@ function cleanAndFormatPhoneNumber(rawPhone: string): string {
 
   return rawPhone;
 }
+
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
@@ -67,31 +67,24 @@ const statusColors: Record<string, string> = {
 
 const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({
   status,
-}) => {
-  return (
-    <span
-      className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}
-    >
-      {status}
-    </span>
-  );
-};
+}) => (
+  <span
+    className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}
+  >
+    {status}
+  </span>
+);
 
 const OrderList: React.FC<Props> = ({ orders = [] }) => {
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
-  const [first, setFirst] = useState(0); // First item on the page
-  const [rows, setRows] = useState(20); // Number of rows per page (default to 20)
-  const [isMobile, setIsMobile] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(20);
+  const [isMobile] = useState(false);
   const [mobileOrder, setMobileOrder] = useState<Order | null>(null);
-  const [showMobileDialog, setShowMobileDialog] = useState(false);
   const [orderDetails, setOrderDetails] = useState<Map<string, any>>(new Map());
   const [loadingOrderDetails, setLoadingOrderDetails] = useState<
     Map<string, boolean>
   >(new Map());
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange;
 
   const fetchAndSetDetails = useCallback(
     (orderId: string) => {
@@ -111,7 +104,6 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
 
   const toggleExpand = (order: Order) => {
     if (isMobile) {
-      setSelectedOrder(order);
       setMobileOrder(order);
     } else {
       setExpandedOrderIds((prev) =>
@@ -132,6 +124,9 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
     setExpandedOrderIds([]);
     setMobileOrder(null);
   };
+
+
+
 
   const paginatedOrders = orders.slice(first, first + rows);
 

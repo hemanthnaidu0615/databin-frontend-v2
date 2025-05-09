@@ -24,9 +24,12 @@ import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
 // ✅ Corrected import
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
 // import { SalesDashboard } from "./components/Pages/Sales/SalesDashboard";
-import { Analysis } from "./components/Pages/Sales/Analysis";
+// import { Analysis } from "./components/Pages/Sales/Analysis";
+
+import SalesAnalysis from "./components/Pages/Sales1/Sales Analysis/SalesAnalysis";
+
 import  {SalesByRegion}  from "./components/Pages/Sales1/Region/SalesByRegion";
-import SalesFlow from "./components/Pages/Sales/SalesFlow";
+import SalesFlow from "./components/Pages/Sales1/SalesFlow";
 import Scheduler  from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
 
@@ -44,7 +47,10 @@ export default function App() {
 
           {/* Sales Pages */}
           {/* <Route path="/sales/dashboard" element={<SalesDashboard />} /> */}
-          <Route path="/sales/analysis" element={<Analysis />} />
+
+          {/* <Route path="/sales/analysis" element={<Analysis />} /> */}
+          <Route path="/sales/analysis" element={<SalesAnalysis />} /> {/* SalesAnalysis Route */}
+          
           {/* <Route path="/sales/region" element={<SalesByRegion />} /> */}
           <Route path="/sales/flow" element={<SalesFlow />} />
 
