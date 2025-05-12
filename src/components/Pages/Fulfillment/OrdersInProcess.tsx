@@ -7,7 +7,6 @@ import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { motion } from "framer-motion";
-import { Paginator } from "primereact/paginator";
 
 interface Order {
   order_id: number;
@@ -59,16 +58,22 @@ const OrdersInProcess = () => {
       .toString()
       .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
+  // This function formats the ETA to display only the date in YYYY-MM-DD format
   const formatETA = (eta: string) => {
     if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") {
       return eta;
     }
+
+    // Create a new Date object from the ISO string
     const date = new Date(eta);
-    return date.toLocaleString(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return eta; // If invalid, return the original eta string
+    }
+
+    // Format to "YYYY-MM-DD"
+    return date.toISOString().slice(0, 10);
   };
 
   useEffect(() => {
@@ -125,9 +130,7 @@ const OrdersInProcess = () => {
       order.event.toLowerCase().includes(globalFilter.toLowerCase())
   );
 
-  const statusTemplate = (rowData: Order) => (
-    <Tag value={mapEventToStatus(rowData.event)} />
-  );
+
   const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
   const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
 
@@ -145,14 +148,6 @@ const OrdersInProcess = () => {
     />
   );
 
-  const handlePageChange = (direction: string) => {
-    if (direction === "next" && page * rows < filteredOrders.length) {
-      setPage(page + 1);
-    } else if (direction === "prev" && page > 1) {
-      setPage(page - 1);
-    }
-  };
-
 
 
   return (
@@ -161,114 +156,52 @@ const OrdersInProcess = () => {
         {/* Desktop View */}
         <div className="hidden sm:block">
           <DataTable
-value={filteredOrders.slice((page - 1) * rows, page * rows)}
-paginator={false}
+            value={filteredOrders}
+            paginator
+            rows={rows}
+            stripedRows
             header={header}
             globalFilter={globalFilter}
             className="p-datatable-sm"
+            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+            rowsPerPageOptions={[5, 10, 20, 50]}
             emptyMessage="No orders found."
             responsiveLayout="scroll"
             scrollable
           >
             <Column field="order_id" header="Order ID" sortable />
-            <Column header="Status" body={statusTemplate} sortable />
-            <Column field="event" header="Event" body={eventTemplate} sortable />
+            <Column header="Status" body={eventTemplate} sortable />
             <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
           </DataTable>
-
-          {/* Desktop Pagination */}
-          <div className="hidden sm:block mt-4 p-4 bg-white dark:bg-gray-900 rounded-b-lg">
-            <Paginator
-              first={(page - 1) * rows}
-              rows={rows}
-              totalRecords={filteredOrders.length}
-              onPageChange={(e) => setPage(e.page + 1)}
-              rowsPerPageOptions={[5, 10, 20]}
-              template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-              className="dark:text-gray-100 dark:bg-gray-900 [&_.p-paginator]:bg-transparent [&_.p-paginator]:dark:bg-transparent [&_.p-paginator]:border-none"
-            />
-          </div>
         </div>
 
         {/* Mobile View */}
         <div className="sm:hidden">
-        {filteredOrders.slice((page - 1) * rows, page * rows).map((order) => (
-            <div
-              key={order.order_id}
-              className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
-                <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+          {filteredOrders
+            .slice((page - 1) * rows, page * rows)
+            .map((order) => (
+              <div
+                key={order.order_id}
+                className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
+                  <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+                </div>
+                <p className="text-xs mt-1">Event: {order.event}</p>
+                <p className="text-xs">ETA: {formatETA(order.eta)}</p>
+                <div className="mt-2">
+                  <Button
+                    label="View"
+                    icon="pi pi-eye"
+                    className="p-button-sm p-button-text"
+                    onClick={() => handleViewClick(order)}
+                  />
+                </div>
               </div>
-              <p className="text-xs mt-1">Event: {order.event}</p>
-              <p className="text-xs">ETA: {order.eta}</p>
-              <div className="mt-2">
-                <Button
-                  label="View"
-                  icon="pi pi-eye"
-                  className="p-button-sm p-button-text"
-                  onClick={() => handleViewClick(order)}
-                />
-              </div>
-            </div>
-          ))}
-
-          {/* Mobile Pagination */}
-          <div className="mt-4 flex flex-col justify-between items-center bg-[#0F172A] rounded-md px-4 py-3 border border-[#1E293B]">
-            <div className="flex items-center gap-2 mb-3">
-              <label htmlFor="mobileRows" className="text-sm text-white font-medium">
-                Rows per page:
-              </label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="bg-[#1E293B] text-white text-sm px-3 py-1 rounded focus:outline-none border border-[#334155]"
-              >
-                {[5, 10, 20, 50].map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex w-full justify-between items-center">
-              <button
-                onClick={() => handlePageChange("prev")}
-                disabled={page === 1}
-                className={`text-sm px-3 py-1 rounded font-semibold border ${
-                  page === 1
-                    ? "bg-[#1E293B] text-gray-500 border-[#1E293B] cursor-not-allowed"
-                    : "bg-[#1E293B] text-white border-[#334155] hover:bg-[#334155]"
-                }`}
-              >
-                Prev
-              </button>
-
-              <span className="text-sm text-white font-semibold">
-                {`Page ${page} of ${Math.ceil(filteredOrders.length / rows)}`}
-              </span>
-
-              <button
-                onClick={() => handlePageChange("next")}
-                disabled={page * rows >= filteredOrders.length}
-                className={`text-sm px-3 py-1 rounded font-semibold border ${
-                  page * rows >= filteredOrders.length
-                    ? "bg-[#1E293B] text-gray-500 border-[#1E293B] cursor-not-allowed"
-                    : "bg-[#1E293B] text-white border-[#334155] hover:bg-[#334155]"
-                }`}
-              >
-                Next
-              </button>
-            </div>
-          </div>
+            ))}
         </div>
       </div>
 
@@ -286,7 +219,15 @@ paginator={false}
           transition={{ duration: 0.4 }}
           className="space-y-6"
         >
-          {/* Modal content goes here */}
+          {selectedOrder ? (
+            <>
+              <div><strong>Status:</strong> {mapEventToStatus(selectedOrder.event)}</div>
+              <div><strong>ETA:</strong> {formatETA(selectedOrder.eta)}</div>
+              <div><strong>Event:</strong> {selectedOrder.event}</div>
+            </>
+          ) : (
+            <p>No order selected.</p>
+          )}
         </motion.div>
       </Dialog>
     </div>

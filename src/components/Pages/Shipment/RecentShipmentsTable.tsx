@@ -152,7 +152,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
         stripedRows
         className="p-datatable-sm w-full"
         responsiveLayout="scroll"
-        paginatorTemplate="RowsPerPageDropdown CurrentPageReport PrevPageLink PageLinks NextPageLink"
+        paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
         rowsPerPageOptions={[5, 10, 20, 50]}
         sortMode="multiple"
