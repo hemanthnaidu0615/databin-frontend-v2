@@ -18,36 +18,44 @@ function Signin() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    if (!email) return setError('Email is required');
-    if (!isValidEmail(email)) return setError('Please enter a valid email address');
-    if (!password) return setError('Password is required');
-  
-    // Hardcoded credentials
-    const hardcodedEmail = "meridianTechsol@meridianit.com";
-    const hardcodedPassword = "meridianit";
-  
-    setError('');
-    setLoading(true);
-  
-    try {
-      // Simulated login delay
-      await new Promise((res) => setTimeout(res, 1000));
-  
-      // Check credentials
-      if (email === hardcodedEmail && password === hardcodedPassword) {
-        navigate('/'); // Redirect to home
-      } else {
-        setError('Invalid email or password');
-      }
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setError('Login failed. Please try again.');
-    } finally {
-      setLoading(false);
+  e.preventDefault();
+
+  if (!email) return setError('Email is required');
+  if (!isValidEmail(email)) return setError('Please enter a valid email address');
+  if (!password) return setError('Password is required');
+
+  setError('');
+  setLoading(true);
+
+  try {
+    const response = await fetch('http://localhost:8080/api/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // if using HTTP-only cookies
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Invalid email or password');
     }
-  };
+
+    const userData = await response.json(); // response should include email, role.identifier, etc.
+
+    const roleIdentifier = userData?.role?.identifier ?? '';
+    const isAdminOrManager = roleIdentifier.includes('admin') || roleIdentifier.includes('manager');
+
+    // Redirect to home/dashboard and pass role info for conditional rendering
+    navigate('/', { state: { user: userData, showUserManagement: isAdminOrManager } });
+  } catch (err: any) {
+    console.error('Login error:', err);
+    setError(err.message || 'Login failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
   
 
   return (
