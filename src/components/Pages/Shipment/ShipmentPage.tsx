@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ShipmentStats from './ShipmentStats';
 import ShipmentCharts from './ShipmentCharts';
 import RecentShipmentsTable from './RecentShipmentsTable';
 import { Dropdown } from 'primereact/dropdown';
-
-const carriers = ['FedEx', 'UPS', 'DHL', 'USPS'];
-const shippingMethods = ['Standard', 'Expedited', 'Same-Day'];
-
+import axios from 'axios';
 
 const ShipmentPage = () => {
   const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [carriers, setCarriers] = useState<string[]>([]);
+  const [shippingMethods, setShippingMethods] = useState<string[]>([]);
+  const [loadingFilters, setLoadingFilters] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const clearFilters = () => {
     setSelectedCarrier(null);
     setSelectedMethod(null);
   };
 
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        setLoadingFilters(true);
+        const res = await axios.get<{ carriers: string[]; shipping_methods: string[] }>('http://localhost:8080/api/shipment-filters/filter-values');
+        setCarriers(res.data.carriers || []);
+        setShippingMethods(res.data.shipping_methods || []);
+      } catch (err) {
+        console.error('Failed to fetch filters:', err);
+        setError('Failed to load shipment filters.');
+      } finally {
+        setLoadingFilters(false);
+      }
+    };
+
+    fetchFilters();
+  }, []);
+
   return (
     <div className="p-6 space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Shipment Analytics</h1>
         <p className="text-sm text-zinc-400">
@@ -37,6 +55,7 @@ const ShipmentPage = () => {
             onChange={(e) => setSelectedCarrier(e.value)}
             placeholder="Select Carrier"
             className="w-full"
+            disabled={loadingFilters}
           />
         </div>
         <div>
@@ -47,6 +66,7 @@ const ShipmentPage = () => {
             onChange={(e) => setSelectedMethod(e.value)}
             placeholder="Select Method"
             className="w-full"
+            disabled={loadingFilters}
           />
         </div>
         <div className="flex justify-end">
@@ -59,23 +79,17 @@ const ShipmentPage = () => {
         </div>
       </div>
 
+      {/* Optional error display */}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+
       {/* KPIs */}
-      <ShipmentStats />
+      <ShipmentStats selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
 
       {/* Charts */}
-      <ShipmentCharts
-        selectedCarrier={selectedCarrier}
-        selectedMethod={selectedMethod}
-      />
+      <ShipmentCharts selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
 
       {/* Table */}
-      <RecentShipmentsTable
-        selectedCarrier={selectedCarrier}
-        selectedMethod={selectedMethod}
-      />
-
-      {/* Timeline */}
-      {/* <ShipmentTimelineChart /> */}
+      <RecentShipmentsTable selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
     </div>
   );
 };
