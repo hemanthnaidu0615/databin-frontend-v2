@@ -77,7 +77,7 @@ const SalesTrendsChart = () => {
         type: chartType,
         toolbar: { show: false },
         events: {
-          dataPointSelection: (_event, _chartContext, config) => {
+          dataPointSelection: (_event:any, _chartContext:any, config:any) => {
             if (!drilledMonth && categories[config.dataPointIndex]) {
               setDrilledMonth(categories[config.dataPointIndex]);
             }
@@ -90,7 +90,7 @@ const SalesTrendsChart = () => {
         enabled: true,
         theme: theme === "dark" ? "dark" : "light",
         x: {
-          formatter: (val) => String(val),
+          formatter: (val:any) => String(val),
         },
         y: {
           formatter: (val: number) => `$${val}`,

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState,useLayoutEffect } from "react";
 import {
   ReactFlowProvider,
   useNodesState,
@@ -47,15 +47,19 @@ const getLayoutedElements = (
 
   dagre.layout(dagreGraph);
 
-  nodes.forEach((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-    node.position = {
+  const layoutedNodes = nodes.map((node) => {
+  const nodeWithPosition = dagreGraph.node(node.id);
+  return {
+    ...node,
+    position: {
       x: nodeWithPosition.x - nodeWidth / 2,
       y: nodeWithPosition.y - nodeHeight / 2,
-    };
-  });
+    },
+  };
+});
 
-  return { nodes, edges };
+return { nodes: layoutedNodes, edges };
+
 };
 
 let nodeIdCounter = 1;
@@ -65,60 +69,75 @@ function SalesFlow() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [rawData, setRawData] = useState<any[]>([]);
+  const [fitViewDone, setFitViewDone] = useState(false);
 
-  useEffect(() => {
-    const dummy = dummyData[selectedFilter];
-    convertAndSetFlowData(dummy);
-    setRawData(dummy);
-  }, [selectedFilter]);
 
-  const convertAndSetFlowData = (data: any[]) => {
-    nodeIdCounter = 1;
-    const nodes: Node[] = [];
-    const edges: Edge[] = [];
+useLayoutEffect(() => {
+  const dummy = dummyData[selectedFilter];
+  convertAndSetFlowData(dummy);
+  setRawData(dummy);
+  setFitViewDone(false); // Reset zoom flag on filter change
+}, [selectedFilter]);
 
-    const total = data.reduce(
-      (acc: number, item: any) => acc + item.original_order_total_amount,
-      0
-    );
+ const convertAndSetFlowData = (data: any[]) => {
+  nodeIdCounter = 1;
+  const localNodes: Node[] = [];
+  const localEdges: Edge[] = [];
 
-    const buildFlow = (items: any[], parentId: string | null = null) => {
-      return items.map((item: any) => {
-        const currentId = String(nodeIdCounter++);
-        const dollar = `$${item.original_order_total_amount.toLocaleString()}`;
-        const percent =
-          total > 0
-            ? `(${((item.original_order_total_amount / total) * 100).toFixed(
-                1
-              )}%)`
-            : "";
-        const label = `${item.key}\n${dollar}\n${percent}`;
+  const total = data.reduce(
+    (acc: number, item: any) => acc + item.original_order_total_amount,
+    0
+  );
 
-        nodes.push({
-          id: currentId,
-          type: "default",
-          data: { label: styledLabel(label) },
-          position: { x: 0, y: 0 },
-        });
-        if (parentId)
-          edges.push({
-            id: `e${parentId}-${currentId}`,
-            source: parentId,
-            target: currentId,
-          });
+  const buildFlow = (items: any[], parentId: string | null = null) => {
+    return items.map((item: any) => {
+      const currentId = String(nodeIdCounter++);
+      const dollar = `$${item.original_order_total_amount.toLocaleString()}`;
+      const percent =
+        total > 0
+          ? `(${((item.original_order_total_amount / total) * 100).toFixed(1)}%)`
+          : "";
+      const label = `${item.key}\n${dollar}\n${percent}`;
 
-        if (item.children && item.children.length > 0)
-          buildFlow(item.children, currentId);
-
-        return currentId;
+      localNodes.push({
+        id: currentId,
+        type: "default",
+        data: {
+          label: (
+            <div className="whitespace-pre-line text-center text-sm px-2 py-1">
+              {label}
+            </div>
+          ),
+        },
+        position: { x: 0, y: 0 },
       });
-    };
 
-    buildFlow(data);
-    const layouted = getLayoutedElements(nodes, edges);
-    setNodes(layouted.nodes);
-    setEdges(layouted.edges);
+      if (parentId) {
+        localEdges.push({
+          id: `e${parentId}-${currentId}`,
+          source: parentId,
+          target: currentId,
+        });
+      }
+
+      if (item.children && item.children.length > 0)
+        buildFlow(item.children, currentId);
+
+      return currentId;
+    });
   };
+
+  buildFlow(data);
+
+  const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+    localNodes,
+    localEdges
+  );
+
+  setNodes([...layoutedNodes]);
+  setEdges([...layoutedEdges]);
+};
+
 
   const renderVerticalTimeline = (data: any[], parentTotal = 0) => {
     return (
@@ -182,20 +201,27 @@ function SalesFlow() {
 
         {/* Desktop/Tablet View */}
         <div className="hidden sm:block w-full h-[80vh] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-lg px-6 ml-5 mr-2">
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              fitView
-              proOptions={{ hideAttribution: true }}
-              className="dark:!bg-gray-800"
-            >
-              <Background />
-              <Controls className="!top-4 !left-4 !bottom-auto" />
-            </ReactFlow>
-          </ReactFlowProvider>
+   <ReactFlowProvider>
+  {nodes.length > 0 && edges.length > 0 && (
+<ReactFlow
+  key={selectedFilter}
+  nodes={nodes}
+  edges={edges}
+  onNodesChange={onNodesChange}
+  onEdgesChange={onEdgesChange}
+  fitView={fitViewDone}
+  onInit={() => setFitViewDone(true)}
+  proOptions={{ hideAttribution: true }}
+  className="dark:!bg-gray-800"
+>
+
+
+      <Background />
+      <Controls className="!top-4 !left-4 !bottom-auto" />
+    </ReactFlow>
+  )}
+</ReactFlowProvider>
+
         </div>
 
         {/* Mobile View */}
