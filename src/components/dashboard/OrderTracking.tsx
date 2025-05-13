@@ -38,7 +38,6 @@ export default function OrderTracking(_: OrderTrackingProps) {
     "Return Received": 0,
   });
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(() => {
     return localStorage.getItem("orderTrackingVisible") !== "false";
   });
@@ -96,7 +95,8 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
   const progressPercentage =
     totalOrders > 0
-      ? ((orderCounts.Shipped + orderCounts["Return Received"]) / totalOrders) * 100
+      ? ((orderCounts.Shipped + orderCounts["Return Received"]) / totalOrders) *
+        100
       : 0;
   const series = [progressPercentage];
 
@@ -131,26 +131,12 @@ export default function OrderTracking(_: OrderTrackingProps) {
     labels: ["Progress"],
   };
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
-  function removeChart() {
-    setIsVisible(false);
-    closeDropdown();
-  }
-
   function restoreChart() {
     setIsVisible(true);
   }
 
   function handleViewMore() {
     navigate("/orders");
-    closeDropdown();
   }
 
   return (
@@ -200,21 +186,23 @@ export default function OrderTracking(_: OrderTrackingProps) {
           </div>
 
           <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
-            {[{
-              label: "Shipped",
-              count: orderCounts.Shipped,
-              color: "text-green-500",
-            }, 
-            {
-              label: "Canceled",
-              count: orderCounts.Cancelled,
-              color: "text-red-500",
-            }, 
-            {
-              label: "Returned",
-              count: orderCounts["Return Received"],
-              color: "text-yellow-500",
-            }].map((item, index) => (
+            {[
+              {
+                label: "Shipped",
+                count: orderCounts.Shipped,
+                color: "text-green-500",
+              },
+              {
+                label: "Canceled",
+                count: orderCounts.Cancelled,
+                color: "text-red-500",
+              },
+              {
+                label: "Returned",
+                count: orderCounts["Return Received"],
+                color: "text-yellow-500",
+              },
+            ].map((item, index) => (
               <div key={index} className="flex flex-col items-center">
                 <p className={`mb-1 text-xs ${item.color}`}>{item.label}</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-white/90">

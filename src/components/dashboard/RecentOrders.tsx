@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -9,11 +9,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { MoreDotIcon } from "../../icons";
 
-// Helper function to format date to match the API requirement
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -36,7 +32,6 @@ function formatUSD(amount: number): string {
   }).format(usdAmount);
 }
 
-
 interface Order {
   order_id: number;
   product_name: string;
@@ -48,7 +43,6 @@ interface Order {
 
 export default function RecentOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Access the date range from Redux store
@@ -61,34 +55,34 @@ export default function RecentOrders() {
 
   useEffect(() => {
     console.log("Fetching recent orders...");
-  
+
     const fetchRecentOrders = async () => {
       try {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
-  
+
         const params = new URLSearchParams({
           startDate: formattedStartDate,
           endDate: formattedEndDate,
         });
-  
+
         if (enterpriseKey && enterpriseKey !== "All") {
           params.append("enterpriseKey", enterpriseKey);
         }
-  
+
         const response = await fetch(
           `http://localhost:8080/api/orders/recent-orders?${params.toString()}`
         );
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-  
+
         const rawData = await response.json();
         const data: Order[] = Array.isArray(rawData)
           ? rawData
           : rawData.orders || [];
-  
+
         const processedOrders = data.map((order) => ({
           ...order,
           price:
@@ -96,31 +90,21 @@ export default function RecentOrders() {
               ? order.unit_price
               : parseFloat(order.unit_price) || 0,
         }));
-  
+
         setOrders(processedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
         setError("Failed to load orders. Please try again.");
       }
     };
-  
+
     if (startDate && endDate) {
       fetchRecentOrders();
     }
-  }, [startDate, endDate, enterpriseKey]); 
-  
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
+  }, [startDate, endDate, enterpriseKey]);
 
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
-  // Handle "View More" click
   function handleViewMore() {
-    navigate("/orders"); // Redirect to the /orders page
-    closeDropdown();
+    navigate("/orders");
   }
 
   return (
@@ -129,32 +113,6 @@ export default function RecentOrders() {
         <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
           Recent Orders
         </h3>
-        {/* 
-<div className="relative inline-block">
-  <button className="dropdown-toggle" onClick={toggleDropdown}>
-    <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
-  </button>
-  <Dropdown
-    isOpen={isOpen}
-    onClose={closeDropdown}
-    className="w-36 p-2"
-  >
-    <DropdownItem
-      onItemClick={handleViewMore}
-      className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-    >
-      View More
-    </DropdownItem>
-    <DropdownItem
-      onItemClick={closeDropdown}
-      className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-    >
-      Remove
-    </DropdownItem>
-  </Dropdown>
-</div>
-*/}
-
         <button
           onClick={handleViewMore}
           className="text-xs font-medium hover:underline"
