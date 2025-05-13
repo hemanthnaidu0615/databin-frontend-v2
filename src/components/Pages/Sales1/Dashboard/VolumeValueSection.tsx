@@ -1,25 +1,64 @@
-const volumeData = [
+type VolumeRow = {
+  productId: string;
+  category: string;
+  brand: string;
+  volume: number;
+};
+
+type ValueRow = {
+  productId: string;
+  category: string;
+  brand: string;
+  value: number;
+};
+
+type SectionData =
+  | {
+      title: 'By Volume';
+      totalKey: 'volume';
+      data: VolumeRow[];
+    }
+  | {
+      title: 'By Value';
+      totalKey: 'value';
+      data: ValueRow[];
+    };
+
+const volumeData: VolumeRow[] = [
   {
-    id: 'A512457000010000',
+    productId: 'A512457000010000',
     category: '6 String Acoustic Guitars',
     brand: 'Baldwin 5485V Window',
-    total: '36',
+    volume: 36,
   },
 ];
 
-const valueData = [
+const valueData: ValueRow[] = [
   {
-    id: 'A512457000015000',
+    productId: 'A512457000015000',
     category: '6 String Acoustic Guitars',
     brand: 'Baldwin 5485V Window',
-    total: '$374,606',
+    value: 374606,
   },
 ];
 
-const VolumeValueSection: React.FC<{ company: string }> = () => (
-  <div className="grid md:grid-cols-2 gap-4">
-    {[{ title: 'By Volume', data: volumeData }, { title: 'By Value', data: valueData }].map(
-      (section) => (
+const VolumeValueSection: React.FC<{ company: string }> = () => {
+  const sections: SectionData[] = [
+    {
+      title: 'By Volume',
+      totalKey: 'volume',
+      data: volumeData,
+    },
+    {
+      title: 'By Value',
+      totalKey: 'value',
+      data: valueData,
+    },
+  ];
+
+  return (
+    <div className="grid md:grid-cols-2 gap-4">
+      {sections.map((section) => (
         <div
           key={section.title}
           className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700"
@@ -47,19 +86,23 @@ const VolumeValueSection: React.FC<{ company: string }> = () => (
                     key={idx}
                     className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
                   >
-                    <td className="px-4 py-2 text-gray-800 dark:text-gray-200">{row.id}</td>
+                    <td className="px-4 py-2 text-gray-800 dark:text-gray-200">{row.productId}</td>
                     <td className="px-4 py-2 text-gray-800 dark:text-gray-200">{row.category}</td>
                     <td className="px-4 py-2 text-gray-800 dark:text-gray-200">{row.brand}</td>
-                    <td className="px-4 py-2 text-gray-800 dark:text-gray-200">{row.total}</td>
+                    <td className="px-4 py-2 text-gray-800 dark:text-gray-200">
+                      {'value' in row
+                        ? `$${(row as ValueRow).value.toLocaleString()}`
+                        : (row as VolumeRow).volume.toLocaleString()}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </div>
-      )
-    )}
-  </div>
-);
+      ))}
+    </div>
+  );
+};
 
 export default VolumeValueSection;
