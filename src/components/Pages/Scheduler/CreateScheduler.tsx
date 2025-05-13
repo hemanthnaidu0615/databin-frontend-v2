@@ -446,7 +446,7 @@ export const CreateScheduler = () => {
         <div className="flex justify-end">
           <Button
             label="Save Scheduler"
-            icon="pi pi-check"
+            style={{background: "#9614d0", border:"none"}}
             onClick={handleSaveScheduler}
             className="button w-auto ml-auto mr-auto bg-purple-500 border-none"
           />

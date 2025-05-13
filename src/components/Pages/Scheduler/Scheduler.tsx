@@ -17,6 +17,7 @@ const Scheduler = () => {
     label="Create Scheduler"
     icon="pi pi-calendar-plus"
     onClick={() => setActivePage("create")}
+    style={{background: "#9614d0",border:"none"}}
     className={`w-full md:w-auto px-5 py-3 rounded-lg font-semibold shadow transition-all duration-200 ${
       activePage === "create"
         ? "bg-[#8b9eff] text-black"
@@ -26,6 +27,7 @@ const Scheduler = () => {
   <Button
     label="View Scheduler"
     icon="pi pi-calendar"
+    style={{background: "#9614d0", border:"none"}}
     onClick={() => setActivePage("view")}
     className={`w-full md:w-auto px-5 py-3 rounded-lg font-semibold shadow transition-all duration-200 ${
       activePage === "view"

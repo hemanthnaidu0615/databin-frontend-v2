@@ -318,7 +318,7 @@ export const CreateSchedulerUsingQuery = () => {
             icon="pi pi-check"
             onClick={handleValidateQuery}
             className="validate-button p-button-sm bg-purple-500 border-none"
-            style={{ width: "auto", height: "30px", marginTop: "1rem" }}
+            style={{ width: "auto", height: "30px", marginTop: "1rem", background: "#9614d0",border:"none" }}
           />
         </div>
 
@@ -326,8 +326,8 @@ export const CreateSchedulerUsingQuery = () => {
         <div className="flex justify-end">
           <Button
             label="Save Scheduler"
-            icon="pi pi-check"
             onClick={handleSaveScheduler}
+            style={{background: "#9614d0", border:"none"}}
             className="button button w-auto ml-auto mr-auto bg-purple-500 border-none"
           />
         </div>
