@@ -84,6 +84,7 @@ const BottleneckChart = () => {
     },
   ];
 
+  
   useEffect(() => {
     const dark = document.documentElement.classList.contains('dark');
     setIsDark(dark);
