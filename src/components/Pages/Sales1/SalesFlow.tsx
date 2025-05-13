@@ -1,5 +1,4 @@
-
-import { useState,useLayoutEffect } from "react";
+import { useState, useLayoutEffect } from "react";
 import {
   ReactFlowProvider,
   useNodesState,
@@ -42,18 +41,17 @@ const getLayoutedElements = (
   dagre.layout(dagreGraph);
 
   const layoutedNodes = nodes.map((node) => {
-  const nodeWithPosition = dagreGraph.node(node.id);
-  return {
-    ...node,
-    position: {
-      x: nodeWithPosition.x - nodeWidth / 2,
-      y: nodeWithPosition.y - nodeHeight / 2,
-    },
-  };
-});
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - nodeWidth / 2,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      },
+    };
+  });
 
-return { nodes: layoutedNodes, edges };
-
+  return { nodes: layoutedNodes, edges };
 };
 
 let nodeIdCounter = 1;
@@ -65,73 +63,73 @@ function SalesFlow() {
   const [rawData, setRawData] = useState<any[]>([]);
   const [fitViewDone, setFitViewDone] = useState(false);
 
+  useLayoutEffect(() => {
+    const dummy = dummyData[selectedFilter];
+    convertAndSetFlowData(dummy);
+    setRawData(dummy);
+    setFitViewDone(false); // Reset zoom flag on filter change
+  }, [selectedFilter]);
 
-useLayoutEffect(() => {
-  const dummy = dummyData[selectedFilter];
-  convertAndSetFlowData(dummy);
-  setRawData(dummy);
-  setFitViewDone(false); // Reset zoom flag on filter change
-}, [selectedFilter]);
+  const convertAndSetFlowData = (data: any[]) => {
+    nodeIdCounter = 1;
+    const localNodes: Node[] = [];
+    const localEdges: Edge[] = [];
 
- const convertAndSetFlowData = (data: any[]) => {
-  nodeIdCounter = 1;
-  const localNodes: Node[] = [];
-  const localEdges: Edge[] = [];
+    const total = data.reduce(
+      (acc: number, item: any) => acc + item.original_order_total_amount,
+      0
+    );
 
-  const total = data.reduce(
-    (acc: number, item: any) => acc + item.original_order_total_amount,
-    0
-  );
+    const buildFlow = (items: any[], parentId: string | null = null) => {
+      return items.map((item: any) => {
+        const currentId = String(nodeIdCounter++);
+        const dollar = `$${item.original_order_total_amount.toLocaleString()}`;
+        const percent =
+          total > 0
+            ? `(${((item.original_order_total_amount / total) * 100).toFixed(
+                1
+              )}%)`
+            : "";
+        const label = `${item.key}\n${dollar}\n${percent}`;
 
-  const buildFlow = (items: any[], parentId: string | null = null) => {
-    return items.map((item: any) => {
-      const currentId = String(nodeIdCounter++);
-      const dollar = `$${item.original_order_total_amount.toLocaleString()}`;
-      const percent =
-        total > 0
-          ? `(${((item.original_order_total_amount / total) * 100).toFixed(1)}%)`
-          : "";
-      const label = `${item.key}\n${dollar}\n${percent}`;
-
-      localNodes.push({
-        id: currentId,
-        type: "default",
-        data: {
-          label: (
-            <div className="whitespace-pre-line text-center text-sm px-2 py-1">
-              {label}
-            </div>
-          ),
-        },
-        position: { x: 0, y: 0 },
-      });
-
-      if (parentId) {
-        localEdges.push({
-          id: `e${parentId}-${currentId}`,
-          source: parentId,
-          target: currentId,
+        localNodes.push({
+          id: currentId,
+          type: "default",
+          data: {
+            label: (
+              <div className="whitespace-pre-line text-center text-sm px-2 py-1">
+                {label}
+              </div>
+            ),
+          },
+          position: { x: 0, y: 0 },
         });
-      }
 
-      if (item.children && item.children.length > 0)
-        buildFlow(item.children, currentId);
+        if (parentId) {
+          localEdges.push({
+            id: `e${parentId}-${currentId}`,
+            source: parentId,
+            target: currentId,
+          });
+        }
 
-      return currentId;
-    });
+        if (item.children && item.children.length > 0)
+          buildFlow(item.children, currentId);
+
+        return currentId;
+      });
+    };
+
+    buildFlow(data);
+
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      localNodes,
+      localEdges
+    );
+
+    setNodes([...layoutedNodes]);
+    setEdges([...layoutedEdges]);
   };
-
-  buildFlow(data);
-
-  const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-    localNodes,
-    localEdges
-  );
-
-  setNodes([...layoutedNodes]);
-  setEdges([...layoutedEdges]);
-};
-
 
   const renderVerticalTimeline = (data: any[], parentTotal = 0) => {
     return (
@@ -147,9 +145,9 @@ useLayoutEffect(() => {
               : "";
 
           return (
-            <li key={index} className="border-l border-blue-500 pl-4 ml-2">
+            <li key={index} className="border-l border-purple-500 pl-4 ml-2">
               <div className="text-white dark:text-white">
-                <p className="font-semibold text-blue-300">{item.key}</p>
+                <p className="font-semibold text-purple-300">{item.key}</p>
                 <p className="text-sm">
                   💰 {dollar} <span className="text-green-400">{percent}</span>
                 </p>
@@ -170,21 +168,21 @@ useLayoutEffect(() => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen  text-gray-900 dark:text-white">
+    <div className="bg-white rounded-xl dark:bg-gray-900 min-h-screen w-full text-gray-900 dark:text-white p-4">
       <div className="max-w-full w-full mx-auto">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2">
-            Sales Flow (Dummy)
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+            Sales Flow
           </h1>
           <div className="flex flex-wrap gap-4">
             {filterButtons.map((btn) => (
               <button
                 key={btn.value}
                 onClick={() => setSelectedFilter(btn.value)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm shadow-md transition-all duration-150 ${
+                className={`px-4 py-2 rounded-lg font-medium text-sm shadow-md border-1 border-gray-500  transition-all duration-150 ${
                   selectedFilter === btn.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-white"
+                    ? "bg-purple-600 border-none text-white"
+                    : "bg-white-100  text-gray-900 dark:bg-purple-800 dark:text-white dark:border-none"
                 }`}
               >
                 {btn.label}
@@ -194,28 +192,25 @@ useLayoutEffect(() => {
         </div>
 
         {/* Desktop/Tablet View */}
-        <div className="hidden sm:block w-full h-[80vh] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-lg px-6 ml-5 mr-2">
-   <ReactFlowProvider>
-  {nodes.length > 0 && edges.length > 0 && (
-<ReactFlow
-  key={selectedFilter}
-  nodes={nodes}
-  edges={edges}
-  onNodesChange={onNodesChange}
-  onEdgesChange={onEdgesChange}
-  fitView={fitViewDone}
-  onInit={() => setFitViewDone(true)}
-  proOptions={{ hideAttribution: true }}
-  className="dark:!bg-gray-800"
->
-
-
-      <Background />
-      <Controls className="!top-4 !left-4 !bottom-auto" />
-    </ReactFlow>
-  )}
-</ReactFlowProvider>
-
+        <div className="hidden sm:block h-[80vh] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-lg">
+          <ReactFlowProvider>
+            {nodes.length > 0 && edges.length > 0 && (
+              <ReactFlow
+                key={selectedFilter}
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                fitView={fitViewDone}
+                onInit={() => setFitViewDone(true)}
+                proOptions={{ hideAttribution: true }}
+                className="dark:!bg-gray-800"
+              >
+                <Background />
+                <Controls className="!top-4 !left-4 !bottom-auto" />
+              </ReactFlow>
+            )}
+          </ReactFlowProvider>
         </div>
 
         {/* Mobile View */}
