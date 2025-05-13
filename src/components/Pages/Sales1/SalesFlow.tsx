@@ -22,12 +22,6 @@ const filterButtons = [
 const nodeWidth = 200;
 const nodeHeight = 150;
 
-const styledLabel = (label: string) => (
-  <div className="min-w-[100px] min-h-[100px] break-words text-base sm:text-lg text-center px-4 py-4 font-bold whitespace-pre-line leading-snug">
-    {label}
-  </div>
-);
-
 const getLayoutedElements = (
   nodes: Node[],
   edges: Edge[],
