@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 // PipelineRow Component
 const PipelineRow = ({
   stages,
   currentStage,
-  isFinal = false
+  isFinal = false,
 }: {
-  stages: { stage_name: string; orders_count: number; avg_duration_hours?: number }[];
+  stages: {
+    stage_name: string;
+    orders_count: number;
+    avg_duration_hours?: number;
+  }[];
   currentStage: number;
   isFinal?: boolean;
 }) => {
   return (
     <div
       className={`flex flex-wrap items-center ${
-        isFinal ? 'justify-center gap-x-4 gap-y-3' : 'justify-center gap-3'
+        isFinal ? "justify-center gap-x-4 gap-y-3" : "justify-center gap-3"
       } px-2 overflow-hidden max-w-screen-xl mx-auto`}
     >
       {stages.map((stage, index) => {
@@ -22,12 +26,12 @@ const PipelineRow = ({
         const isCurrent = index === currentStage;
 
         const bgColor = isFinal
-          ? 'bg-slate-400 dark:bg-slate-600'
+          ? "bg-slate-400 dark:bg-slate-600"
           : isCompleted
-          ? 'bg-purple-500 '
+          ? "bg-purple-500 "
           : isCurrent
-          ? 'bg-emerald-600'
-          : ' bg-yellow-500';
+          ? "bg-emerald-600"
+          : " bg-yellow-500";
 
         return (
           <React.Fragment key={index}>
@@ -41,7 +45,9 @@ const PipelineRow = ({
                 {stage.stage_name}
               </div>
               <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
-                {isFinal ? '–' : (stage.avg_duration_hours?.toFixed(1) ?? '–') + ' hrs'}
+                {stage.avg_duration_hours != null
+                  ? `${stage.avg_duration_hours.toFixed(1)} hrs`
+                  : "–"}
               </div>
             </div>
 
@@ -89,58 +95,43 @@ const FulfillmentPipeline = () => {
         setLoading(true);
 
         const baseParams = `startDate=${startDate}&endDate=${endDate}`;
-        const entParam = enterpriseKey ? `&enterpriseKey=${enterpriseKey}` : '';
+        const entParam = enterpriseKey ? `&enterpriseKey=${enterpriseKey}` : "";
 
-        const stagesRes = await fetch(
+        const response = await fetch(
           `http://localhost:8080/api/fulfillment/stages-pipeline?${baseParams}${entParam}`
         );
-        const finalRes = await fetch(
-          `http://localhost:8080/api/fulfillment/final-stages?${baseParams}${entParam}`
+
+        if (!response.ok) throw new Error("Failed to fetch fulfillment data.");
+
+        let data = await response.json();
+
+        const desiredPipelineStages = [
+          "Order Placed",
+          "Processing",
+          "Distribution Center",
+          "Warehouse",
+          "Store Pickup",
+          "Ship to Home",
+          "Vendor Drop Shipping",
+          "Locker Pickup",
+          "Same-Day Delivery",
+          "Curbside Pickup",
+        ];
+
+        const finalStageLabels = ["Shipped", "Cancelled", "Return Received"];
+
+        const pipelineStages = desiredPipelineStages
+          .map((label) => data.find((s: any) => s.stage_name === label))
+          .filter(Boolean);
+
+        const finalStages = data.filter((s: any) =>
+          finalStageLabels.includes(s.stage_name)
         );
 
-        if (!stagesRes.ok || !finalRes.ok) throw new Error('Failed to fetch fulfillment data.');
-
-        let stages = await stagesRes.json();
-        const finals = await finalRes.json();
-
-        const existingLabels = stages.map((s: any) => s.stage_name);
-
-        const missingIntermediateStages = [
-          { stage_name: 'Store Pickup', orders_count: 4200000, avg_duration_hours: 1.5 },
-          { stage_name: 'Ship to Home', orders_count: 4100000, avg_duration_hours: 2.2 },
-          { stage_name: 'Vendor Drop Shipping', orders_count: 4000000, avg_duration_hours: 3.1 },
-          { stage_name: 'Locker Pickup', orders_count: 3950000, avg_duration_hours: 2.8 },
-          { stage_name: 'Curbside Pickup', orders_count: 3900000, avg_duration_hours: 6.0 },
-        ];
-
-        for (const stage of missingIntermediateStages) {
-          if (!existingLabels.includes(stage.stage_name)) {
-            stages.push(stage); // append missing stages
-          }
-        }
-
-        // Sort according to correct pipeline order
-        const desiredOrder = [
-          'Order Placed',
-          'Processing',
-          'Distribution Center',
-          'Warehouse',
-          'Store Pickup',
-          'Ship to Home',
-          'Vendor Drop Shipping',
-          'Locker Pickup',
-          'Same-Day Delivery',
-          'Curbside Pickup',
-        ];
-
-        stages = desiredOrder
-          .map((label) => stages.find((s: any) => s.stage_name === label))
-          .filter(Boolean); // Remove any undefined entries
-
-        setStagesData(stages);
-        setFinalStagesData(finals);
+        setStagesData(pipelineStages);
+        setFinalStagesData(finalStages);
       } catch (err: any) {
-        setError(err.message || 'Error loading data');
+        setError(err.message || "Error loading data");
       } finally {
         setLoading(false);
       }
@@ -174,12 +165,6 @@ const FulfillmentPipeline = () => {
 };
 
 export default FulfillmentPipeline;
-
-
-
-  
-  
-  
 
 // import { Card } from 'primereact/card';
 // import { Tooltip } from 'primereact/tooltip';
@@ -245,11 +230,7 @@ export default FulfillmentPipeline;
 //   );
 // };
 
-
 // export default FulfillmentPipeline;
-
-
-
 
 // const stages = [
 //     { label: 'Order Received', count: 53, bgColor: 'bg-green-100', textColor: 'text-green-700' },
@@ -258,14 +239,14 @@ export default FulfillmentPipeline;
 //     { label: 'Packing', count: 71, bgColor: 'bg-orange-100', textColor: 'text-orange-700' },
 //     { label: 'Ready for Shipment', count: 84, bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
 //   ];
-  
+
 //   const FulfillmentPipeline = () => {
 //     return (
 //       <div className="w-full px-4 py-6">
 //         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6 text-center">
 //           Fulfillment Pipeline
 //         </h2>
-  
+
 //         <div className="flex flex-wrap justify-center gap-6">
 //           {stages.map((stage, index) => (
 //             <div key={index} className="flex items-center gap-4">
@@ -290,8 +271,5 @@ export default FulfillmentPipeline;
 //       </div>
 //     );
 //   };
-  
+
 //   export default FulfillmentPipeline;
-  
-  
-  
