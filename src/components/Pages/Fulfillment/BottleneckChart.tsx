@@ -73,7 +73,7 @@ const BottleneckChart = () => {
     },
   });
 
-  const [series, setSeries] = useState([
+  const [series, setSeries] = useState<{ name: string; data: number[] }[]>([
     {
       name: 'Avg Time (hrs)',
       data: [],
@@ -166,8 +166,31 @@ const BottleneckChart = () => {
         );
         const data = await response.json();
 
-        const categories = data.map((item: any) => item.process_stage);
-        const values = data.map((item: any) => parseFloat(item.avg_time.toFixed(2)));
+        const defaultStagesOrder = [
+          'Order Placed',
+          'Processing',
+          'Distribution Center',
+          'Warehouse',
+          'Store Pickup',
+          'Ship to Home',
+          'Vendor Drop Shipping',
+          'Locker Pickup',
+          'Same-Day Delivery',
+          'Curbside Pickup',
+        ];
+
+        const stageMap: Record<string, number> = {};
+        data.forEach((item: any) => {
+          stageMap[item.process_stage] = parseFloat(item.avg_time.toFixed(2));
+        });
+
+        const categories: string[] = [];
+        const values: number[] = [];
+
+        defaultStagesOrder.forEach((stage) => {
+          categories.push(stage);
+          values.push(stageMap[stage] ?? 0.0);
+        });
 
         setChartOptions((prev) => ({
           ...prev,

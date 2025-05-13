@@ -1,5 +1,5 @@
 import { TabView, TabPanel } from "primereact/tabview";
-import KPISection from "./KPISection";
+// import KPISection from "./KPISection";
 import SalesTrendsChart from "./SalesTrendsChart";
 import TopProductsTable from "./TopProductsTable";
 import TopCustomersTable from "./TopCustomersTable";
@@ -12,7 +12,7 @@ const SalesAnalysis = () => {
         <h1 className="text-2xl font-bold mb-6">Sales Analysis</h1>
 
         {/* ❌ No need to pass kpis — it’s internal to KPISection now */}
-        <KPISection />
+        {/* <KPISection /> */}
 
         <TabView
           className="mt-4"
