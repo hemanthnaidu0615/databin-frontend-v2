@@ -92,10 +92,21 @@ const RecentShipmentsTable: React.FC<Props> = ({
     }
   };
 
-  const showDetails = (shipment: any) => {
-    setSelectedShipment(shipment);
-    setVisible(true);
+  const showDetails = async (shipment: any) => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/recent-shipments/details?shipmentId=${shipment.shipment_id}`
+      );
+      const detailedData = await response.json();
+      setSelectedShipment(detailedData);
+      setVisible(true);
+    } catch (error) {
+      console.error("Error fetching shipment details:", error);
+      setSelectedShipment(null);
+      setVisible(true); // still open dialog to show an error or fallback
+    }
   };
+  
 
   const formatDate = (isoDate: string) => {
     return isoDate?.split("T")[0] || "";
@@ -105,10 +116,10 @@ const RecentShipmentsTable: React.FC<Props> = ({
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
         <div>
-          <strong>Shipment ID:</strong> {shipment.shipment_id}
+          <strong>Order ID:</strong> {shipment.order_id}
         </div>
         <div>
-          <strong>Customer:</strong> {shipment.customer_name}
+          <strong>Customer:</strong> {shipment.customer}
         </div>
         <div>
           <strong>Carrier:</strong> {shipment.carrier}
@@ -119,16 +130,29 @@ const RecentShipmentsTable: React.FC<Props> = ({
         <div>
           <strong>Status:</strong>{" "}
           <Tag
-            value={shipment.shipment_status}
-            severity={getStatusSeverity(shipment.shipment_status)}
+            value={shipment.status}
+            severity={getStatusSeverity(shipment.status)}
           />
         </div>
         <div>
-          <strong>Ship Date:</strong> {formatDate(shipment.actual_shipment_date)}
+          <strong>Ship Date:</strong> {formatDate(shipment.ship_date)}
+        </div>
+        <div>
+          <strong>Estimated Delivery:</strong> {formatDate(shipment.estimated_delivery)}
+        </div>
+        <div>
+          <strong>Origin:</strong> {shipment.origin}
+        </div>
+        <div>
+          <strong>Destination:</strong> {shipment.destination}
+        </div>
+        <div>
+          <strong>Cost:</strong> ${shipment.cost?.toFixed(2)}
         </div>
       </div>
     );
   };
+  
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">

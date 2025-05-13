@@ -16,18 +16,6 @@ interface Order {
   eta: string;
 }
 
-interface FulfillmentEvent {
-  id: number;
-  event_type: string;
-  event_description: string;
-  event_time: string;
-  fulfilment_channel: string;
-  fulfillment_city: string;
-  fulfillment_state: string;
-  fulfillment_country: string;
-  handler_name: string;
-}
-
 const mapEventToStatus = (event: string): string => {
   switch (event) {
     case "Order Placed":
@@ -58,7 +46,6 @@ const OrdersInProcess = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [visible, setVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [fulfillmentEvents, setFulfillmentEvents] = useState<FulfillmentEvent[]>([]);
   const [page] = useState(1);
   const [rows] = useState(5);
 
@@ -71,23 +58,44 @@ const OrdersInProcess = () => {
       .toString()
       .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
+  // This function formats the ETA to display only the date in YYYY-MM-DD format
   const formatETA = (eta: string) => {
-    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") return eta;
+    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") {
+      return eta;
+    }
+
+    // Create a new Date object from the ISO string
     const date = new Date(eta);
-    if (isNaN(date.getTime())) return eta;
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return eta; // If invalid, return the original eta string
+    }
+
+    // Format to "YYYY-MM-DD"
     return date.toISOString().slice(0, 10);
   };
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (!startDate || !endDate) return;
+
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
-      const params = new URLSearchParams({ startDate: formattedStart, endDate: formattedEnd });
-      if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
+
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      if (enterpriseKey) {
+        params.append("enterpriseKey", enterpriseKey);
+      }
 
       try {
-        const res = await fetch(`http://localhost:8080/api/fulfillment/orders-in-process?${params.toString()}`);
+        const res = await fetch(
+          `http://localhost:8080/api/fulfillment/orders-in-process?${params.toString()}`
+        );
         const json = await res.json();
         setOrders(json.data || []);
       } catch (err) {
@@ -98,34 +106,15 @@ const OrdersInProcess = () => {
     fetchOrders();
   }, [startDate, endDate, enterpriseKey]);
 
-  const handleViewClick = async (order: Order) => {
-    setSelectedOrder(order);
-    setVisible(true);
-
-    try {
-      const res = await fetch(`http://localhost:8080/api/fulfillment/events/${order.order_id}`);
-      const json = await res.json();
-      setFulfillmentEvents(json.data || []);
-    } catch (err) {
-      console.error("Failed to fetch fulfillment events:", err);
-      setFulfillmentEvents([]);
-    }
-  };
-
-  const filteredOrders = orders.filter(
-    (order) =>
-      globalFilter === "" ||
-      order.order_id.toString().includes(globalFilter.toLowerCase()) ||
-      order.event.toLowerCase().includes(globalFilter.toLowerCase())
-  );
-
   const header = (
     <div className="flex justify-between items-center gap-2 flex-wrap">
       <h2 className="text-sm md:text-lg font-semibold">Orders in Process</h2>
       <span className="p-input-icon-left w-full md:w-auto">
         <InputText
           type="search"
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
+          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setGlobalFilter(e.target.value)
+          }
           placeholder="Search Orders"
           className="p-inputtext-sm w-full"
           style={{ paddingLeft: "2rem" }}
@@ -134,8 +123,22 @@ const OrdersInProcess = () => {
     </div>
   );
 
+  const filteredOrders = orders.filter(
+    (order) =>
+      globalFilter === "" ||
+      order.order_id.toString().includes(globalFilter.toLowerCase()) ||
+      order.event.toLowerCase().includes(globalFilter.toLowerCase())
+  );
+
+  // const statusTemplate = (rowData: Order) => <Tag value={rowData.status} />;
   const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
   const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
+
+  const handleViewClick = (order: Order) => {
+    setSelectedOrder(order);
+    setVisible(true);
+  };
+
   const actionTemplate = (rowData: Order) => (
     <Button
       label="View"
@@ -145,10 +148,12 @@ const OrdersInProcess = () => {
     />
   );
 
+
+
   return (
     <div className="mt-6">
       <div className="border rounded-xl shadow-sm p-4 overflow-x-auto bg-white dark:bg-gray-900">
-        {/* Desktop Table */}
+        {/* Desktop View */}
         <div className="hidden sm:block">
           <DataTable
             value={filteredOrders}
@@ -167,31 +172,37 @@ const OrdersInProcess = () => {
           >
             <Column field="order_id" header="Order ID" sortable />
             <Column header="Status" body={eventTemplate} sortable />
+            {/* <Column header="Event" body={eventTemplate} sortable /> */}
             <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
           </DataTable>
         </div>
 
-        {/* Mobile Cards */}
+        {/* Mobile View */}
         <div className="sm:hidden">
-          {filteredOrders.slice((page - 1) * rows, page * rows).map((order) => (
-            <div key={order.order_id} className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
-                <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+          {filteredOrders
+            .slice((page - 1) * rows, page * rows)
+            .map((order) => (
+              <div
+                key={order.order_id}
+                className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
+                  <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+                </div>
+                <p className="text-xs mt-1">Event: {order.event}</p>
+                <p className="text-xs">ETA: {formatETA(order.eta)}</p>
+                <div className="mt-2">
+                  <Button
+                    label="View"
+                    icon="pi pi-eye"
+                    className="p-button-sm p-button-text"
+                    onClick={() => handleViewClick(order)}
+                  />
+                </div>
               </div>
-              <p className="text-xs mt-1">Event: {order.event}</p>
-              <p className="text-xs">ETA: {formatETA(order.eta)}</p>
-              <div className="mt-2">
-                <Button
-                  label="View"
-                  icon="pi pi-eye"
-                  className="p-button-sm p-button-text"
-                  onClick={() => handleViewClick(order)}
-                />
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
 
@@ -214,31 +225,6 @@ const OrdersInProcess = () => {
               <div><strong>Status:</strong> {mapEventToStatus(selectedOrder.event)}</div>
               <div><strong>ETA:</strong> {formatETA(selectedOrder.eta)}</div>
               <div><strong>Event:</strong> {selectedOrder.event}</div>
-
-              {fulfillmentEvents.length > 0 ? (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">Fulfillment Timeline</h4>
-                  <ul className="space-y-3">
-                    {fulfillmentEvents.map((evt) => (
-                      <li key={evt.id} className="p-3 border rounded-md bg-gray-100 dark:bg-gray-800">
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium">{evt.event_type}</span>
-                          <span className="text-xs text-gray-500">{new Date(evt.event_time).toLocaleString()}</span>
-                        </div>
-                        <p className="text-sm mt-1">{evt.event_description}</p>
-                        <div className="text-xs text-gray-600 mt-1">
-                          {evt.fulfillment_city}, {evt.fulfillment_state}, {evt.fulfillment_country}
-                        </div>
-                        <div className="text-xs text-blue-500 mt-1">
-                          Channel: {evt.fulfilment_channel} | Handler: {evt.handler_name}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">No fulfillment events found.</p>
-              )}
             </>
           ) : (
             <p>No order selected.</p>
