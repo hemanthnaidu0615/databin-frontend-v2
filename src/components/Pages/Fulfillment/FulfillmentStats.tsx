@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import { useSelector } from "react-redux";
-import 'primeicons/primeicons.css';
+import "primeicons/primeicons.css";
 
 const formatDate = (date: string | Date) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")}`;
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
 const FulfillmentStats = () => {
@@ -17,116 +16,99 @@ const FulfillmentStats = () => {
 
   const [stats, setStats] = useState([
     {
-      title: 'Orders in Pipeline',
+      title: "Orders in Pipeline",
       value: 0,
       icon: PrimeIcons.INBOX,
-      accent: 'border-purple-500',
-      iconColor: 'text-purple-500',
-      glowColor: '#8b5cf6',
+      accent: "border-purple-500",
+      iconColor: "text-purple-500",
+      glowColor: "#8b5cf6",
     },
     {
-      title: 'Avg Fulfillment Time',
-      value: '-',
+      title: "Avg Fulfillment Time",
+      value: "-",
       icon: PrimeIcons.CLOCK,
-      accent: 'border-green-500',
-      iconColor: 'text-green-500',
-      glowColor: '#00c853',
+      accent: "border-green-500",
+      iconColor: "text-green-500",
+      glowColor: "#00c853",
     },
     {
-      title: 'On-Time Rate',
-      value: '-', // Placeholder
+      title: "On-Time Rate",
+      value: "-",
       icon: PrimeIcons.CHECK_CIRCLE,
-      accent: 'border-yellow-500',
-      iconColor: 'text-yellow-500',
-      glowColor: '#ffc400',
-    },
-    {
-      title: 'Awaiting Processing',
-      value: 0,
-      icon: PrimeIcons.EXCLAMATION_CIRCLE,
-      accent: 'border-red-500',
-      iconColor: 'text-red-500',
-      glowColor: '#ff3d00',
+      accent: "border-yellow-500",
+      iconColor: "text-yellow-500",
+      glowColor: "#ffc400",
     },
   ]);
 
   useEffect(() => {
     const [startDate, endDate] = dateRange;
     if (!startDate || !endDate) return;
-  
+
     const fetchStats = async () => {
       try {
         const formattedStart = formatDate(startDate);
         const formattedEnd = formatDate(endDate);
-  
+
         const params = new URLSearchParams({
           startDate: formattedStart,
           endDate: formattedEnd,
         });
-  
+
         if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
-  
+
         const response = await fetch(
           `http://localhost:8080/api/fulfillment/kpi?${params.toString()}`
         );
         const data = await response.json();
-  
+
         setStats([
           {
-            title: 'Orders in Pipeline',
+            title: "Orders in Pipeline",
             value: data.orders_in_pipeline ?? 0,
             icon: PrimeIcons.INBOX,
-            accent: 'border-purple-500',
-            iconColor: 'text-purple-500',
-            glowColor: '#8b5cf6',
+            accent: "border-purple-500",
+            iconColor: "text-purple-500",
+            glowColor: "#8b5cf6",
           },
           {
-            title: 'Avg Fulfillment Time',
-            value: data.avg_fulfillment_time ?? '-',
+            title: "Avg Fulfillment Time",
+            value: data.avg_fulfillment_time ?? "-",
             icon: PrimeIcons.CLOCK,
-            accent: 'border-green-500',
-            iconColor: 'text-green-500',
-            glowColor: '#00c853',
+            accent: "border-green-500",
+            iconColor: "text-green-500",
+            glowColor: "#00c853",
           },
           {
-            title: 'On-Time Rate',
-            value: data.on_time_rate ?? '-',
+            title: "On-Time Rate",
+            value: data.on_time_rate ?? "-",
             icon: PrimeIcons.CHECK_CIRCLE,
-            accent: 'border-yellow-500',
-            iconColor: 'text-yellow-500',
-            glowColor: '#ffc400',
-          },
-          {
-            title: 'Awaiting Processing',
-            value: data.awaiting_processing ?? 0,
-            icon: PrimeIcons.EXCLAMATION_CIRCLE,
-            accent: 'border-red-500',
-            iconColor: 'text-red-500',
-            glowColor: '#ff3d00',
+            accent: "border-yellow-500",
+            iconColor: "text-yellow-500",
+            glowColor: "#ffc400",
           },
         ]);
       } catch (error) {
         console.error("Failed to fetch fulfillment stats:", error);
       }
     };
-  
+
     fetchStats();
   }, [dateRange, enterpriseKey]);
-  
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full mb-6">
       {stats.map((stat, index) => (
         <div
           key={index}
           className={`group relative flex flex-col justify-center gap-3 px-5 py-4 rounded-xl
-            bg-white dark:bg-white/10 text-gray-900 dark:text-white
-            shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-[1.015]
-            border-l-4 ${stat.accent}`}
+          bg-white dark:bg-white/10 text-gray-900 dark:text-white
+          shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-[1.015]
+          border-l-4 ${stat.accent}`}
         >
-          {/* Border glow effect on hover */}
+          {/* Glow effect */}
           <div
             className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
             style={{
