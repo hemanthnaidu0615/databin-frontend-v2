@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import { useSelector } from "react-redux";
 import "primeicons/primeicons.css";

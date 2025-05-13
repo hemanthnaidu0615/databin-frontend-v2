@@ -46,8 +46,8 @@ const OrdersInProcess = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [visible, setVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [page, setPage] = useState(1);
-  const [rows, setRows] = useState(5);
+  const [page] = useState(1);
+  const [rows] = useState(5);
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);

@@ -29,7 +29,7 @@ const ShipmentPerformance: React.FC<{
   size?: "small" | "full";
   onRemove?: () => void;
   onViewMore?: () => void;
-}> = ({ size = "full", onRemove, onViewMore }) => {
+}> = ({ size = "full"}) => {
   const [data, setData] = useState<{
     carriers: string[];
     standard: number[];
@@ -145,7 +145,6 @@ const ShipmentPerformance: React.FC<{
 
   const handleViewMore = () => navigate("/shipment");
   const restoreChart = () => setIsVisible(true);
-  const removeChart = () => setIsVisible(false);
 
   return (
     <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">

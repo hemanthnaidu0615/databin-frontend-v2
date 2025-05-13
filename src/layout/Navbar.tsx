@@ -18,7 +18,6 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
 const Navbar: React.FC = () => {
-  const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [enterpriseKey, setEnterpriseKey] = useState("All");
   const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
   const calendarRef = useRef<any>(null);
@@ -75,9 +74,6 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const toggleApplicationMenu = () => {
-    setApplicationMenuOpen(!isApplicationMenuOpen);
-  };
 
   const handleDateChange = (e: any) => {
     const newDates = e.value;

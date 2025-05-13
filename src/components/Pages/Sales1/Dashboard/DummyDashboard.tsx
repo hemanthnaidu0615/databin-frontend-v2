@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TopSummaryPanel from './TopSummaryPanel';
 import CompanySection from './CompanySection';
 

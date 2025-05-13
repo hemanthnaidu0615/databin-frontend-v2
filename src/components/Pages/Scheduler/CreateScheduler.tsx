@@ -4,7 +4,6 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { MultiSelect } from "primereact/multiselect";
 import { useEffect, useState, useRef } from "react";
-import { useSelector } from "react-redux";
 import { authFetch } from "../../../axios";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
@@ -27,7 +26,6 @@ export const CreateScheduler = () => {
   const [tables, setTables] = useState<{ label: string; value: string }[]>([]);
   const [data, setData] = useState<any[]>([]);
   const toast = useRef<Toast>(null);
-  const { dates } = useSelector((store: any) => store.dateRange);
 
   const [schedulerData, setSchedulerData] = useState<SchedulerData>({
     title: "",
@@ -68,7 +66,7 @@ export const CreateScheduler = () => {
         header: formatHeaderKey(col),
       }));
       setData([
-        Object.fromEntries(columnOptions.map((col) => [col.field, ""])),
+        Object.fromEntries(columnOptions.map((col:any) => [col.field, ""])),
       ]);
     } catch (error) {
       console.error("Error fetching columns:", error);
