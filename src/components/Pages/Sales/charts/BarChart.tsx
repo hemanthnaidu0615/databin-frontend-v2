@@ -1,6 +1,5 @@
 import { CategoryScale, Chart, registerables } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { useEffect } from "react";
 
 Chart.register(...registerables);
 Chart.register(CategoryScale);
