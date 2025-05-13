@@ -3,10 +3,10 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { useState, useRef } from "react";
-import {authFetch} from "../../../axios";
+import { axiosInstance } from "../../../axios"; // Adjust path as needed
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
-import { InputTextarea } from 'primereact/inputtextarea';
+import { InputTextarea } from "primereact/inputtextarea";
 
 interface SchedulerData {
   schedulerStartDate: Date | null;
@@ -26,7 +26,7 @@ export const CreateSchedulerUsingQuery = () => {
     title: "",
     description: "",
     bcc: [],
-    schedulerStartDate: null, 
+    schedulerStartDate: null,
     schedulerEndDate: null,
     recurrencePattern: "",
     email: [],
@@ -46,13 +46,21 @@ export const CreateSchedulerUsingQuery = () => {
         query,
       } = schedulerData;
 
-      // Convert the selected time to UTC before sending it to the backend
-      const formattedSchedulerStartDate = moment(schedulerData.schedulerStartDate).utc().format("YYYY-MM-DD HH:mm:ss");
-      const formattedSchedulerEndDate = schedulerEndDate
-              ? moment.utc(schedulerEndDate).format("YYYY-MM-DD HH:mm:ss")
-              : null;
+      const formattedStartDate = moment(schedulerStartDate).format(
+        "YYYY-MM-DDTHH:mm:ss"
+      );
+      const formattedEndDate = schedulerEndDate
+        ? moment(schedulerEndDate).format("YYYY-MM-DDTHH:mm:ss")
+        : null;
 
-      if (!title || !schedulerStartDate || !schedulerEndDate || !recurrencePattern || !email || !query) {
+      if (
+        !title ||
+        !schedulerStartDate ||
+        !schedulerEndDate ||
+        !recurrencePattern ||
+        email.length === 0 ||
+        !query
+      ) {
         toast.current?.show({
           severity: "error",
           summary: "Error",
@@ -65,44 +73,31 @@ export const CreateSchedulerUsingQuery = () => {
       const payload = {
         title,
         description,
-        bcc,
-        email: email,
+        bcc: bcc.join(","),
+        email: email.join(","),
         recurrencePattern,
-        schedulerStartDate: formattedSchedulerStartDate,
-        schedulerEndDate: formattedSchedulerEndDate,
-        query,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        customQuery: query,
       };
 
-      try {
-        const response = await authFetch("/tables/schedule-task-v2", {
-          method: "POST",
-          data: payload,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-      
-        if (response.status !== 200) {
-          throw new Error(`HTTP error! Status: ${response.status}, Message: ${response.statusText}`);
-        }
-      
-        toast.current?.show({
-          severity: "success",
-          summary: "Success",
-          detail: "Scheduler saved successfully!",
-          life: 3000,
-        });
-      
-      } catch (error: any) {  // Type the error as 'any' (or more specific type if needed)
-        console.error("Error saving scheduler data:", error);
-        toast.current?.show({
-          severity: "error",
-          summary: "Error",
-          detail: error?.message || "An error occurred.",  // Use optional chaining in case 'error' is not an object with a 'message' property
-          life: 3000,
-        });
+      const response = await axiosInstance.post(
+        "/schedulers/create-query-scheduler",
+        payload
+      );
+
+      if (response.status !== 200) {
+        throw new Error(
+          `HTTP error! Status: ${response.status}, Message: ${response.statusText}`
+        );
       }
-      
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Scheduler saved successfully!",
+        life: 3000,
+      });
 
       setSchedulerData({
         title: "",
@@ -114,24 +109,23 @@ export const CreateSchedulerUsingQuery = () => {
         email: [],
         query: "",
       });
-
+    } catch (error: any) {
+      console.error("Error saving scheduler data:", error);
       toast.current?.show({
-        severity: "success",
-        summary: "Success",
-        detail: "Scheduler saved successfully!",
+        severity: "error",
+        summary: "Error",
+        detail: error?.message || "An error occurred.",
         life: 3000,
       });
-    } catch (error) {
-      console.error("Error saving scheduler data:", error);
     }
   };
 
   const handleValidateQuery = async () => {
     try {
-      const response = await authFetch.post("/tables/validate-query", {
+      const response = await axiosInstance.post("/tables/validate-query", {
         query: schedulerData.query,
       });
-  
+
       if (response.data.message === "Query is valid") {
         toast.current?.show({
           severity: "success",
@@ -156,13 +150,11 @@ export const CreateSchedulerUsingQuery = () => {
       });
     }
   };
-  
-
 
   return (
     <div className="create-scheduler-page">
       <Toast ref={toast} className="custom-toast" />
-      <h1 style={{fontSize:'1.5rem'}}>Create Scheduler with Query</h1>
+      <h1 style={{ fontSize: "1.5rem" }}>Create Scheduler with Query</h1>
 
       <div className="p-fluid">
         {/* Title Field */}
@@ -174,7 +166,9 @@ export const CreateSchedulerUsingQuery = () => {
             id="title"
             value={schedulerData.title}
             placeholder="Enter scheduler title"
-            onChange={(e) => setSchedulerData({ ...schedulerData, title: e.target.value })}
+            onChange={(e) =>
+              setSchedulerData({ ...schedulerData, title: e.target.value })
+            }
           />
         </div>
 
@@ -187,12 +181,21 @@ export const CreateSchedulerUsingQuery = () => {
             id="description"
             value={schedulerData.description}
             placeholder="Enter description"
-            onChange={(e) => setSchedulerData({ ...schedulerData, description: e.target.value })}
+            onChange={(e) =>
+              setSchedulerData({
+                ...schedulerData,
+                description: e.target.value,
+              })
+            }
           />
         </div>
 
+        {/* Start Date */}
         <div className="p-field">
-          <label className="text-base font-semibold" htmlFor="schedulerStartDate">
+          <label
+            className="text-base font-semibold"
+            htmlFor="schedulerStartDate"
+          >
             Scheduler Start Date<span className="text-red-500">*</span>
           </label>
           <Calendar
@@ -201,25 +204,34 @@ export const CreateSchedulerUsingQuery = () => {
             minDate={new Date()}
             placeholder="Select scheduler start date"
             onChange={(e) =>
-              setSchedulerData({ ...schedulerData, schedulerStartDate: e.value || null })
+              setSchedulerData({
+                ...schedulerData,
+                schedulerStartDate: e.value || null,
+              })
             }
             showTime
           />
         </div>
 
+        {/* End Date */}
         <div className="p-field">
-  <label className="text-base font-semibold" htmlFor="schedulerEndDate">
-    Scheduler End Date<span className="text-red-500">*</span>
-  </label>
-  <Calendar
-    id="schedulerEndDate"
-    value={schedulerData.schedulerEndDate}
-    minDate={schedulerData.schedulerStartDate || new Date()} // End date can't be before start date
-    placeholder="Select scheduler end date"
-    onChange={(e) => setSchedulerData({ ...schedulerData, schedulerEndDate: e.value || null })}
-    showTime
-  />
-</div>
+          <label className="text-base font-semibold" htmlFor="schedulerEndDate">
+            Scheduler End Date<span className="text-red-500">*</span>
+          </label>
+          <Calendar
+            id="schedulerEndDate"
+            value={schedulerData.schedulerEndDate}
+            minDate={schedulerData.schedulerStartDate || new Date()}
+            placeholder="Select scheduler end date"
+            onChange={(e) =>
+              setSchedulerData({
+                ...schedulerData,
+                schedulerEndDate: e.value || null,
+              })
+            }
+            showTime
+          />
+        </div>
 
         {/* Email Field */}
         <div className="p-field">
@@ -228,10 +240,12 @@ export const CreateSchedulerUsingQuery = () => {
           </label>
           <InputText
             id="emailAddress"
-            value={schedulerData.email.join(",")} // join array to display as string
+            value={schedulerData.email.join(",")}
             placeholder="Enter Email Addresses separated by commas"
             onChange={(e) => {
-              const emailsArray = e.target.value.split(',').map(email => email.trim());
+              const emailsArray = e.target.value
+                .split(",")
+                .map((email) => email.trim());
               setSchedulerData({ ...schedulerData, email: emailsArray });
             }}
           />
@@ -244,61 +258,45 @@ export const CreateSchedulerUsingQuery = () => {
           </label>
           <InputText
             id="bcc"
-            value={schedulerData.bcc.join(",")}  // same handling as email
+            value={schedulerData.bcc.join(",")}
             placeholder="Enter BCC Email Addresses separated by commas"
             onChange={(e) => {
-              const bccArray = e.target.value.split(',').map(bcc => bcc.trim());
+              const bccArray = e.target.value
+                .split(",")
+                .map((bcc) => bcc.trim());
               setSchedulerData({ ...schedulerData, bcc: bccArray });
             }}
           />
         </div>
 
-        {/* Recurrence Pattern Field */}
-<div className="p-field">
-  <label className="text-base font-semibold" htmlFor="recurrencePattern">
-    Email Recurrence Pattern<span className="text-red-500">*</span>
-  </label>
-  <Dropdown
-    id="recurrencePattern"
-    value={schedulerData.recurrencePattern}
-    placeholder="Select recurrence pattern"
-    options={[
-      { label: "Get emails Daily", value: "daily" },
-      { label: "Get emails Weekly", value: "weekly" },
-      { label: "Get emails Monthly", value: "monthly" },
-    ]}
-    onChange={(e) => setSchedulerData({
-      ...schedulerData,
-      recurrencePattern: e.value,
-    })}
-  />
-</div>
-
-
-        {/* Query Field */}
-        {/* <div className="p-field">
-          <label className="text-base font-semibold" htmlFor="query">
-            Query<span className="text-red-500">*</span>
+        {/* Recurrence Pattern */}
+        <div className="p-field">
+          <label
+            className="text-base font-semibold"
+            htmlFor="recurrencePattern"
+          >
+            Email Recurrence Pattern<span className="text-red-500">*</span>
           </label>
-          <InputTextarea
-            id="query"
-            value={schedulerData.query}
-            placeholder="Enter SQL query"
-            rows={5} 
-            onChange={(e) => setSchedulerData({ ...schedulerData, query: e.target.value })}
+          <Dropdown
+            id="recurrencePattern"
+            value={schedulerData.recurrencePattern}
+            placeholder="Select recurrence pattern"
+            options={[
+              { label: "Get emails Daily", value: "daily" },
+              { label: "Get emails Weekly", value: "weekly" },
+              { label: "Get emails Monthly", value: "monthly" },
+            ]}
+            onChange={(e) =>
+              setSchedulerData({
+                ...schedulerData,
+                recurrencePattern: e.value,
+              })
+            }
           />
         </div>
 
-        <div className="flex justify-start">
-          <Button
-            label="Validate SQL Query"
-            icon="pi pi-check"
-            onClick={handleValidateQuery}
-            className="button bg-purple-500 border-none"
-          />
-        </div> */}
-
-<div className="p-field">
+        {/* SQL Query */}
+        <div className="p-field">
           <label className="text-base font-semibold" htmlFor="query">
             Query<span className="text-red-500">*</span>
           </label>
@@ -307,22 +305,24 @@ export const CreateSchedulerUsingQuery = () => {
             value={schedulerData.query}
             placeholder="Enter SQL query"
             rows={5}
-            onChange={(e) => setSchedulerData({ ...schedulerData, query: e.target.value })}
+            onChange={(e) =>
+              setSchedulerData({ ...schedulerData, query: e.target.value })
+            }
           />
         </div>
 
-        {/* Validate Query Button positioned to the right */}
+        {/* Validate Query Button */}
         <div className="flex justify-end mb-3">
           <Button
             label="Validate"
             icon="pi pi-check"
             onClick={handleValidateQuery}
-            className="validate-button p-button-sm bg-purple-500 border-none" // Small button style
-            style={{ width: 'auto', height: '30px', marginTop:'1rem' }} // Custom size
+            className="validate-button p-button-sm bg-purple-500 border-none"
+            style={{ width: "auto", height: "30px", marginTop: "1rem" }}
           />
         </div>
 
-        {/* Save Button */}
+        {/* Save Scheduler Button */}
         <div className="flex justify-end">
           <Button
             label="Save Scheduler"
@@ -335,6 +335,5 @@ export const CreateSchedulerUsingQuery = () => {
     </div>
   );
 };
-
 
 export default CreateSchedulerUsingQuery;
