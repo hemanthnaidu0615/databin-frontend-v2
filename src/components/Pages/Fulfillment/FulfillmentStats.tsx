@@ -39,6 +39,14 @@ const FulfillmentStats = () => {
       iconColor: "text-yellow-500",
       glowColor: "#ffc400",
     },
+    {
+      title: "Top Channel",
+      value: "-",
+      icon: PrimeIcons.SEND,
+      accent: "border-blue-500",
+      iconColor: "text-blue-500",
+      glowColor: "#3b82f6",
+    },
   ]);
 
   useEffect(() => {
@@ -89,6 +97,14 @@ const FulfillmentStats = () => {
             iconColor: "text-yellow-500",
             glowColor: "#ffc400",
           },
+          {
+            title: "Top Channel",
+            value: data.top_channel ?? "-",
+            icon: PrimeIcons.SEND,
+            accent: "border-blue-500",
+            iconColor: "text-blue-500",
+            glowColor: "#3b82f6",
+          },
         ]);
       } catch (error) {
         console.error("Failed to fetch fulfillment stats:", error);
@@ -99,7 +115,7 @@ const FulfillmentStats = () => {
   }, [dateRange, enterpriseKey]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full mb-6">
       {stats.map((stat, index) => (
         <div
           key={index}
