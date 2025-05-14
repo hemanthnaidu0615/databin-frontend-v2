@@ -122,11 +122,11 @@ export const CreateSchedulerUsingQuery = () => {
 
   const handleValidateQuery = async () => {
     try {
-      const response = await axiosInstance.post("/tables/validate-query", {
+      const response = await axiosInstance.post("/schedulers/validate-query", {
         query: schedulerData.query,
       });
 
-      if (response.data.message === "Query is valid") {
+      if (response.data === "Query is valid") {
         toast.current?.show({
           severity: "success",
           summary: "Success",
@@ -318,7 +318,13 @@ export const CreateSchedulerUsingQuery = () => {
             icon="pi pi-check"
             onClick={handleValidateQuery}
             className="validate-button p-button-sm bg-purple-500 border-none"
-            style={{ width: "auto", height: "30px", marginTop: "1rem", background: "#9614d0",border:"none" }}
+            style={{
+              width: "auto",
+              height: "30px",
+              marginTop: "1rem",
+              background: "#9614d0",
+              border: "none",
+            }}
           />
         </div>
 
@@ -327,7 +333,7 @@ export const CreateSchedulerUsingQuery = () => {
           <Button
             label="Save Scheduler"
             onClick={handleSaveScheduler}
-            style={{background: "#9614d0", border:"none"}}
+            style={{ background: "#9614d0", border: "none" }}
             className="button button w-auto ml-auto mr-auto bg-purple-500 border-none"
           />
         </div>
