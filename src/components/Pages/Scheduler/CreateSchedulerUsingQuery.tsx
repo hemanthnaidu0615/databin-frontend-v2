@@ -122,11 +122,11 @@ export const CreateSchedulerUsingQuery = () => {
 
   const handleValidateQuery = async () => {
     try {
-      const response = await axiosInstance.post("/tables/validate-query", {
+      const response = await axiosInstance.post("/schedulers/validate-query", {
         query: schedulerData.query,
       });
 
-      if (response.data.message === "Query is valid") {
+      if (response.data === "Query is valid") {
         toast.current?.show({
           severity: "success",
           summary: "Success",
@@ -300,6 +300,13 @@ export const CreateSchedulerUsingQuery = () => {
           <label className="text-base font-semibold" htmlFor="query">
             Query<span className="text-red-500">*</span>
           </label>
+          <small className="block mt-2 text-sm text-gray-500">
+            Example:{" "}
+            <code>
+              SELECT * FROM orders WHERE order_date BETWEEN '2025-04-05
+              00:00:00' AND '2025-04-15 23:59:59';
+            </code>
+          </small>
           <InputTextarea
             id="query"
             value={schedulerData.query}
@@ -318,7 +325,13 @@ export const CreateSchedulerUsingQuery = () => {
             icon="pi pi-check"
             onClick={handleValidateQuery}
             className="validate-button p-button-sm bg-purple-500 border-none"
-            style={{ width: "auto", height: "30px", marginTop: "1rem", background: "#9614d0",border:"none" }}
+            style={{
+              width: "auto",
+              height: "30px",
+              marginTop: "1rem",
+              background: "#9614d0",
+              border: "none",
+            }}
           />
         </div>
 
@@ -327,7 +340,7 @@ export const CreateSchedulerUsingQuery = () => {
           <Button
             label="Save Scheduler"
             onClick={handleSaveScheduler}
-            style={{background: "#9614d0", border:"none"}}
+            style={{ background: "#9614d0", border: "none" }}
             className="button button w-auto ml-auto mr-auto bg-purple-500 border-none"
           />
         </div>
