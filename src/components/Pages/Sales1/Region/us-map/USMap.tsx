@@ -74,7 +74,7 @@ const USMap = () => {
         });
         if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
 
-        const [mapRes, metricRes] = await Promise.all([
+        const [mapRes] = await Promise.all([
           fetch(`http://localhost:8080/api/sales/map-metrics?${params.toString()}`),
           fetch(`http://localhost:8080/api/sales/metrics?${params.toString()}`),
         ]);
