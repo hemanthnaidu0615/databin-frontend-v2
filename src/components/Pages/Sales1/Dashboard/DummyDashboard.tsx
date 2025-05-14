@@ -1,34 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TopSummaryPanel from './TopSummaryPanel';
-import CompanySection from './CompanySection';
-import KPISection from './KPISection';
+import CompanySection from './Enterprice';
+import KPISection from './KPISection'; // ✅ Imported as requested
+
+const companies = ['AWD', 'AWW']; // Add more as needed
 
 const DummyDashboard: React.FC = () => {
-  const [companies, setCompanies] = useState<string[]>(['AWD', 'AWW']);
-
-  const addCompany = () => {
-    const newCompany = prompt('Enter new company name:');
-    if (newCompany && !companies.includes(newCompany)) {
-      setCompanies([...companies, newCompany]);
-    }
-  };
-
   return (
     <div className="p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Sales Dashboard</h1>
-        <button
-          onClick={addCompany}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          + Add Company
-        </button>
-      </div>
+      <h1 className="text-2xl font-semibold">Sales Dashboard</h1>
 
-      <KPISection />
+      <KPISection /> {/* ✅ Placed KPISection here as requested */}
 
       <TopSummaryPanel />
-
+      
+      {/* You can place <KPISection /> where needed below */}
+      
       {companies.map((company) => (
         <CompanySection key={company} company={company} />
       ))}
