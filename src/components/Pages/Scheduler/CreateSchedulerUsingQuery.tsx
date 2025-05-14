@@ -300,6 +300,13 @@ export const CreateSchedulerUsingQuery = () => {
           <label className="text-base font-semibold" htmlFor="query">
             Query<span className="text-red-500">*</span>
           </label>
+          <small className="block mt-2 text-sm text-gray-500">
+            Example:{" "}
+            <code>
+              SELECT * FROM orders WHERE order_date BETWEEN '2025-04-05
+              00:00:00' AND '2025-04-15 23:59:59';
+            </code>
+          </small>
           <InputTextarea
             id="query"
             value={schedulerData.query}
