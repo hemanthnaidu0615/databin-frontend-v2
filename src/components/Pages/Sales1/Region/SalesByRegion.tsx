@@ -3,6 +3,7 @@ import MapChart from "./us-map/USMap";
 import states from "./us-map/states.json";
 import { DataTable } from "primereact/datatable"; // Ensure this is the correct library for DataTable
 import { Column } from "primereact/column"; // Import Column from the correct module
+import USMap from "./us-map/USMap";
 
 interface Marker {
   color: string;
@@ -231,7 +232,7 @@ export const SalesByRegion = () => {
           <div className="w-full lg:w-1/2 flex flex-col lg:flex-row items-center lg:items-start gap-4">
             {/* Map */}
             <div className="relative w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[335px] flex-1">
-              <MapChart
+              {/* <MapChart
                 markers={[]}
                 markers2={[]}
                 markers3={[]}
@@ -240,7 +241,8 @@ export const SalesByRegion = () => {
                 colorScale={colorScale}
                 revenueData={dummyTooltipData}
                 theme={theme}
-              />
+              /> */}
+              <USMap />
             </div>
 
             {/* Legend */}

@@ -1,67 +1,30 @@
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  Annotation,
+} from "react-simple-maps";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import allStates from "./allStates.json"; // <-- Ensure this file exists
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
 
-// Canonical list of US state names used in the map
 const CANONICAL_STATES = [
-  "Alabama",
-  "Alaska",
-  "Arizona",
-  "Arkansas",
-  "California",
-  "Colorado",
-  "Connecticut",
-  "Delaware",
-  "Florida",
-  "Georgia",
-  "Hawaii",
-  "Idaho",
-  "Illinois",
-  "Indiana",
-  "Iowa",
-  "Kansas",
-  "Kentucky",
-  "Louisiana",
-  "Maine",
-  "Maryland",
-  "Massachusetts",
-  "Michigan",
-  "Minnesota",
-  "Mississippi",
-  "Missouri",
-  "Montana",
-  "Nebraska",
-  "Nevada",
-  "New Hampshire",
-  "New Jersey",
-  "New Mexico",
-  "New York",
-  "North Carolina",
-  "North Dakota",
-  "Ohio",
-  "Oklahoma",
-  "Oregon",
-  "Pennsylvania",
-  "Rhode Island",
-  "South Carolina",
-  "South Dakota",
-  "Tennessee",
-  "Texas",
-  "Utah",
-  "Vermont",
-  "Virginia",
-  "Washington",
-  "West Virginia",
-  "Wisconsin",
-  "Wyoming",
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
+  "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+  "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia",
+  "Washington", "West Virginia", "Wisconsin", "Wyoming",
 ];
 
-// Map lowercase/variant names to canonical names
 const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
   acc[name.toLowerCase()] = name;
   return acc;
@@ -76,15 +39,13 @@ const formatValue = (value: number) => {
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+    .getDate()
     .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
+    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
+    .getMinutes()
     .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
+    .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
 };
 
 const DemographicCard = () => {
@@ -125,14 +86,10 @@ const DemographicCard = () => {
           startDate: formattedStart,
           endDate: formattedEnd,
         });
-        if (enterpriseKey) {
-          params.append("enterpriseKey", enterpriseKey);
-        }
+        if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
 
         const [mapRes, metricRes] = await Promise.all([
-          fetch(
-            `http://localhost:8080/api/sales/map-metrics?${params.toString()}`
-          ),
+          fetch(`http://localhost:8080/api/sales/map-metrics?${params.toString()}`),
           fetch(`http://localhost:8080/api/sales/metrics?${params.toString()}`),
         ]);
 
@@ -148,14 +105,10 @@ const DemographicCard = () => {
           mapData.forEach((row) => {
             const raw = row.state?.trim().toLowerCase();
             const canonicalName = STATE_NAME_MAP[raw];
-
             if (!canonicalName) {
-              console.warn(
-                `State name mismatch: "${row.state}" not found in map.`
-              );
+              console.warn(`State name mismatch: "${row.state}" not found in map.`);
               return;
             }
-
             const customers = row.total_customers || 0;
             const avgRevenue = row.average_revenue || 0;
             const revenue = customers * avgRevenue;
@@ -183,9 +136,7 @@ const DemographicCard = () => {
       }
     }
 
-    if (startDate && endDate) {
-      fetchData();
-    }
+    if (startDate && endDate) fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
   const handleViewMore = () => {
@@ -257,6 +208,29 @@ const DemographicCard = () => {
               })
             }
           </Geographies>
+
+          {/* State Labels */}
+          {allStates.map(({ name, abbreviation, coordinates }) => (
+            <Annotation
+              key={name}
+              subject={coordinates.slice(0, 2) as [number, number]}
+              dx={0}
+              dy={0}
+              connectorProps={{}}
+            >
+              <text
+                x={0}
+                y={0}
+                textAnchor="middle"
+                alignmentBaseline="central"
+                fill={isDark ? "#ffffff" : "#000000"}
+                fontSize={10}
+                fontWeight="bold"
+              >
+                {abbreviation}
+              </text>
+            </Annotation>
+          ))}
         </ComposableMap>
 
         {tooltip && (
@@ -310,3 +284,4 @@ const DemographicCard = () => {
 };
 
 export default DemographicCard;
+ 
