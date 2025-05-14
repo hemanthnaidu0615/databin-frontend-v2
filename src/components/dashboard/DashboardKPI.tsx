@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useTheme } from "next-themes";
-
 import Inventory from "../../images/inventory.png";
 import LocalShipping from "../../images/local_shipping.png";
 import Warning from "../../images/warning.png";
+import { axiosInstance } from "../../axios";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
@@ -59,64 +59,67 @@ export default function OrdersFulfillmentMetrics() {
   const { theme } = useTheme();
 
   useEffect(() => {
-    async function fetchMetrics() {
-      try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
+  async function fetchMetrics() {
+    try {
+      const formattedStartDate = formatDate(startDate);
+      const formattedEndDate = formatDate(endDate);
 
-        const params = new URLSearchParams({
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        });
+      const params: Record<string, string> = {
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+      };
 
-        if (enterpriseKey) {
-          params.append("enterpriseKey", enterpriseKey);
-        }
-
-        const urls = [
-          `http://localhost:8080/api/dashboard-kpi/total-orders?${params.toString()}`,
-          `http://localhost:8080/api/dashboard-kpi/fulfillment-rate?${params.toString()}`,
-          `http://localhost:8080/api/dashboard-kpi/shipment-status-percentage?${params.toString()}`,
-        ];
-
-        const responses = await Promise.all(urls.map((url) => fetch(url)));
-        const data = await Promise.all(responses.map((res) => res.json()));
-
-        setMetrics([
-          {
-            icon: Inventory,
-            label: "Total Orders",
-            value: formatValue(data[0].total_orders),
-            glowColor: "#22C55E",
-          },
-          {
-            icon: LocalShipping,
-            label: "Fulfillment Rate",
-            value: data[1].fulfillment_rate,
-            glowColor: "#22C55E",
-          },
-          {
-            icon: Warning,
-            label: "Delayed Orders",
-            value: data[2].delayed_percentage,
-            glowColor: "#EF4444",
-          },
-          {
-            icon: LocalShipping,
-            label: "Orders in Transit",
-            value: formatValue(data[2].in_transit_orders),
-            glowColor: "#22C55E",
-          },
-        ]);
-      } catch (error) {
-        console.error("Error fetching metrics:", error);
+      if (enterpriseKey) {
+        params.enterpriseKey = enterpriseKey;
       }
-    }
 
-    if (startDate && endDate) {
-      fetchMetrics();
+      const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
+        axiosInstance.get("/dashboard-kpi/total-orders", { params }),
+        axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
+        axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
+      ]);
+
+      const data = [
+        totalOrdersRes.data,
+        fulfillmentRateRes.data,
+        shipmentStatusRes.data,
+      ];
+
+      setMetrics([
+        {
+          icon: Inventory,
+          label: "Total Orders",
+          value: formatValue(data[0].total_orders),
+          glowColor: "#22C55E",
+        },
+        {
+          icon: LocalShipping,
+          label: "Fulfillment Rate",
+          value: data[1].fulfillment_rate,
+          glowColor: "#22C55E",
+        },
+        {
+          icon: Warning,
+          label: "Delayed Orders",
+          value: data[2].delayed_percentage,
+          glowColor: "#EF4444",
+        },
+        {
+          icon: LocalShipping,
+          label: "Orders in Transit",
+          value: formatValue(data[2].in_transit_orders),
+          glowColor: "#22C55E",
+        },
+      ]);
+    } catch (error) {
+      console.error("Error fetching metrics:", error);
     }
-  }, [startDate, endDate, enterpriseKey]);
+  }
+
+  if (startDate && endDate) {
+    fetchMetrics();
+  }
+}, [startDate, endDate, enterpriseKey]);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">

@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import "primeicons/primeicons.css";
+import { axiosInstance } from "../../axios";
 
 interface ProductData {
   id: number;
@@ -53,47 +54,48 @@ const ProfitabilityTable: React.FC = () => {
     setPosition((prev) => (prev === productData.length ? 1 : prev + 1));
 
   useEffect(() => {
-    const fetchTopProducts = async () => {
-      try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
+  const fetchTopProducts = async () => {
+    try {
+      const formattedStartDate = formatDate(startDate);
+      const formattedEndDate = formatDate(endDate);
 
-        const params = new URLSearchParams({
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        });
+      const params: Record<string, string> = {
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+      };
 
-        if (enterpriseKey) {
-          params.append("enterpriseKey", enterpriseKey);
-        }
-
-        const response = await fetch(
-          `http://localhost:8080/api/top-sellers/top-products?${params.toString()}`
-        );
-        const json = await response.json();
-
-        if (json.top_products && Array.isArray(json.top_products)) {
-          const transformed = json.top_products.map(
-            (product: any, index: number) => ({
-              id: index + 1,
-              name: product.product_name,
-              price: parseFloat(product.price ?? 0),
-              description: product.description ?? "No description available",
-              url: product.url ?? "#",
-              updateDate: product.update_date,
-            })
-          );
-          setProductData(transformed.slice(0, 5));
-        }
-      } catch (error) {
-        console.error("Failed to fetch top products:", error);
+      if (enterpriseKey) {
+        params.enterpriseKey = enterpriseKey;
       }
-    };
 
-    if (startDate && endDate) {
-      fetchTopProducts();
+      const response = await axiosInstance.get("/top-sellers/top-products", {
+        params,
+      });
+
+      const json = response.data;
+
+      if (json.top_products && Array.isArray(json.top_products)) {
+        const transformed = json.top_products.map(
+          (product: any, index: number) => ({
+            id: index + 1,
+            name: product.product_name,
+            price: parseFloat(product.price ?? 0),
+            description: product.description ?? "No description available",
+            url: product.url ?? "#",
+            updateDate: product.update_date,
+          })
+        );
+        setProductData(transformed.slice(0, 5));
+      }
+    } catch (error) {
+      console.error("Failed to fetch top products:", error);
     }
-  }, [startDate, endDate, enterpriseKey]);
+  };
+
+  if (startDate && endDate) {
+    fetchTopProducts();
+  }
+}, [startDate, endDate, enterpriseKey]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
