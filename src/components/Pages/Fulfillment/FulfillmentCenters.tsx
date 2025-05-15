@@ -86,13 +86,13 @@ const FulfillmentCenters = () => {
               <Column
                 field="avg_time_days"
                 header="Avg Time"
-                body={(rowData) => `${rowData.avg_time_days.toFixed(1)} days`}
+                body={(rowData) => `${rowData.avg_time_days} days`}
                 className="whitespace-nowrap text-right"
               />
               <Column
                 header="On-Time Rate"
                 body={(rowData) => {
-                  const rate = Math.round(rowData.on_time_rate * 100);
+                  const rate = (rowData.on_time_rate);
                   return (
                     <Tag value={`${rate}%`} severity={getRateSeverity(rate)} />
                   );
