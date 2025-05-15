@@ -12,6 +12,19 @@ type Props = {
   selectedMethod: string | null;
 };
 
+// INR to USD conversion
+const convertToUSD = (rupees: number): number => {
+  const exchangeRate = 0.012; // Adjust as needed
+  return rupees * exchangeRate;
+};
+
+// Number formatting helper
+const formatValue = (value: number): string => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  return value.toFixed(0);
+};
+
 const RecentShipmentsTable: React.FC<Props> = ({
   selectedCarrier,
   selectedMethod,
@@ -98,20 +111,22 @@ const RecentShipmentsTable: React.FC<Props> = ({
         `http://localhost:8080/api/recent-shipments/details?shipmentId=${shipment.shipment_id}`
       );
       const detailedData = await response.json();
+      // Convert cost to USD before setting the state
+      if (detailedData.cost) {
+        detailedData.cost = convertToUSD(detailedData.cost);
+      }
       setSelectedShipment(detailedData);
       setVisible(true);
     } catch (error) {
       console.error("Error fetching shipment details:", error);
       setSelectedShipment(null);
-      setVisible(true); // still open dialog to show an error or fallback
+      setVisible(true);
     }
   };
-  
 
   const formatDate = (isoDate: string) => {
     return isoDate?.split("T")[0] || "";
   };
-
   const shipmentDetails = (shipment: any) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
@@ -147,7 +162,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
           <strong>Destination:</strong> {shipment.destination}
         </div>
         <div>
-          <strong>Cost:</strong> ${shipment.cost?.toFixed(2)}
+          <strong>Cost:</strong> ${shipment.cost ? formatValue(shipment.cost) : "0"}
         </div>
       </div>
     );
@@ -180,6 +195,8 @@ const RecentShipmentsTable: React.FC<Props> = ({
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
         rowsPerPageOptions={[5, 10, 20, 50]}
         sortMode="multiple"
+        scrollable
+        scrollHeight="flex"
       >
         <Column field="shipment_id" header="Shipment ID" sortable />
         <Column field="customer_name" header="Customer" sortable />

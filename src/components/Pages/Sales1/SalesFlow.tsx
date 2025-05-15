@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ReactFlowProvider,
   useNodesState,
@@ -11,12 +11,20 @@ import {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import dagre from "dagre";
+import { useSelector } from "react-redux";
 
-const filterButtons = [
-  { label: "Item Info", value: "item-info" },
-  { label: "Fulfillment", value: "fulfillment" },
-  { label: "Order Channel", value: "order_capture_channel" },
-];
+// INR to USD conversion
+const convertToUSD = (rupees: number): number => {
+  const exchangeRate = 0.012; // Adjust as needed
+  return rupees * exchangeRate;
+};
+
+// Number formatting helper
+const formatValue = (value: number): string => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  return value.toFixed(0);
+};
 
 const nodeWidth = 200;
 const nodeHeight = 150;
@@ -56,19 +64,98 @@ const getLayoutedElements = (
 
 let nodeIdCounter = 1;
 
+function formatDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
 function SalesFlow() {
-  const [selectedFilter, setSelectedFilter] = useState(filterButtons[0].value);
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange || [];
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [rawData, setRawData] = useState<any[]>([]);
   const [fitViewDone, setFitViewDone] = useState(false);
 
-  useLayoutEffect(() => {
-    const dummy = dummyData[selectedFilter];
-    convertAndSetFlowData(dummy);
-    setRawData(dummy);
-    setFitViewDone(false); // Reset zoom flag on filter change
-  }, [selectedFilter]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!startDate || !endDate) return;
+
+      const formattedStart = formatDate(new Date(startDate));
+      const formattedEnd = formatDate(new Date(endDate));
+
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/flow/breakdown?${params}`);
+        const data = await res.json();
+        const nested = convertToHierarchy(data);
+        setRawData(nested);
+        convertAndSetFlowData(nested);
+        setFitViewDone(false);
+      } catch (error) {
+        console.error("Failed to fetch sales breakdown:", error);
+      }
+    };
+
+    fetchData();
+  }, [startDate, endDate]);
+
+  const convertToHierarchy = (flatData: any[]) => {
+    const grouped = new Map();
+
+    for (const item of flatData) {
+      const { enterprise_key, category_name, product_name, total_sales } = item;
+
+      if (!grouped.has(enterprise_key)) {
+        grouped.set(enterprise_key, new Map());
+      }
+
+      const categories = grouped.get(enterprise_key);
+      if (!categories.has(category_name)) {
+        categories.set(category_name, []);
+      }
+
+      categories.get(category_name).push({
+        key: product_name,
+        original_order_total_amount: convertToUSD(total_sales), // Convert to USD here
+      });
+    }
+
+    const result: any[] = [];
+    for (const [enterprise, cats] of grouped) {
+      const children: any[] = [];
+      let enterpriseTotal = 0;
+
+      for (const [catName, products] of cats) {
+        const catTotal = products.reduce((sum: number, p: { original_order_total_amount: number }) => sum + p.original_order_total_amount, 0);
+        enterpriseTotal += catTotal;
+
+        children.push({
+          key: catName,
+          original_order_total_amount: catTotal,
+          children: products,
+        });
+      }
+
+      result.push({
+        key: enterprise,
+        original_order_total_amount: enterpriseTotal,
+        children,
+      });
+    }
+
+    return [
+      {
+        key: "Total Sales",
+        original_order_total_amount: result.reduce((sum, e) => sum + e.original_order_total_amount, 0),
+        children: result,
+      },
+    ];
+  };
 
   const convertAndSetFlowData = (data: any[]) => {
     nodeIdCounter = 1;
@@ -83,12 +170,10 @@ function SalesFlow() {
     const buildFlow = (items: any[], parentId: string | null = null) => {
       return items.map((item: any) => {
         const currentId = String(nodeIdCounter++);
-        const dollar = `$${item.original_order_total_amount.toLocaleString()}`;
+        const dollar = `$${formatValue(item.original_order_total_amount)}`; // Use formatValue here
         const percent =
           total > 0
-            ? `(${((item.original_order_total_amount / total) * 100).toFixed(
-                1
-              )}%)`
+            ? `(${((item.original_order_total_amount / total) * 100).toFixed(1)}%)`
             : "";
         const label = `${item.key}\n${dollar}\n${percent}`;
 
@@ -133,37 +218,33 @@ function SalesFlow() {
 
   const renderVerticalTimeline = (data: any[], parentTotal = 0) => {
     return (
-      <ul className="space-y-4">
-        {data.map((item, index) => {
-          const dollar = `$${item.original_order_total_amount.toLocaleString()}`;
-          const percent =
-            parentTotal > 0
-              ? `${(
-                  (item.original_order_total_amount / parentTotal) *
-                  100
-                ).toFixed(2)}%`
-              : "";
+      <div className="overflow-y-auto max-h-[70vh]">
+        <ul className="space-y-4">
+          {data.map((item, index) => {
+            const dollar = `$${formatValue(item.original_order_total_amount)}`;
+            const percent =
+              parentTotal > 0
+                ? `${((item.original_order_total_amount / parentTotal) * 100).toFixed(2)}%`
+                : "";
 
-          return (
-            <li key={index} className="border-l border-purple-500 pl-4 ml-2">
-              <div className="text-white dark:text-white">
-                <p className="font-semibold text-purple-300">{item.key}</p>
-                <p className="text-sm">
-                  💰 {dollar} <span className="text-green-400">{percent}</span>
-                </p>
-              </div>
-              {item.children && item.children.length > 0 && (
-                <div className="ml-4 mt-2">
-                  {renderVerticalTimeline(
-                    item.children,
-                    item.original_order_total_amount
-                  )}
+            return (
+              <li key={index} className="border-l border-purple-500 pl-4 ml-2">
+                <div className="text-white dark:text-white">
+                  <p className="font-semibold text-purple-300">{item.key}</p>
+                  <p className="text-sm">
+                    💰 {dollar} <span className="text-green-400">{percent}</span>
+                  </p>
                 </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                {item.children && item.children.length > 0 && (
+                  <div className="ml-4 mt-2">
+                    {renderVerticalTimeline(item.children, item.original_order_total_amount)}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     );
   };
 
@@ -172,23 +253,8 @@ function SalesFlow() {
       <div className="max-w-full w-full mx-auto">
         <div className="mb-4">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-            Sales Flow
+            Sales Flow (USD)
           </h1>
-          <div className="flex flex-wrap gap-4">
-            {filterButtons.map((btn) => (
-              <button
-                key={btn.value}
-                onClick={() => setSelectedFilter(btn.value)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm shadow-md border-1 border-gray-500  transition-all duration-150 ${
-                  selectedFilter === btn.value
-                    ? "bg-purple-600 border-none text-white"
-                    : "bg-white-100  text-gray-900 dark:bg-purple-800 dark:text-white dark:border-none"
-                }`}
-              >
-                {btn.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Desktop/Tablet View */}
@@ -196,7 +262,6 @@ function SalesFlow() {
           <ReactFlowProvider>
             {nodes.length > 0 && edges.length > 0 && (
               <ReactFlow
-                key={selectedFilter}
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
@@ -227,202 +292,5 @@ function SalesFlow() {
     </div>
   );
 }
-
-// ...previous imports and component setup remain unchanged
-
-const dummyData: Record<string, any[]> = {
-  "item-info": [
-    {
-      key: "Total Sales",
-      original_order_total_amount: 1730000,
-      children: [
-        {
-          key: "AWD",
-          original_order_total_amount: 780000,
-          children: [
-            {
-              key: "Mobiles",
-              original_order_total_amount: 320000,
-            },
-            {
-              key: "Laptops",
-              original_order_total_amount: 250000,
-            },
-            {
-              key: "Accessories",
-              original_order_total_amount: 210000,
-            },
-          ],
-        },
-        {
-          key: "AWW",
-          original_order_total_amount: 950000,
-          children: [
-            {
-              key: "Mobiles",
-              original_order_total_amount: 400000,
-              children: [
-                {
-                  key: "iPhone",
-                  original_order_total_amount: 240000,
-                },
-                {
-                  key: "Samsung",
-                  original_order_total_amount: 160000,
-                },
-              ],
-            },
-            {
-              key: "Laptops",
-              original_order_total_amount: 300000,
-              children: [
-                {
-                  key: "Dell",
-                  original_order_total_amount: 180000,
-                },
-                {
-                  key: "HP",
-                  original_order_total_amount: 120000,
-                },
-              ],
-            },
-            {
-              key: "Accessories",
-              original_order_total_amount: 250000,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  fulfillment: [
-    {
-      key: "Total Sales",
-      original_order_total_amount: 1730000,
-      children: [
-        {
-          key: "AWD",
-          original_order_total_amount: 780000,
-          children: [
-            {
-              key: "Mobiles",
-              original_order_total_amount: 320000,
-            },
-            {
-              key: "Laptops",
-              original_order_total_amount: 250000,
-            },
-            {
-              key: "Accessories",
-              original_order_total_amount: 210000,
-            },
-          ],
-        },
-        {
-          key: "AWW",
-          original_order_total_amount: 950000,
-          children: [
-            {
-              key: "Mobiles",
-              original_order_total_amount: 400000,
-              children: [
-                {
-                  key: "iPhone",
-                  original_order_total_amount: 240000,
-                },
-                {
-                  key: "Samsung",
-                  original_order_total_amount: 160000,
-                },
-              ],
-            },
-            {
-              key: "Laptops",
-              original_order_total_amount: 300000,
-              children: [
-                {
-                  key: "Dell",
-                  original_order_total_amount: 180000,
-                },
-                {
-                  key: "HP",
-                  original_order_total_amount: 120000,
-                },
-              ],
-            },
-            {
-              key: "Accessories",
-              original_order_total_amount: 250000,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  order_capture_channel: [
-    {
-      key: "Total Sales",
-      original_order_total_amount: 1730000,
-      children: [
-        {
-          key: "AWD",
-          original_order_total_amount: 780000,
-          children: [
-            {
-              key: "Mobiles",
-              original_order_total_amount: 320000,
-            },
-            {
-              key: "Laptops",
-              original_order_total_amount: 250000,
-            },
-            {
-              key: "Accessories",
-              original_order_total_amount: 210000,
-            },
-          ],
-        },
-        {
-          key: "AWW",
-          original_order_total_amount: 950000,
-          children: [
-            {
-              key: "Mobiles",
-              original_order_total_amount: 400000,
-              children: [
-                {
-                  key: "iPhone",
-                  original_order_total_amount: 240000,
-                },
-                {
-                  key: "Samsung",
-                  original_order_total_amount: 160000,
-                },
-              ],
-            },
-            {
-              key: "Laptops",
-              original_order_total_amount: 300000,
-              children: [
-                {
-                  key: "Dell",
-                  original_order_total_amount: 180000,
-                },
-                {
-                  key: "HP",
-                  original_order_total_amount: 120000,
-                },
-              ],
-            },
-            {
-              key: "Accessories",
-              original_order_total_amount: 250000,
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
 
 export default SalesFlow;
