@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MapChart from "./us-map/USMap";
+
 import states from "./us-map/states.json";
 import { DataTable } from "primereact/datatable"; // Ensure this is the correct library for DataTable
 import { Column } from "primereact/column"; // Import Column from the correct module
@@ -11,66 +11,9 @@ interface Marker {
   legend: string;
 }
 
-interface Statess {
-  [key: string]: string;
-}
 
-const statess: Statess = {
-  AL: "Alabama",
-  AK: "Alaska",
-  AS: "American Samoa",
-  AZ: "Arizona",
-  AR: "Arkansas",
-  CA: "California",
-  CO: "Colorado",
-  CT: "Connecticut",
-  DE: "Delaware",
-  DC: "District of Columbia",
-  FL: "Florida",
-  GA: "Georgia",
-  HI: "Hawaii",
-  ID: "Idaho",
-  IL: "Illinois",
-  IN: "Indiana",
-  IA: "Iowa",
-  KS: "Kansas",
-  KY: "Kentucky",
-  LA: "Louisiana",
-  ME: "Maine",
-  MD: "Maryland",
-  MA: "Massachusetts",
-  MI: "Michigan",
-  MN: "Minnesota",
-  MS: "Mississippi",
-  MO: "Missouri",
-  MT: "Montana",
-  NE: "Nebraska",
-  NV: "Nevada",
-  NH: "New Hampshire",
-  NJ: "New Jersey",
-  NM: "New Mexico",
-  NY: "New York",
-  NC: "North Carolina",
-  ND: "North Dakota",
-  MP: "Northern Mariana Islands",
-  OH: "Ohio",
-  OK: "Oklahoma",
-  OR: "Oregon",
-  PA: "Pennsylvania",
-  PR: "Puerto Rico",
-  RI: "Rhode Island",
-  SC: "South Carolina",
-  SD: "South Dakota",
-  TN: "Tennessee",
-  TX: "Texas",
-  UT: "Utah",
-  VT: "Vermont",
-  VA: "Virginia",
-  WA: "Washington",
-  WV: "West Virginia",
-  WI: "Wisconsin",
-  WY: "Wyoming",
-};
+
+
 
 export const SalesByRegion = () => {
   const [theme, setTheme] = useState<"dark" | "light">("light");
@@ -153,22 +96,7 @@ export const SalesByRegion = () => {
     ["USA-PR", 65000, 1.9, 550],
   ];
 
-  const dummyTooltipData: { [key: string]: string } = dummyMapData.reduce(
-    (acc: any, item: any) => {
-      const stateAbbreviation = item[0].split("-")[1].toUpperCase();
-      const stateName = statess[stateAbbreviation];
-      const revenue = formatterUSD.format(item[1]);
-      const quantity = new Intl.NumberFormat("en-US").format(item[3]);
-      const customers = Math.round(item[3] / 2); // Example logic
-      const avgRevenue = formatterUSD.format(item[1] / customers);
-
-      acc[
-        stateName
-      ] = `Revenue: ${revenue}\nQuantity: ${quantity}\nCustomers: ${customers}\nAvg Revenue: ${avgRevenue}`;
-      return acc;
-    },
-    {}
-  );
+  
 
   const stateAbbreviations: { [key: string]: string } = states;
 
@@ -267,7 +195,7 @@ export const SalesByRegion = () => {
           </div>
 
           <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-            <h3 className="font-bold text-lg mb-2 font-semibold">
+            <h3 className=" text-lg mb-2 font-semibold">
               Revenues by State
             </h3>
 

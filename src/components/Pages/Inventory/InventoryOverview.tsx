@@ -28,7 +28,7 @@ const InventoryOverview: React.FC<{
   filters: Filters;
   isSidebarOpen?: boolean;
   isDarkTheme?: boolean;
-}> = ({ filters, isSidebarOpen = true, isDarkTheme = false }) => {
+}> = ({  isSidebarOpen = true, isDarkTheme = false }) => {
   const [warehouseData, setWarehouseData] = useState<RegionData[]>([]);
   const [alertsData, setAlertsData] = useState([
     { label: "Available", value: "0%", count: 0, color: "text-green-500" },
