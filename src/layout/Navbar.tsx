@@ -38,7 +38,7 @@ const Navbar: React.FC = () => {
   ]);
 
   const hideCalendarRoutes = ["/scheduler"];
-  const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler"];
+  const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler", "/sales/flow"];
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
   const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
 
