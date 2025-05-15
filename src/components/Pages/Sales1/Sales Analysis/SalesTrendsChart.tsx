@@ -1,4 +1,5 @@
-import  { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
@@ -6,70 +7,117 @@ import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
 
-const allDates = Array.from({ length: 365 }, (_, i) =>
-  dayjs("2024-01-01").add(i, "day")
-);
-
-const fullDummyData: Record<string, { date: string; value: number }[]> = {
-  all: allDates.map((d) => ({
-    date: d.format("YYYY-MM-DD"),
-    value: Math.floor(200 + Math.random() * 400),
-  })),
-  online: allDates.map((d) => ({
-    date: d.format("YYYY-MM-DD"),
-    value: Math.floor(100 + Math.random() * 200),
-  })),
-  retail: allDates.map((d) => ({
-    date: d.format("YYYY-MM-DD"),
-    value: Math.floor(80 + Math.random() * 150),
-  })),
-  wholesale: allDates.map((d) => ({
-    date: d.format("YYYY-MM-DD"),
-    value: Math.floor(50 + Math.random() * 100),
-  })),
-};
-
 const chartTypes = [
   { label: "Bar", value: "bar" },
   { label: "Line", value: "line" },
 ];
 
-const orderTypes = [
-  { label: "All", value: "all" },
-  { label: "Online", value: "online" },
-  { label: "Retail", value: "retail" },
-  { label: "Wholesale", value: "wholesale" },
-];
+const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 
 const SalesTrendsChart = () => {
   const { theme } = useTheme();
-  const [chartType, setChartType] = useState<"bar" | "line">("line"); // default to line
-  const [selectedOrderType, setSelectedOrderType] = useState("all");
+  const [chartType, setChartType] = useState<"bar" | "line">("line");
+  const [channels, setChannels] = useState<string[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [drilledMonth, setDrilledMonth] = useState<string | null>(null);
+  const [salesData, setSalesData] = useState<{order_date: string; total_amount: number}[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Get filters from Redux
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [startDate, endDate] = dateRange || [];
+
+  // Fetch sales data when filters change
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      if (!startDate || !endDate) return;
+
+      setLoading(true);
+      setError(null);
+
+      const formattedStart = formatDate(new Date(startDate));
+      const formattedEnd = formatDate(new Date(endDate));
+
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      if (enterpriseKey) {
+        params.append('enterpriseKey', enterpriseKey);
+      }
+
+      if (selectedChannel && selectedChannel !== "all") {
+        params.append('fulfillmentChannel', selectedChannel);
+      }
+
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/analysis/sales-by-date?${params.toString()}`
+        );
+        if (!res.ok) throw new Error('Failed to fetch sales data');
+        const data = await res.json();
+        setSalesData(data.sales || []);
+      } catch (err) {
+        console.error("Error fetching sales data", err);
+        setError('Failed to load sales data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSalesData();
+  }, [startDate, endDate, enterpriseKey, selectedChannel]);
+
+  // Fetch channels from backend API
+  useEffect(() => {
+    const fetchChannels = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:8080/api/analysis/channels"
+        );
+        if (!res.ok) throw new Error('Failed to fetch channels');
+        const data = await res.json();
+        setChannels(data.channels || []);
+      } catch (err) {
+        console.error("Error fetching channels", err);
+        setError('Failed to load channel options. Using default channels.');
+      }
+    };
+
+    fetchChannels();
+  }, []);
 
   const { categories, values } = useMemo(() => {
-    const data = fullDummyData[selectedOrderType];
-    const buckets: Record<string, number[]> = {};
-
-    const filtered = drilledMonth
-      ? data.filter((d) => dayjs(d.date).format("MMM YYYY") === drilledMonth)
-      : data;
-
-    filtered.forEach((entry) => {
-      const date = dayjs(entry.date);
-      const key = drilledMonth ? date.format("MMM D") : date.format("MMM YYYY");
-
-      if (!buckets[key]) buckets[key] = [];
-      buckets[key].push(entry.value);
+    if (!salesData.length) return { categories: [], values: [] };
+  
+    // Determine the start and end date based on salesData or selected range
+    const start = dayjs(salesData[0].order_date);
+    const end = dayjs(salesData[salesData.length - 1].order_date);
+  
+    const map: Record<string, number> = {};
+    salesData.forEach(({ order_date, total_amount }) => {
+      const date = dayjs(order_date).format("YYYY-MM-DD");
+      map[date] = total_amount;
     });
-
-    const categories = Object.keys(buckets);
-    const values = categories.map((key) =>
-      Math.round(buckets[key].reduce((a, b) => a + b, 0) / buckets[key].length)
-    );
-
-    return { categories, values };
-  }, [selectedOrderType, drilledMonth]);
+  
+    const days: string[] = [];
+    const values: number[] = [];
+    let curr = start;
+  
+    while (curr.isBefore(end) || curr.isSame(end)) {
+      const dateStr = curr.format("YYYY-MM-DD");
+      days.push(dateStr);
+      values.push(map[dateStr] ?? 0); // Fill missing with 0
+      curr = curr.add(1, "day");
+    }
+  
+    return { categories: days, values };
+  }, [salesData]);
+  
+  
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
@@ -77,7 +125,7 @@ const SalesTrendsChart = () => {
         type: chartType,
         toolbar: { show: false },
         events: {
-          dataPointSelection: (_event:any, _chartContext:any, config:any) => {
+          dataPointSelection: (_e, _ctx, config) => {
             if (!drilledMonth && categories[config.dataPointIndex]) {
               setDrilledMonth(categories[config.dataPointIndex]);
             }
@@ -89,23 +137,16 @@ const SalesTrendsChart = () => {
       tooltip: {
         enabled: true,
         theme: theme === "dark" ? "dark" : "light",
-        x: {
-          formatter: (val:any) => String(val),
-        },
+        x: { formatter: (val) => String(val) },
         y: {
-          formatter: (val: number) => `$${val}`,
-          title: {
-            formatter: () => "Sales",
-          },
+          formatter: (val: number) => `$${val.toLocaleString()}`,
+          title: { formatter: () => "Sales" },
         },
-        marker: {
-          show: true,
-        },
-        shared: false,
+        marker: { show: true },
       },
       xaxis: {
         type: "category",
-        crosshairs: { show: false },
+        categories: categories,
         labels: {
           rotate: -45,
           style: {
@@ -121,7 +162,6 @@ const SalesTrendsChart = () => {
           },
         },
       },
-
       yaxis: {
         title: {
           text: "Sales",
@@ -130,6 +170,9 @@ const SalesTrendsChart = () => {
             fontWeight: "normal",
             color: theme === "dark" ? "#CBD5E1" : "#64748B",
           },
+        },
+        labels: {
+          formatter: (val: number) => `$${val.toLocaleString()}`,
         },
       },
       stroke: {
@@ -141,9 +184,7 @@ const SalesTrendsChart = () => {
         colors: ["#ffffff"],
         strokeColors: "#2563eb",
         strokeWidth: 3,
-        hover: {
-          size: 7,
-        },
+        hover: { size: 7 },
       },
       dataLabels: { enabled: false },
       colors: ["#2563eb"],
@@ -152,8 +193,38 @@ const SalesTrendsChart = () => {
       },
       legend: { show: false },
     }),
-    [chartType, categories, theme, drilledMonth]
+    [chartType, theme, categories, drilledMonth]
   );
+
+  if (!startDate || !endDate) {
+    return (
+      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          Please select a date range to view sales trends
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          Loading sales data...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+        <div className="text-center text-red-500 dark:text-red-400">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
@@ -165,13 +236,21 @@ const SalesTrendsChart = () => {
           className="w-32"
         />
         <Dropdown
-          value={selectedOrderType}
-          options={orderTypes}
+          value={selectedChannel}
+          options={[
+            { label: "All", value: "all" },
+            ...channels.map((ch) => ({
+              label: ch,
+              value: ch, // Use the original channel name as value
+            })),
+          ]}
           onChange={(e) => {
-            setSelectedOrderType(e.value);
+            setSelectedChannel(e.value);
             setDrilledMonth(null);
           }}
           className="w-40"
+          placeholder="Select Channel"
+          disabled={channels.length === 0}
         />
       </div>
 
@@ -191,20 +270,23 @@ const SalesTrendsChart = () => {
         </div>
       )}
 
-      <Chart
-        options={chartOptions}
-        series={[
-          {
-            name: "Sales",
-            data: categories.map((label, i) => ({
-              x: label,
-              y: values[i],
-            })),
-          },
-        ]}
-        type={chartType}
-        height={350}
-      />
+      {categories.length > 0 ? (
+        <Chart
+          options={chartOptions}
+          series={[
+            {
+              name: "Sales",
+              data: values,
+            },
+          ]}
+          type={chartType}
+          height={350}
+        />
+      ) : (
+        <div className="text-center text-gray-500 dark:text-gray-400 h-[350px] flex items-center justify-center">
+          No sales data available for the selected filters
+        </div>
+      )}
     </div>
   );
 };
