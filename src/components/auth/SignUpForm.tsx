@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
-import React, { FormEvent } from "react"
+import  { FormEvent } from "react"
 
 
 function SignUp() {

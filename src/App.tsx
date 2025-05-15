@@ -20,24 +20,50 @@ import Home from "./pages/Dashboard/DashboardHome";
 import DummyDashboard from "./components/Pages/Sales1/Dashboard/DummyDashboard";
 import InventoryPage from "./components/Pages/Inventory/InventoryPage";
 import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import 'primereact/resources/themes/lara-light-indigo/theme.css';  // or your theme
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+
+
+
 
 // ✅ Corrected import
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
 // import { SalesDashboard } from "./components/Pages/Sales/SalesDashboard";
 import { Analysis } from "./components/Pages/Sales/Analysis";
-import  {SalesByRegion}  from "./components/Pages/Sales1/Region/SalesByRegion";
+import { SalesByRegion } from "./components/Pages/Sales1/Region/SalesByRegion";
 import SalesFlow from "./components/Pages/Sales/SalesFlow";
-import Scheduler  from "./components/Pages/Scheduler/Scheduler";
+import Scheduler from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
+import { UserManagement } from "./components/Pages/user Management/UserManagement";
+
 
 export default function App() {
+
+
+
   return (
     <Router>
       <ScrollToTop />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover
+        style={{ zIndex: 9999 }}
+      />
       <Routes>
         {/* Dashboard Layout */}
         <Route element={<AppLayout />}>
           <Route index path="/" element={<Home />} />
+
+          <Route path="/UserManagement" element={<UserManagement />} />
 
           {/* ✅ Orders Page Route */}
           <Route path="/orders" element={<OrdersPage />} />
@@ -61,12 +87,12 @@ export default function App() {
           {/* Fulfillment Pages */}
           <Route path="/fulfillment" element={<FulfillmentPage />} />
 
-         
+
 
           {/* Scheduler Page */}
           <Route path="/scheduler" element={<Scheduler />} />
 
-          
+
 
           {/* Others Page */}
           <Route path="/profile" element={<UserProfiles />} />
@@ -93,9 +119,14 @@ export default function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
 
+
         {/* Fallback Route */}
         <Route path="*" element={<NotFound />} />
+
       </Routes>
     </Router>
+
   );
+
+
 }

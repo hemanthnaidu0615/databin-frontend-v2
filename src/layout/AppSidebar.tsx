@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {  useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Logo from "../images/logo.png";
 import {
@@ -11,8 +11,11 @@ import {
   PieChartIcon,
   PlugInIcon,
   TableIcon,
+  UserManagementIcon
 } from "../icons";  // Assuming icons are imported correctly
 import { useSidebar } from "../context/SidebarContext";
+
+
 
 type NavItem = {
   name: string;
@@ -21,7 +24,8 @@ type NavItem = {
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
-const navItems: NavItem[] = [
+
+const baseNavItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
@@ -77,7 +81,7 @@ const navItems: NavItem[] = [
     icon: <TableIcon />,
     name: "Reports & Scheduler",
     path: "/scheduler",
-  },
+  }
 
 ];
 
@@ -115,6 +119,44 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const [roleLevel, setRoleLevel] = useState<string | null>(null);
+  // const [isLoading, setIsLoading] = useState(true);
+
+   useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/v1/auth/me", {
+          method: "GET",
+          credentials: "include", // Very important for cookies
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setRoleLevel(data.roleLevel.toLowerCase()); // Make it lowercase for consistency
+        } else {
+          console.error("Failed to fetch user role");
+          setRoleLevel(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        setRoleLevel(null);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
+  const navItems: NavItem[] = [
+    ...baseNavItems,
+    ...(roleLevel === "admin" || roleLevel === "manager"
+      ? [{
+          icon: <UserManagementIcon />,
+          name: "User Management",
+          path: "/UserManagement",
+        }]
+      : []),
+  ];
+
+  const isActive = (path: string) => location.pathname === path;
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -124,10 +166,10 @@ const AppSidebar: React.FC = () => {
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({});
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const isActive = useCallback(
-    (path: string) => location.pathname === path,
-    [location.pathname]
-  );
+  // const isActive = useCallback(
+  //   (path: string) => location.pathname === path,
+  //   [location.pathname]
+  // );
 
   useEffect(() => {
     let submenuMatched = false;

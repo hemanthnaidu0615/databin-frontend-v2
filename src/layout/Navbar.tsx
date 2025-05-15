@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState} from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
@@ -18,7 +18,7 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
 const Navbar: React.FC = () => {
-  const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  // const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [enterpriseKey, setEnterpriseKey] = useState("All");
   const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
   const calendarRef = useRef<any>(null);
@@ -42,7 +42,17 @@ const Navbar: React.FC = () => {
   const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler"];
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
   const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
+  
+  const handleLogout = async () => {
+  try {
+    await axiosInstance.post("http://localhost:8080/api/v1/auth/logout"); // adjust API path if needed
+    window.location.href = "/signin"; // redirect to login page
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
 
+  
   useEffect(() => {
     const fetchEnterpriseKeys = async () => {
       try {
@@ -75,9 +85,9 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const toggleApplicationMenu = () => {
-    setApplicationMenuOpen(!isApplicationMenuOpen);
-  };
+  // const toggleApplicationMenu = () => {
+  //   setApplicationMenuOpen(!isApplicationMenuOpen);
+  // };
 
   const handleDateChange = (e: any) => {
     const newDates = e.value;
@@ -173,6 +183,13 @@ const Navbar: React.FC = () => {
                   ))}
                 </select>
               )}
+              <button
+  onClick={handleLogout}
+  className="h-10 px-4 text-sm rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+>
+  Logout
+</button>
+
 
               <ThemeToggleButton />
               <NotificationDropdown />
