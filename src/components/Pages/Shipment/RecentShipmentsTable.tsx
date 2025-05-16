@@ -12,13 +12,25 @@ type Props = {
   selectedMethod: string | null;
 };
 
-// INR to USD conversion
+// Hook to detect mobile screens
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  return isMobile;
+};
+
 const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-// Number formatting helper
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
@@ -34,6 +46,10 @@ const RecentShipmentsTable: React.FC<Props> = ({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedShipment, setSelectedShipment] = useState<any | null>(null);
   const [visible, setVisible] = useState(false);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(5);
+
+  const isMobile = useIsMobile();
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
@@ -68,7 +84,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
           `http://localhost:8080/api/recent-shipments?${params.toString()}`
         );
         const data = await response.json();
-        console.log("Fetched Shipments:", data);
         setShipments(data);
         setFilteredShipments(data);
       } catch (error) {
@@ -79,7 +94,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
     fetchData();
   }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
 
-  // Update filtered shipments based on search query
   useEffect(() => {
     if (!searchQuery) {
       setFilteredShipments(shipments);
@@ -111,7 +125,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
         `http://localhost:8080/api/recent-shipments/details?shipmentId=${shipment.shipment_id}`
       );
       const detailedData = await response.json();
-      // Convert cost to USD before setting the state
       if (detailedData.cost) {
         detailedData.cost = convertToUSD(detailedData.cost);
       }
@@ -127,21 +140,14 @@ const RecentShipmentsTable: React.FC<Props> = ({
   const formatDate = (isoDate: string) => {
     return isoDate?.split("T")[0] || "";
   };
+
   const shipmentDetails = (shipment: any) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
-        <div>
-          <strong>Order ID:</strong> {shipment.order_id}
-        </div>
-        <div>
-          <strong>Customer:</strong> {shipment.customer}
-        </div>
-        <div>
-          <strong>Carrier:</strong> {shipment.carrier}
-        </div>
-        <div>
-          <strong>Shipping Method:</strong> {shipment.shipping_method}
-        </div>
+        <div><strong>Order ID:</strong> {shipment.order_id}</div>
+        <div><strong>Customer:</strong> {shipment.customer}</div>
+        <div><strong>Carrier:</strong> {shipment.carrier}</div>
+        <div><strong>Shipping Method:</strong> {shipment.shipping_method}</div>
         <div>
           <strong>Status:</strong>{" "}
           <Tag
@@ -149,25 +155,14 @@ const RecentShipmentsTable: React.FC<Props> = ({
             severity={getStatusSeverity(shipment.status)}
           />
         </div>
-        <div>
-          <strong>Ship Date:</strong> {formatDate(shipment.ship_date)}
-        </div>
-        <div>
-          <strong>Estimated Delivery:</strong> {formatDate(shipment.estimated_delivery)}
-        </div>
-        <div>
-          <strong>Origin:</strong> {shipment.origin}
-        </div>
-        <div>
-          <strong>Destination:</strong> {shipment.destination}
-        </div>
-        <div>
-          <strong>Cost:</strong> ${shipment.cost ? formatValue(shipment.cost) : "0"}
-        </div>
+        <div><strong>Ship Date:</strong> {formatDate(shipment.ship_date)}</div>
+        <div><strong>Estimated Delivery:</strong> {formatDate(shipment.estimated_delivery)}</div>
+        <div><strong>Origin:</strong> {shipment.origin}</div>
+        <div><strong>Destination:</strong> {shipment.destination}</div>
+        <div><strong>Cost:</strong> ${shipment.cost ? formatValue(shipment.cost) : "0"}</div>
       </div>
     );
   };
-  
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -186,8 +181,13 @@ const RecentShipmentsTable: React.FC<Props> = ({
 
       <DataTable
         value={filteredShipments}
-        paginator
-        rows={5}
+        paginator={!isMobile}
+        first={first}
+        rows={rows}
+        onPage={(e) => {
+          setFirst(e.first);
+          setRows(e.rows);
+        }}
         stripedRows
         className="p-datatable-sm w-full"
         responsiveLayout="scroll"
@@ -230,6 +230,50 @@ const RecentShipmentsTable: React.FC<Props> = ({
           )}
         />
       </DataTable>
+
+      {/* Mobile-Only Custom Pagination */}
+      <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
+        <div className="flex items-center gap-2 mb-2">
+          <label htmlFor="mobileRows" className="whitespace-nowrap">Rows per page:</label>
+          <select
+            id="mobileRows"
+            value={rows}
+            onChange={(e) => {
+              setRows(Number(e.target.value));
+              setFirst(0);
+            }}
+            className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+          >
+            {[5, 10, 20, 50].map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => setFirst(Math.max(0, first - rows))}
+            disabled={first === 0}
+            className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          <div className="text-center flex-1">
+            Page {Math.floor(first / rows) + 1} of {Math.ceil(filteredShipments.length / rows)}
+          </div>
+
+          <button
+            onClick={() =>
+              setFirst(first + rows < filteredShipments.length ? first + rows : first)
+            }
+            disabled={first + rows >= filteredShipments.length}
+            className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
 
       <Dialog
         header="Shipment Details"
