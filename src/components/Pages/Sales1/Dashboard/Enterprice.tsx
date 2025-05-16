@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import ChartSection from './ChartSection';
-import ByTypeSection from './ByTypeSection';
-import VolumeValueSection from './VolumeValueSection';
+import { useState } from "react";
+import ChartSection from "./ChartSection";
+import ByTypeSection from "./ByTypeSection";
+import VolumeValueSection from "./VolumeValueSection";
 
 interface Props {
-  company: string;
+  company: "AWW" | "AWD";
 }
 
-const tabs = ['Chart', 'By Type', 'Volume-Value'];
+const tabs = ["Chart", "By Type", "Volume-Value"];
 
 const CompanySection: React.FC<Props> = ({ company }) => {
-  const [activeTab, setActiveTab] = useState('Chart');
+  const [activeTab, setActiveTab] = useState("Chart");
 
   return (
     <div className="w-full px-4 md:px-6 lg:px-8 max-w-screen-xl mx-auto space-y-6">
@@ -25,8 +25,8 @@ const CompanySection: React.FC<Props> = ({ company }) => {
               key={tab}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === tab
-                  ? 'bg-black text-white dark:bg-white dark:text-black'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
               }`}
               onClick={() => setActiveTab(tab)}
             >
@@ -38,9 +38,11 @@ const CompanySection: React.FC<Props> = ({ company }) => {
 
       {/* Active Tab Content */}
       <div>
-        {activeTab === 'Chart' && <ChartSection company={company} />}
-        {activeTab === 'By Type' && <ByTypeSection company={company} />}
-        {activeTab === 'Volume-Value' && <VolumeValueSection company={company} />}
+        {activeTab === "Chart" && <ChartSection company={company} />}
+        {activeTab === "By Type" && <ByTypeSection company={company} />}
+        {activeTab === "Volume-Value" && (
+          <VolumeValueSection company={company} />
+        )}
       </div>
     </div>
   );
