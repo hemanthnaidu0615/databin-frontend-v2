@@ -16,11 +16,8 @@ const PipelineRow = ({
   isFinal?: boolean;
 }) => {
   return (
-    <div
-      className={`flex flex-wrap items-center ${
-        isFinal ? "justify-center gap-x-4 gap-y-3" : "justify-center gap-3"
-      } px-2 overflow-hidden max-w-screen-xl mx-auto`}
-    >
+<div className={`flex ${isFinal ? "flex-wrap" : "flex-col"} sm:flex-row items-center justify-center gap-3 px-2 max-w-screen-xl mx-auto`}>
+
       {stages.map((stage, index) => {
         const isCompleted = index < currentStage;
         const isCurrent = index === currentStage;
@@ -52,22 +49,43 @@ const PipelineRow = ({
             </div>
 
             {!isFinal && index < stages.length - 1 && (
-              <div className="hidden sm:flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-gray-400 dark:text-gray-500"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </div>
+              <>
+                {/* Desktop Arrow (→) */}
+                <div className="hidden sm:flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-gray-400 dark:text-gray-500"
+                  >
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </div>
+
+                {/* Mobile Arrow (↓) */}
+                <div className="sm:hidden flex justify-center my-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-gray-400 dark:text-gray-500"
+                  >
+                    <path d="M12 5v14M19 12l-7 7-7-7" />
+                  </svg>
+                </div>
+              </>
             )}
           </React.Fragment>
         );

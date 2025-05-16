@@ -144,10 +144,18 @@ const RecentShipmentsTable: React.FC<Props> = ({
   const shipmentDetails = (shipment: any) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
-        <div><strong>Order ID:</strong> {shipment.order_id}</div>
-        <div><strong>Customer:</strong> {shipment.customer}</div>
-        <div><strong>Carrier:</strong> {shipment.carrier}</div>
-        <div><strong>Shipping Method:</strong> {shipment.shipping_method}</div>
+        <div>
+          <strong>Order ID:</strong> {shipment.order_id}
+        </div>
+        <div>
+          <strong>Customer:</strong> {shipment.customer}
+        </div>
+        <div>
+          <strong>Carrier:</strong> {shipment.carrier}
+        </div>
+        <div>
+          <strong>Shipping Method:</strong> {shipment.shipping_method}
+        </div>
         <div>
           <strong>Status:</strong>{" "}
           <Tag
@@ -155,11 +163,23 @@ const RecentShipmentsTable: React.FC<Props> = ({
             severity={getStatusSeverity(shipment.status)}
           />
         </div>
-        <div><strong>Ship Date:</strong> {formatDate(shipment.ship_date)}</div>
-        <div><strong>Estimated Delivery:</strong> {formatDate(shipment.estimated_delivery)}</div>
-        <div><strong>Origin:</strong> {shipment.origin}</div>
-        <div><strong>Destination:</strong> {shipment.destination}</div>
-        <div><strong>Cost:</strong> ${shipment.cost ? formatValue(shipment.cost) : "0"}</div>
+        <div>
+          <strong>Ship Date:</strong> {formatDate(shipment.ship_date)}
+        </div>
+        <div>
+          <strong>Estimated Delivery:</strong>{" "}
+          {formatDate(shipment.estimated_delivery)}
+        </div>
+        <div>
+          <strong>Origin:</strong> {shipment.origin}
+        </div>
+        <div>
+          <strong>Destination:</strong> {shipment.destination}
+        </div>
+        <div>
+          <strong>Cost:</strong> $
+          {shipment.cost ? formatValue(shipment.cost) : "0"}
+        </div>
       </div>
     );
   };
@@ -180,7 +200,11 @@ const RecentShipmentsTable: React.FC<Props> = ({
       </div>
 
       <DataTable
-        value={filteredShipments}
+        value={
+          isMobile
+            ? filteredShipments.slice(first, first + rows)
+            : filteredShipments
+        }
         paginator={!isMobile}
         first={first}
         rows={rows}
@@ -234,7 +258,9 @@ const RecentShipmentsTable: React.FC<Props> = ({
       {/* Mobile-Only Custom Pagination */}
       <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
         <div className="flex items-center gap-2 mb-2">
-          <label htmlFor="mobileRows" className="whitespace-nowrap">Rows per page:</label>
+          <label htmlFor="mobileRows" className="whitespace-nowrap">
+            Rows per page:
+          </label>
           <select
             id="mobileRows"
             value={rows}
@@ -245,7 +271,9 @@ const RecentShipmentsTable: React.FC<Props> = ({
             className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
           >
             {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
         </div>
@@ -260,12 +288,15 @@ const RecentShipmentsTable: React.FC<Props> = ({
           </button>
 
           <div className="text-center flex-1">
-            Page {Math.floor(first / rows) + 1} of {Math.ceil(filteredShipments.length / rows)}
+            Page {Math.floor(first / rows) + 1} of{" "}
+            {Math.ceil(filteredShipments.length / rows)}
           </div>
 
           <button
             onClick={() =>
-              setFirst(first + rows < filteredShipments.length ? first + rows : first)
+              setFirst(
+                first + rows < filteredShipments.length ? first + rows : first
+              )
             }
             disabled={first + rows >= filteredShipments.length}
             className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
