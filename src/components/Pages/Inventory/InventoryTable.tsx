@@ -23,6 +23,20 @@ interface InventoryTableProps {
   filters: Filters;
 }
 
+// Mobile detection hook
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768); // md = 768px
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  return isMobile;
+};
+
 const formatDate = (date: Date): string => {
   return `${date.getFullYear()}-${(date.getMonth() + 1)
     .toString()
@@ -37,6 +51,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
+
+  const isMobile = useIsMobile();
 
   const statusColors = {
     "Available": "text-green-500",
@@ -217,21 +233,70 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       </div>
 
       <div className="p-4 bg-white dark:bg-gray-900 rounded-b-lg">
-        <div className="flex justify-center dark:text-gray-100">
-          <Paginator
-            first={first}
-            rows={rows}
-            totalRecords={filteredItems.length}
-            onPageChange={(e) => {
-              setFirst(e.first);
-              setRows(e.rows);
-            }}
-            template="RowsPerPageDropdown CurrentPageReport PrevPageLink PageLinks NextPageLink"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
-            rowsPerPageOptions={[5, 10, 20]}
-            className="w-full text-sm dark:text-white"
-          />
-        </div>
+        {/* Desktop Paginator */}
+        {!isMobile && (
+          <div className="flex justify-center dark:text-gray-100">
+            <Paginator
+              first={first}
+              rows={rows}
+              totalRecords={filteredItems.length}
+              onPageChange={(e) => {
+                setFirst(e.first);
+                setRows(e.rows);
+              }}
+              template="RowsPerPageDropdown CurrentPageReport PrevPageLink PageLinks NextPageLink"
+              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
+              rowsPerPageOptions={[5, 10, 20]}
+              className="w-full text-sm dark:text-white"
+            />
+          </div>
+        )}
+
+        {/* Mobile-Only Custom Pagination */}
+        {isMobile && (
+          <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <label htmlFor="mobileRows" className="whitespace-nowrap">Rows per page:</label>
+              <select
+                id="mobileRows"
+                value={rows}
+                onChange={(e) => {
+                  setRows(Number(e.target.value));
+                  setFirst(0);
+                }}
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+              >
+                {[5, 10, 20].map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => setFirst(Math.max(0, first - rows))}
+                disabled={first === 0}
+                className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+              >
+                Prev
+              </button>
+
+              <div className="text-center flex-1">
+                Page {Math.floor(first / rows) + 1} of {Math.ceil(filteredItems.length / rows)}
+              </div>
+
+              <button
+                onClick={() =>
+                  setFirst(first + rows < filteredItems.length ? first + rows : first)
+                }
+                disabled={first + rows >= filteredItems.length}
+                className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

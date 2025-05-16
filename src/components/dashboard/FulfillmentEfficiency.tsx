@@ -185,7 +185,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       },
     },
     tooltip: { theme: isDarkMode ? "dark" : "light" },
-    responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
+    responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
   };
 
   const series = [
@@ -208,12 +208,15 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border ${
-        isDarkMode ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"
-      } px-5 pt-5 sm:px-6 sm:pt-6`}
+      className={`overflow-hidden rounded-2xl shadow-md border ${
+        isDarkMode
+          ? "border-gray-700 bg-gray-900 dark:border-gray-800"
+          : "border-gray-200 bg-white"
+      }`}
+      style={{ padding: "1rem" }} // smaller padding
     >
       {size === "full" && (
-        <div className="flex justify-between items-center mb-21">
+        <div className="flex justify-between items-center mb-15">
           <h2
             className={`text-lg font-semibold ${
               isDarkMode ? "text-white" : "text-gray-800"
@@ -278,18 +281,31 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         </div>
       )}
 
-      {isLoading ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
-      ) : error ? (
-        <p className="text-sm text-red-500">Error: {error}</p>
-      ) : (
-        <Chart
-          options={apexOptions}
-          series={series}
-          type="bar"
-          height={size === "small" ? 200 : 300}
-        />
-      )}
+      <div className="w-full" style={{ height: size === "small" ? 220 : 400 }}>
+        {isLoading ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+        ) : error ? (
+          <p className="text-sm text-red-500">Error: {error}</p>
+        ) : (
+          <Chart
+            options={{
+              ...apexOptions,
+              chart: {
+                ...apexOptions.chart,
+                height: "100%",
+              },
+              grid: {
+                ...apexOptions.grid,
+                padding: { top: 0, right: 0, bottom: 0, left: 0 },
+              },
+            }}
+            series={series}
+            type="bar"
+            height="100%"
+            width="100%"
+          />
+        )}
+      </div>
     </div>
   );
 };

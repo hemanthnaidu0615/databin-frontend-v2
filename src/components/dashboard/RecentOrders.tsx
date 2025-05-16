@@ -110,9 +110,9 @@ export default function RecentOrders() {
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-white/90">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
           Recent Orders
-        </h3>
+        </h2>
         <button
           onClick={handleViewMore}
           className="text-xs font-medium hover:underline"

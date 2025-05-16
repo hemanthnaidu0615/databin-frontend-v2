@@ -156,9 +156,9 @@ export default function OrderTracking(_: OrderTrackingProps) {
           <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                   Order Tracking
-                </h3>
+                </h2>
                 <p className="mt-1 text-gray-500 text-xs dark:text-gray-400">
                   Monitor orders and fulfillment speed
                 </p>
@@ -166,7 +166,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
               <button
                 onClick={handleViewMore}
-                className="text-xs font-medium hover:underline mt-1"
+                className="text-xs font-medium hover:underline mt-11"
                 style={{ color: "#9614d0" }}
               >
                 View More

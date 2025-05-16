@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useTheme } from "next-themes";
-import Inventory from "../../images/inventory.png";
-import LocalShipping from "../../images/local_shipping.png";
-import Warning from "../../images/warning.png";
+import { PrimeIcons } from "primereact/api";
 import { axiosInstance } from "../../axios";
+import "primeicons/primeicons.css";
 
 const formatValue = (value: number) => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
-  return value.toFixed(0);
+  return new Intl.NumberFormat("en-IN").format(value);
 };
 
 const formatDate = (date: string) => {
@@ -22,34 +19,38 @@ const formatDate = (date: string) => {
     .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
     .getSeconds()
     .toString()
-    .padStart(3, "0")}`;
+    .padStart(2, "0")}`;
 };
 
 export default function OrdersFulfillmentMetrics() {
   const [metrics, setMetrics] = useState([
     {
-      icon: Inventory,
+      icon: PrimeIcons.BOX,
       label: "Total Orders",
       value: "-",
-      glowColor: "#22C55E",
+      iconColor: "text-purple-400",
+      glowColor: "#8B5CF6",
     },
     {
-      icon: LocalShipping,
+      icon: PrimeIcons.CHECK_CIRCLE,
       label: "Fulfillment Rate",
       value: "-",
+      iconColor: "text-green-400",
       glowColor: "#22C55E",
     },
     {
-      icon: Warning,
-      label: "Delayed Orders",
-      value: "-",
-      glowColor: "#EF4444",
-    },
-    {
-      icon: LocalShipping,
+      icon: PrimeIcons.SEND,
       label: "Orders in Transit",
       value: "-",
-      glowColor: "#22C55E",
+      iconColor: "text-yellow-400",
+      glowColor: "#FACC15",
+    },
+    {
+      icon: PrimeIcons.EXCLAMATION_TRIANGLE,
+      label: "Delayed Orders",
+      value: "-",
+      iconColor: "text-red-400",
+      glowColor: "#F87171",
     },
   ]);
 
@@ -59,100 +60,89 @@ export default function OrdersFulfillmentMetrics() {
   const { theme } = useTheme();
 
   useEffect(() => {
-  async function fetchMetrics() {
-    try {
-      const formattedStartDate = formatDate(startDate);
-      const formattedEndDate = formatDate(endDate);
+    async function fetchMetrics() {
+      try {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
 
-      const params: Record<string, string> = {
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-      };
+        const params: Record<string, string> = {
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        };
 
-      if (enterpriseKey) {
-        params.enterpriseKey = enterpriseKey;
+        if (enterpriseKey) {
+          params.enterpriseKey = enterpriseKey;
+        }
+
+        const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
+          axiosInstance.get("/dashboard-kpi/total-orders", { params }),
+          axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
+          axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
+        ]);
+
+        setMetrics([
+          {
+            icon: PrimeIcons.BOX,
+            label: "Total Orders",
+            value: formatValue(totalOrdersRes.data.total_orders),
+            iconColor: "text-purple-400",
+            glowColor: "#8B5CF6",
+          },
+          {
+            icon: PrimeIcons.CHECK_CIRCLE,
+            label: "Fulfillment Rate",
+            value: `${fulfillmentRateRes.data.fulfillment_rate}%`,
+            iconColor: "text-green-400",
+            glowColor: "#22C55E",
+          },
+          {
+            icon: PrimeIcons.SEND,
+            label: "Orders in Transit",
+            value: formatValue(shipmentStatusRes.data.in_transit_orders),
+            iconColor: "text-yellow-400",
+            glowColor: "#FACC15",
+          },
+          {
+            icon: PrimeIcons.EXCLAMATION_TRIANGLE,
+            label: "Delayed Orders",
+            value: `${shipmentStatusRes.data.delayed_percentage}%`,
+            iconColor: "text-red-400",
+            glowColor: "#F87171",
+          },
+        ]);
+      } catch (error) {
+        console.error("Error fetching metrics:", error);
       }
-
-      const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
-        axiosInstance.get("/dashboard-kpi/total-orders", { params }),
-        axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
-        axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
-      ]);
-
-      const data = [
-        totalOrdersRes.data,
-        fulfillmentRateRes.data,
-        shipmentStatusRes.data,
-      ];
-
-      setMetrics([
-        {
-          icon: Inventory,
-          label: "Total Orders",
-          value: formatValue(data[0].total_orders),
-          glowColor: "#22C55E",
-        },
-        {
-          icon: LocalShipping,
-          label: "Fulfillment Rate",
-          value: data[1].fulfillment_rate,
-          glowColor: "#22C55E",
-        },
-        {
-          icon: Warning,
-          label: "Delayed Orders",
-          value: data[2].delayed_percentage,
-          glowColor: "#EF4444",
-        },
-        {
-          icon: LocalShipping,
-          label: "Orders in Transit",
-          value: formatValue(data[2].in_transit_orders),
-          glowColor: "#22C55E",
-        },
-      ]);
-    } catch (error) {
-      console.error("Error fetching metrics:", error);
     }
-  }
 
-  if (startDate && endDate) {
-    fetchMetrics();
-  }
-}, [startDate, endDate, enterpriseKey]);
+    if (startDate && endDate) {
+      fetchMetrics();
+    }
+  }, [startDate, endDate, enterpriseKey]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 font-sans">
       {metrics.map((item, index) => (
         <div
           key={index}
-          className="group relative flex flex-col gap-2 px-5 py-4 rounded-lg bg-white/70 dark:bg-white/5 shadow-sm backdrop-blur-md border-l-4 transition-transform transform hover:scale-[1.015] hover:shadow-md"
+          className={`group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-[#1C2333] text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]`}
           style={{ borderColor: item.glowColor }}
         >
+          {/* Glowing border layer */}
           <div
-            className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
+            className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none"
             style={{
               borderColor: item.glowColor,
               boxShadow: `0 0 15px ${item.glowColor}`,
             }}
           ></div>
 
-          <div className="flex items-center gap-3 text-gray-800 dark:text-gray-200">
-            <img
-              src={item.icon}
-              alt={item.label}
-              className={`w-6 h-6 ${
-                theme === "light" && item.icon === Warning
-                  ? "filter brightness-0"
-                  : ""
-              }`}
-            />
+          <div className="flex items-center gap-3 relative z-10 text-white/80">
+            <i className={`pi ${item.icon} ${item.iconColor} text-lg`} />
             <span className="text-sm font-medium">{item.label}</span>
           </div>
 
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {item.value}
-          </div>
+          <div className="text-2xl font-extrabold relative z-10">{item.value}</div>
         </div>
       ))}
     </div>
