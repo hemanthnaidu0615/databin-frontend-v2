@@ -8,6 +8,18 @@ import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { motion } from "framer-motion";
 
+// Mobile detection hook
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+};
+
 interface Order {
   order_id: number;
   customer?: string;
@@ -46,8 +58,10 @@ const OrdersInProcess = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [visible, setVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [page] = useState(1);
-  const [rows] = useState(5);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(5);
+
+  const isMobile = useIsMobile();
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
@@ -58,22 +72,10 @@ const OrdersInProcess = () => {
       .toString()
       .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
-  // This function formats the ETA to display only the date in YYYY-MM-DD format
   const formatETA = (eta: string) => {
-    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") {
-      return eta;
-    }
-
-    // Create a new Date object from the ISO string
+    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") return eta;
     const date = new Date(eta);
-
-    // Check if the date is valid
-    if (isNaN(date.getTime())) {
-      return eta; // If invalid, return the original eta string
-    }
-
-    // Format to "YYYY-MM-DD"
-    return date.toISOString().slice(0, 10);
+    return isNaN(date.getTime()) ? eta : date.toISOString().slice(0, 10);
   };
 
   useEffect(() => {
@@ -130,7 +132,15 @@ const OrdersInProcess = () => {
       order.event.toLowerCase().includes(globalFilter.toLowerCase())
   );
 
-  // const statusTemplate = (rowData: Order) => <Tag value={rowData.status} />;
+  const getPageOptions = () => {
+    const total = filteredOrders.length;
+    if (total <= 5) return [5];
+    if (total <= 10) return [5, 10];
+    if (total <= 20) return [5, 10, 15, 20];
+    if (total <= 50) return [10, 20, 30, 50];
+    return [10, 20, 50, 100];
+  };
+
   const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
   const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
 
@@ -148,8 +158,6 @@ const OrdersInProcess = () => {
     />
   );
 
-
-
   return (
     <div className="mt-6">
       <div className="border rounded-xl shadow-sm p-4 overflow-x-auto bg-white dark:bg-gray-900">
@@ -165,14 +173,18 @@ const OrdersInProcess = () => {
             className="p-datatable-sm"
             paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-            rowsPerPageOptions={[5, 10, 20, 50]}
+            rowsPerPageOptions={getPageOptions()}
+            onPage={(e) => {
+              setFirst(e.first);
+              setRows(e.rows);
+            }}
+            first={first}
             emptyMessage="No orders found."
             responsiveLayout="scroll"
             scrollable
           >
             <Column field="order_id" header="Order ID" sortable />
             <Column header="Status" body={eventTemplate} sortable />
-            {/* <Column header="Event" body={eventTemplate} sortable /> */}
             <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
           </DataTable>
@@ -180,29 +192,97 @@ const OrdersInProcess = () => {
 
         {/* Mobile View */}
         <div className="sm:hidden">
-          {filteredOrders
-            .slice((page - 1) * rows, page * rows)
-            .map((order) => (
-              <div
-                key={order.order_id}
-                className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
-              >
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
-                  <Tag value={mapEventToStatus(order.event)} className="text-xs" />
-                </div>
-                <p className="text-xs mt-1">Event: {order.event}</p>
-                <p className="text-xs">ETA: {formatETA(order.eta)}</p>
-                <div className="mt-2">
-                  <Button
-                    label="View"
-                    icon="pi pi-eye"
-                    className="p-button-sm p-button-text"
-                    onClick={() => handleViewClick(order)}
-                  />
-                </div>
+          {filteredOrders.slice(first, first + rows).map((order) => (
+            <div
+              key={order.order_id}
+              className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
+                <Tag value={mapEventToStatus(order.event)} className="text-xs" />
               </div>
-            ))}
+              <p className="text-xs mt-1">Event: {order.event}</p>
+              <p className="text-xs">ETA: {formatETA(order.eta)}</p>
+              <div className="mt-2">
+                <Button
+                  label="View"
+                  icon="pi pi-eye"
+                  className="p-button-sm p-button-text"
+                  onClick={() => handleViewClick(order)}
+                />
+              </div>
+            </div>
+          ))}
+
+          {/* Mobile Pagination */}
+          <div className="mt-4 text-sm text-gray-800 dark:text-gray-100">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <label htmlFor="mobileRows" className="whitespace-nowrap">
+                  Rows per page:
+                </label>
+                <select
+                  id="mobileRows"
+                  value={rows}
+                  onChange={(e) => {
+                    setRows(Number(e.target.value));
+                    setFirst(0);
+                  }}
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                >
+                  {getPageOptions().map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                Page {Math.floor(first / rows) + 1} of{" "}
+                {Math.ceil(filteredOrders.length / rows)}
+              </div>
+            </div>
+
+            <div className="flex justify-between gap-2">
+              <button
+                onClick={() => setFirst(0)}
+                disabled={first === 0}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                ⏮ First
+              </button>
+              <button
+                onClick={() => setFirst(Math.max(0, first - rows))}
+                disabled={first === 0}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() =>
+                  setFirst(
+                    first + rows < filteredOrders.length ? first + rows : first
+                  )
+                }
+                disabled={first + rows >= filteredOrders.length}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                Next
+              </button>
+              <button
+                onClick={() =>
+                  setFirst(
+                    (Math.ceil(filteredOrders.length / rows) - 1) * rows
+                  )
+                }
+                disabled={first + rows >= filteredOrders.length}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                ⏭ Last
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -222,9 +302,15 @@ const OrdersInProcess = () => {
         >
           {selectedOrder ? (
             <>
-              <div><strong>Status:</strong> {mapEventToStatus(selectedOrder.event)}</div>
-              <div><strong>ETA:</strong> {formatETA(selectedOrder.eta)}</div>
-              <div><strong>Event:</strong> {selectedOrder.event}</div>
+              <div>
+                <strong>Status:</strong> {mapEventToStatus(selectedOrder.event)}
+              </div>
+              <div>
+                <strong>ETA:</strong> {formatETA(selectedOrder.eta)}
+              </div>
+              <div>
+                <strong>Event:</strong> {selectedOrder.event}
+              </div>
             </>
           ) : (
             <p>No order selected.</p>

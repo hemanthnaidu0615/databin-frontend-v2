@@ -55,9 +55,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   const isMobile = useIsMobile();
 
   const statusColors = {
-    "Available": "text-green-500",
+    Available: "text-green-500",
     "Out of Stock": "text-red-500",
-    "Low Stock": "text-yellow-500"
+    "Low Stock": "text-yellow-500",
   };
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
@@ -77,6 +77,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
         startDate: formattedStart,
         endDate: formattedEnd,
       });
+
+
 
       try {
         const response = await fetch(
@@ -108,33 +110,38 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       let data = [...inventoryItems];
 
       if (filters.selectedRegion) {
-        data = data.filter(item =>
-          item.warehouse.toLowerCase() === filters.selectedRegion.toLowerCase()
+        data = data.filter(
+          (item) =>
+            item.warehouse.toLowerCase() ===
+            filters.selectedRegion.toLowerCase()
         );
       }
 
       if (filters.selectedSource) {
-        data = data.filter(item =>
-          item.source.toLowerCase() === filters.selectedSource.toLowerCase()
+        data = data.filter(
+          (item) =>
+            item.source.toLowerCase() === filters.selectedSource.toLowerCase()
         );
       }
 
       if (filters.selectedLocation) {
-        data = data.filter(item =>
-          item.states.toLowerCase().includes(filters.selectedLocation.toLowerCase())
+        data = data.filter((item) =>
+          item.states
+            .toLowerCase()
+            .includes(filters.selectedLocation.toLowerCase())
         );
       }
 
       if (selectedStatus) {
-        data = data.filter(item => item.status === selectedStatus);
+        data = data.filter((item) => item.status === selectedStatus);
       }
 
       if (selectedCategory) {
-        data = data.filter(item => item.category === selectedCategory);
+        data = data.filter((item) => item.category === selectedCategory);
       }
 
       if (productSearch) {
-        data = data.filter(item =>
+        data = data.filter((item) =>
           item.name.toLowerCase().includes(productSearch.toLowerCase())
         );
       }
@@ -150,6 +157,16 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
     selectedCategory,
     productSearch,
   ]);
+
+      // Insert this helper inside the InventoryTable component
+const getPageOptions = () => {
+  const total = filteredItems.length;
+  if (total <= 5) return [5];
+  if (total <= 10) return [5, 10];
+  if (total <= 20) return [5, 10, 15, 20];
+  if (total <= 50) return [10, 20, 30, 50];
+  return [10, 20, 50, 100];
+};
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
@@ -223,7 +240,11 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                 <td className="py-2 px-1">{item.warehouse}</td>
                 <td className="py-2 px-1">{item.source}</td>
                 <td className="py-2 px-1">{item.states}</td>
-                <td className={`py-2 px-1 font-medium ${statusColors[item.status as keyof typeof statusColors]}`}>
+                <td
+                  className={`py-2 px-1 font-medium ${
+                    statusColors[item.status as keyof typeof statusColors]
+                  }`}
+                >
                   {item.status}
                 </td>
               </tr>
@@ -255,44 +276,73 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
         {/* Mobile-Only Custom Pagination */}
         {isMobile && (
           <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <label htmlFor="mobileRows" className="whitespace-nowrap">Rows per page:</label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setFirst(0);
-                }}
-                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
-              >
-                {[5, 10, 20].map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+            {/* Top Row: Dropdown & Page Info */}
+            <div className="flex items-center justify-between gap-2 mb-2 w-full">
+              <div className="flex items-center gap-2">
+                <label htmlFor="mobileRows" className="whitespace-nowrap">
+                  Rows per page:
+                </label>
+                <select
+                  id="mobileRows"
+                  value={rows}
+                  onChange={(e) => {
+                    setRows(Number(e.target.value));
+                    setFirst(0);
+                  }}
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                >
+                  {getPageOptions().map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="text-black dark:text-white font-medium">
+                Page {Math.floor(first / rows) + 1} of{" "}
+                {Math.ceil(filteredItems.length / rows)}
+              </div>
             </div>
 
-            <div className="flex justify-between items-center">
+            {/* Navigation Buttons */}
+            <div className="flex justify-between gap-2 text-sm w-full px-2">
+              <button
+                onClick={() => setFirst(0)}
+                disabled={first === 0}
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                ⏮ First
+              </button>
+
               <button
                 onClick={() => setFirst(Math.max(0, first - rows))}
                 disabled={first === 0}
-                className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Prev
               </button>
 
-              <div className="text-center flex-1">
-                Page {Math.floor(first / rows) + 1} of {Math.ceil(filteredItems.length / rows)}
-              </div>
+              <button
+                onClick={() =>
+                  setFirst(
+                    first + rows < filteredItems.length ? first + rows : first
+                  )
+                }
+                disabled={first + rows >= filteredItems.length}
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
 
               <button
                 onClick={() =>
-                  setFirst(first + rows < filteredItems.length ? first + rows : first)
+                  setFirst((Math.ceil(filteredItems.length / rows) - 1) * rows)
                 }
                 disabled={first + rows >= filteredItems.length}
-                className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
-                Next
+                ⏭ Last
               </button>
             </div>
           </div>

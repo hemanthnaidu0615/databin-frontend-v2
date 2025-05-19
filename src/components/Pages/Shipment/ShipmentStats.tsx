@@ -71,8 +71,8 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
       title: 'Total Shipments',
       value: totalShipments !== null ? totalShipments.toLocaleString() : '--',
       icon: PrimeIcons.BOX,
-      iconColor: 'text-violet-400',
-      glowColor: '#8b5cf6',
+      iconColor: 'text-violet-500',
+      glowColor: '#8B5CF6',
     },
     {
       title: 'On-Time Delivery',
@@ -81,21 +81,21 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
           ? `${((onTimeShipments / totalShipments) * 100).toFixed(1)}%`
           : '--',
       icon: PrimeIcons.CLOCK,
-      iconColor: 'text-green-400',
+      iconColor: 'text-green-500',
       glowColor: '#22C55E',
     },
     {
       title: 'Avg Delivery Time',
       value: avgDeliveryTime ? `${avgDeliveryTime} days` : '--',
       icon: PrimeIcons.SPINNER,
-      iconColor: 'text-yellow-400',
-      glowColor: '#ffc400',
+      iconColor: 'text-yellow-500',
+      glowColor: '#FACC15',
     },
     {
       title: 'Delayed Shipments',
       value: delayedShipments !== null ? delayedShipments.toLocaleString() : '--',
       icon: PrimeIcons.EXCLAMATION_TRIANGLE,
-      iconColor: 'text-red-400',
+      iconColor: 'text-red-500',
       glowColor: '#EF4444',
     },
   ];
@@ -105,10 +105,9 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
       {stats.map((stat, index) => (
         <div
           key={index}
-          className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-[#1C2333] text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
+          className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
           style={{ borderColor: stat.glowColor }}
         >
-          {/* Glowing border layer */}
           <div
             className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none"
             style={{
@@ -117,7 +116,7 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
             }}
           ></div>
 
-          <div className="flex items-center gap-2 relative z-10 text-white/80">
+          <div className="flex items-center gap-2 relative z-10 text-black/60 dark:text-white/80">
             <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
             <span className="text-sm font-medium">{stat.title}</span>
           </div>

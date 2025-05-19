@@ -22,7 +22,9 @@ const ShipmentPage = () => {
     const fetchFilters = async () => {
       try {
         setLoadingFilters(true);
-        const res = await axios.get<{ carriers: string[]; shipping_methods: string[] }>('http://localhost:8080/api/shipment-filters/filter-values');
+        const res = await axios.get<{ carriers: string[]; shipping_methods: string[] }>(
+          'http://localhost:8080/api/shipment-filters/filter-values'
+        );
         setCarriers(res.data.carriers || []);
         setShippingMethods(res.data.shipping_methods || []);
       } catch (err) {
@@ -37,7 +39,7 @@ const ShipmentPage = () => {
   }, []);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 overflow-x-hidden">
       <div>
         <h1 className="text-2xl font-bold">Shipment Analytics</h1>
         <p className="text-sm text-zinc-400">
@@ -83,13 +85,19 @@ const ShipmentPage = () => {
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
       {/* KPIs */}
-      <ShipmentStats selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      <div className="overflow-x-auto">
+        <ShipmentStats selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      </div>
 
       {/* Charts */}
-      <ShipmentCharts selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      <div className="overflow-x-auto">
+        <ShipmentCharts selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      </div>
 
       {/* Table */}
-      <RecentShipmentsTable selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      <div className="overflow-x-auto">
+        <RecentShipmentsTable selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      </div>
     </div>
   );
 };

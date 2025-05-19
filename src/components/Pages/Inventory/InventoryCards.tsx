@@ -6,10 +6,9 @@ import "primeicons/primeicons.css";
 // Helper function to format dates
 const formatDate = (date: string | Date) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")}`;
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
 const InventoryCards = () => {
@@ -83,14 +82,14 @@ const InventoryCards = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
       {error ? (
         <div className="col-span-full text-red-500 text-sm">{error}</div>
       ) : (
         cardData.map((card, index) => (
           <div
             key={index}
-            className="group relative p-5 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-l-4 transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.02]"
+            className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
             style={{ borderLeftColor: card.border }}
           >
             <div
