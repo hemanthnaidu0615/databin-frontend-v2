@@ -19,28 +19,28 @@ const FulfillmentStats = () => {
       title: "Orders in Pipeline",
       value: 0,
       icon: PrimeIcons.INBOX,
-      iconColor: "text-purple-400",
+      iconColor: "text-purple-500",
       glowColor: "#8B5CF6",
     },
     {
       title: "Avg Fulfillment Time",
       value: "-",
       icon: PrimeIcons.CLOCK,
-      iconColor: "text-green-400",
+      iconColor: "text-green-500",
       glowColor: "#22C55E",
     },
     {
       title: "On-Time Rate",
       value: "-",
       icon: PrimeIcons.CHECK_CIRCLE,
-      iconColor: "text-yellow-400",
+      iconColor: "text-yellow-500",
       glowColor: "#FACC15",
     },
     {
       title: "Top Channel",
       value: "-",
       icon: PrimeIcons.SEND,
-      iconColor: "text-blue-400",
+      iconColor: "text-blue-500",
       glowColor: "#3B82F6",
     },
   ]);
@@ -73,28 +73,28 @@ const FulfillmentStats = () => {
             title: "Orders in Pipeline",
             value: data.orders_in_pipeline ?? 0,
             icon: PrimeIcons.INBOX,
-            iconColor: "text-purple-400",
+            iconColor: "text-purple-500",
             glowColor: "#8B5CF6",
           },
           {
             title: "Avg Fulfillment Time",
             value: data.avg_fulfillment_time ?? "-",
             icon: PrimeIcons.CLOCK,
-            iconColor: "text-green-400",
+            iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
           {
             title: "On-Time Rate",
             value: data.on_time_rate ?? "-",
             icon: PrimeIcons.CHECK_CIRCLE,
-            iconColor: "text-yellow-400",
+            iconColor: "text-yellow-500",
             glowColor: "#FACC15",
           },
           {
             title: "Top Channel",
             value: data.top_channel ?? "-",
             icon: PrimeIcons.SEND,
-            iconColor: "text-blue-400",
+            iconColor: "text-blue-500",
             glowColor: "#3B82F6",
           },
         ]);
@@ -111,10 +111,9 @@ const FulfillmentStats = () => {
       {stats.map((stat, index) => (
         <div
           key={index}
-          className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-[#1C2333] text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
+          className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
           style={{ borderColor: stat.glowColor }}
         >
-          {/* Glow Effect */}
           <div
             className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none"
             style={{
@@ -123,7 +122,7 @@ const FulfillmentStats = () => {
             }}
           ></div>
 
-          <div className="flex items-center gap-2 relative z-10 text-white/80">
+          <div className="flex items-center gap-2 relative z-10 text-black/60 dark:text-white/80">
             <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
             <span className="text-sm font-medium">{stat.title}</span>
           </div>

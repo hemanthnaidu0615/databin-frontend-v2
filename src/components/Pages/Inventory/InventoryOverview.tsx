@@ -28,7 +28,7 @@ const InventoryOverview: React.FC<{
   filters: Filters;
   isSidebarOpen?: boolean;
   isDarkTheme?: boolean;
-}> = ({  isSidebarOpen = true, isDarkTheme = false }) => {
+}> = ({ isSidebarOpen = true, isDarkTheme = false }) => {
   const [warehouseData, setWarehouseData] = useState<RegionData[]>([]);
   const [alertsData, setAlertsData] = useState([
     { label: "Available", value: "0%", count: 0, color: "text-green-500" },
@@ -36,6 +36,7 @@ const InventoryOverview: React.FC<{
     { label: "Out of Stock", value: "0%", count: 0, color: "text-red-500" },
   ]);
   const [turnoverRates, setTurnoverRates] = useState<number[]>([]);
+  const [turnoverCategories, setTurnoverCategories] = useState<string[]>([]);
   const [restockSchedule, setRestockSchedule] = useState<any[]>([]);
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
@@ -46,7 +47,6 @@ const InventoryOverview: React.FC<{
       .toString()
       .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
-  // Region distribution API
   useEffect(() => {
     const fetchRegionData = async () => {
       if (!startDate || !endDate) return;
@@ -72,7 +72,6 @@ const InventoryOverview: React.FC<{
     fetchRegionData();
   }, [startDate, endDate]);
 
-  // Turnover rates and low stock alerts API
   useEffect(() => {
     const fetchTurnoverAndAlerts = async () => {
       if (!startDate || !endDate) return;
@@ -91,8 +90,49 @@ const InventoryOverview: React.FC<{
         );
         const data = await response.json();
 
-        // Set turnover rates and restock schedule
-        setTurnoverRates(data.turnover_rates.map((item: any) => item.turnover_rate));
+        const rates = data.turnover_rates.map(
+          (item: any) => item.turnover_rate
+        );
+        setTurnoverRates(rates);
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const daysDiff =
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        let labels: string[] = [];
+
+        if (daysDiff > 360) {
+          const startYear = start.getFullYear();
+          const endYear = end.getFullYear();
+          for (let y = startYear; y <= endYear; y++) {
+            labels.push(`${y}`);
+          }
+        } else if (daysDiff > 60) {
+          const date = new Date(start);
+          while (date <= end) {
+            labels.push(
+              `${date.getFullYear()}-${(date.getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}`
+            );
+            date.setMonth(date.getMonth() + 1);
+          }
+        } else {
+          const date = new Date(start);
+          while (date <= end) {
+            labels.push(
+              `${date.getFullYear()}-${(date.getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}-${date
+                .getDate()
+                .toString()
+                .padStart(2, "0")}`
+            );
+            date.setDate(date.getDate() + 1);
+          }
+        }
+
+        setTurnoverCategories(labels);
         setRestockSchedule(data.low_stock_alerts);
       } catch (error) {
         console.error("Failed to fetch turnover and alerts data:", error);
@@ -102,7 +142,6 @@ const InventoryOverview: React.FC<{
     fetchTurnoverAndAlerts();
   }, [startDate, endDate]);
 
-  // Alerts API
   useEffect(() => {
     const fetchAlerts = async () => {
       if (!startDate || !endDate) return;
@@ -144,20 +183,18 @@ const InventoryOverview: React.FC<{
     fetchAlerts();
   }, [startDate, endDate]);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      ApexCharts.exec("warehouse-chart", "updateOptions", {});
-      ApexCharts.exec("turnover-chart", "updateOptions", {});
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [isSidebarOpen]);
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+  //     ApexCharts.exec("warehouse-chart", "updateOptions", {});
+  //     ApexCharts.exec("turnover-chart", "updateOptions", {});
+  //   }, 400);
+  //   return () => clearTimeout(timeout);
+  // }, [isSidebarOpen]);
 
   const warehouseChartOptions = {
     chart: { id: "warehouse-chart", type: "bar", toolbar: { show: false } },
     colors: ["#9614d0"],
-    plotOptions: {
-      bar: { borderRadius: 6, columnWidth: "50%" },
-    },
+    plotOptions: { bar: { borderRadius: 6, columnWidth: "50%" } },
     dataLabels: { enabled: false },
     xaxis: {
       categories: warehouseData.map((d) => d.region),
@@ -166,12 +203,19 @@ const InventoryOverview: React.FC<{
         text: "Region",
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
       },
+      crosshairs: {
+        show: false, // 👈 disables the vertical crosshair
+      },
     },
+
     yaxis: {
       labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
       title: {
         text: "Inventory %",
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
+      },
+      crosshairs: {
+        show: false, // 👈 disables the vertical crosshair
       },
     },
     tooltip: { theme: isDarkTheme ? "dark" : "light" },
@@ -195,11 +239,19 @@ const InventoryOverview: React.FC<{
       strokeWidth: 2,
     },
     xaxis: {
-      categories: ["Week 1", "Week 2", "Week 3", "Week 4"],
+      categories: turnoverCategories,
       labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
       title: {
-        text: "Week",
+        text:
+          turnoverCategories.length > 0 && turnoverCategories[0].length === 4
+            ? "Year"
+            : turnoverCategories[0]?.length <= 7
+            ? "Month"
+            : "Date",
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
+      },
+      crosshairs: {
+        show: false, // 👈 disables the vertical crosshair
       },
     },
     yaxis: {
@@ -210,12 +262,18 @@ const InventoryOverview: React.FC<{
       },
     },
     tooltip: { theme: isDarkTheme ? "dark" : "light" },
+    crosshairs: {
+      show: false, // 👈 disables the vertical crosshair
+    },
   };
 
   const turnoverChartSeries = [
     {
       name: "Turnover Rate",
-      data: turnoverRates,
+      data: turnoverRates.map((rate, i) => ({
+        x: turnoverCategories[i] ?? `Point ${i + 1}`,
+        y: rate,
+      })),
     },
   ];
 
@@ -227,7 +285,6 @@ const InventoryOverview: React.FC<{
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 transition-all duration-500 ease-in-out">
-      {/* Left Column */}
       <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
         <h3 className="text-lg font-semibold mb-1">Warehouse Inventory</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -245,7 +302,7 @@ const InventoryOverview: React.FC<{
           ))}
         </div>
 
-        <div className="h-56">
+        <div className="w-full h-56 overflow-hidden">
           <ReactApexChart
             options={warehouseChartOptions as any}
             series={warehouseChartSeries}
@@ -255,7 +312,6 @@ const InventoryOverview: React.FC<{
         </div>
       </div>
 
-      {/* Right Column */}
       <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
         <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
           Inventory Turnover & Alerts

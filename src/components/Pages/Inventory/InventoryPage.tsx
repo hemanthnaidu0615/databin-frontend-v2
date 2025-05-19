@@ -8,16 +8,21 @@ const InventoryPage = () => {
     selectedSource: '',
     selectedLocation: '',
   };
+
   return (
-    <div className="p-4 space-y-6">
+    <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 overflow-x-hidden">
       {/* Section 1: Top Summary Cards */}
       <InventoryCards />
 
       {/* Section 2: Overview Charts */}
-      <InventoryOverview filters={filters} />
+      <div className="overflow-x-auto">
+        <InventoryOverview filters={filters} />
+      </div>
 
       {/* Section 3: Full Inventory Table */}
-      <InventoryTable filters={filters} />
+      <div className="overflow-x-auto">
+        <InventoryTable filters={filters} />
+      </div>
     </div>
   );
 };

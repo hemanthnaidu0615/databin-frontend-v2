@@ -184,10 +184,19 @@ const RecentShipmentsTable: React.FC<Props> = ({
     );
   };
 
+  const getPageOptions = () => {
+    const total = filteredShipments.length;
+    if (total <= 5) return [5];
+    if (total <= 10) return [5, 10];
+    if (total <= 20) return [5, 10, 15, 20];
+    if (total <= 50) return [10, 20, 30, 50];
+    return [10, 20, 50, 100];
+  };
+
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
-        <h2 className="text-sm md:text-lg font-semibold">Orders in Process</h2>
+        <h2 className="text-sm md:text-lg font-semibold">Recent Shipments</h2>
         <span className="p-input-icon-left w-full md:w-auto">
           <InputText
             type="search"
@@ -217,7 +226,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
         responsiveLayout="scroll"
         paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-        rowsPerPageOptions={[5, 10, 20, 50]}
+        rowsPerPageOptions={getPageOptions()}
         sortMode="multiple"
         scrollable
         scrollHeight="flex"
@@ -256,55 +265,76 @@ const RecentShipmentsTable: React.FC<Props> = ({
       </DataTable>
 
       {/* Mobile-Only Custom Pagination */}
-      <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <label htmlFor="mobileRows" className="whitespace-nowrap">
-            Rows per page:
-          </label>
-          <select
-            id="mobileRows"
-            value={rows}
-            onChange={(e) => {
-              setRows(Number(e.target.value));
-              setFirst(0);
-            }}
-            className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
-          >
-            {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
+      {isMobile && (
+        <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
+          <div className="flex items-center justify-between gap-2 mb-2 w-full">
+            <div className="flex items-center gap-2">
+              <label htmlFor="mobileRows" className="whitespace-nowrap">
+                Rows per page:
+              </label>
+              <select
+                id="mobileRows"
+                value={rows}
+                onChange={(e) => {
+                  setRows(Number(e.target.value));
+                  setFirst(0);
+                }}
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+              >
+                {getPageOptions().map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="flex justify-between items-center">
-          <button
-            onClick={() => setFirst(Math.max(0, first - rows))}
-            disabled={first === 0}
-            className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
-          >
-            Prev
-          </button>
-
-          <div className="text-center flex-1">
-            Page {Math.floor(first / rows) + 1} of{" "}
-            {Math.ceil(filteredShipments.length / rows)}
+            <div>
+              Page {Math.floor(first / rows) + 1} of{" "}
+              {Math.ceil(filteredShipments.length / rows)}
+            </div>
           </div>
 
-          <button
-            onClick={() =>
-              setFirst(
-                first + rows < filteredShipments.length ? first + rows : first
-              )
-            }
-            disabled={first + rows >= filteredShipments.length}
-            className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
-          >
-            Next
-          </button>
+          <div className="flex justify-between gap-2 text-sm w-full px-2">
+            <button
+              onClick={() => setFirst(0)}
+              disabled={first === 0}
+              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              ⏮ First
+            </button>
+            <button
+              onClick={() => setFirst(Math.max(0, first - rows))}
+              disabled={first === 0}
+              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() =>
+                setFirst(
+                  first + rows < filteredShipments.length ? first + rows : first
+                )
+              }
+              disabled={first + rows >= filteredShipments.length}
+              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              Next
+            </button>
+            <button
+              onClick={() =>
+                setFirst(
+                  (Math.ceil(filteredShipments.length / rows) - 1) * rows
+                )
+              }
+              disabled={first + rows >= filteredShipments.length}
+              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              ⏭ Last
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <Dialog
         header="Shipment Details"

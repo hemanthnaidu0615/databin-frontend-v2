@@ -119,8 +119,7 @@ const USMap = () => {
     <div className="w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900 rounded-xl relative">
       <ComposableMap
         projection="geoAlbersUsa"
-        width={980}
-        height={520}
+viewBox="1 1 790 590"
         style={{ width: "100%", height: "auto" }}
       >
         <Geographies geography={US_TOPO_JSON}>
