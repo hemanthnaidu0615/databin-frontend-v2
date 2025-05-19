@@ -4,6 +4,7 @@ import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import axios from "axios";
 import { toast } from 'react-toastify';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const roleMappings: any[] = [
   { id: 1, role_level: "admin", department_id: null, identifier: "admin" },
@@ -149,20 +150,20 @@ export const AddUser = ({  setUsers, editingUser, onClose }: any) => {
     : currentUser?.department
       ? [currentUser.department.charAt(0).toUpperCase() + currentUser.department.slice(1)]
       : [];
-
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">
-          First Name<span className="text-red-500">*</span>
+        <label className="block text-s font-medium text-gray-700 mb-1 dark:text-gray-300">
+           Name<span className="text-red-500">*</span>
         </label>
         <InputText value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full text-xs" />
         {errors.firstName && <p className="text-red-500 text-xs mt-1">First name is required</p>}
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">
+        <label className="block text-s font-medium text-gray-700 mb-1 dark:text-gray-300">
           Email (Username)<span className="text-red-500">*</span>
         </label>
         <InputText value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} className="w-full text-xs" />
@@ -170,17 +171,30 @@ export const AddUser = ({  setUsers, editingUser, onClose }: any) => {
       </div>
 
       {!editingUser && (
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            Password<span className="text-red-500">*</span>
-          </label>
-          <InputText type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full text-xs" />
-          {errors.password && <p className="text-red-500 text-xs mt-1">Password is required</p>}
-        </div>
-      )}
+  <div className="relative">
+    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-300">
+      Password<span className="text-red-500">*</span>
+    </label>
+    <InputText
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full text-xs pr-10"
+    />
+    <div
+      className="absolute right-2 top-[38px] text-gray-500 cursor-pointer"
+      onClick={() => setShowPassword(!showPassword)}
+    >
+      {showPassword ? <FaEyeSlash /> : <FaEye />}
+    </div>
+    {errors.password && (
+      <p className="text-red-500 text-xs mt-1">Password is required</p>
+    )}
+  </div>
+)}
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Role Level</label>
+        <label className="block text-s font-medium text-gray-700 mb-1 dark:text-gray-300">Role Level</label>
         <Dropdown value={roleLevel} onChange={(e) => setRoleLevel(e.value)} options={filteredRoleLevels} placeholder="Select Role Level" className="w-full text-xs" />
       </div>
 

@@ -42,15 +42,6 @@ const Navbar: React.FC = () => {
   const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler"];
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
   const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
-  
-  const handleLogout = async () => {
-  try {
-    await axiosInstance.post("http://localhost:8080/api/v1/auth/logout"); // adjust API path if needed
-    window.location.href = "/signin"; // redirect to login page
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-};
 
   
   useEffect(() => {
@@ -183,12 +174,7 @@ const Navbar: React.FC = () => {
                   ))}
                 </select>
               )}
-              <button
-  onClick={handleLogout}
-  className="h-10 px-4 text-sm rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
->
-  Logout
-</button>
+              
 
 
               <ThemeToggleButton />

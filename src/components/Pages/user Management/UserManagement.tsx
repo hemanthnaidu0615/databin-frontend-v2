@@ -69,13 +69,13 @@ export const UserManagement = () => {
   // );
 
   return (
-    <div className="p-6 bg-gradient-to-br from-purple-100 to-purple-50 min-h-screen">
+   <div className="p-6 bg-gradient-to-br from-purple-100 to-purple-50 dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-900 dark:text-gray-100">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold text-purple-900 mb-4">
+        <h2 className="text-2xl font-bold text-purple-900 dark:text-white mb-4">
           User Management
         </h2>
 
-        <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
           <AddUser
             users={users}
             setUsers={setUsers}
@@ -84,7 +84,7 @@ export const UserManagement = () => {
           />
         </div>
 
-        <div className="mt-6 bg-white rounded-lg shadow-md p-4">
+        <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
           <DataTable
             value={users}
             className="mt-4"
