@@ -89,7 +89,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateRes.data.fulfillment_rate}%`,
+            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
