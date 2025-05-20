@@ -23,12 +23,12 @@ import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+// import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
-import { Analysis } from "./components/Pages/Sales/Analysis";
+import SalesAnalysis from "./components/Pages/Sales1/Sales Analysis/SalesAnalysis";
 import { SalesByRegion } from "./components/Pages/Sales1/Region/SalesByRegion";
-import SalesFlow from "./components/Pages/Sales/SalesFlow";
+import SalesFlow from "./components/Pages/Sales1/SalesFlow";
 import Scheduler from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
 import { UserManagement } from "./components/Pages/user Management/UserManagement";
@@ -43,11 +43,16 @@ export default function App() {
         <Route path="/signup" element={<SignUp />} />
 
         {/* Protected Layout & Routes */}
-        <Route path="/" element={<ProtectedRoute element={<AppLayout />} />}>
+        {/* <Route path="/" element={<ProtectedRoute element={<AppLayout />} />}> */}
           <Route index element={<Home />} />
 
           {/* User Management (Admin/Manager Only) */}
           <Route
+            path="usermanagement"
+            element={<UserManagement />}
+          />
+
+          {/* <Route
             path="usermanagement"
             element={
               <ProtectedRoute
@@ -55,11 +60,11 @@ export default function App() {
                 allowedRoles={["admin", "manager"]}
               />
             }
-          />
+          /> */}
 
           {/* General Pages */}
           <Route path="orders" element={<OrdersPage />} />
-          <Route path="sales/analysis" element={<Analysis />} />
+          <Route path="sales/analysis" element={<SalesAnalysis />} />
           <Route path="sales/dashboard" element={<DummyDashboard />} />
           <Route path="sales/region" element={<SalesByRegion />} />
           <Route path="sales/flow" element={<SalesFlow />} />
@@ -82,7 +87,7 @@ export default function App() {
 
           {/* Fallback Page inside Protected Layout */}
           <Route path="*" element={<NotFound />} />
-        </Route>
+        {/* </Route> */}
       </Routes>
     </Router>
   );
