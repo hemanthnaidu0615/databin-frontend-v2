@@ -45,12 +45,27 @@ export const CreateScheduler = () => {
       const response = await authFetch(
         "http://localhost:8080/api/table-column-fetch/tables"
       );
-      const tableOptions = response.data.tables.map((table: string) => ({
-        label: formatHeaderKey(table),
-        value: table,
-      }));
+
+      const allowedTables = [
+        "orders",
+        "shipment",
+        "inventory",
+        "order_fulfillment_event",
+      ];
+
+      const tableOptions = response.data.tables
+        .filter((table: string) => allowedTables.includes(table))
+        .map((table: string) => {
+          const displayName =
+            table === "order_fulfillment_event" ? "fulfillment" : table;
+          return {
+            label: formatHeaderKey(displayName),
+            value: table, // keep original value for use in backend queries
+          };
+        });
+
       setTables(tableOptions);
-      console.log("Table options:", tableOptions);
+      console.log("Filtered table options:", tableOptions);
     } catch (error) {
       console.error("Error fetching table names:", error);
     }
@@ -66,7 +81,7 @@ export const CreateScheduler = () => {
         header: formatHeaderKey(col),
       }));
       setData([
-        Object.fromEntries(columnOptions.map((col:any) => [col.field, ""])),
+        Object.fromEntries(columnOptions.map((col: any) => [col.field, ""])),
       ]);
     } catch (error) {
       console.error("Error fetching columns:", error);
@@ -446,7 +461,7 @@ export const CreateScheduler = () => {
         <div className="flex justify-end">
           <Button
             label="Save Scheduler"
-            style={{background: "#9614d0", border:"none"}}
+            style={{ background: "#9614d0", border: "none" }}
             onClick={handleSaveScheduler}
             className="button w-auto ml-auto mr-auto bg-purple-500 border-none"
           />

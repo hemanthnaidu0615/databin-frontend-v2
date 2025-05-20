@@ -75,7 +75,7 @@ function SalesFlow() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [rawData, setRawData] = useState<any[]>([]);
-  const [fitViewDone, setFitViewDone] = useState(false);
+  const [_, setFitViewDone] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -266,7 +266,7 @@ function SalesFlow() {
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
-                fitView={fitViewDone}
+                fitView
                 onInit={() => setFitViewDone(true)}
                 proOptions={{ hideAttribution: true }}
                 className="dark:!bg-gray-800"

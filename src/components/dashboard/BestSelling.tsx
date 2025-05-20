@@ -72,7 +72,7 @@ const ProfitabilityTable: React.FC = () => {
         params,
       });
 
-      const json = response.data;
+      const json = response.data as { top_products?: any[] };
 
       if (json.top_products && Array.isArray(json.top_products)) {
         const transformed = json.top_products.map(
