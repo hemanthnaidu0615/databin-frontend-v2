@@ -72,11 +72,24 @@ export default function OrdersFulfillmentMetrics() {
           params.enterpriseKey = enterpriseKey;
         }
 
-        const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
-          axiosInstance.get("/dashboard-kpi/total-orders", { params }),
-          axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
-          axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
-        ]);
+        const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] =
+          await Promise.all([
+            axiosInstance.get("/dashboard-kpi/total-orders", { params }),
+            axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
+            axiosInstance.get("/dashboard-kpi/shipment-status-percentage", {
+              params,
+            }),
+          ]);
+
+        // Type assertions for response data
+        const totalOrdersData = totalOrdersRes.data as { total_orders: number };
+        const fulfillmentRateData = fulfillmentRateRes.data as {
+          fulfillment_rate: number;
+        };
+        const shipmentStatusData = shipmentStatusRes.data as {
+          in_transit_orders: number;
+          delayed_percentage: number;
+        };
 
         // Type assertions for response data
         const totalOrdersData = totalOrdersRes.data as { total_orders: number };
@@ -145,7 +158,9 @@ export default function OrdersFulfillmentMetrics() {
             <span className="text-sm font-medium">{item.label}</span>
           </div>
 
-          <div className="text-2xl font-extrabold relative z-10">{item.value}</div>
+          <div className="text-2xl font-extrabold relative z-10">
+            {item.value}
+          </div>
         </div>
       ))}
     </div>

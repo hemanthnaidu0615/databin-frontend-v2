@@ -46,19 +46,18 @@ const baseNavItems: NavItem[] = [
   {
     icon: <CopyIcon />,
     name: "Sales",
-    path: "/sales", // base path
     subItems: [
       {
         name: "Dashboard",
         path: "/sales/dashboard",
       },
       {
-        name: "Analysis",
-        path: "/sales/analysis",
-      },
-      {
         name: "Region",
         path: "/sales/region",
+      },
+      {
+        name: "Analysis",
+        path: "/sales/analysis",
       },
       {
         name: "Flow",
@@ -120,6 +119,8 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
   const [roleLevel, setRoleLevel] = useState<string | null>(null);
+  const [manuallyToggled, setManuallyToggled] = useState(false);
+
   // const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -164,28 +165,31 @@ const AppSidebar: React.FC = () => {
   // );
 
   useEffect(() => {
-    let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "others",
-                index,
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
-    });
+  if (manuallyToggled) return; // ← Skip if user manually toggled
 
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
-  }, [location, isActive]);
+  let submenuMatched = false;
+  ["main", "others"].forEach((menuType) => {
+    const items = menuType === "main" ? navItems : othersItems;
+    items.forEach((nav, index) => {
+      if (nav.subItems) {
+        nav.subItems.forEach((subItem) => {
+          if (isActive(subItem.path)) {
+            setOpenSubmenu({
+              type: menuType as "main" | "others",
+              index,
+            });
+            submenuMatched = true;
+          }
+        });
+      }
+    });
+  });
+
+  if (!submenuMatched) {
+    setOpenSubmenu(null);
+  }
+}, [location, isActive, manuallyToggled]);
+
 
   useEffect(() => {
     if (openSubmenu !== null) {
@@ -200,17 +204,13 @@ const AppSidebar: React.FC = () => {
   }, [openSubmenu]);
 
   const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
-    });
-  };
+  setOpenSubmenu((prevOpenSubmenu) => {
+    const isSame = prevOpenSubmenu?.type === menuType && prevOpenSubmenu?.index === index;
+    setManuallyToggled(true);  // ← User is manually opening/closing
+    return isSame ? null : { type: menuType, index };
+  });
+};
+
 
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
     <ul className="flex flex-col gap-4">
