@@ -23,7 +23,7 @@ import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-// import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
 import SalesAnalysis from "./components/Pages/Sales1/Sales Analysis/SalesAnalysis";
@@ -43,16 +43,11 @@ export default function App() {
         <Route path="/signup" element={<SignUp />} />
 
         {/* Protected Layout & Routes */}
-        {/* <Route path="/" element={<ProtectedRoute element={<AppLayout />} />}> */}
+        <Route path="/" element={<ProtectedRoute element={<AppLayout />} />}>
           <Route index element={<Home />} />
 
           {/* User Management (Admin/Manager Only) */}
           <Route
-            path="usermanagement"
-            element={<UserManagement />}
-          />
-
-          {/* <Route
             path="usermanagement"
             element={
               <ProtectedRoute
@@ -60,7 +55,7 @@ export default function App() {
                 allowedRoles={["admin", "manager"]}
               />
             }
-          /> */}
+          />
 
           {/* General Pages */}
           <Route path="orders" element={<OrdersPage />} />
@@ -87,7 +82,7 @@ export default function App() {
 
           {/* Fallback Page inside Protected Layout */}
           <Route path="*" element={<NotFound />} />
-        {/* </Route> */}
+        </Route>
       </Routes>
     </Router>
   );
