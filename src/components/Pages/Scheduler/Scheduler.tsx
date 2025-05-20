@@ -12,7 +12,7 @@ const Scheduler = () => {
   return (
     <div className="schedulerContainer">
       {/* Button Header */}
-      <div className="w-full px-4 py-4 flex flex-col md:flex-row items-center justify-center gap-4 rounded-xl">
+      <div className="w-full px-4 py-4 flex flex-col md:flex-row items-center gap-4 rounded-xl">
   <Button
     label="Create Scheduler"
     icon="pi pi-calendar-plus"
