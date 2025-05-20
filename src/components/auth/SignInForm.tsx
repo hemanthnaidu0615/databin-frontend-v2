@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Sun, Moon } from 'lucide-react';
+import 'primeicons/primeicons.css'; // PrimeReact Icons
+import 'primeicons/primeicons.css'; // ✅ Import PrimeIcons
 
 function Signin() {
   const [email, setEmail] = useState('');
@@ -53,17 +54,15 @@ function Signin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all duration-500 ease-in-out">
-
-
       {/* Theme Toggle Button */}
       <div className="absolute top-4 right-4">
         <button
           onClick={() => setDarkMode(!darkMode)}
           className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:scale-105 transition-all duration-300 ease-in-out"
         >
-          {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+          <i className={`pi ${darkMode ? 'pi-sun' : 'pi-moon'}`} style={{ fontSize: '1rem' }}></i>
 
+        </button>
       </div>
 
       {/* Login Card */}
@@ -102,7 +101,7 @@ function Signin() {
                     className="px-2 text-gray-500 dark:text-gray-300"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'}`} style={{ fontSize: '1rem' }}></i>
                   </button>
                 </div>
               </div>
