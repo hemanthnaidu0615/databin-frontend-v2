@@ -8,7 +8,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 
 import { useNavigate } from "react-router-dom";
-
+import { axiosInstance } from "../../axios";
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -96,13 +96,11 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const response = await fetch(
-          `http://localhost:8080/api/fulfillment-efficiency/summary?${params.toString()}`
+        const response = await axiosInstance.get(
+          `/fulfillment-efficiency/summary?${params.toString()}`
         );
 
-        if (!response.ok) throw new Error("Failed to fetch fulfillment data");
-
-        const result = await response.json();
+        const result = response.data as { fulfillment_summary: Record<string, { Picked?: number; Packed?: number; Shipped?: number; Delivered?: number }> };
         const summary = result.fulfillment_summary;
 
         const categories = Object.keys(summary);
@@ -208,19 +206,17 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl shadow-md border ${
-        isDarkMode
-          ? "border-gray-700 bg-gray-900 dark:border-gray-800"
-          : "border-gray-200 bg-white"
-      }`}
+      className={`overflow-hidden rounded-2xl shadow-md border ${isDarkMode
+        ? "border-gray-700 bg-gray-900 dark:border-gray-800"
+        : "border-gray-200 bg-white"
+        }`}
       style={{ padding: "1rem" }} // smaller padding
     >
       {size === "full" && (
         <div className="flex justify-between items-center mb-15">
           <h2
-            className={`text-lg font-semibold ${
-              isDarkMode ? "text-white" : "text-gray-800"
-            }`}
+            className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-800"
+              }`}
           >
             Fulfillment Efficiency Tracker
           </h2>

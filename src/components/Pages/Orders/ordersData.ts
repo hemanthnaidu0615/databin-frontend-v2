@@ -1,4 +1,4 @@
-import axios from "axios";
+import { axiosInstance } from "../../../axios";
 
 export interface Product {
   name: string;
@@ -59,8 +59,8 @@ export const fetchOrders = async (
   }
 
   try {
-    const response = await axios.get(
-      "http://localhost:8080/api/orders/filtered",
+    const response = await axiosInstance.get(
+      "/orders/filtered",
       {
         params: {
           startDate,

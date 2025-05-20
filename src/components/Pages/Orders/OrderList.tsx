@@ -1,17 +1,18 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { Paginator } from "primereact/paginator";
+import { axiosInstance } from "../../../axios";
 
 export const fetchOrderDetails = async (
   orderId: string
 ): Promise<any | null> => {
   try {
-    const response = await fetch(
-      `http://localhost:8080/api/orders/${orderId}/details`
+    const response = await axiosInstance.get(
+      `/orders/${orderId}/details`
     );
-    const data = await response.json();
+    const data = response.data as { value?: any };
 
     if (typeof data.value === "string") {
       return JSON.parse(data.value);

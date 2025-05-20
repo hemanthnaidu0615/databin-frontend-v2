@@ -20,7 +20,7 @@ export default function UserMetaCard() {
     // Replace with your actual API endpoint
     const fetchUserData = async () => {
       try {
-        const res = await axiosInstance.get("/auth/me");
+        const res = await axiosInstance.get("/auth/me", { withCredentials: true });
         const data = res.data as { email: string; roleLevel: string };
         setUserData({
           name: data.email,

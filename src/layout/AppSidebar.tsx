@@ -126,7 +126,7 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await axiosInstance.get("/auth/me");
+        const response = await axiosInstance.get("/auth/me", { withCredentials: true });
 
         const data = response.data as { roleLevel: string };
         setRoleLevel(data.roleLevel.toLowerCase());

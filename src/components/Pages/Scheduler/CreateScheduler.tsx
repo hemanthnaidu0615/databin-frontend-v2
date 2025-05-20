@@ -4,7 +4,7 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { MultiSelect } from "primereact/multiselect";
 import { useEffect, useState, useRef } from "react";
-import { authFetch } from "../../../axios";
+import { axiosInstance } from "../../../axios";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
 import "./style.css";
@@ -42,10 +42,10 @@ export const CreateScheduler = () => {
 
   const fetchTableNames = async () => {
     try {
-      const response = await authFetch(
-        "http://localhost:8080/api/table-column-fetch/tables"
-      );
-      const tableOptions = response.data.tables.map((table: string) => ({
+      const response = await axiosInstance.get("/table-column-fetch/tables");
+
+      const data = response.data as { tables: string[] };
+      const tableOptions = data.tables.map((table: string) => ({
         label: formatHeaderKey(table),
         value: table,
       }));
@@ -58,15 +58,17 @@ export const CreateScheduler = () => {
 
   const fetchColumns = async (tableName: string) => {
     try {
-      const response = await authFetch(
-        `http://localhost:8080/api/table-column-fetch/columns?tableName=${tableName}`
+      const response = await axiosInstance.get(
+        `/table-column-fetch/columns?tableName=${tableName}`
       );
-      const columnOptions = response.data.columns.map((col: string) => ({
+
+      const data = response.data as { columns: string[] };
+      const columnOptions = data.columns.map((col: string) => ({
         field: col,
         header: formatHeaderKey(col),
       }));
       setData([
-        Object.fromEntries(columnOptions.map((col:any) => [col.field, ""])),
+        Object.fromEntries(columnOptions.map((col: any) => [col.field, ""])),
       ]);
     } catch (error) {
       console.error("Error fetching columns:", error);
@@ -142,16 +144,16 @@ export const CreateScheduler = () => {
         dateRangeType: timeFrame,
       };
 
-      const response = await authFetch(
-        "http://localhost:8080/api/schedulers/create-table-scheduler",
+      const response = await axiosInstance.post(
+        "/schedulers/create-table-scheduler",
+        payload,
         {
-          method: "POST",
-          data: payload,
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
+
 
       if (response.status !== 200) {
         throw new Error(
@@ -418,7 +420,7 @@ export const CreateScheduler = () => {
             selectAll
             selectAllLabel={
               schedulerData.columnSelection.length ===
-              getTableColumns(data).slice(1).length
+                getTableColumns(data).slice(1).length
                 ? "Deselect All"
                 : "Select All"
             }
@@ -446,7 +448,7 @@ export const CreateScheduler = () => {
         <div className="flex justify-end">
           <Button
             label="Save Scheduler"
-            style={{background: "#9614d0", border:"none"}}
+            style={{ background: "#9614d0", border: "none" }}
             onClick={handleSaveScheduler}
             className="button w-auto ml-auto mr-auto bg-purple-500 border-none"
           />

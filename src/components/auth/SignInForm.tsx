@@ -33,7 +33,7 @@ type UserData = {
   setLoading(true);
 
   try {
-const response = await axiosInstance.post<UserData>("auth/login", { email, password });
+const response = await axiosInstance.post<UserData>("auth/login", { email, password }, { withCredentials: true });
 const userData = response.data;
 
 const roleIdentifier = userData.role.identifier ?? '';

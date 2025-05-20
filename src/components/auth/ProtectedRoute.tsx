@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const res = await axiosInstance.get("auth/me");
+        const res = await axiosInstance.get("auth/me", { withCredentials: true });
         const data = res.data as { roleLevel: string };
 
 

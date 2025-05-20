@@ -72,56 +72,42 @@ export default function OrdersFulfillmentMetrics() {
           params.enterpriseKey = enterpriseKey;
         }
 
-        const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] =
-          await Promise.all([
-            axiosInstance.get("/dashboard-kpi/total-orders", { params }),
-            axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
-            axiosInstance.get("/dashboard-kpi/shipment-status-percentage", {
-              params,
-            }),
-          ]);
+        type TotalOrdersResponse = { total_orders: number };
+        type FulfillmentRateResponse = { fulfillment_rate: number };
+        type ShipmentStatusResponse = { in_transit_orders: number; delayed_percentage: number };
 
-        // Type assertions for response data
-        const totalOrdersData = totalOrdersRes.data as { total_orders: number };
-        const fulfillmentRateData = fulfillmentRateRes.data as {
-          fulfillment_rate: number;
-        };
-        const shipmentStatusData = shipmentStatusRes.data as {
-          in_transit_orders: number;
-          delayed_percentage: number;
-        };
-
-        // Type assertions for response data
-        const totalOrdersData = totalOrdersRes.data as { total_orders: number };
-        const fulfillmentRateData = fulfillmentRateRes.data as { fulfillment_rate: number };
-        const shipmentStatusData = shipmentStatusRes.data as { in_transit_orders: number; delayed_percentage: number };
+        const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
+          axiosInstance.get<TotalOrdersResponse>("/dashboard-kpi/total-orders", { params }),
+          axiosInstance.get<FulfillmentRateResponse>("/dashboard-kpi/fulfillment-rate", { params }),
+          axiosInstance.get<ShipmentStatusResponse>("/dashboard-kpi/shipment-status-percentage", { params }),
+        ]);
 
         setMetrics([
           {
             icon: PrimeIcons.BOX,
             label: "Total Orders",
-            value: formatValue(totalOrdersData.total_orders),
+            value: formatValue(totalOrdersRes.data.total_orders),
             iconColor: "text-purple-500",
             glowColor: "#8B5CF6",
           },
           {
             icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateData.fulfillment_rate}`,
+            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
           {
             icon: PrimeIcons.SEND,
             label: "Orders in Transit",
-            value: formatValue(shipmentStatusData.in_transit_orders),
+            value: formatValue(shipmentStatusRes.data.in_transit_orders),
             iconColor: "text-yellow-500",
             glowColor: "#FACC15",
           },
           {
             icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             label: "Delayed Orders",
-            value: `${shipmentStatusData.delayed_percentage}`,
+            value: `${shipmentStatusRes.data.delayed_percentage}`,
             iconColor: "text-red-500",
             glowColor: "#F87171",
           },
@@ -158,9 +144,7 @@ export default function OrdersFulfillmentMetrics() {
             <span className="text-sm font-medium">{item.label}</span>
           </div>
 
-          <div className="text-2xl font-extrabold relative z-10">
-            {item.value}
-          </div>
+          <div className="text-2xl font-extrabold relative z-10">{item.value}</div>
         </div>
       ))}
     </div>
