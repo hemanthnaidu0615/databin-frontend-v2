@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PrimeIcons } from 'primereact/api';
 import 'primeicons/primeicons.css';
 import { useSelector } from 'react-redux';
+import { axiosInstance } from "../../../axios";
 
 const formatDate = (date: Date) =>
   `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date
@@ -43,16 +44,16 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
     const fetchStats = async () => {
       try {
         const [totalRes, onTimeRes, delayedRes, avgTimeRes] = await Promise.all([
-          fetch(`http://localhost:8080/api/shipment-dashboard-kpi/total-shipments?${params}`),
-          fetch(`http://localhost:8080/api/shipment-dashboard-kpi/on-time-shipments?${params}`),
-          fetch(`http://localhost:8080/api/shipment-dashboard-kpi/delayed-shipments?${params}`),
-          fetch(`http://localhost:8080/api/shipment-dashboard-kpi/average-delivery-time?${params}`),
+          axiosInstance.get(`shipment-dashboard-kpi/total-shipments?${params}`),
+          axiosInstance.get(`shipment-dashboard-kpi/on-time-shipments?${params}`),
+          axiosInstance.get(`shipment-dashboard-kpi/delayed-shipments?${params}`),
+          axiosInstance.get(`shipment-dashboard-kpi/average-delivery-time?${params}`),
         ]);
 
-        const totalData = await totalRes.json();
-        const onTimeData = await onTimeRes.json();
-        const delayedData = await delayedRes.json();
-        const avgTimeData = await avgTimeRes.json();
+        const totalData = totalRes.data as { total_shipments: number };
+        const onTimeData = onTimeRes.data as { on_time_shipments: number };
+        const delayedData = delayedRes.data as { delayed_shipments: number };
+        const avgTimeData = avgTimeRes.data as { average_delivery_time: string };
 
         setTotalShipments(totalData.total_shipments);
         setOnTimeShipments(onTimeData.on_time_shipments);
@@ -62,6 +63,7 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
         console.error('Error fetching shipment stats:', error);
       }
     };
+
 
     fetchStats();
   }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
