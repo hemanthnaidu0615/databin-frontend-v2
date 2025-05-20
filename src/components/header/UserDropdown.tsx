@@ -1,20 +1,56 @@
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import  axiosInstance  from "axios";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [userData, setUserData] = useState<{ fullName: string; email: string } | null>(null);
+
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+
+  const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault(); // prevent the default Link behavior
+    closeDropdown(); // close the dropdown
+
+    try {
+      await axiosInstance.post("http://localhost:8080/api/v1/auth/logout", {}, { withCredentials: true });
+      window.location.href = "/signin"; // full reload to signin
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // Fetch user data from /me on mount
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const response = await fetch("http://localhost:8080/api/v1/auth/me", {
+          method: "GET",
+          credentials: "include", // include HTTP-only cookies
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch user");
+
+        const data = await response.json();
+        setUserData({
+          fullName: data.fullName || "John Doe",
+          email: data.email || "unknown@example.com",
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+
+    fetchUser();
+  }, []);
 
   function toggleDropdown() {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const dropdownWidth = 260;
-
       const spaceOnRight = window.innerWidth - rect.left;
       const left =
         spaceOnRight < dropdownWidth
@@ -61,14 +97,17 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-2 overflow-hidden rounded-full h-8 w-8">
-          <img src="/images/user/owner.jpg" alt="User" />
+        <span className="mr-2 flex items-center justify-center bg-purple-700 text-white rounded-full h-8 w-8 text-sm font-medium">
+          {userData?.email
+            ? userData.email.charAt(0).toUpperCase()
+            : "U"}
         </span>
-        <span className="block mr-1 font-medium text-theme-sm">John</span>
+
+        <span className="block mr-1 font-medium text-theme-sm">
+          {userData?.email ? userData.email.split("@")[0].charAt(0).toUpperCase() + userData.email.split("@")[0].slice(1) : "User"}
+        </span>
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           width="18"
           height="20"
           viewBox="0 0 18 20"
@@ -96,60 +135,55 @@ export default function UserDropdown() {
               left: position.left,
             }}
           >
-            <Dropdown
-              isOpen={isOpen}
-              onClose={closeDropdown}
-              className="flex w-full flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
-            >
+            <div className="flex w-full flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
               <div>
-                <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-                  John Doe
+                <span className="block mr-1 font-medium text-theme-sm">
+                  {userData?.email ? userData.email.split("@")[0].charAt(0).toUpperCase() + userData.email.split("@")[0].slice(1) : "User"}
                 </span>
                 <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-                  johndoe@gmail.com
+                  {userData?.email || "john@example.com"}
                 </span>
               </div>
 
               <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
                 <li>
-                  <DropdownItem
-                    onItemClick={closeDropdown}
-                    tag="a"
+                  <Link
                     to="/profile"
+                    onClick={closeDropdown}
                     className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                   >
                     Edit profile
-                  </DropdownItem>
+                  </Link>
                 </li>
                 <li>
-                  <DropdownItem
-                    onItemClick={closeDropdown}
-                    tag="a"
-                    to="/profile"
+                  <Link
+                    to="/settings"
+                    onClick={closeDropdown}
                     className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                   >
                     Account settings
-                  </DropdownItem>
+                  </Link>
                 </li>
                 <li>
-                  <DropdownItem
-                    onItemClick={closeDropdown}
-                    tag="a"
-                    to="/profile"
+                  <Link
+                    to="/support"
+                    onClick={closeDropdown}
                     className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                   >
                     Support
-                  </DropdownItem>
+                  </Link>
                 </li>
               </ul>
 
               <Link
                 to="/signin"
+                onClick={handleLogout}
                 className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
               >
                 Sign out
               </Link>
-            </Dropdown>
+
+            </div>
           </div>,
           document.body
         )}

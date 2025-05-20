@@ -15,4 +15,13 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      '/me': {
+        target: 'http://localhost:8080', // or wherever your Spring Boot backend is running
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

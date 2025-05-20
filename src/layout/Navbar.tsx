@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState} from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
@@ -18,6 +18,7 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
 const Navbar: React.FC = () => {
+  // const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [enterpriseKey, setEnterpriseKey] = useState("All");
   const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
   const calendarRef = useRef<any>(null);
@@ -45,6 +46,7 @@ const Navbar: React.FC = () => {
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
   const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
 
+  
   useEffect(() => {
     const fetchEnterpriseKeys = async () => {
       try {
@@ -72,6 +74,9 @@ const Navbar: React.FC = () => {
     }
   };
 
+  // const toggleApplicationMenu = () => {
+  //   setApplicationMenuOpen(!isApplicationMenuOpen);
+  // };
   const handleDateChange = (e: any) => {
     const newDates = e.value;
     setDateRange(newDates);
@@ -161,6 +166,8 @@ const Navbar: React.FC = () => {
                   ))}
                 </select>
               )}
+              
+
 
               <ThemeToggleButton />
               <NotificationDropdown />
