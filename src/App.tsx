@@ -20,8 +20,6 @@ import Home from "./pages/Dashboard/DashboardHome";
 import DummyDashboard from "./components/Pages/Sales1/Dashboard/DummyDashboard";
 import InventoryPage from "./components/Pages/Inventory/InventoryPage";
 import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
@@ -39,17 +37,6 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss={false}
-        draggable
-        pauseOnHover
-        style={{ zIndex: 9999 }}
-      />
       <Routes>
         {/* Auth Routes */}
         <Route path="/signin" element={<SignIn />} />
