@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-
+import { axiosInstance } from "../../axios";
 function Signin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +16,12 @@ function Signin() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
-
+type UserData = {
+  email: string;
+  role: {
+    identifier: string;
+  };
+};
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -28,22 +33,10 @@ function Signin() {
   setLoading(true);
 
   try {
-    const response = await fetch('http://localhost:8080/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // if using HTTP-only cookies
-      body: JSON.stringify({ email, password }),
-    });
+const response = await axiosInstance.post<UserData>("auth/login", { email, password });
+const userData = response.data;
 
-    if (!response.ok) {
-      throw new Error('Invalid email or password');
-    }
-
-    const userData = await response.json(); // response should include email, role.identifier, etc.
-
-    const roleIdentifier = userData?.role?.identifier ?? '';
+const roleIdentifier = userData.role.identifier ?? '';
     const isAdminOrManager = roleIdentifier.includes('admin') || roleIdentifier.includes('manager');
 
     // Redirect to home/dashboard and pass role info for conditional rendering

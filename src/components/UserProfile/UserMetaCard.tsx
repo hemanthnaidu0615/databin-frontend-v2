@@ -3,8 +3,8 @@
 // import Button from "../ui/button/Button";
 // import Input from "../form/input/InputField";
 // import Label from "../form/Label";
-import  { useState, useEffect } from 'react';
-
+import { useState, useEffect } from 'react';
+import { axiosInstance } from "../../axios";
 export default function UserMetaCard() {
   // const { isOpen, openModal, closeModal } = useModal();
   // const handleSave = () => {
@@ -18,35 +18,30 @@ export default function UserMetaCard() {
   });
   useEffect(() => {
     // Replace with your actual API endpoint
-    fetch("http://localhost:8080/api/auth/me", {
-      method: "GET",
-      credentials: "include", // to send HTTP-only cookies
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch user data");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchUserData = async () => {
+      try {
+        const res = await axiosInstance.get("/auth/me");
+        const data = res.data as { email: string; roleLevel: string };
         setUserData({
           name: data.email,
           role: data.roleLevel,
-          
         });
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching user data:", error);
-      });
+      }
+    };
+    fetchUserData();
   }, []);
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-<span style={{ width: "4em", height: "4em" }} className="flex items-center justify-center bg-purple-500 text-white rounded-full text-base font-medium">
-          {userData?.name
-            ? userData.name.charAt(0).toUpperCase()
-            : "U"}
-        </span>
+            <span style={{ width: "4em", height: "4em" }} className="flex items-center justify-center bg-purple-500 text-white rounded-full text-base font-medium">
+              {userData?.name
+                ? userData.name.charAt(0).toUpperCase()
+                : "U"}
+            </span>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
                 <span className="block mr-1 font-medium text-theme-sm">
@@ -56,10 +51,10 @@ export default function UserMetaCard() {
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                 {userData.role || "-"}
+                  {userData.role || "-"}
 
                 </p>
-                
+
               </div>
             </div>
             {/* <div className="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
