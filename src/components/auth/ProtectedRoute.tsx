@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/v1/auth/me", {
+        const res = await fetch("http://localhost:8080/api/auth/me", {
           method: "GET",
           credentials: "include",
         });

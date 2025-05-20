@@ -37,7 +37,7 @@ export const AddUser = ({  setUsers, editingUser, onClose }: any) => {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/v1/auth/me", { withCredentials: true })
+    axios.get("http://localhost:8080/api/auth/me", { withCredentials: true })
       .then((res) => setCurrentUser(res.data))
       .catch((err) => console.error("Failed to fetch current user:", err));
   }, []);
@@ -102,7 +102,7 @@ const handleSubmit = async () => {
 
   try {
     setLoading(true);
-    const response = await axios.post("http://localhost:8080/api/v1/auth/register", payload, {
+    const response = await axios.post("http://localhost:8080/api/auth/register", payload, {
       withCredentials: true,
     });
 
