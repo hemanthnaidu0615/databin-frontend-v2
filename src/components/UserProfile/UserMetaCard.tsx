@@ -18,7 +18,7 @@ export default function UserMetaCard() {
   });
   useEffect(() => {
     // Replace with your actual API endpoint
-    fetch("http://localhost:8080/api/v1/auth/me", {
+    fetch("http://localhost:8080/api/auth/me", {
       method: "GET",
       credentials: "include", // to send HTTP-only cookies
     })

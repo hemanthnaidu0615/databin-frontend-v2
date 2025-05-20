@@ -16,7 +16,7 @@ export default function UserDropdown() {
     closeDropdown(); // close the dropdown
 
     try {
-      await axiosInstance.post("http://localhost:8080/api/v1/auth/logout", {}, { withCredentials: true });
+      await axiosInstance.post("http://localhost:8080/api/auth/logout", {}, { withCredentials: true });
       window.location.href = "/signin"; // full reload to signin
     } catch (error) {
       console.error("Logout failed:", error);
@@ -27,7 +27,7 @@ export default function UserDropdown() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch("http://localhost:8080/api/v1/auth/me", {
+        const response = await fetch("http://localhost:8080/api/auth/me", {
           method: "GET",
           credentials: "include", // include HTTP-only cookies
         });

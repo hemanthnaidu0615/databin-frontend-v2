@@ -17,7 +17,7 @@ export const UserManagement = () => {
   useEffect(() => {
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/v1/auth/users", {
+      const response = await axios.get("http://localhost:8080/api/auth/users", {
         withCredentials: true, // ensures cookies (JWT) are sent
       });
 
