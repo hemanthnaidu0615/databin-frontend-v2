@@ -6,6 +6,7 @@ import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
+import { axiosInstance } from "../../../axios";
 
 type Props = {
   selectedCarrier: string | null;
@@ -80,12 +81,24 @@ const RecentShipmentsTable: React.FC<Props> = ({
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/recent-shipments?${params.toString()}`
-        );
-        const data = await response.json();
-        setShipments(data);
-        setFilteredShipments(data);
+        const response = await axiosInstance.get(`recent-shipments`, {
+          params: {
+            startDate: formattedStart,
+            endDate: formattedEnd,
+            ...(enterpriseKey && { enterpriseKey }),
+            ...(selectedCarrier && { carrier: selectedCarrier }),
+            ...(selectedMethod && { shippingMethod: selectedMethod }),
+          },
+        });
+        const data = response.data;
+
+        if (Array.isArray(data)) {
+          setShipments(data);
+          setFilteredShipments(data);
+        } else {
+          setShipments([]);
+          setFilteredShipments([]);
+        }
       } catch (error) {
         console.error("Error fetching shipments:", error);
       }
@@ -121,10 +134,11 @@ const RecentShipmentsTable: React.FC<Props> = ({
 
   const showDetails = async (shipment: any) => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/recent-shipments/details?shipmentId=${shipment.shipment_id}`
-      );
-      const detailedData = await response.json();
+      const response = await axiosInstance.get("recent-shipments/details", {
+        params: { shipmentId: shipment.shipment_id },
+      });
+      const detailedData = response.data as any;
+
       if (detailedData.cost) {
         detailedData.cost = convertToUSD(detailedData.cost);
       }

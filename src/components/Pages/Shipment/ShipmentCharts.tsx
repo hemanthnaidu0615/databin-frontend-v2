@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
+import { axiosInstance } from "../../../axios";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
@@ -78,10 +79,22 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
       if (selectedMethod) params.append("shippingMethod", selectedMethod);
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/shipment-status/distribution?${params.toString()}`
-        );
-        const data = await response.json();
+        const response = await axiosInstance.get("shipment-status/distribution", {
+          params: {
+            startDate: formattedStart,
+            endDate: formattedEnd,
+            ...(enterpriseKey && { enterpriseKey }),
+            ...(selectedCarrier && { carrier: selectedCarrier }),
+            ...(selectedMethod && { shippingMethod: selectedMethod }),
+          },
+        });
+        const data = response.data as {
+          delivered?: string;
+          in_transit?: string;
+          delayed?: string;
+          cancelled?: string;
+        };
+
         console.log("Shipment status distribution:", data);
 
         // Convert percentages to numbers (e.g., "33.4%" => 33.4)
@@ -176,15 +189,22 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/carrier-performance?${params.toString()}`
-        );
-        const data = await response.json();
+        const response = await axiosInstance.get("carrier-performance", {
+          params: {
+            startDate: formattedStart,
+            endDate: formattedEnd,
+            ...(enterpriseKey && { enterpriseKey }),
+            ...(selectedCarrier && { carrier: selectedCarrier }),
+            ...(selectedMethod && { shippingMethod: selectedMethod }),
+          },
+        });
+        const data = response.data as Array<{ carrier: string; shipment_count: number }>;
+
 
         console.log("Carrier performance data:", data);
 
-        const categories = data.map((item: any) => item.carrier);
-        const seriesData = data.map((item: any) => item.shipment_count);
+        const categories = data.map((item) => item.carrier);
+        const seriesData = data.map((item) => item.shipment_count);
 
         setCarrierCategories(categories);
         setCarrierSeries([{ name: "Shipments", data: seriesData }]);
