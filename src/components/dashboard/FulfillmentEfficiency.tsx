@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { MoreDotIcon } from "../../icons";
+// import { MoreDotIcon } from "../../icons";
 import { useTheme } from "../../context/ThemeContext";
 
 import { useNavigate } from "react-router-dom";
 
-// Utility to format date string (yyyy-mm-dd)
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -25,7 +24,7 @@ type FulfillmentEfficiencyProps = {
 
 const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   size = "full",
-  onRemove,
+  // onRemove,
   onViewMore,
 }) => {
   const { theme } = useTheme();
@@ -42,34 +41,39 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  // const [isDropdownOpen, setDropdownOpen] = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  // const dropdownRef = useRef<HTMLDivElement | null>(null);
+  // const buttonRef = useRef<HTMLButtonElement | null>(null);
 
-  // Get start and end date from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange || [];
   // Get enterpriseKey from Redux
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
+  const formatValue = (Orders: number) => {
+    if (Orders >= 1_000_000) return (Orders / 1_000_000).toFixed(1) + "m";
+    if (Orders >= 1_000) return (Orders / 1_000).toFixed(1) + "k";
+    return Orders.toFixed(0);
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       dropdownRef.current &&
+  //       !dropdownRef.current.contains(event.target as Node) &&
+  //       buttonRef.current &&
+  //       !buttonRef.current.contains(event.target as Node)
+  //     ) {
+  //       setDropdownOpen(false);
+  //     }
+  //   };
+
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -173,6 +177,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         },
       },
       labels: {
+        formatter: formatValue,
         style: {
           fontSize: "12px",
           colors: isDarkMode ? "#D1D5DB" : "#4B5563",
@@ -180,7 +185,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       },
     },
     tooltip: { theme: isDarkMode ? "dark" : "light" },
-    responsive: [{ breakpoint: 768, options: { chart: { height: 250 } } }],
+    responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
   };
 
   const series = [
@@ -203,12 +208,15 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border ${
-        isDarkMode ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"
-      } px-5 pt-5 sm:px-6 sm:pt-6`}
+      className={`overflow-hidden rounded-2xl shadow-md border ${
+        isDarkMode
+          ? "border-gray-700 bg-gray-900 dark:border-gray-800"
+          : "border-gray-200 bg-white"
+      }`}
+      style={{ padding: "1rem" }} // smaller padding
     >
       {size === "full" && (
-        <div className="flex justify-between items-center mb-21">
+        <div className="flex justify-between items-center mb-15">
           <h2
             className={`text-lg font-semibold ${
               isDarkMode ? "text-white" : "text-gray-800"
@@ -273,18 +281,31 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         </div>
       )}
 
-      {isLoading ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
-      ) : error ? (
-        <p className="text-sm text-red-500">Error: {error}</p>
-      ) : (
-        <Chart
-          options={apexOptions}
-          series={series}
-          type="bar"
-          height={size === "small" ? 200 : 300}
-        />
-      )}
+      <div className="w-full" style={{ height: size === "small" ? 220 : 400 }}>
+        {isLoading ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+        ) : error ? (
+          <p className="text-sm text-red-500">Error: {error}</p>
+        ) : (
+          <Chart
+            options={{
+              ...apexOptions,
+              chart: {
+                ...apexOptions.chart,
+                height: "100%",
+              },
+              grid: {
+                ...apexOptions.grid,
+                padding: { top: 0, right: 0, bottom: 0, left: 0 },
+              },
+            }}
+            series={series}
+            type="bar"
+            height="100%"
+            width="100%"
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -128,7 +128,7 @@ export default function UserDropdown() {
         createPortal(
           <div
             ref={dropdownRef}
-            className="z-[99999] w-[260px]"
+            className="z-[100010] w-[260px]"
             style={{
               position: "absolute",
               top: position.top,

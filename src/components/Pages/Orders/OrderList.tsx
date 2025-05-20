@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { Paginator } from "primereact/paginator";
-import { useSelector } from "react-redux";
 
 export const fetchOrderDetails = async (
   orderId: string
@@ -27,7 +26,6 @@ export const fetchOrderDetails = async (
 
 function cleanAndFormatPhoneNumber(rawPhone: string): string {
   const digitsOnly = rawPhone.split(/[xX]|ext/)[0].replace(/[^\d]/g, "");
-
   const normalized = digitsOnly.length === 10 ? "1" + digitsOnly : digitsOnly;
 
   if (/^1\d{10}$/.test(normalized)) {
@@ -67,31 +65,26 @@ const statusColors: Record<string, string> = {
 
 const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({
   status,
-}) => {
-  return (
-    <span
-      className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}
-    >
-      {status}
-    </span>
-  );
-};
+}) => (
+  <span
+    className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}
+  >
+    {status}
+  </span>
+);
 
 const OrderList: React.FC<Props> = ({ orders = [] }) => {
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
-  const [first, setFirst] = useState(0); // First item on the page
-  const [rows, setRows] = useState(20); // Number of rows per page (default to 20)
-  const [isMobile, setIsMobile] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(20);
+  const [isMobile] = useState(false);
   const [mobileOrder, setMobileOrder] = useState<Order | null>(null);
-  const [showMobileDialog, setShowMobileDialog] = useState(false);
   const [orderDetails, setOrderDetails] = useState<Map<string, any>>(new Map());
   const [loadingOrderDetails, setLoadingOrderDetails] = useState<
     Map<string, boolean>
   >(new Map());
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange;
+  const options = [20, 50, 100, 200, 500];
 
   const fetchAndSetDetails = useCallback(
     (orderId: string) => {
@@ -111,7 +104,6 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
 
   const toggleExpand = (order: Order) => {
     if (isMobile) {
-      setSelectedOrder(order);
       setMobileOrder(order);
     } else {
       setExpandedOrderIds((prev) =>
@@ -618,50 +610,88 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
           </div>
 
           {/* Custom Simple Pagination for Mobile (smaller than sm) */}
-<div className="flex flex-col sm:flex-row sm:items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
-  {/* Rows per page dropdown */}
-  <div className="flex items-center gap-2">
-    <label htmlFor="mobileRows" className="whitespace-nowrap">Rows per page:</label>
-    <select
-      id="mobileRows"
-      value={rows}
-      onChange={(e) => {
-        setRows(Number(e.target.value));
-        setFirst(0); // reset to first page
-      }}
-      className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
-    >
-      {[5, 10, 20, 50].map((option) => (
-        <option key={option} value={option}>{option}</option>
-      ))}
-    </select>
-  </div>
-
-  {/* Pagination controls */}
-  <div className="flex w-full sm:w-auto justify-between items-center">
-    {/* Left - Prev */}
-    <button
-      onClick={() => onPageChange({ first: Math.max(0, first - rows), rows })}
-              
-              disabled={first === 0}
-              className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
+            {/* Rows per page dropdown */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="mobileRows" className="whitespace-nowrap">
+                Rows per page:
+              </label>
+              <select
+                id="mobileRows"
+                value={rows}
+                onChange={(e) => {
+                  setRows(Number(e.target.value));
+                  setFirst(0); // reset to first page
+                }}
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
               >
-              Prev
-            </button>
-            {/* Center - Page Indicator */}
-    <div className="text-center flex-1 text-sm">
-      Page {Math.floor(first / rows) + 1} of {Math.ceil(orders.length / rows)}
-    </div>
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-    {/* Right - Next */}
-    <button
-      onClick={() => onPageChange({ first: first + rows < orders.length ? first + rows : first, rows })}
-              disabled={first + rows >= orders.length}
-              className="px-3 py-1 rounded dark:bg-gray-800 bg-gray-100 disabled:opacity-50"
-              >
-              Next
-            </button>
-          </div>
+            {/* Pagination controls */}
+            <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-3 bg-gray-900 text-white p-4 rounded-md text-sm">
+              {/* Left: Rows & Page Info */}
+              <div className="flex items-center gap-4">
+                {/* Page Info */}
+                <div className="font-medium">
+                  Page {Math.floor(first / rows) + 1} of{" "}
+                  {Math.ceil(orders.length / rows)}
+                </div>
+              </div>
+
+              {/* Right: Navigation buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onPageChange({ first: 0, rows })}
+                  disabled={first === 0}
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  ⏮ First
+                </button>
+
+                <button
+                  onClick={() =>
+                    onPageChange({ first: Math.max(0, first - rows), rows })
+                  }
+                  disabled={first === 0}
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Prev
+                </button>
+
+                <button
+                  onClick={() =>
+                    onPageChange({
+                      first:
+                        first + rows < orders.length ? first + rows : first,
+                      rows,
+                    })
+                  }
+                  disabled={first + rows >= orders.length}
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+
+                <button
+                  onClick={() =>
+                    onPageChange({
+                      first: (Math.ceil(orders.length / rows) - 1) * rows,
+                      rows,
+                    })
+                  }
+                  disabled={first + rows >= orders.length}
+                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  ⏭ Last
+                </button>
+              </div>
+            </div>
           </div>
 
           <Dialog

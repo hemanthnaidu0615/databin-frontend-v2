@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import MapChart from "./us-map/USMap";
-import states from "./us-map/states.json";
-import { DataTable } from "primereact/datatable"; // Ensure this is the correct library for DataTable
-import { Column } from "primereact/column"; // Import Column from the correct module
+import { useSelector } from "react-redux";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import USMap from "./us-map/USMap";
+import { Skeleton } from "primereact/skeleton";
+import dayjs from "dayjs";
 
 interface Marker {
   color: string;
@@ -10,69 +12,100 @@ interface Marker {
   legend: string;
 }
 
-interface Statess {
-  [key: string]: string;
+interface StateData {
+  state_name: string;
+  state_revenue: number;
+  state_quantity: number;
+  revenue_percentage?: number;
+  customer_count?: number;
+  average_revenue_per_unit?: number;
 }
 
-const statess: Statess = {
-  AL: "Alabama",
-  AK: "Alaska",
-  AS: "American Samoa",
-  AZ: "Arizona",
-  AR: "Arkansas",
-  CA: "California",
-  CO: "Colorado",
-  CT: "Connecticut",
-  DE: "Delaware",
-  DC: "District of Columbia",
-  FL: "Florida",
-  GA: "Georgia",
-  HI: "Hawaii",
-  ID: "Idaho",
-  IL: "Illinois",
-  IN: "Indiana",
-  IA: "Iowa",
-  KS: "Kansas",
-  KY: "Kentucky",
-  LA: "Louisiana",
-  ME: "Maine",
-  MD: "Maryland",
-  MA: "Massachusetts",
-  MI: "Michigan",
-  MN: "Minnesota",
-  MS: "Mississippi",
-  MO: "Missouri",
-  MT: "Montana",
-  NE: "Nebraska",
-  NV: "Nevada",
-  NH: "New Hampshire",
-  NJ: "New Jersey",
-  NM: "New Mexico",
-  NY: "New York",
-  NC: "North Carolina",
-  ND: "North Dakota",
-  MP: "Northern Mariana Islands",
-  OH: "Ohio",
-  OK: "Oklahoma",
-  OR: "Oregon",
-  PA: "Pennsylvania",
-  PR: "Puerto Rico",
-  RI: "Rhode Island",
-  SC: "South Carolina",
-  SD: "South Dakota",
-  TN: "Tennessee",
-  TX: "Texas",
-  UT: "Utah",
-  VT: "Vermont",
-  VA: "Virginia",
-  WA: "Washington",
-  WV: "West Virginia",
-  WI: "Wisconsin",
-  WY: "Wyoming",
+interface TableData {
+  state: string;
+  totalDollar: string;
+  percentage: string;
+  quantity: string;
+  avgRevenue?: string;
+}
+
+// INR to USD conversion
+const convertToUSD = (rupees: number): number => {
+  const exchangeRate = 0.012; // Adjust as needed
+  return rupees * exchangeRate;
 };
+
+// Number formatting helper
+const formatValue = (value: number): string => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  return value.toFixed(0);
+};
+
+const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 
 export const SalesByRegion = () => {
   const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [stateData, setStateData] = useState<StateData[]>([]);
+  const [topStates, setTopStates] = useState<{state_name: string, state_revenue: number}[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Get filters from Redux
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [startDate, endDate] = dateRange || [];
+
+  // Fetch data when filters change
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!startDate || !endDate) return;
+
+      setLoading(true);
+      setError(null);
+
+      const formattedStart = formatDate(new Date(startDate));
+      const formattedEnd = formatDate(new Date(endDate));
+
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      if (enterpriseKey) {
+        params.append('enterpriseKey', enterpriseKey);
+      }
+
+      try {
+        // Fetch all three endpoints in parallel
+        const [statesResponse, countryResponse, topResponse] = await Promise.all([
+          fetch(`http://localhost:8080/api/sales-by-region?${params.toString()}`),
+          fetch(`http://localhost:8080/api/sales-by-region/countrywide?${params.toString()}`),
+          fetch(`http://localhost:8080/api/sales-by-region/top5?${params.toString()}`)
+        ]);
+
+        if (!statesResponse.ok || !countryResponse.ok || !topResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const [statesData,  topData] = await Promise.all([
+          statesResponse.json(),
+          countryResponse.json(),
+          topResponse.json()
+        ]);
+
+        setStateData(statesData);
+        setTopStates(topData);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load sales data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [startDate, endDate, enterpriseKey]);
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -87,133 +120,69 @@ export const SalesByRegion = () => {
     return () => observer.disconnect();
   }, []);
 
-  const formatter = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    compactDisplay: "short",
-  });
-
   const formatterUSD = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   });
 
-  const dummyMapData = [
-    ["USA-AL", 150000, 5.1, 1300],
-    ["USA-AK", 180000, 6.2, 1500],
-    ["USA-AZ", 250000, 8.4, 1700],
-    ["USA-AR", 200000, 7.5, 1400],
-    ["USA-CA", 350000, 12.5, 2400],
-    ["USA-CO", 275000, 10.2, 2100],
-    ["USA-CT", 225000, 9.3, 1800],
-    ["USA-DE", 120000, 4.5, 1000],
-    ["USA-FL", 340000, 12.0, 2300],
-    ["USA-GA", 280000, 9.8, 1900],
-    ["USA-HI", 95000, 3.2, 800],
-    ["USA-ID", 110000, 4.1, 900],
-    ["USA-IL", 300000, 10.7, 2000],
-    ["USA-IN", 190000, 7.2, 1600],
-    ["USA-IA", 160000, 6.0, 1300],
-    ["USA-KS", 140000, 5.3, 1100],
-    ["USA-KY", 170000, 6.5, 1400],
-    ["USA-LA", 180000, 6.7, 1450],
-    ["USA-ME", 100000, 3.8, 850],
-    ["USA-MD", 210000, 8.1, 1750],
-    ["USA-MA", 230000, 9.0, 1850],
-    ["USA-MI", 240000, 9.4, 1900],
-    ["USA-MN", 220000, 8.6, 1800],
-    ["USA-MS", 130000, 4.9, 1000],
-    ["USA-MO", 200000, 7.7, 1650],
-    ["USA-MT", 90000, 3.5, 700],
-    ["USA-NE", 95000, 3.9, 750],
-    ["USA-NV", 185000, 7.0, 1500],
-    ["USA-NH", 105000, 4.0, 850],
-    ["USA-NJ", 260000, 9.8, 1950],
-    ["USA-NM", 125000, 4.6, 950],
-    ["USA-NY", 330000, 11.8, 2250],
-    ["USA-NC", 290000, 10.3, 2000],
-    ["USA-ND", 80000, 2.8, 650],
-    ["USA-OH", 310000, 11.1, 2150],
-    ["USA-OK", 150000, 5.5, 1200],
-    ["USA-OR", 195000, 7.5, 1550],
-    ["USA-PA", 320000, 11.4, 2200],
-    ["USA-RI", 90000, 3.3, 700],
-    ["USA-SC", 175000, 6.8, 1450],
-    ["USA-SD", 85000, 3.1, 675],
-    ["USA-TN", 240000, 9.0, 1800],
-    ["USA-TX", 360000, 12.9, 2500],
-    ["USA-UT", 165000, 6.1, 1350],
-    ["USA-VT", 75000, 2.7, 600],
-    ["USA-VA", 250000, 9.2, 1900],
-    ["USA-WA", 270000, 10.0, 2000],
-    ["USA-WV", 95000, 3.6, 800],
-    ["USA-WI", 200000, 7.8, 1650],
-    ["USA-WY", 70000, 2.0, 600],
-    ["USA-DC", 85000, 3.0, 700],
-    ["USA-PR", 65000, 1.9, 550],
-  ];
-
-  const dummyTooltipData: { [key: string]: string } = dummyMapData.reduce(
-    (acc: any, item: any) => {
-      const stateAbbreviation = item[0].split("-")[1].toUpperCase();
-      const stateName = statess[stateAbbreviation];
-      const revenue = formatterUSD.format(item[1]);
-      const quantity = new Intl.NumberFormat("en-US").format(item[3]);
-      const customers = Math.round(item[3] / 2); // Example logic
-      const avgRevenue = formatterUSD.format(item[1] / customers);
-
-      acc[
-        stateName
-      ] = `Revenue: ${revenue}\nQuantity: ${quantity}\nCustomers: ${customers}\nAvg Revenue: ${avgRevenue}`;
-      return acc;
-    },
-    {}
-  );
-
-  const stateAbbreviations: { [key: string]: string } = states;
-
-  const result: (string | number)[][] = dummyMapData.map(
-    (subArray: (string | number)[]) => {
-      const stateAbbreviation: string = String(subArray[0])
-        .split("-")[1]
-        .toUpperCase();
-      const stateName: string = stateAbbreviations[stateAbbreviation];
-      return [stateName, ...subArray.slice(1)];
-    }
-  );
-
-  const convertArrayToObject = (arr: any) =>
-    arr.map((innerArr: any) => ({
-      state: innerArr[0],
-      totalDollar: `${formatterUSD.format(innerArr[1])}`,
-      percentage: `${innerArr[2]} %`,
-      quantity: new Intl.NumberFormat("en-US").format(innerArr[3]),
+  const convertToTableData = (data: StateData[]): TableData[] => {
+    return data.map((state) => ({
+      state: state.state_name,
+      totalDollar: formatterUSD.format(convertToUSD(state.state_revenue)),
+      percentage: `${state.revenue_percentage?.toFixed(2) || 0}%`,
+      quantity: formatValue(state.state_quantity),
+      avgRevenue: formatterUSD.format(convertToUSD(state.average_revenue_per_unit || 0))
     }));
-
-  const tableData = convertArrayToObject(result);
-
-  const topStates = dummyMapData.slice(0, 5);
-  const colorScale = (idValue: string) => {
-    switch (idValue) {
-      case String(topStates[0][0]).toUpperCase().substring(3):
-        return "#58ddf5";
-      case String(topStates[1][0]).toUpperCase().substring(3):
-        return "#65f785";
-      case String(topStates[2][0]).toUpperCase().substring(3):
-        return "#f5901d";
-      case String(topStates[3][0]).toUpperCase().substring(3):
-        return "#f7656c";
-      case String(topStates[4][0]).toUpperCase().substring(3):
-        return "#8518b8";
-      default:
-        return theme === "dark" ? "#444" : "#d6d4d0";
-    }
   };
 
-  const markersList = topStates.map((state: any) => ({
-    legend: state[0].split("-")[1].toUpperCase(),
-    color: colorScale(state[0].toUpperCase().substring(3)),
-    value: formatter.format(state[1]),
+  const tableData = convertToTableData(stateData);
+
+  const colorScale = (stateCode: string) => {
+    const topStateCodes = topStates.map(state => state.state_name);
+    const colors = ["#58ddf5", "#65f785", "#f5901d", "#f7656c", "#8518b8"];
+    
+    const index = topStateCodes.indexOf(stateCode);
+    return index >= 0 ? colors[index] : theme === "dark" ? "#444" : "#d6d4d0";
+  };
+
+  const markersList = topStates.slice(0, 5).map((state) => ({
+    legend: state.state_name,
+    color: colorScale(state.state_name),
+    value: formatValue(convertToUSD(state.state_revenue))
   }));
+
+  if (!startDate || !endDate) {
+    return (
+      <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
+        <div className="text-center text-gray-500 dark:text-gray-400 p-4">
+          Please select a date range to view sales by region
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
+        <div className="p-4">
+          <Skeleton width="150px" height="30px" className="mb-4" />
+          <Skeleton width="100%" height="300px" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
+        <div className="p-4 text-red-500 dark:text-red-400">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
@@ -231,16 +200,7 @@ export const SalesByRegion = () => {
           <div className="w-full lg:w-1/2 flex flex-col lg:flex-row items-center lg:items-start gap-4">
             {/* Map */}
             <div className="relative w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[335px] flex-1">
-              <MapChart
-                markers={[]}
-                markers2={[]}
-                markers3={[]}
-                markers4={[]}
-                markers5={[]}
-                colorScale={colorScale}
-                revenueData={dummyTooltipData}
-                theme={theme}
-              />
+              <USMap />
             </div>
 
             {/* Legend */}
@@ -265,7 +225,7 @@ export const SalesByRegion = () => {
           </div>
 
           <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-            <h3 className="font-bold text-lg mb-2 font-semibold">
+            <h3 className="text-lg mb-2 font-semibold">
               Revenues by State
             </h3>
 
@@ -275,6 +235,8 @@ export const SalesByRegion = () => {
                 size="small"
                 className="text-sm"
                 showGridlines
+                scrollable
+                scrollHeight="flex"
               >
                 <Column
                   field="state"
@@ -288,19 +250,19 @@ export const SalesByRegion = () => {
                   field="totalDollar"
                   header="Total $ Value"
                   pt={{ bodyCell: { className: "h-5 text-center" } }}
-                  headerClassName="bg-purple-100"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="percentage"
                   header="Percentage"
                   pt={{ bodyCell: { className: "h-5 text-center" } }}
-                  headerClassName="bg-purple-100"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="quantity"
                   header="Quantity"
                   pt={{ bodyCell: { className: "h-5 text-center" } }}
-                  headerClassName="bg-purple-100"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
               </DataTable>
             </div>

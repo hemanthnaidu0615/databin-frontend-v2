@@ -2,10 +2,10 @@ import { useEffect, useRef, useState} from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
+import { useScrollLock } from "../hooks/useScrollLock";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
-import AppMobileRightSidebar from "./AppMobileRightSidebar";
 import Logo from "../images/logo.png";
 
 import { useDispatch } from "react-redux";
@@ -30,6 +30,7 @@ const Navbar: React.FC = () => {
     toggleSidebar,
     toggleMobileSidebar,
     screenSize,
+    isMobileRightOpen,
     toggleMobileRightSidebar,
   } = useSidebar();
 
@@ -38,8 +39,10 @@ const Navbar: React.FC = () => {
     new Date("2025-03-20"),
   ]);
 
+  useScrollLock(isMobileRightOpen);
+
   const hideCalendarRoutes = ["/scheduler"];
-  const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler"];
+  const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler", "/sales/flow"];
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
   const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
 
@@ -49,7 +52,7 @@ const Navbar: React.FC = () => {
       try {
         const response = await axiosInstance.get("/global-filter/enterprise-keys");
         const keys = (response.data as { enterprise_keys: string[] }).enterprise_keys || [];
-        setEnterpriseKeys(["All", ...keys]); // "All" is your default/global option
+        setEnterpriseKeys(["All", ...keys]);
       } catch (error) {
         console.error("Failed to fetch enterprise keys:", error);
         setEnterpriseKeys(["All"]);
@@ -60,12 +63,7 @@ const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Only set the enterpriseKey in Redux if not "All"
-    if (enterpriseKey === "All") {
-      dispatch(setEnterpriseKeyRedux("")); // Or null depending on how your API expects "no key"
-    } else {
-      dispatch(setEnterpriseKeyRedux(enterpriseKey));
-    }
+    dispatch(setEnterpriseKeyRedux(enterpriseKey === "All" ? "" : enterpriseKey));
   }, [enterpriseKey]);
 
   const handleToggle = () => {
@@ -79,15 +77,11 @@ const Navbar: React.FC = () => {
   // const toggleApplicationMenu = () => {
   //   setApplicationMenuOpen(!isApplicationMenuOpen);
   // };
-
   const handleDateChange = (e: any) => {
     const newDates = e.value;
     setDateRange(newDates);
-
     if (Array.isArray(newDates) && newDates[0] && newDates[1]) {
       dispatch(setDates(newDates));
-
-      // Auto-hide calendar popover
       calendarRef.current?.hide?.();
     }
   };
@@ -104,8 +98,8 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-[99999] w-full bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90">
-        <div className="flex items-center justify-between w-full flex-nowrap gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
+      <header className="sticky top-0 z-[40] w-full bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90">
+        <div className="flex items-center justify-between w-full gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
           <div className="flex items-center gap-3 shrink-0">
             <button
               className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11"
@@ -136,9 +130,7 @@ const Navbar: React.FC = () => {
             <Link to="/" className="flex items-center gap-2 shrink-0 lg:hidden md:hidden">
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
               <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                Data-Bin
-              </span>
+              <span className="text-lg font-semibold text-gray-900 dark:text-white">Data-Bin</span>
             </Link>
           </div>
 
@@ -193,7 +185,65 @@ const Navbar: React.FC = () => {
         </div>
       </header>
 
-      <AppMobileRightSidebar />
+      {/* Mobile Right Sidebar Drawer */}
+      <div
+        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${
+          isMobileRightOpen ? "translate-x-0" : "translate-x-full"
+        } md:hidden overflow-y-auto`}
+      >
+        <div className="flex justify-end p-4">
+          <button
+            onClick={toggleMobileRightSidebar}
+            className="text-gray-600 dark:text-gray-300 text-xl"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-4 px-4 pb-6">
+          {!shouldHideCalendar && (
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Date Range</label>
+              <Calendar
+                ref={calendarRef}
+                value={dateRange}
+                selectionMode="range"
+                onChange={handleDateChange}
+                dateFormat="yy-mm-dd"
+                placeholder="Select Date Range"
+                className="w-full"
+                inputClassName="text-sm dark:bg-gray-900 dark:text-white"
+                panelClassName="dark:bg-gray-900 dark:text-white z-50"
+                appendTo="self"
+                showIcon
+              />
+            </div>
+          )}
+          {!shouldHideEnterpriseKey && (
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Enterprise</label>
+              <select
+                value={enterpriseKey}
+                onChange={(e) => setEnterpriseKey(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white text-sm"
+              >
+                {enterpriseKeys.map((key) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="border-t border-gray-300 dark:border-gray-700" />
+
+          <div className="flex items-center justify-between gap-4 px-1 pt-2">
+            <ThemeToggleButton />
+            <NotificationDropdown />
+            <UserDropdown />
+          </div>
+        </div>
+      </div>
     </>
   );
 };

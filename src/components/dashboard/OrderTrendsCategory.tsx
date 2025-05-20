@@ -41,10 +41,7 @@ const formatValue = (value: number) => {
 
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
-  onViewMore,
-  onRemove,
 }) => {
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [chartData, setChartData] = useState<{
     categories: string[];
     series: { name: string; data: number[] }[];
@@ -180,42 +177,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-10">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
             Order Trends by Product Category
           </h2>
           <div className="relative">
-            {/* Dropdown section commented out */}
-            {/* <button
-              onClick={() => setDropdownOpen(!isDropdownOpen)}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10"
-              aria-label="More options"
-            >
-              <MoreDotIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-md z-50">
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    onViewMore?.();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-                >
-                  View More
-                </button>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    onRemove?.();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-                >
-                  Remove
-                </button>
-              </div>
-            )} */}
             <button
               onClick={handleViewMore}
               className="text-xs font-medium hover:underline"

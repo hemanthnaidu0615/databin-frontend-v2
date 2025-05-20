@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
@@ -6,32 +7,26 @@ import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { motion } from "framer-motion";
-import { Paginator } from "primereact/paginator";
+
+// Mobile detection hook
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+};
 
 interface Order {
-  id: string;
-  customer: string;
+  order_id: number;
+  customer?: string;
+  status: string;
   event: string;
   eta: string;
 }
-
-const dummyOrders: Order[] = [
-  { id: "ORD-1001", customer: "Alice Johnson", event: "Store Pickup", eta: "2h" },
-  { id: "ORD-1002", customer: "David Miller", event: "Cancelled", eta: "Delivered" },
-  { id: "ORD-1003", customer: "Megan Fox", event: "Warehouse", eta: "1h" },
-  { id: "ORD-1004", customer: "John Doe", event: "Order Placed", eta: "4h" },
-  { id: "ORD-1005", customer: "Sandra Lee", event: "Vendor Drop Shipping", eta: "6h" },
-  { id: "ORD-1006", customer: "Brian O’Connor", event: "Distribution Center", eta: "3h" },
-  { id: "ORD-1007", customer: "Michelle Chan", event: "Same-Day Delivery", eta: "30m" },
-  { id: "ORD-1008", customer: "Carlos Ramirez", event: "Locker Pickup", eta: "Ready" },
-  { id: "ORD-1009", customer: "Tina Cohen", event: "Curbside Pickup", eta: "45m" },
-  { id: "ORD-1010", customer: "Robert Langdon", event: "Cancelled", eta: "-" },
-  { id: "ORD-1011", customer: "Emily Rose", event: "Return Received", eta: "-" },
-  { id: "ORD-1012", customer: "Nathan Drake", event: "Processing", eta: "1h" },
-  { id: "ORD-1013", customer: "Chloe Frazer", event: "Shipped", eta: "Delivered" },
-  { id: "ORD-1014", customer: "Lara Croft", event: "Store Pickup", eta: "Ready" },
-  { id: "ORD-1015", customer: "Marcus Holloway", event: "Order Placed", eta: "5h" },
-];
 
 const mapEventToStatus = (event: string): string => {
   switch (event) {
@@ -59,17 +54,64 @@ const mapEventToStatus = (event: string): string => {
 };
 
 const OrdersInProcess = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [visible, setVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [page, setPage] = useState(1);
+  const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
+
+  const isMobile = useIsMobile();
+
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [startDate, endDate] = dateRange || [];
+
+  const formatDate = (date: Date) =>
+    `${date.getFullYear()}-${(date.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+
+  const formatETA = (eta: string) => {
+    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") return eta;
+    const date = new Date(eta);
+    return isNaN(date.getTime()) ? eta : date.toISOString().slice(0, 10);
+  };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!startDate || !endDate) return;
+
+      const formattedStart = formatDate(new Date(startDate));
+      const formattedEnd = formatDate(new Date(endDate));
+
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      if (enterpriseKey) {
+        params.append("enterpriseKey", enterpriseKey);
+      }
+
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/fulfillment/orders-in-process?${params.toString()}`
+        );
+        const json = await res.json();
+        setOrders(json.data || []);
+      } catch (err) {
+        console.error("Failed to fetch orders-in-process:", err);
+      }
+    };
+
+    fetchOrders();
+  }, [startDate, endDate, enterpriseKey]);
 
   const header = (
     <div className="flex justify-between items-center gap-2 flex-wrap">
       <h2 className="text-sm md:text-lg font-semibold">Orders in Process</h2>
       <span className="p-input-icon-left w-full md:w-auto">
-        
         <InputText
           type="search"
           onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -83,10 +125,24 @@ const OrdersInProcess = () => {
     </div>
   );
 
-  const statusTemplate = (rowData: Order) => (
-    <Tag value={mapEventToStatus(rowData.event)} />
+  const filteredOrders = orders.filter(
+    (order) =>
+      globalFilter === "" ||
+      order.order_id.toString().includes(globalFilter.toLowerCase()) ||
+      order.event.toLowerCase().includes(globalFilter.toLowerCase())
   );
+
+  const getPageOptions = () => {
+    const total = filteredOrders.length;
+    if (total <= 5) return [5];
+    if (total <= 10) return [5, 10];
+    if (total <= 20) return [5, 10, 15, 20];
+    if (total <= 50) return [10, 20, 30, 50];
+    return [10, 20, 50, 100];
+  };
+
   const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
+  const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
 
   const handleViewClick = (order: Order) => {
     setSelectedOrder(order);
@@ -102,64 +158,51 @@ const OrdersInProcess = () => {
     />
   );
 
-  const handlePageChange = (direction: string) => {
-    if (direction === "next" && page * rows < dummyOrders.length) {
-      setPage(page + 1);
-    } else if (direction === "prev" && page > 1) {
-      setPage(page - 1);
-    }
-  };
-
   return (
     <div className="mt-6">
       <div className="border rounded-xl shadow-sm p-4 overflow-x-auto bg-white dark:bg-gray-900">
         {/* Desktop View */}
         <div className="hidden sm:block">
           <DataTable
-            value={dummyOrders.slice((page - 1) * rows, page * rows)}
-            paginator={false}
+            value={filteredOrders}
+            paginator
+            rows={rows}
+            stripedRows
             header={header}
             globalFilter={globalFilter}
             className="p-datatable-sm"
+            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+            rowsPerPageOptions={getPageOptions()}
+            onPage={(e) => {
+              setFirst(e.first);
+              setRows(e.rows);
+            }}
+            first={first}
             emptyMessage="No orders found."
             responsiveLayout="scroll"
             scrollable
           >
-            <Column field="id" header="Order ID" sortable />
-            <Column header="Status" body={statusTemplate} sortable />
-            <Column field="event" header="Event" body={eventTemplate} sortable />
-            <Column field="eta" header="ETA" sortable />
+            <Column field="order_id" header="Order ID" sortable />
+            <Column header="Status" body={eventTemplate} sortable />
+            <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
           </DataTable>
-
-          {/* Desktop Pagination */}
-          <div className="hidden sm:block mt-4 p-4 bg-white dark:bg-gray-900 rounded-b-lg">
-            <Paginator
-              first={(page - 1) * rows}
-              rows={rows}
-              totalRecords={dummyOrders.length}
-              onPageChange={(e) => setPage(e.page + 1)}
-              rowsPerPageOptions={[5, 10, 20]}
-              template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-              className="dark:text-gray-100 dark:bg-gray-900 [&_.p-paginator]:bg-transparent [&_.p-paginator]:dark:bg-transparent [&_.p-paginator]:border-none"
-            />
-          </div>
         </div>
 
         {/* Mobile View */}
         <div className="sm:hidden">
-          {dummyOrders.slice((page - 1) * rows, page * rows).map((order) => (
+          {filteredOrders.slice(first, first + rows).map((order) => (
             <div
-              key={order.id}
+              key={order.order_id}
               className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-sm font-semibold">Order ID: {order.id}</h3>
+                <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
                 <Tag value={mapEventToStatus(order.event)} className="text-xs" />
               </div>
               <p className="text-xs mt-1">Event: {order.event}</p>
-              <p className="text-xs">ETA: {order.eta}</p>
+              <p className="text-xs">ETA: {formatETA(order.eta)}</p>
               <div className="mt-2">
                 <Button
                   label="View"
@@ -172,55 +215,71 @@ const OrdersInProcess = () => {
           ))}
 
           {/* Mobile Pagination */}
-          <div className="mt-4 flex flex-col justify-between items-center bg-[#0F172A] rounded-md px-4 py-3 border border-[#1E293B]">
-            <div className="flex items-center gap-2 mb-3">
-              <label htmlFor="mobileRows" className="text-sm text-white font-medium">
-                Rows per page:
-              </label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="bg-[#1E293B] text-white text-sm px-3 py-1 rounded focus:outline-none border border-[#334155]"
-              >
-                {[5, 10, 20, 50].map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+          <div className="mt-4 text-sm text-gray-800 dark:text-gray-100">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <label htmlFor="mobileRows" className="whitespace-nowrap">
+                  Rows per page:
+                </label>
+                <select
+                  id="mobileRows"
+                  value={rows}
+                  onChange={(e) => {
+                    setRows(Number(e.target.value));
+                    setFirst(0);
+                  }}
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                >
+                  {getPageOptions().map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                Page {Math.floor(first / rows) + 1} of{" "}
+                {Math.ceil(filteredOrders.length / rows)}
+              </div>
             </div>
 
-            <div className="flex w-full justify-between items-center">
+            <div className="flex justify-between gap-2">
               <button
-                onClick={() => handlePageChange("prev")}
-                disabled={page === 1}
-                className={`text-sm px-3 py-1 rounded font-semibold border ${
-                  page === 1
-                    ? "bg-[#1E293B] text-gray-500 border-[#1E293B] cursor-not-allowed"
-                    : "bg-[#1E293B] text-white border-[#334155] hover:bg-[#334155]"
-                }`}
+                onClick={() => setFirst(0)}
+                disabled={first === 0}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                ⏮ First
+              </button>
+              <button
+                onClick={() => setFirst(Math.max(0, first - rows))}
+                disabled={first === 0}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
               >
                 Prev
               </button>
-
-              <span className="text-sm text-white font-semibold">
-                {`Page ${page} of ${Math.ceil(dummyOrders.length / rows)}`}
-              </span>
-
               <button
-                onClick={() => handlePageChange("next")}
-                disabled={page * rows >= dummyOrders.length}
-                className={`text-sm px-3 py-1 rounded font-semibold border ${
-                  page * rows >= dummyOrders.length
-                    ? "bg-[#1E293B] text-gray-500 border-[#1E293B] cursor-not-allowed"
-                    : "bg-[#1E293B] text-white border-[#334155] hover:bg-[#334155]"
-                }`}
+                onClick={() =>
+                  setFirst(
+                    first + rows < filteredOrders.length ? first + rows : first
+                  )
+                }
+                disabled={first + rows >= filteredOrders.length}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
               >
                 Next
+              </button>
+              <button
+                onClick={() =>
+                  setFirst(
+                    (Math.ceil(filteredOrders.length / rows) - 1) * rows
+                  )
+                }
+                disabled={first + rows >= filteredOrders.length}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                ⏭ Last
               </button>
             </div>
           </div>
@@ -229,7 +288,7 @@ const OrdersInProcess = () => {
 
       {/* Dialog Modal */}
       <Dialog
-        header={`Order Details: ${selectedOrder?.id}`}
+        header={`Order Details: ${selectedOrder?.order_id}`}
         visible={visible}
         onHide={() => setVisible(false)}
         style={{ width: "40rem" }}
@@ -241,7 +300,21 @@ const OrdersInProcess = () => {
           transition={{ duration: 0.4 }}
           className="space-y-6"
         >
-          {/* Modal content goes here */}
+          {selectedOrder ? (
+            <>
+              <div>
+                <strong>Status:</strong> {mapEventToStatus(selectedOrder.event)}
+              </div>
+              <div>
+                <strong>ETA:</strong> {formatETA(selectedOrder.eta)}
+              </div>
+              <div>
+                <strong>Event:</strong> {selectedOrder.event}
+              </div>
+            </>
+          ) : (
+            <p>No order selected.</p>
+          )}
         </motion.div>
       </Dialog>
     </div>

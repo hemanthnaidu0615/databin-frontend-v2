@@ -1,305 +1,210 @@
-import { geoCentroid } from "d3-geo";
-import {
-  Annotation,
-  ComposableMap,
-  Geographies,
-  Geography,
-  Marker,
-} from "react-simple-maps";
-import React, { useState } from "react";
-import allStates from "./data.json";
-import states from "./states.json";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
+import { ComposableMap, Geographies, Geography, Annotation } from "react-simple-maps";
+import { useSelector } from "react-redux";
+import allStates from "../../../../dashboard/allStates.json";
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const INR_TO_USD = 1 / 83.3;
 
-const offsets = {
-  VT: [50, -8],
-  NH: [34, 2],
-  MA: [30, -1],
-  RI: [28, 2],
-  CT: [35, 10],
-  NJ: [34, 1],
-  DE: [33, 0],
-  MD: [47, 10],
-  DC: [49, 21],
+const CANONICAL_STATES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
+  "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+  "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia",
+  "Washington", "West Virginia", "Wisconsin", "Wyoming",
+];
+
+const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
+  acc[name.toLowerCase()] = name;
+  return acc;
+}, {} as Record<string, string>);
+
+const formatValue = (value: number) => {
+  const usd = value * INR_TO_USD;
+  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}m`;
+  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}k`;
+  return `$${usd.toFixed(0)}`;
 };
 
-interface MapChartProps {
-  markers: any[];
-  markers2: any[];
-  markers3: any[];
-  markers4: any[];
-  markers5: any[];
-  colorScale: (id: string) => string;
-  revenueData: { [key: string]: string };
-  theme: "light" | "dark";
-  isDarkMode?: boolean;
-}
-
-interface Statess {
-  [key: string]: string;
-}
-
-const statess: Statess = {
-  AL: "Alabama",
-  AK: "Alaska",
-  AS: "American Samoa",
-  AZ: "Arizona",
-  AR: "Arkansas",
-  CA: "California",
-  CO: "Colorado",
-  CT: "Connecticut",
-  DE: "Delaware",
-  DC: "District of Columbia",
-  FL: "Florida",
-  GA: "Georgia",
-  HI: "Hawaii",
-  ID: "Idaho",
-  IL: "Illinois",
-  IN: "Indiana",
-  IA: "Iowa",
-  KS: "Kansas",
-  KY: "Kentucky",
-  LA: "Louisiana",
-  ME: "Maine",
-  MD: "Maryland",
-  MA: "Massachusetts",
-  MI: "Michigan",
-  MN: "Minnesota",
-  MS: "Mississippi",
-  MO: "Missouri",
-  MT: "Montana",
-  NE: "Nebraska",
-  NV: "Nevada",
-  NH: "New Hampshire",
-  NJ: "New Jersey",
-  NM: "New Mexico",
-  NY: "New York",
-  NC: "North Carolina",
-  ND: "North Dakota",
-  MP: "Northern Mariana Islands",
-  OH: "Ohio",
-  OK: "Oklahoma",
-  OR: "Oregon",
-  PA: "Pennsylvania",
-  PR: "Puerto Rico",
-  RI: "Rhode Island",
-  SC: "South Carolina",
-  SD: "South Dakota",
-  TN: "Tennessee",
-  TX: "Texas",
-  UT: "Utah",
-  VT: "Vermont",
-  VA: "Virginia",
-  WA: "Washington",
-  WV: "West Virginia",
-  WI: "Wisconsin",
-  WY: "Wyoming",
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
+    .getDate()
+    .toString()
+    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
+    .getMinutes()
+    .toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
 };
 
-const MapChart: React.FC<MapChartProps> = ({
-  markers,
-  markers2,
-  markers3,
-  markers4,
-  markers5,
-  colorScale,
-  revenueData,
-  isDarkMode = false,
-}) => {
+const USMap = () => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  // Redux selectors
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [startDate, endDate] = dateRange;
+
   const [tooltip, setTooltip] = useState<{
-    display: boolean;
-    content: string;
+    name: string;
+    customers: number;
+    revenue: number;
+    avgRevenue: number;
     x: number;
     y: number;
-  }>({ display: false, content: "", x: 0, y: 0 });
+  } | null>(null);
 
-  const handleMouseEnter = (
-    e: React.MouseEvent<SVGGeometryElement, MouseEvent>,
-    stateName: string
-  ) => {
-    const { clientX, clientY } = e;
+  const [stateData, setStateData] = useState<
+    Record<string, { customers: number; revenue: number; avgRevenue: number }>
+  >({});
 
-    const dataString = revenueData?.[stateName] || "No data";
-    const [revenuePart, quantityPart] = dataString.split(" + ");
-    const content = `${stateName}\n----------------------- \n${revenuePart || "No data"}\n${quantityPart || "No data"}`;
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const formattedStart = formatDate(startDate);
+        const formattedEnd = formatDate(endDate);
+        const params = new URLSearchParams({
+          startDate: formattedStart,
+          endDate: formattedEnd,
+        });
+        if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
 
-    setTooltip({
-      display: true,
-      content,
-      x: clientX,
-      y: clientY,
-    });
-  };
+        const [mapRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/sales/map-metrics?${params.toString()}`),
+          fetch(`http://localhost:8080/api/sales/metrics?${params.toString()}`),
+        ]);
 
-  const handleMouseLeave = () => {
-    setTooltip({ ...tooltip, display: false });
-  };
+        const mapData = await mapRes.json();
 
-  const textColor = isDarkMode ? "#ffffff" : "#000000"; // text color for contrast
+        const formatted: Record<
+          string,
+          { customers: number; revenue: number; avgRevenue: number }
+        > = {};
 
-  const mapBackground = isDarkMode ? "#1f2937" : "#F9FAFB"; // map background color based on theme
+        if (Array.isArray(mapData)) {
+          mapData.forEach((row) => {
+            const raw = row.state?.trim().toLowerCase();
+            const canonicalName = STATE_NAME_MAP[raw];
+            if (!canonicalName) {
+              console.warn(`State name mismatch: "${row.state}" not found in map.`);
+              return;
+            }
+            const customers = row.total_customers || 0;
+            const avgRevenue = row.average_revenue || 0;
+            const revenue = customers * avgRevenue;
+
+            formatted[canonicalName] = {
+              customers,
+              revenue,
+              avgRevenue,
+            };
+          });
+
+          setStateData(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to load sales data:", err);
+      }
+    }
+
+    if (startDate && endDate) fetchData();
+  }, [startDate, endDate, enterpriseKey]);
 
   return (
-    <div className="h-full flex items-center justify-center relative">
-      <ComposableMap projection="geoAlbersUsa" className="h-full">
-        <Geographies geography={geoUrl}>
-          {({ geographies }) => (
-            <>
-              {geographies.map((geo: any) => {
-                const stateId =
-                  Object?.entries(states)?.find(
-                    (s) => s[1] === geo.properties.name
-                  ) || [];
-                const idValue: any =
-                  allStates?.find((s) => s.id === stateId[0])?.id || 0;
+    <div className="w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900 rounded-xl relative">
+      <ComposableMap
+        projection="geoAlbersUsa"
+viewBox="1 1 790 590"
+        style={{ width: "100%", height: "auto" }}
+      >
+        <Geographies geography={US_TOPO_JSON}>
+          {({ geographies }) =>
+            geographies.map((geo) => {
+              const stateName = geo.properties.name;
+              const data = stateData[stateName] || {
+                customers: 0,
+                revenue: 0,
+                avgRevenue: 0,
+              };
 
-                const color = colorScale(idValue as any);
-                const stateName = statess[idValue] || geo.properties.name;
-
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    onMouseEnter={(e) => handleMouseEnter(e, stateName)}
-                    onMouseLeave={handleMouseLeave}
-                    fill={color}
-                    stroke={isDarkMode ? "#4B5563" : "#ffffff"}
-                    strokeWidth={2}
-                    style={{
-                      default: {
-                        fill: mapBackground,  // Map background color set to match the theme
-                        stroke: isDarkMode ? "#6B7280" : "#9CA3AF", // lighter stroke for dark mode
-                        strokeWidth: 0.5,
-                      },
-                      hover: {
-                        fill: "#F53",
-                        stroke: "#fff",
-                        strokeWidth: 1,
-                      },
-                      pressed: {
-                        fill: "#F53",
-                      },
-                    }}
-                  />
-                );
-              })}
-              {geographies.map((geo) => {
-                const centroid = geoCentroid(geo);
-                const cur = allStates.find((s) => s.val === geo.id);
-                return (
-                  <g key={geo.rsmKey + "-name"}>
-                    {cur &&
-                      centroid[0] > -160 &&
-                      centroid[0] < -67 &&
-                      (Object.keys(offsets).indexOf(cur.id) === -1 ? (
-                        <Marker coordinates={centroid}>
-                          <text
-                            y="2"
-                            fontSize={14}
-                            textAnchor="middle"
-                            fill={textColor} // Apply theme-based text color
-                          >
-                            {cur.id}
-                          </text>
-                        </Marker>
-                      ) : (
-                        <Annotation
-                          subject={centroid}
-                          dx={offsets[cur.id as keyof typeof offsets][0]}
-                          dy={offsets[cur.id as keyof typeof offsets][1]}
-                          connectorProps={{
-                            stroke: "#7d6968",
-                            strokeWidth: 1,
-                            strokeLinecap: "round",
-                          }}
-                        >
-                          <text
-                            x={4}
-                            y={0}
-                            textAnchor="middle"
-                            fontSize={14}
-                            alignmentBaseline="middle"
-                            fill={textColor} // Apply theme-based text color
-                          >
-                            {cur.id}
-                          </text>
-                        </Annotation>
-                      ))}
-                  </g>
-                );
-              })}
-            </>
-          )}
+              return (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill={isDark ? "#ffffff" : "#e0e0e0"}
+                  stroke="#473838"
+                  strokeWidth={0.5}
+                  onMouseEnter={(e) =>
+                    setTooltip({
+                      name: stateName,
+                      customers: data.customers,
+                      revenue: data.revenue,
+                      avgRevenue: data.avgRevenue,
+                      x: e.clientX,
+                      y: e.clientY,
+                    })
+                  }
+                  onMouseLeave={() => setTooltip(null)}
+                  style={{
+                    default: { outline: "none" },
+                    hover: { fill: "#4FD1C5", outline: "none" },
+                    pressed: { outline: "none" },
+                  }}
+                />
+              );
+            })
+          }
         </Geographies>
 
-        {[markers, markers2, markers3, markers4, markers5].map(
-          (markerSet, index) =>
-            markerSet.map(({ coordinates, name }: any) => (
-              <Marker key={`${name}-${index}`} coordinates={coordinates}>
-                <circle
-                  r={10}
-                  fill={
-                    index === 0
-                      ? "#ff000070"
-                      : index === 1
-                      ? "#00ff0047"
-                      : index === 2
-                      ? "#b064d6cc"
-                      : index === 3
-                      ? "#92fdfeb8"
-                      : "#eeff3394"
-                  }
-                  stroke={
-                    index === 0
-                      ? "#ff000070"
-                      : index === 1
-                      ? "#00ff0047"
-                      : index === 2
-                      ? "#b064d6cc"
-                      : index === 3
-                      ? "#92fdfeb8"
-                      : "#eeff3394"
-                  }
-                  strokeWidth={2}
-                />
-                <text
-                  textAnchor="middle"
-                  style={{
-                    fontFamily: "system-ui",
-                    fill: textColor, // Apply theme-based text color here as well
-                  }}
-                ></text>
-              </Marker>
-            ))
-        )}
+        {/* State Labels */}
+        {allStates.map(({ name, abbreviation, coordinates }) => (
+          <Annotation
+            key={name}
+            subject={coordinates.slice(0, 2) as [number, number]}
+            dx={0}
+            dy={0}
+            connectorProps={{}}
+          >
+            <text
+              x={0}
+              y={0}
+              textAnchor="middle"
+              alignmentBaseline="central"
+              fill={isDark ? "#ffffff" : "#000000"}
+              fontSize={10}
+              fontWeight="bold"
+            >
+              {abbreviation}
+            </text>
+          </Annotation>
+        ))}
       </ComposableMap>
 
-      {tooltip.display && (
+      {tooltip && (
         <div
-          className="tooltip"
+          className="fixed z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
           style={{
-            position: "fixed",
-            top: `${tooltip.y + 15}px`,
-            left: `${tooltip.x + 15}px`,
-            transform: `translate(${
-              tooltip.x + 200 > window.innerWidth ? "-100%" : "0"
-            }, ${tooltip.y + 100 > window.innerHeight ? "-100%" : "0"})`,
-            background: isDarkMode ? "#1f2937" : "white",
-            color: isDarkMode ? "#f9fafb" : "black", // Tooltip text color
-            padding: "5px",
-            border: `1px solid ${isDarkMode ? "#4B5563" : "#ccc"}`,
-            zIndex: 1000,
-            whiteSpace: "pre-line",
+            top: tooltip.y + 10,
+            left: tooltip.x + 10,
+            backgroundColor: isDark ? "#2d2d2d" : "#ffffff",
+            color: isDark ? "#ffffff" : "#000000",
+            border: `1px solid ${isDark ? "#444" : "#ccc"}`,
             pointerEvents: "none",
-            borderRadius: "4px",
           }}
         >
-          {tooltip.content}
+          <strong>{tooltip.name}</strong>
+          {`\nCustomers: ${tooltip.customers}\nRevenue: ${formatValue(
+            tooltip.revenue
+          )}\nAvg Revenue: ${formatValue(tooltip.avgRevenue)}`}
         </div>
       )}
     </div>
   );
 };
 
-export default MapChart;
+export default USMap;

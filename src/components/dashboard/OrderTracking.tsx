@@ -5,13 +5,13 @@ import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
-import { MoreDotIcon } from "../../icons";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
   return value.toFixed(0);
 };
+
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -33,15 +33,11 @@ interface OrderTrackingProps {
 export default function OrderTracking(_: OrderTrackingProps) {
   const [totalOrders, setTotalOrders] = useState(0);
   const [orderCounts, setOrderCounts] = useState({
-    Pending: 0,
     Shipped: 0,
-    Delivered: 0,
     Cancelled: 0,
     "Return Received": 0,
-    Refunded: 0,
   });
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(() => {
     return localStorage.getItem("orderTrackingVisible") !== "false";
   });
@@ -79,7 +75,14 @@ export default function OrderTracking(_: OrderTrackingProps) {
         const orderCountsResponse = await axios.get(
           `http://localhost:8080/api/shipment-status/count?${params.toString()}`
         );
-        setOrderCounts(orderCountsResponse.data);
+
+        const counts = orderCountsResponse.data;
+
+        setOrderCounts({
+          Shipped: counts.Shipped || 0,
+          Cancelled: counts.Cancelled || 0,
+          "Return Received": counts.Returned || 0, // remapped from "Returned"
+        });
       } catch (error) {
         console.error("Error fetching order data:", error);
       }
@@ -92,7 +95,8 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
   const progressPercentage =
     totalOrders > 0
-      ? ((orderCounts.Delivered + orderCounts.Refunded) / totalOrders) * 100
+      ? ((orderCounts.Shipped + orderCounts["Return Received"]) / totalOrders) *
+        100
       : 0;
   const series = [progressPercentage];
 
@@ -127,26 +131,12 @@ export default function OrderTracking(_: OrderTrackingProps) {
     labels: ["Progress"],
   };
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
-  function removeChart() {
-    setIsVisible(false);
-    closeDropdown();
-  }
-
   function restoreChart() {
     setIsVisible(true);
   }
 
   function handleViewMore() {
     navigate("/orders");
-    closeDropdown();
   }
 
   return (
@@ -166,9 +156,9 @@ export default function OrderTracking(_: OrderTrackingProps) {
           <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                   Order Tracking
-                </h3>
+                </h2>
                 <p className="mt-1 text-gray-500 text-xs dark:text-gray-400">
                   Monitor orders and fulfillment speed
                 </p>
@@ -176,7 +166,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
               <button
                 onClick={handleViewMore}
-                className="text-xs font-medium hover:underline mt-1"
+                className="text-xs font-medium hover:underline mt-11"
                 style={{ color: "#9614d0" }}
               >
                 View More
@@ -198,18 +188,8 @@ export default function OrderTracking(_: OrderTrackingProps) {
           <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
             {[
               {
-                label: "Pending",
-                count: orderCounts.Pending,
-                color: "text-yellow-500",
-              },
-              {
                 label: "Shipped",
                 count: orderCounts.Shipped,
-                color: "text-blue-500",
-              },
-              {
-                label: "Delivered",
-                count: orderCounts.Delivered,
                 color: "text-green-500",
               },
               {
@@ -220,12 +200,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
               {
                 label: "Returned",
                 count: orderCounts["Return Received"],
-                color: "text-purple-500",
-              },
-              {
-                label: "Refunded",
-                count: orderCounts.Refunded,
-                color: "text-teal-500",
+                color: "text-yellow-500",
               },
             ].map((item, index) => (
               <div key={index} className="flex flex-col items-center">

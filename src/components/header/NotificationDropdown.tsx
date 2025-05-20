@@ -95,7 +95,7 @@ export default function NotificationDropdown() {
         createPortal(
           <div
             ref={dropdownRef}
-            className="z-[99999] w-[350px] sm:w-[361px]"
+            className="z-[100010] w-[350px] sm:w-[361px]"
             style={{
               position: "absolute",
               top: position.top,

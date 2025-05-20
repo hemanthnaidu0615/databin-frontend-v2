@@ -49,10 +49,12 @@ const OrdersPage: React.FC = () => {
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+
 
   useEffect(() => {
     loadOrders();
-  }, [filters, startDate, endDate]);
+  }, [filters, startDate, endDate, enterpriseKey]);
 
   const loadOrders = async () => {
     try {
@@ -67,7 +69,8 @@ const OrdersPage: React.FC = () => {
           : undefined,
         filters.carrier !== "All carriers" ? filters.carrier : undefined,
         filters.customer !== "" ? filters.customer : undefined,
-        filters.orderId !== "" ? filters.orderId : undefined
+        filters.orderId !== "" ? filters.orderId : undefined,
+        enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined
       );
       setOrders(fetchedOrders);
     } catch (error) {
@@ -162,4 +165,4 @@ const OrdersPage: React.FC = () => {
   );
 };
 
-export default OrdersPage;
+export default OrdersPage
