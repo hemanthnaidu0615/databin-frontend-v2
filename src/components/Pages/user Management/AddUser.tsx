@@ -163,15 +163,15 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
       <Toast ref={toast} />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            First Name<span className="text-red-500">*</span>
+          <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">
+           Name<span className="text-red-500">*</span>
           </label>
           <InputText value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full text-xs" />
           {errors.firstName && <p className="text-red-500 text-xs mt-1">First name is required</p>}
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
+          <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">
             Email (Username)<span className="text-red-500">*</span>
           </label>
           <InputText value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} className="w-full text-xs" />
@@ -180,7 +180,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
 
         {!editingUser && (
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">
               Password<span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -200,7 +200,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
         )}
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Role Level</label>
+          <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">Role Level</label>
           <Dropdown
             value={roleLevel}
             onChange={(e) => setRoleLevel(e.value)}
@@ -212,7 +212,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
 
         {roleLevel?.toLowerCase() !== "admin" && roleLevel !== null && (
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Department</label>
+            <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">Department</label>
             <Dropdown
               value={department}
               onChange={(e) => setDepartment(e.value)}
