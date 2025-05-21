@@ -186,7 +186,7 @@ const Navbar: React.FC = () => {
               )}
 
               <ThemeToggleButton />
-              <NotificationDropdown />
+              {/* <NotificationDropdown /> */}
               <UserDropdown />
             </div>
           ) : (
@@ -259,7 +259,7 @@ const Navbar: React.FC = () => {
 
           <div className="flex items-center justify-between gap-4 px-1 pt-2">
             <ThemeToggleButton />
-            <NotificationDropdown />
+            {/* <NotificationDropdown /> */}
             <UserDropdown />
           </div>
         </div>

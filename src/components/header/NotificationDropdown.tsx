@@ -22,9 +22,9 @@ export default function NotificationDropdown() {
       const left =
         spaceOnRight < DROPDOWN_WIDTH
           ? Math.max(
-            window.innerWidth - DROPDOWN_WIDTH - SIDE_PADDING,
-            SIDE_PADDING
-          )
+              window.innerWidth - DROPDOWN_WIDTH - SIDE_PADDING,
+              SIDE_PADDING
+            )
           : rect.left + rect.width - DROPDOWN_WIDTH;
 
       setPosition({
@@ -69,8 +69,9 @@ export default function NotificationDropdown() {
         className="relative flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full dropdown-toggle hover:text-gray-700 h-11 w-11 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
       >
         <span
-          className={`absolute right-0 top-0.5 z-10 h-2 w-2 rounded-full bg-orange-400 ${!notifying ? "hidden" : "flex"
-            }`}
+          className={`absolute right-0 top-0.5 z-10 h-2 w-2 rounded-full bg-orange-400 ${
+            !notifying ? "hidden" : "flex"
+          }`}
         >
           <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
         </span>
@@ -106,10 +107,9 @@ export default function NotificationDropdown() {
               onClose={closeDropdown}
               className="flex h-[480px] w-full flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
             >
-
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-700">
                 <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  Notification
+                  Notifications
                 </h5>
                 <button
                   onClick={toggleDropdown}
