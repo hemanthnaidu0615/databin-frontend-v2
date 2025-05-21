@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import moment from "moment";
 
 export const BrandInfo = (props: any) => {
-  const maxPossibleValue = 100000000; // Adjust as needed
+  const maxPossibleValue = 100000000;
   const normalizedValue = (props.progressbarValue / maxPossibleValue) * 100;
   const { dates } = useSelector((store: any) => store.dateRange);
 

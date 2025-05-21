@@ -10,7 +10,7 @@ export const HalfPiechart = ({ data, isDark }: HalfPiechartProps) => {
     const value = Math.ceil(
       (parseInt(dataWithArc[0]?.formattedValue) /
         parseInt(dataWithArc[1]?.formattedValue)) *
-        100
+      100
     );
     return (
       <text

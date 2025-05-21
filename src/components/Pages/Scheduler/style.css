@@ -1,10 +1,9 @@
-/* Scheduler Page Style */
 .schedulerContainer {
   display: flex;
   flex-direction: column;
-  width:100%;
+  width: 100%;
   overflow: hidden;
-  height: 100%;/* Full height of the viewport */
+  height: 100%;
 }
 
 .schedulerHeader {
@@ -39,7 +38,7 @@
   flex-direction: column;
   padding: 1rem;
   width: 100%;
-  height: calc(100% - 3rem); /* Adjust for header height */
+  height: calc(100% - 3rem);
   max-width: 100%;
   overflow: hidden;
 }
@@ -92,13 +91,13 @@
   background-color: white;
   border-collapse: collapse;
   width: 100%;
-  height: 100%; /* Ensures table stretches */
+  height: 100%;
   table-layout: fixed;
   border: 1px solid #ddd;
 }
 
-.vw-scheduler-table .p-datatable-thead > tr > th,
-.vw-scheduler-table .p-datatable-tbody > tr > td {
+.vw-scheduler-table .p-datatable-thead>tr>th,
+.vw-scheduler-table .p-datatable-tbody>tr>td {
   text-align: left;
   padding: 1rem;
   word-wrap: break-word;
@@ -106,7 +105,7 @@
   white-space: normal;
 }
 
-.vw-scheduler-table .p-datatable-thead > tr > th {
+.vw-scheduler-table .p-datatable-thead>tr>th {
   background-color: #f9f9f9;
   border-bottom: 1px solid #ddd;
 }
@@ -146,11 +145,6 @@
   gap: 0.5rem;
 }
 
-
-/* ---------------------- */
-/* Dark Theme Enhancements */
-/* ---------------------- */
-
 body.p-component.dark {
   --surface-ground: #1f1f1f;
   --surface-section: #2c2c2c;
@@ -171,8 +165,8 @@ body.p-component.dark {
   color: var(--text-color);
 }
 
-.vw-scheduler-table .p-datatable-thead > tr > th,
-.vw-scheduler-table .p-datatable-tbody > tr > td {
+.vw-scheduler-table .p-datatable-thead>tr>th,
+.vw-scheduler-table .p-datatable-tbody>tr>td {
   color: var(--text-color);
   background-color: var(--surface-section);
   border-color: var(--surface-border);

@@ -23,14 +23,11 @@ interface Product {
 }
 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
-
-// INR to USD conversion
 const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-// Number formatting helper
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
@@ -43,13 +40,10 @@ const TopProductsTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Get filters from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
 
-  // Fetch products data when filters change
   useEffect(() => {
     const fetchProducts = async () => {
       if (!startDate || !endDate) return;
@@ -86,7 +80,6 @@ const TopProductsTable = () => {
     fetchProducts();
   }, [startDate, endDate, enterpriseKey]);
 
-  // Get all products sorted by current view mode (for table)
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) =>
       viewMode === "revenue"
@@ -95,7 +88,6 @@ const TopProductsTable = () => {
     );
   }, [viewMode, products]);
 
-  // Get top 10 products sorted by current view mode (for chart)
   const topProducts = useMemo(() => {
     return sortedProducts.slice(0, 10);
   }, [sortedProducts]);

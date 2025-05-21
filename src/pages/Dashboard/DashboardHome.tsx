@@ -5,29 +5,20 @@ import StatisticsChart from "../../components/dashboard/SalesAndRevenue";
 import RecentOrders from "../../components/dashboard/RecentOrders";
 import OrderTracking from "../../components/dashboard/OrderTracking";
 import DemographicCard from "../../components/dashboard/CustomerDemographic";
-// import OrderProcessingTime from "../../components/dashboard/OrderProcessingTime";
 import OrderTrendsCategory from "../../components/dashboard/OrderTrendsCategory";
-// import OrderValueSegment from "../../components/dashboard/OrderValueSegment";
 import RevenuePerCustomer from "../../components/dashboard/RevenuePerCustomer";
-// import SalesFunnel from "../../components/dashboard/SalesFunnel";
-// import InventoryHealth from "../../components/dashboard/InventoryHealth";
 import ShipmentPerformance from "../../components/dashboard/ShipmentPerformance";
 import CustomerSegmentation from "../../components/dashboard/BestSelling";
 import FulfillmentEfficiency from "../../components/dashboard/FulfillmentEfficiency";
 
-// Memoized components
 const Memoized = {
   EcommerceMetrics: memo(EcommerceMetrics),
   StatisticsChart: memo(StatisticsChart),
   RecentOrders: memo(RecentOrders),
   OrderTracking: memo(OrderTracking),
   DemographicCard: memo(DemographicCard),
-  // OrderProcessingTime: memo(OrderProcessingTime),
   OrderTrendsCategory: memo(OrderTrendsCategory),
-  // OrderValueSegment: memo(OrderValueSegment),
   RevenuePerCustomer: memo(RevenuePerCustomer),
-  // SalesFunnel: memo(SalesFunnel),
-  // InventoryHealth: memo(InventoryHealth),
   ShipmentPerformance: memo(ShipmentPerformance),
   CustomerSegmentation: memo(CustomerSegmentation),
   FulfillmentEfficiency: memo(FulfillmentEfficiency),
@@ -78,9 +69,6 @@ export default function Home() {
         {/* 🛠 Operational Insights */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
           <div className="w-full xl:w-1/2 h-full">
-            {/* <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.OrderProcessingTime />
-            </div> */}
             <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
               <Memoized.ShipmentPerformance />
             </div>

@@ -13,7 +13,6 @@ type Props = {
   selectedMethod: string | null;
 };
 
-// Hook to detect mobile screens
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 

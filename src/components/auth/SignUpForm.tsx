@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FormEvent } from "react"
 
-import 'primeicons/primeicons.css' // Import PrimeIcons
+import 'primeicons/primeicons.css'
 
 function SignUp() {
   const [firstName, setFirstName] = useState('')

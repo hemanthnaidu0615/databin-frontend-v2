@@ -345,7 +345,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 (acc: number, p: any) =>
                                   acc +
                                   (p.quantity ?? p.qty) *
-                                    (p.unit_price ?? p.price),
+                                  (p.unit_price ?? p.price),
                                 0
                               );
 
@@ -537,21 +537,19 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                       <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                                     )}
                                     <span
-                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
-                                        step.Delayed
+                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
                                           ? "bg-red-500 border-red-500"
                                           : step.complete
-                                          ? "bg-green-500 border-green-500"
-                                          : "bg-gray-400 border-gray-400"
-                                      }`}
+                                            ? "bg-green-500 border-green-500"
+                                            : "bg-gray-400 border-gray-400"
+                                        }`}
                                     />
                                     <div className="ml-4">
                                       <p
-                                        className={`text-sm font-medium ${
-                                          step.Delayed
+                                        className={`text-sm font-medium ${step.Delayed
                                             ? "text-red-600 dark:text-red-400"
                                             : "text-gray-800 dark:text-white"
-                                        }`}
+                                          }`}
                                       >
                                         {step.label}
                                       </p>
@@ -610,9 +608,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
             />
           </div>
 
-          {/* Custom Simple Pagination for Mobile (smaller than sm) */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
-            {/* Rows per page dropdown */}
             <div className="flex items-center gap-2">
               <label htmlFor="mobileRows" className="whitespace-nowrap">
                 Rows per page:
@@ -634,11 +630,8 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
               </select>
             </div>
 
-            {/* Pagination controls */}
             <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-3 bg-gray-900 text-white p-4 rounded-md text-sm">
-              {/* Left: Rows & Page Info */}
               <div className="flex items-center gap-4">
-                {/* Page Info */}
                 <div className="font-medium">
                   Page {Math.floor(first / rows) + 1} of{" "}
                   {Math.ceil(orders.length / rows)}
@@ -1011,21 +1004,19 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                               )}
                               <span
-                                className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
-                                  step.Delayed
+                                className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
                                     ? "bg-red-500 border-red-500"
                                     : step.complete
-                                    ? "bg-green-500 border-green-500"
-                                    : "bg-gray-400 border-gray-400"
-                                }`}
+                                      ? "bg-green-500 border-green-500"
+                                      : "bg-gray-400 border-gray-400"
+                                  }`}
                               />
                               <div className="ml-4">
                                 <p
-                                  className={`text-sm font-medium ${
-                                    step.Delayed
+                                  className={`text-sm font-medium ${step.Delayed
                                       ? "text-red-600 dark:text-red-400"
                                       : "text-gray-800 dark:text-white"
-                                  }`}
+                                    }`}
                                 >
                                   {step.label}
                                 </p>

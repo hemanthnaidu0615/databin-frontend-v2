@@ -24,12 +24,11 @@ interface InventoryTableProps {
   filters: Filters;
 }
 
-// Mobile detection hook
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768); // md = 768px
+    const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -83,7 +82,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
       try {
         const response = await axiosInstance.get(
-          "/inventory/widget-data", // We only need the path, since the base URL is set in axiosInstance
+          "/inventory/widget-data",
           { params }
         );
 
@@ -161,7 +160,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
     productSearch,
   ]);
 
-  // Insert this helper inside the InventoryTable component
   const getPageOptions = () => {
     const total = filteredItems.length;
     if (total <= 5) return [5];

@@ -45,8 +45,6 @@ const formatDate = (date: string) => {
 const USMap = () => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-
-  // Redux selectors
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;

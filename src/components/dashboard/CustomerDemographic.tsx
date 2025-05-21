@@ -8,7 +8,7 @@ import {
 } from "react-simple-maps";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import allStates from "./allStates.json"; // <-- Ensure this file exists
+import allStates from "./allStates.json";
 import { axiosInstance } from "../../axios";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
@@ -44,9 +44,9 @@ const formatDate = (date: string) => {
     .getDate()
     .toString()
     .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
 };
 
 const DemographicCard = () => {
@@ -97,13 +97,13 @@ const DemographicCard = () => {
         });
         if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
 
-       const [mapRes, metricRes] = await Promise.all([
-      axiosInstance.get(`/sales/map-metrics?${params.toString()}`),
-      axiosInstance.get(`/sales/metrics?${params.toString()}`),
-    ]);
+        const [mapRes, metricRes] = await Promise.all([
+          axiosInstance.get(`/sales/map-metrics?${params.toString()}`),
+          axiosInstance.get(`/sales/metrics?${params.toString()}`),
+        ]);
 
-    const mapData = mapRes.data;
-    const metricsData: MetricsData = metricRes.data as MetricsData;
+        const mapData = mapRes.data;
+        const metricsData: MetricsData = metricRes.data as MetricsData;
 
 
         const formatted: Record<
@@ -294,4 +294,3 @@ const DemographicCard = () => {
 };
 
 export default DemographicCard;
- 

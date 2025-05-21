@@ -23,7 +23,6 @@ interface Order {
   budget: string;
 }
 
-// Define the table data using the interface
 const tableData: Order[] = [
   {
     id: 1,
@@ -203,8 +202,8 @@ export default function BasicTableOne() {
                         order.status === "Active"
                           ? "success"
                           : order.status === "Pending"
-                          ? "warning"
-                          : "error"
+                            ? "warning"
+                            : "error"
                       }
                     >
                       {order.status}

@@ -1,4 +1,4 @@
-import  { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { OrganizationChart } from "primereact/organizationchart";
 import { TreeNode } from "primereact/treenode";
 import './style.css';
@@ -39,11 +39,10 @@ export default function CustomOrgChart({
 
     return (
       <div
-        className={`p-3 rounded-md shadow-md text-center transition-all cursor-pointer ${
-          theme === "dark"
+        className={`p-3 rounded-md shadow-md text-center transition-all cursor-pointer ${theme === "dark"
             ? "bg-white text-gray-900 border border-gray-600"
             : "bg-white text-black"
-        }`}
+          }`}
       >
         <div className="text-sm font-semibold mb-1">{label}</div>
         <div className="text-sm">{value}</div>
@@ -54,8 +53,8 @@ export default function CustomOrgChart({
 
   return (
     <div
-    className="overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-2"
-    style={{ height: chartHeight ?? "auto" }}
+      className="overflow-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-2"
+      style={{ height: chartHeight ?? "auto" }}
     >
       <div
         ref={chartRef}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import "primeicons/primeicons.css"; 
+import "primeicons/primeicons.css";
 
 type UserData = {
   email: string;
@@ -49,7 +49,6 @@ function Signin() {
       const isAdminOrManager =
         roleIdentifier.includes("admin") || roleIdentifier.includes("manager");
 
-      // Redirect to home/dashboard and pass role info for conditional rendering
       navigate("/", {
         state: { user: userData, showUserManagement: isAdminOrManager },
       });
@@ -117,9 +116,8 @@ function Signin() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     <i
-                      className={`pi ${
-                        showPassword ? "pi-eye-slash" : "pi-eye"
-                      }`}
+                      className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"
+                        }`}
                       style={{ fontSize: "1rem" }}
                     ></i>
                   </button>
@@ -133,9 +131,8 @@ function Signin() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`bg-[#9614d0] text-white rounded-md px-4 py-2 w-full cursor-pointer ${
-                  loading ? "opacity-60" : ""
-                }`}
+                className={`bg-[#9614d0] text-white rounded-md px-4 py-2 w-full cursor-pointer ${loading ? "opacity-60" : ""
+                  }`}
               >
                 {loading ? "Logging in..." : "Submit"}
               </button>
