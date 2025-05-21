@@ -107,7 +107,8 @@ function SalesFlow() {
     const grouped = new Map();
 
     for (const item of flatData) {
-      const { enterprise_key, category_name, product_name, total_sales } = item;
+      // const { enterprise_key, category_name, product_name, total_sales } = item;
+      const { enterprise_key, category_name, total_sales } = item;
 
       if (!grouped.has(enterprise_key)) {
         grouped.set(enterprise_key, new Map());
@@ -118,10 +119,15 @@ function SalesFlow() {
         categories.set(category_name, []);
       }
 
-      categories.get(category_name).push({
-        key: product_name,
-        original_order_total_amount: convertToUSD(total_sales),
-      });
+      // categories.get(category_name).push({
+      //   key: product_name,
+      //   original_order_total_amount: convertToUSD(total_sales),
+      // });
+
+      const currentList = categories.get(category_name);
+      currentList.push(convertToUSD(total_sales));
+
+
     }
 
     const result: any[] = [];
@@ -130,13 +136,18 @@ function SalesFlow() {
       let enterpriseTotal = 0;
 
       for (const [catName, products] of cats) {
-        const catTotal = products.reduce((sum: number, p: { original_order_total_amount: number }) => sum + p.original_order_total_amount, 0);
+        // const catTotal = products.reduce((sum: number, p: { original_order_total_amount: number }) => sum + p.original_order_total_amount, 0);
+        const catTotal = products.reduce(
+          (sum: number, p: number) => sum + p,
+          0
+        );
+
         enterpriseTotal += catTotal;
 
         children.push({
           key: catName,
           original_order_total_amount: catTotal,
-          children: products,
+          // children: products,
         });
       }
 
