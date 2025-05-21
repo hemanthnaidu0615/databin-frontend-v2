@@ -120,7 +120,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     };
 
     fetchData();
-  }, [startDate, endDate, enterpriseKey]); // Add `enterpriseKey` as a dependency
+  }, [startDate, endDate, enterpriseKey]); 
 
   const apexOptions: ApexOptions = {
   chart: {
@@ -152,7 +152,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       offsetY: 10,
       style: {
         fontSize: "16px",
-        fontWeight: 400, // 👈 not bold
+        fontWeight: 400, 
         color: isDarkMode ? "#F3F4F6" : "#1F2937",
       },
     },
@@ -160,7 +160,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       style: {
         fontSize: "12px",
         colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-        fontWeight: 400, // 👈 ensure labels are also not bold
+        fontWeight: 400, 
       },
     },
   },
@@ -180,7 +180,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       style: {
         fontSize: "12px",
         colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-        fontWeight: 400, // 👈 not bold
+        fontWeight: 400,
       },
     },
   },
@@ -213,7 +213,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         ? "border-gray-700 bg-gray-900 dark:border-gray-800"
         : "border-gray-200 bg-white"
         }`}
-      style={{ padding: "1rem" }} // smaller padding
+      style={{ padding: "1rem" }} 
     >
       {size === "full" && (
         <div className="flex justify-between items-center mb-15">
