@@ -41,20 +41,34 @@ export const CreateScheduler = () => {
   });
 
   const fetchTableNames = async () => {
-    try {
-      const response = await axiosInstance.get("/table-column-fetch/tables");
+  try {
+    // Use axiosInstance instead of authFetch
+    const response = await axiosInstance.get("/table-column-fetch/tables");
 
-      const data = response.data as { tables: string[] };
-      const tableOptions = data.tables.map((table: string) => ({
-        label: formatHeaderKey(table),
-        value: table,
-      }));
-      setTables(tableOptions);
-      console.log("Table options:", tableOptions);
-    } catch (error) {
-      console.error("Error fetching table names:", error);
-    }
-  };
+    const allowedTables = [
+      "orders",
+      "shipment",
+      "inventory",
+      "order_fulfillment_event",
+    ];
+
+    const tableOptions = response.data.tables
+      .filter((table: string) => allowedTables.includes(table))
+      .map((table: string) => {
+        const displayName =
+          table === "order_fulfillment_event" ? "fulfillment" : table;
+        return {
+          label: formatHeaderKey(displayName),
+          value: table, // keep original value for use in backend queries
+        };
+      });
+
+    setTables(tableOptions);
+    console.log("Filtered table options:", tableOptions);
+  } catch (error) {
+    console.error("Error fetching table names:", error);
+  }
+};
 
   const fetchColumns = async (tableName: string) => {
     try {
