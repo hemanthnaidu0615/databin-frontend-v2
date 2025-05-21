@@ -15,15 +15,56 @@ const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
 
 const CANONICAL_STATES = [
-  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
-  "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
-  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
-  "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
-  "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia",
-  "Washington", "West Virginia", "Wisconsin", "Wyoming",
+  "Alabama",
+  "Alaska",
+  "Arizona",
+  "Arkansas",
+  "California",
+  "Colorado",
+  "Connecticut",
+  "Delaware",
+  "Florida",
+  "Georgia",
+  "Hawaii",
+  "Idaho",
+  "Illinois",
+  "Indiana",
+  "Iowa",
+  "Kansas",
+  "Kentucky",
+  "Louisiana",
+  "Maine",
+  "Maryland",
+  "Massachusetts",
+  "Michigan",
+  "Minnesota",
+  "Mississippi",
+  "Missouri",
+  "Montana",
+  "Nebraska",
+  "Nevada",
+  "New Hampshire",
+  "New Jersey",
+  "New Mexico",
+  "New York",
+  "North Carolina",
+  "North Dakota",
+  "Ohio",
+  "Oklahoma",
+  "Oregon",
+  "Pennsylvania",
+  "Rhode Island",
+  "South Carolina",
+  "South Dakota",
+  "Tennessee",
+  "Texas",
+  "Utah",
+  "Vermont",
+  "Virginia",
+  "Washington",
+  "West Virginia",
+  "Wisconsin",
+  "Wyoming",
 ];
 
 const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
@@ -40,13 +81,15 @@ const formatValue = (value: number) => {
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}`;
 };
 
 const DemographicCard = () => {
@@ -105,7 +148,6 @@ const DemographicCard = () => {
         const mapData = mapRes.data;
         const metricsData: MetricsData = metricRes.data as MetricsData;
 
-
         const formatted: Record<
           string,
           { customers: number; revenue: number; avgRevenue: number }
@@ -116,7 +158,9 @@ const DemographicCard = () => {
             const raw = row.state?.trim().toLowerCase();
             const canonicalName = STATE_NAME_MAP[raw];
             if (!canonicalName) {
-              console.warn(`State name mismatch: "${row.state}" not found in map.`);
+              console.warn(
+                `State name mismatch: "${row.state}" not found in map.`
+              );
               return;
             }
             const customers = row.total_customers || 0;
@@ -158,7 +202,7 @@ const DemographicCard = () => {
       <div className="flex justify-between items-start ">
         <div>
           <div className="text-gray-900 dark:text-white font-semibold text-lg mb-2">
-            Customers Demographic
+            Customer Demographic
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Customers and revenue per state
@@ -282,7 +326,7 @@ const DemographicCard = () => {
         </div>
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            High Spenders
+            LTV Customers
           </p>
           <p className="text-lg font-semibold text-gray-800 dark:text-white">
             {metrics.highSpenders}
