@@ -228,7 +228,7 @@ const data = response.data as Array<{ process_stage: string; avg_time: number }>
   series={series}
   type="bar"
   height={320}
-  width="100%" // <- critical
+  width="100%" 
 />
 
 
