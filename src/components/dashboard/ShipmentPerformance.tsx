@@ -99,43 +99,59 @@ const ShipmentPerformance: React.FC<{
     }
   }, [startDate, endDate, enterpriseKey]);
 
-  const barOptions: ApexOptions = {
-    chart: { type: "bar", stacked: true, toolbar: { show: false } },
-    colors: ["#4CAF50", "#FF9800", "#2196F3"],
-    plotOptions: { bar: { columnWidth: "50%" } },
-    dataLabels: {
-      enabled: true,
-      formatter: function (val: number) {
-        return formatValue(val);
-      },
+const barOptions: ApexOptions = {
+  chart: { type: "bar", stacked: true, toolbar: { show: false } },
+  colors: ["#4CAF50", "#FF9800", "#2196F3"],
+  plotOptions: { bar: { columnWidth: "70%" } },
+  dataLabels: {
+    enabled: true,
+    formatter: function (val: number) {
+      return formatValue(val);
+    },
+    style: {
+      colors: ["#fff"],
+      fontSize: "12px",
+    },
+  },
+  xaxis: {
+    categories: data.carriers,
+    title: {
+      text: "Carriers",
       style: {
-        colors: ["#fff"],
+        fontWeight: "400",
+        fontSize: "14px",
       },
     },
-    xaxis: {
-      categories: data.carriers,
-      title: {
-        text: "Carriers",
-        style: { fontWeight: "normal" },
-      },
-      crosshairs: { show: false },
-    },
-    yaxis: {
-      title: {
-        text: "Number of Shipments",
-        style: { fontWeight: "normal" },
-      },
-      labels: {
-        formatter: (val: number) => formatValue(val),
+    labels: {
+      style: {
+        fontSize: "12px",
       },
     },
-    tooltip: {
-      y: {
-        formatter: (val: number) => formatValue(val),
+    crosshairs: { show: false },
+  },
+  yaxis: {
+    title: {
+      text: "Number of Shipments",
+      style: {
+        fontWeight: "400",
+        fontSize: "14px",
       },
     },
-    legend: { position: "bottom" },
-  };
+    labels: {
+      formatter: (val: number) => formatValue(val),
+      style: {
+        fontSize: "12px",
+      },
+    },
+  },
+  tooltip: {
+    y: {
+      formatter: (val: number) => formatValue(val),
+    },
+  },
+  legend: { position: "bottom" },
+};
+
 
   const barSeries = [
     { name: "Standard", data: data.standard },

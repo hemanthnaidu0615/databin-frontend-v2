@@ -1,35 +1,41 @@
-import FulfillmentStats from './FulfillmentStats';
-import FulfillmentPipeline from './FulfillmentPipeline';
-import FulfillmentCenters from './FulfillmentCenters';
-import BottleneckChart from './BottleneckChart';
-import OrdersInProcess from './OrdersInProcess';
+import FulfillmentStats from "./FulfillmentStats";
+import FulfillmentPipeline from "./FulfillmentPipeline";
+import FulfillmentCenters from "./FulfillmentCenters";
+import BottleneckChart from "./BottleneckChart";
+import OrdersInProcess from "./OrdersInProcess";
 
 const FulfillmentPage = () => {
   return (
-    <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 bg-gray-50 dark:bg-black min-h-screen overflow-x-hidden">
-      {/* Section 1: Stats Cards */}
-      <div className="overflow-x-auto">
-        <FulfillmentStats />
-      </div>
+    <div className="w-full bg-gray-50 dark:bg-black overflow-x-hidden">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        
+        {/* Section 1: Stats Cards */}
+        <div className="w-full">
+          <FulfillmentStats />
+        </div>
 
-      {/* Section 2: Fulfillment Pipeline */}
-      <div className="overflow-x-auto">
-        <FulfillmentPipeline />
-      </div>
+        {/* Section 2: Fulfillment Pipeline */}
+        <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm">
+          <FulfillmentPipeline />
+        </div>
 
-      {/* Section 3: Performance Table + Bottleneck Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 overflow-x-auto">
+        {/* Section 3: Fulfillment Centers */}
+        <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm">
           <FulfillmentCenters />
         </div>
-        <div className="lg:col-span-5 overflow-x-auto">
-          <BottleneckChart />
-        </div>
-      </div>
 
-      {/* Section 4: Orders Table */}
-      <div className="overflow-x-auto">
-        <OrdersInProcess />
+        {/* Section 4: Bottleneck Chart */}
+        <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm">
+          <div className="w-full">
+            <BottleneckChart />
+          </div>
+        </div>
+
+        {/* Section 5: Orders Table */}
+        <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm">
+          <OrdersInProcess />
+        </div>
+
       </div>
     </div>
   );

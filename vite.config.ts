@@ -1,24 +1,24 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
+import tailwindcss from "@tailwindcss/vite"; // ✅ new Tailwind plugin for v4+
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     svgr({
       svgrOptions: {
         icon: true,
-        // This will transform your SVG to a React component
         exportType: "named",
         namedExport: "ReactComponent",
       },
     }),
+    tailwindcss(), // ✅ Tailwind plugin integrated
   ],
   server: {
     proxy: {
-      '/me': {
-        target: 'http://localhost:8080', // or wherever your Spring Boot backend is running
+      "/me": {
+        target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
       },

@@ -89,7 +89,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateRes.data.fulfillment_rate}%`,
+            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
@@ -103,7 +103,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             label: "Delayed Orders",
-            value: `${shipmentStatusRes.data.delayed_percentage}%`,
+            value: `${shipmentStatusRes.data.delayed_percentage}`,
             iconColor: "text-red-500",
             glowColor: "#F87171",
           },
@@ -119,14 +119,13 @@ export default function OrdersFulfillmentMetrics() {
   }, [startDate, endDate, enterpriseKey]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 font-sans">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 font-outfit">
       {metrics.map((item, index) => (
         <div
           key={index}
-          className={`group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]`}
+          className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
           style={{ borderColor: item.glowColor }}
         >
-          {/* Glowing border on hover */}
           <div
             className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none"
             style={{

@@ -1,81 +1,84 @@
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from "react";
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
+import { useSelector } from "react-redux";
 
 const BottleneckChart = () => {
   const [isDark, setIsDark] = useState<boolean>(
-    typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
+    typeof window !== "undefined" &&
+      document.documentElement.classList.contains("dark")
   );
+
   const [chartOptions, setChartOptions] = useState<ApexOptions>({
-    chart: {
-      type: 'bar',
-      height: 320,
-      toolbar: { show: false },
-      background: 'transparent',
-      foreColor: isDark ? '#d1d5db' : '#333',
-    },
+chart: {
+  type: 'bar',
+  height: 320,
+  width: '100%', // <- this line
+  toolbar: { show: false },
+  background: 'transparent',
+  foreColor: isDark ? '#d1d5db' : '#333',
+},
+
+
+
     plotOptions: {
       bar: {
         horizontal: true,
         borderRadius: 4,
-        barHeight: '70%',
+        barHeight: "60%", // Adjusted for better spacing
       },
     },
     dataLabels: {
       enabled: true,
       style: {
-        colors: ['#fff'],
+        colors: ["#fff"],
       },
     },
-    colors: ['#9614d0'],
+    colors: ["#9614d0"],
     xaxis: {
       categories: [],
       title: {
-        text: 'Process Stage',
+        text: "Process Stage",
         style: {
-          color: isDark ? '#d1d5db' : '#333',
+          color: isDark ? "#d1d5db" : "#333",
           fontWeight: 600,
         },
       },
       labels: {
         style: {
-          colors: isDark ? '#d1d5db' : '#333',
+          colors: isDark ? "#d1d5db" : "#333",
         },
       },
     },
     yaxis: {
       title: {
-        text: 'Avg Time (hrs)',
-        style: {
-          color: isDark ? '#d1d5db' : '#333',
-          fontWeight: 600,
-        },
+        text: undefined, // Removed to save vertical space
       },
       labels: {
         style: {
-          colors: isDark ? '#d1d5db' : '#333',
+          colors: isDark ? "#d1d5db" : "#333",
+          fontSize: "12px", // Reduced font size
         },
       },
     },
     tooltip: {
-      theme: 'dark',
+      theme: "dark",
     },
     grid: {
       show: true,
-      borderColor: isDark ? '#3f3f46' : '#e5e7eb',
+      borderColor: isDark ? "#3f3f46" : "#e5e7eb",
       row: {
-        colors: ['transparent'],
+        colors: ["transparent"],
       },
     },
     theme: {
-      mode: isDark ? 'dark' : 'light',
+      mode: isDark ? "dark" : "light",
     },
   });
 
   const [series, setSeries] = useState<{ name: string; data: number[] }[]>([
     {
-      name: 'Avg Time (hrs)',
+      name: "Avg Time (hrs)",
       data: [],
     },
   ]);
@@ -85,61 +88,58 @@ const BottleneckChart = () => {
   const [startDate, endDate] = dateRange || [];
 
   const formatDate = (date: Date) =>
-    `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date
-      .getDate()
+    `${date.getFullYear()}-${(date.getMonth() + 1)
       .toString()
-      .padStart(2, '0')}`;
+      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
   useEffect(() => {
-    const dark = document.documentElement.classList.contains('dark');
+    const dark = document.documentElement.classList.contains("dark");
     setIsDark(dark);
 
     setChartOptions((prev) => ({
       ...prev,
       chart: {
         ...prev.chart,
-        background: 'transparent',
-        foreColor: dark ? '#d1d5db' : '#333',
+        background: "transparent",
+        foreColor: dark ? "#d1d5db" : "#333",
+        offsetX: -10,
       },
       xaxis: {
         ...prev.xaxis,
         title: {
-          text: 'Process Stage',
+          text: "Process Stage",
           style: {
-            color: dark ? '#d1d5db' : '#333',
+            color: dark ? "#d1d5db" : "#333",
             fontWeight: 600,
           },
         },
         labels: {
           style: {
-            colors: dark ? '#d1d5db' : '#333',
+            colors: dark ? "#d1d5db" : "#333",
           },
         },
       },
       yaxis: {
         ...prev.yaxis,
         title: {
-          text: 'Avg Time (hrs)',
-          style: {
-            color: dark ? '#d1d5db' : '#333',
-            fontWeight: 600,
-          },
+          text: undefined,
         },
         labels: {
           style: {
-            colors: dark ? '#d1d5db' : '#333',
+            colors: dark ? "#d1d5db" : "#333",
+            fontSize: "12px",
           },
         },
       },
       grid: {
         show: true,
-        borderColor: dark ? '#3f3f46' : '#e5e7eb',
+        borderColor: dark ? "#3f3f46" : "#e5e7eb",
         row: {
-          colors: ['transparent'],
+          colors: ["transparent"],
         },
       },
       theme: {
-        mode: dark ? 'dark' : 'light',
+        mode: dark ? "dark" : "light",
       },
     }));
   }, []);
@@ -157,7 +157,7 @@ const BottleneckChart = () => {
       });
 
       if (enterpriseKey) {
-        params.append('enterpriseKey', enterpriseKey);
+        params.append("enterpriseKey", enterpriseKey);
       }
 
       try {
@@ -167,16 +167,16 @@ const BottleneckChart = () => {
         const data = await response.json();
 
         const defaultStagesOrder = [
-          'Order Placed',
-          'Processing',
-          'Distribution Center',
-          'Warehouse',
-          'Store Pickup',
-          'Ship to Home',
-          'Vendor Drop Shipping',
-          'Locker Pickup',
-          'Same-Day Delivery',
-          'Curbside Pickup',
+          "Order Placed",
+          "Processing",
+          "Distribution Center",
+          "Warehouse",
+          "Store Pickup",
+          "Ship to Home",
+          "Vendor Drop Shipping",
+          "Locker Pickup",
+          "Same-Day Delivery",
+          "Curbside Pickup",
         ];
 
         const stageMap: Record<string, number> = {};
@@ -202,12 +202,12 @@ const BottleneckChart = () => {
 
         setSeries([
           {
-            name: 'Avg Time (hrs)',
+            name: "Avg Time (hrs)",
             data: values,
           },
         ]);
       } catch (error) {
-        console.error('Failed to fetch bottleneck analysis data:', error);
+        console.error("Failed to fetch bottleneck analysis data:", error);
       }
     };
 
@@ -216,11 +216,21 @@ const BottleneckChart = () => {
 
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
         Bottleneck Analysis
       </h2>
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-4">
-        <ReactApexChart options={chartOptions} series={series} type="bar" height={320} />
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 overflow-hidden">
+        <div className="w-full overflow-hidden">
+<ReactApexChart
+  options={chartOptions}
+  series={series}
+  type="bar"
+  height={320}
+  width="100%" // <- critical
+/>
+
+
+        </div>
       </div>
     </div>
   );
