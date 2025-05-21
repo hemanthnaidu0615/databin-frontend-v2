@@ -16,6 +16,7 @@ import { axiosInstance } from "../axios";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
+import { UserManagement } from "../components/Pages/user Management/UserManagement";
 
 const Navbar: React.FC = () => {
   const [enterpriseKey, setEnterpriseKey] = useState("All");
@@ -40,17 +41,27 @@ const Navbar: React.FC = () => {
 
   useScrollLock(isMobileRightOpen);
 
-  const hideCalendarRoutes = ["/scheduler"];
-  const hideEnterpriseKeyRoutes = ["/inventory", "/scheduler", "/sales/flow"];
+  const hideCalendarRoutes = ["/scheduler", "/UserManagement"];
+  const hideEnterpriseKeyRoutes = [
+    "/inventory",
+    "/scheduler",
+    "/sales/flow",
+    "/UserManagement",
+  ];
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
-  const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
-
+  const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(
+    location.pathname
+  );
 
   useEffect(() => {
     const fetchEnterpriseKeys = async () => {
       try {
-        const response = await axiosInstance.get("/global-filter/enterprise-keys");
-        const keys = (response.data as { enterprise_keys: string[] }).enterprise_keys || [];
+        const response = await axiosInstance.get(
+          "/global-filter/enterprise-keys"
+        );
+        const keys =
+          (response.data as { enterprise_keys: string[] }).enterprise_keys ||
+          [];
         setEnterpriseKeys(["All", ...keys]);
       } catch (error) {
         console.error("Failed to fetch enterprise keys:", error);
@@ -62,7 +73,9 @@ const Navbar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(setEnterpriseKeyRedux(enterpriseKey === "All" ? "" : enterpriseKey));
+    dispatch(
+      setEnterpriseKeyRedux(enterpriseKey === "All" ? "" : enterpriseKey)
+    );
   }, [enterpriseKey]);
 
   const handleToggle = () => {
@@ -123,10 +136,19 @@ const Navbar: React.FC = () => {
               )}
             </button>
 
-            <Link to="/" className="flex items-center gap-2 shrink-0 lg:hidden md:hidden">
+            <Link
+              to="/"
+              className="flex items-center gap-2 shrink-0 lg:hidden md:hidden"
+            >
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
-              <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">Data-Bin</span>
+              <img
+                className="hidden dark:block w-6 h-6"
+                src={Logo}
+                alt="Logo"
+              />
+              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                Data-Bin
+              </span>
             </Link>
           </div>
 
@@ -163,8 +185,6 @@ const Navbar: React.FC = () => {
                 </select>
               )}
 
-
-
               <ThemeToggleButton />
               <NotificationDropdown />
               <UserDropdown />
@@ -183,8 +203,9 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Right Sidebar Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${isMobileRightOpen ? "translate-x-0" : "translate-x-full"
-          } md:hidden overflow-y-auto`}
+        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${
+          isMobileRightOpen ? "translate-x-0" : "translate-x-full"
+        } md:hidden overflow-y-auto`}
       >
         <div className="flex justify-end p-4">
           <button
@@ -198,7 +219,9 @@ const Navbar: React.FC = () => {
         <div className="flex flex-col gap-4 px-4 pb-6">
           {!shouldHideCalendar && (
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Date Range</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Date Range
+              </label>
               <Calendar
                 ref={calendarRef}
                 value={dateRange}
@@ -216,7 +239,9 @@ const Navbar: React.FC = () => {
           )}
           {!shouldHideEnterpriseKey && (
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Enterprise</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Enterprise
+              </label>
               <select
                 value={enterpriseKey}
                 onChange={(e) => setEnterpriseKey(e.target.value)}
