@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
@@ -18,7 +18,6 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
 const Navbar: React.FC = () => {
-  // const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const [enterpriseKey, setEnterpriseKey] = useState("All");
   const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
   const calendarRef = useRef<any>(null);
@@ -46,7 +45,7 @@ const Navbar: React.FC = () => {
   const shouldHideCalendar = hideCalendarRoutes.includes(location.pathname);
   const shouldHideEnterpriseKey = hideEnterpriseKeyRoutes.includes(location.pathname);
 
-  
+
   useEffect(() => {
     const fetchEnterpriseKeys = async () => {
       try {
@@ -74,9 +73,6 @@ const Navbar: React.FC = () => {
     }
   };
 
-  // const toggleApplicationMenu = () => {
-  //   setApplicationMenuOpen(!isApplicationMenuOpen);
-  // };
   const handleDateChange = (e: any) => {
     const newDates = e.value;
     setDateRange(newDates);
@@ -166,7 +162,7 @@ const Navbar: React.FC = () => {
                   ))}
                 </select>
               )}
-              
+
 
 
               <ThemeToggleButton />
@@ -187,9 +183,8 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Right Sidebar Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${
-          isMobileRightOpen ? "translate-x-0" : "translate-x-full"
-        } md:hidden overflow-y-auto`}
+        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${isMobileRightOpen ? "translate-x-0" : "translate-x-full"
+          } md:hidden overflow-y-auto`}
       >
         <div className="flex justify-end p-4">
           <button

@@ -10,7 +10,6 @@ const formatValue = (value: number) => {
   return value.toFixed(0);
 };
 
-// Utility function to format YYYY-MM-DD
 const formatDate = (date: Date): string => date.toISOString().split("T")[0];
 
 interface ShipmentChartsProps {
@@ -25,8 +24,6 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
   const [carrierSeries, setCarrierSeries] = useState<any[]>([]);
   const [carrierCategories, setCarrierCategories] = useState<string[]>([]);
   const [statusSeries, setStatusSeries] = useState<number[]>([]);
-
-  // Redux selectors
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
@@ -97,7 +94,6 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
 
         console.log("Shipment status distribution:", data);
 
-        // Convert percentages to numbers (e.g., "33.4%" => 33.4)
         const delivered = parseFloat(data.delivered || "0");
         const inTransit = parseFloat(data.in_transit || "0");
         const delayed = parseFloat(data.delayed || "0");
@@ -134,7 +130,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
         style: { color: labelColor, fontSize: "13px", fontWeight: 500 },
       },
       crosshairs: {
-        show: false, // ✅ disables crosshair on hover
+        show: false,
       },
     },
 

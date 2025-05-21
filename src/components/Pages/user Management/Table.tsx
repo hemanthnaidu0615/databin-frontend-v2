@@ -16,7 +16,6 @@ export default function Table({ users, setUsers }: any) {
   };
 
   const handleSave = () => {
-    // Combine firstName and lastName into the full name
     const fullName = `${editedUser.firstName} ${editedUser.lastName}`;
 
     const updatedUsers = users.map((user: any) =>
@@ -24,7 +23,7 @@ export default function Table({ users, setUsers }: any) {
     );
     setUsers(updatedUsers);
     setEditingUserId(null);
-    setEditedUser({}); // Reset the editedUser state after saving
+    setEditedUser({});
   };
 
   return (

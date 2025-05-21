@@ -7,7 +7,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { axiosInstance } from "../../axios";
 
-// Helper function to format date to match API format
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
@@ -51,15 +50,10 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     const formattedStart = formatDate(startDate);
     const formattedEnd = formatDate(endDate);
 
-    // Build query params with conditional logic for enterpriseKey
     const params = new URLSearchParams({
       startDate: formattedStart,
       endDate: formattedEnd,
     });
-
-    // if (enterpriseKey && enterpriseKey !== "All") {
-    //   params.append("enterpriseKey", enterpriseKey);
-    // }
 
     if (enterpriseKey) {
       params.append("enterpriseKey", enterpriseKey);
@@ -97,7 +91,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
       type: "bar",
       toolbar: { show: false },
     },
-    // colors: ["#9614d0"],
     xaxis: {
       categories: data.map((d) => d.customer),
       title: {
@@ -105,10 +98,10 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
         style: { fontWeight: "normal", fontSize: "14px", color: "#9614d0" },
       },
       tooltip: {
-        enabled: false, // disables the crosshair line
+        enabled: false,
       },
       crosshairs: {
-        show: false, // completely disables the crosshair line
+        show: false,
       },
     },
     yaxis: {
@@ -127,7 +120,7 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     },
     dataLabels: { enabled: false },
     tooltip: {
-      x: { show: false }, // optional: disables tooltip on x-axis hover
+      x: { show: false },
       y: {
         formatter: formatValue,
       },

@@ -75,7 +75,7 @@ const ShipmentPerformance: React.FC<{
         }
 
         const res = await axiosInstance.get(
-          "/shipment-performance", // Use axiosInstance with the base URL
+          "/shipment-performance",
           { params }
         );
 

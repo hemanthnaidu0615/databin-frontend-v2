@@ -1,5 +1,4 @@
 import { TabView, TabPanel } from "primereact/tabview";
-// import KPISection from "./KPISection";
 import SalesTrendsChart from "./SalesTrendsChart";
 import TopProductsTable from "./TopProductsTable";
 import TopCustomersTable from "./TopCustomersTable";
@@ -10,14 +9,12 @@ const SalesAnalysis = () => {
     <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
       <h1 className="text-2xl font-bold mb-6">Sales Analysis</h1>
 
-      {/* <KPISection /> */}
-
       <div className="overflow-x-auto">
         <TabView
           className="mt-4"
           pt={{
             navContainer: {
-              className: "flex gap-8", // spacing between tabs
+              className: "flex gap-8",
             },
           }}
         >

@@ -36,16 +36,16 @@ const FulfillmentCenters = () => {
 
       try {
         setLoading(true);
-     
+
 
         const res = await axiosInstance.get("/fulfillment/fulfillment-performance", {
-  params: {
-    startDate,
-    endDate,
-    ...(enterpriseKey ? { enterpriseKey } : {}),
-  },
-});
-setCenterData(res.data as any[]);
+          params: {
+            startDate,
+            endDate,
+            ...(enterpriseKey ? { enterpriseKey } : {}),
+          },
+        });
+        setCenterData(res.data as any[]);
       } catch (err: any) {
         setError(err.message || "Error loading data");
       } finally {

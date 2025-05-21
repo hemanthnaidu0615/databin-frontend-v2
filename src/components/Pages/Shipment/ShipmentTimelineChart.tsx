@@ -54,7 +54,7 @@ const options: ApexOptions = {
       },
     },
   },
-  colors: ['#8b5cf6'], // purple tone
+  colors: ['#8b5cf6'],
 };
 
 const series = [

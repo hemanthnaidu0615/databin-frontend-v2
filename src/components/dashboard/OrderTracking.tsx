@@ -17,12 +17,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(3, "0")}`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(3, "0")}`;
 };
 
 interface OrderTrackingProps {
@@ -31,13 +31,12 @@ interface OrderTrackingProps {
 }
 
 export default function OrderTracking(_: OrderTrackingProps) {
-  const [totalOrders, setTotalOrders] = useState(0);
   const [orderCounts, setOrderCounts] = useState({
     Shipped: 0,
     Cancelled: 0,
     "Return Received": 0,
   });
-
+  const [progressPercentage, setProgressPercentage] = useState(0);
   const [isVisible, setIsVisible] = useState(() => {
     return localStorage.getItem("orderTrackingVisible") !== "false";
   });
@@ -45,7 +44,6 @@ export default function OrderTracking(_: OrderTrackingProps) {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,27 +65,25 @@ export default function OrderTracking(_: OrderTrackingProps) {
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const totalOrdersResponse = await axiosInstance.get(
-          `/dashboard-kpi/total-orders?${params.toString()}`
-        );
-        setTotalOrders((totalOrdersResponse.data as { total_orders: number }).total_orders);
-
-        const orderCountsResponse = await axiosInstance.get(
+        const response = await axiosInstance.get(
           `/shipment-status/count?${params.toString()}`
         );
 
-
-        const counts = orderCountsResponse.data as {
+        const counts = response.data as {
           Shipped?: number;
           Cancelled?: number;
           Returned?: number;
+          ShippedPercentage?: number;
         };
 
         setOrderCounts({
           Shipped: counts.Shipped || 0,
           Cancelled: counts.Cancelled || 0,
-          "Return Received": counts.Returned || 0, // remapped from "Returned"
+          "Return Received": counts.Returned || 0,
         });
+
+        setProgressPercentage(counts.ShippedPercentage ?? 0);
+        //console.log("Fetched ShippedPercentage:", counts.ShippedPercentage);
       } catch (error) {
         console.error("Error fetching order data:", error);
       }
@@ -98,12 +94,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
     }
   }, [startDate, endDate, enterpriseKey]);
 
-  const progressPercentage =
-    totalOrders > 0
-      ? ((orderCounts.Shipped + orderCounts["Return Received"]) / totalOrders) *
-      100
-      : 0;
-  const series = [progressPercentage];
+  const series = [Number(progressPercentage) || 0];
 
   const options: ApexOptions = {
     colors: ["#465FFF"],

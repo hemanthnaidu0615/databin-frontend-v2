@@ -80,7 +80,7 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
 
   const options: ApexOptions = {
     legend: { show: true },
-    colors: ["#9614d0", "#d5baff"], // Removed forecasted sales color
+    colors: ["#9614d0", "#d5baff"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "area",

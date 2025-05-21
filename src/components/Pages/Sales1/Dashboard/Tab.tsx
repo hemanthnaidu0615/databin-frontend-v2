@@ -10,9 +10,8 @@ const Tab: React.FC<TabProps> = ({ label, active, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-1 text-sm rounded-md ${
-        active ? 'bg-black text-white' : 'bg-gray-100'
-      }`}
+      className={`px-4 py-1 text-sm rounded-md ${active ? 'bg-black text-white' : 'bg-gray-100'
+        }`}
     >
       {label}
     </button>

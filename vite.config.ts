@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
-import tailwindcss from "@tailwindcss/vite"; // ✅ new Tailwind plugin for v4+
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [
@@ -13,15 +13,6 @@ export default defineConfig({
         namedExport: "ReactComponent",
       },
     }),
-    tailwindcss(), // ✅ Tailwind plugin integrated
+    tailwindcss(),
   ],
-  server: {
-    proxy: {
-      "/me": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
 });

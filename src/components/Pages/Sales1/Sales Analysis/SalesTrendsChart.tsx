@@ -25,12 +25,10 @@ const SalesTrendsChart = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get filters from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
 
-  // Fetch sales data when filters change
   useEffect(() => {
     const fetchSalesData = async () => {
       if (!startDate || !endDate) return;
@@ -71,7 +69,6 @@ const SalesTrendsChart = () => {
     fetchSalesData();
   }, [startDate, endDate, enterpriseKey, selectedChannel]);
 
-  // Fetch channels from backend API
   useEffect(() => {
     const fetchChannels = async () => {
       try {
@@ -90,7 +87,6 @@ const SalesTrendsChart = () => {
   const { categories, values } = useMemo(() => {
     if (!salesData.length) return { categories: [], values: [] };
 
-    // Determine the start and end date based on salesData or selected range
     const start = dayjs(salesData[0].order_date);
     const end = dayjs(salesData[salesData.length - 1].order_date);
 
@@ -107,7 +103,7 @@ const SalesTrendsChart = () => {
     while (curr.isBefore(end) || curr.isSame(end)) {
       const dateStr = curr.format("YYYY-MM-DD");
       days.push(dateStr);
-      values.push(map[dateStr] ?? 0); // Fill missing with 0
+      values.push(map[dateStr] ?? 0);
       curr = curr.add(1, "day");
     }
 
@@ -238,7 +234,7 @@ const SalesTrendsChart = () => {
             { label: "All", value: "all" },
             ...channels.map((ch) => ({
               label: ch,
-              value: ch, // Use the original channel name as value
+              value: ch,
             })),
           ]}
           onChange={(e) => {

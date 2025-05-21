@@ -13,16 +13,16 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}.000`;
 };
 
 function convertToUSD(rupees: number): number {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 }
 
@@ -44,8 +44,8 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
     const formattedEnd = formatDate(endDate);
     const formattedCompany = company.toLowerCase();
 
-    const requests = sections.map(async ({ title, endpoint }) => {
-      if (!endpoint) return { title, data: [] }; // placeholder
+    const requests: Promise<{ title: string; data: any[] }>[] = sections.map(async ({ title, endpoint }) => {
+      if (!endpoint) return { title, data: [] };
 
       try {
         const response = await axiosInstance.get(
@@ -55,7 +55,7 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
           }
         );
         console.log(`${title}:`, response.data);
-        return { title, data: response.data };
+        return { title, data: response.data as any[] };
       } catch (err) {
         console.error(`Error fetching data for ${title}:`, err);
         return { title, data: [] };
@@ -74,7 +74,6 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
     fetchData();
   }, [startDate, endDate, company]);
 
-  // approximate height for 3 rows (adjust if needed)
   const rowHeight = 36;
 
   return (

@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-// import { MoreDotIcon } from "../../icons";
 import { useTheme } from "../../context/ThemeContext";
 
 import { useNavigate } from "react-router-dom";
@@ -24,7 +23,6 @@ type FulfillmentEfficiencyProps = {
 
 const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   size = "full",
-  // onRemove,
   onViewMore,
 }) => {
   const { theme } = useTheme();
@@ -86,7 +84,6 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         const formattedStart = `${formatDate(startDate)} 00:00:00.000`;
         const formattedEnd = `${formatDate(endDate)} 23:59:59.999`;
 
-        // Construct the API URL with the enterpriseKey if it exists
         const params = new URLSearchParams({
           startDate: formattedStart,
           endDate: formattedEnd,
@@ -120,7 +117,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     };
 
     fetchData();
-  }, [startDate, endDate, enterpriseKey]); 
+  }, [startDate, endDate, enterpriseKey]);
 
   const apexOptions: ApexOptions = {
   chart: {

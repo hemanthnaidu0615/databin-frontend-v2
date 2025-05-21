@@ -14,13 +14,11 @@ import dagre from "dagre";
 import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../axios";
 
-// INR to USD conversion
 const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-// Number formatting helper
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
@@ -122,7 +120,7 @@ function SalesFlow() {
 
       categories.get(category_name).push({
         key: product_name,
-        original_order_total_amount: convertToUSD(total_sales), // Convert to USD here
+        original_order_total_amount: convertToUSD(total_sales),
       });
     }
 
@@ -171,7 +169,7 @@ function SalesFlow() {
     const buildFlow = (items: any[], parentId: string | null = null) => {
       return items.map((item: any) => {
         const currentId = String(nodeIdCounter++);
-        const dollar = `$${formatValue(item.original_order_total_amount)}`; // Use formatValue here
+        const dollar = `$${formatValue(item.original_order_total_amount)}`;
         const percent =
           total > 0
             ? `(${((item.original_order_total_amount / total) * 100).toFixed(1)}%)`

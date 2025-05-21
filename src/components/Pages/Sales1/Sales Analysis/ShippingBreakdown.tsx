@@ -19,13 +19,11 @@ interface Shipment {
 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 
-// INR to USD conversion
 const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-// Number formatting helper
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
@@ -37,13 +35,10 @@ const ShippingBreakdown = () => {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Get filters from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
 
-  // Fetch shipments data when filters change
   useEffect(() => {
     const fetchShipments = async () => {
       if (!startDate || !endDate) return;
@@ -77,7 +72,6 @@ const ShippingBreakdown = () => {
     fetchShipments();
   }, [startDate, endDate, enterpriseKey]);
 
-  // Calculate carrier totals for the chart (top 10 carriers)
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
 
@@ -85,7 +79,6 @@ const ShippingBreakdown = () => {
       totals[shipment.carrier] = (totals[shipment.carrier] || 0) + shipment.shipment_cost;
     });
 
-    // Convert to array, sort by total cost, take top 10, and convert back to object
     return Object.entries(totals)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)

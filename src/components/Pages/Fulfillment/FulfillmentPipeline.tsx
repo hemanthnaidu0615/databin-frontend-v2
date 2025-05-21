@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../axios";
 
-// PipelineRow Component
 const PipelineRow = ({
   stages,
   currentStage,
@@ -97,8 +96,6 @@ const PipelineRow = ({
   );
 };
 
-
-// Main Component
 const FulfillmentPipeline = () => {
   const [stagesData, setStagesData] = useState<any[]>([]);
   const [finalStagesData, setFinalStagesData] = useState<any[]>([]);

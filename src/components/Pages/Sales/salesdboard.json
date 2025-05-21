@@ -1,314 +1,314 @@
 {
-"data": [
-  {
-    "date": "01",
-    "linePriceTotal": 45000,
-    "shippingCharges": 2000,
-    "discount": 5000,
-    "taxCharges": 2500,
-    "totalUnits": 300,
-    "margin": 6500,
-    "ROI": 20
-  },
-  {
-    "date": "02",
-    "linePriceTotal": 46000,
-    "shippingCharges": 2100,
-    "discount": 5100,
-    "taxCharges": 2600,
-    "totalUnits": 310,
-    "margin": 6800,
-    "ROI": 22
-  },
-  {
-    "date": "03",
-    "linePriceTotal": 47000,
-    "shippingCharges": 2200,
-    "discount": 5200,
-    "taxCharges": 2700,
-    "totalUnits": 320,
-    "margin": 7000,
-    "ROI": 24
-  },
-  {
-    "date": "04",
-    "linePriceTotal": 48000,
-    "shippingCharges": 2300,
-    "discount": 5300,
-    "taxCharges": 2800,
-    "totalUnits": 330,
-    "margin": 7200,
-    "ROI": 25
-  },
-  {
-    "date": "05",
-    "linePriceTotal": 49000,
-    "shippingCharges": 2400,
-    "discount": 5400,
-    "taxCharges": 2900,
-    "totalUnits": 340,
-    "margin": 7500,
-    "ROI": 27
-  },
-  {
-    "date": "06",
-    "linePriceTotal": 50000,
-    "shippingCharges": 2500,
-    "discount": 5500,
-    "taxCharges": 3000,
-    "totalUnits": 350,
-    "margin": 7800,
-    "ROI": 28
-  },
-  {
-    "date": "07",
-    "linePriceTotal": 51000,
-    "shippingCharges": 2600,
-    "discount": 5600,
-    "taxCharges": 3100,
-    "totalUnits": 360,
-    "margin": 8000,
-    "ROI": 30
-  },
-  {
-    "date": "08",
-    "linePriceTotal": 52000,
-    "shippingCharges": 2700,
-    "discount": 5700,
-    "taxCharges": 3200,
-    "totalUnits": 370,
-    "margin": 8300,
-    "ROI": 32
-  },
-  {
-    "date": "09",
-    "linePriceTotal": 53000,
-    "shippingCharges": 2800,
-    "discount": 5800,
-    "taxCharges": 3300,
-    "totalUnits": 380,
-    "margin": 8500,
-    "ROI": 33
-  },
-  {
-    "date": "10",
-    "linePriceTotal": 54000,
-    "shippingCharges": 2900,
-    "discount": 5900,
-    "taxCharges": 3400,
-    "totalUnits": 390,
-    "margin": 8800,
-    "ROI": 35
-  },
-  {
-    "date": "11",
-    "linePriceTotal": 55000,
-    "shippingCharges": 3000,
-    "discount": 6000,
-    "taxCharges": 3500,
-    "totalUnits": 400,
-    "margin": 9000,
-    "ROI": 36
-  },
-  {
-    "date": "12",
-    "linePriceTotal": 56000,
-    "shippingCharges": 3100,
-    "discount": 6100,
-    "taxCharges": 3600,
-    "totalUnits": 410,
-    "margin": 9300,
-    "ROI": 38
-  },
-  {
-    "date": "13",
-    "linePriceTotal": 57000,
-    "shippingCharges": 3200,
-    "discount": 6200,
-    "taxCharges": 3700,
-    "totalUnits": 420,
-    "margin": 9500,
-    "ROI": 40
-  },
-  {
-    "date": "14",
-    "linePriceTotal": 58000,
-    "shippingCharges": 3300,
-    "discount": 6300,
-    "taxCharges": 3800,
-    "totalUnits": 430,
-    "margin": 9700,
-    "ROI": 41
-  },
-  {
-    "date": "15",
-    "linePriceTotal": 59000,
-    "shippingCharges": 3400,
-    "discount": 6400,
-    "taxCharges": 3900,
-    "totalUnits": 440,
-    "margin": 10000,
-    "ROI": 42
-  },
-  {
-    "date": "16",
-    "linePriceTotal": 60000,
-    "shippingCharges": 3500,
-    "discount": 6500,
-    "taxCharges": 4000,
-    "totalUnits": 450,
-    "margin": 10200,
-    "ROI": 43
-  },
-  {
-    "date": "17",
-    "linePriceTotal": 61000,
-    "shippingCharges": 3600,
-    "discount": 6600,
-    "taxCharges": 4100,
-    "totalUnits": 460,
-    "margin": 10500,
-    "ROI": 45
-  },
-  {
-    "date": "18",
-    "linePriceTotal": 62000,
-    "shippingCharges": 3700,
-    "discount": 6700,
-    "taxCharges": 4200,
-    "totalUnits": 470,
-    "margin": 10700,
-    "ROI": 46
-  },
-  {
-    "date": "19",
-    "linePriceTotal": 63000,
-    "shippingCharges": 3800,
-    "discount": 6800,
-    "taxCharges": 4300,
-    "totalUnits": 480,
-    "margin": 11000,
-    "ROI": 47
-  },
-  {
-    "date": "20",
-    "linePriceTotal": 64000,
-    "shippingCharges": 3900,
-    "discount": 6900,
-    "taxCharges": 4400,
-    "totalUnits": 490,
-    "margin": 11200,
-    "ROI": 49
-  },
-  {
-    "date": "21",
-    "linePriceTotal": 65000,
-    "shippingCharges": 4000,
-    "discount": 7000,
-    "taxCharges": 4500,
-    "totalUnits": 500,
-    "margin": 11500,
-    "ROI": 50
-  },
-  {
-    "date": "22",
-    "linePriceTotal": 66000,
-    "shippingCharges": 4100,
-    "discount": 7100,
-    "taxCharges": 4600,
-    "totalUnits": 510,
-    "margin": 11700,
-    "ROI": 51
-  },
-  {
-    "date": "23",
-    "linePriceTotal": 67000,
-    "shippingCharges": 4200,
-    "discount": 7200,
-    "taxCharges": 4700,
-    "totalUnits": 520,
-    "margin": 12000,
-    "ROI": 52
-  },
-  {
-    "date": "24",
-    "linePriceTotal": 68000,
-    "shippingCharges": 4300,
-    "discount": 7300,
-    "taxCharges": 4800,
-    "totalUnits": 530,
-    "margin": 12200,
-    "ROI": 54
-  },
-  {
-    "date": "25",
-    "linePriceTotal": 69000,
-    "shippingCharges": 4400,
-    "discount": 7400,
-    "taxCharges": 4900,
-    "totalUnits": 540,
-    "margin": 12500,
-    "ROI": 55
-  },
-  {
-    "date": "26",
-    "linePriceTotal": 70000,
-    "shippingCharges": 4500,
-    "discount": 7500,
-    "taxCharges": 5000,
-    "totalUnits": 550,
-    "margin": 12700,
-    "ROI": 56
-  },
-  {
-    "date": "27",
-    "linePriceTotal": 71000,
-    "shippingCharges": 4600,
-    "discount": 7600,
-    "taxCharges": 5100,
-    "totalUnits": 560,
-    "margin": 13000,
-    "ROI": 57
-  },
-  {
-    "date": "28",
-    "linePriceTotal": 72000,
-    "shippingCharges": 4700,
-    "discount": 7700,
-    "taxCharges": 5200,
-    "totalUnits": 570,
-    "margin": 13200,
-    "ROI": 59
-  },
-  {
-    "date": "29",
-    "linePriceTotal": 73000,
-    "shippingCharges": 4800,
-    "discount": 7800,
-    "taxCharges": 5300,
-    "totalUnits": 580,
-    "margin": 13500,
-    "ROI": 60
-  },
-  {
-    "date": "30",
-    "linePriceTotal": 74000,
-    "shippingCharges": 4900,
-    "discount": 7900,
-    "taxCharges": 5400,
-    "totalUnits": 590,
-    "margin": 13700,
-    "ROI": 61
-  },
-  {
-    "date": "31",
-    "linePriceTotal": 75000,
-    "shippingCharges": 5000,
-    "discount": 8000,
-    "taxCharges": 5500,
-    "totalUnits": 600,
-    "margin": 14000,
-    "ROI": 62
-  }
-]
+  "data": [
+    {
+      "date": "01",
+      "linePriceTotal": 45000,
+      "shippingCharges": 2000,
+      "discount": 5000,
+      "taxCharges": 2500,
+      "totalUnits": 300,
+      "margin": 6500,
+      "ROI": 20
+    },
+    {
+      "date": "02",
+      "linePriceTotal": 46000,
+      "shippingCharges": 2100,
+      "discount": 5100,
+      "taxCharges": 2600,
+      "totalUnits": 310,
+      "margin": 6800,
+      "ROI": 22
+    },
+    {
+      "date": "03",
+      "linePriceTotal": 47000,
+      "shippingCharges": 2200,
+      "discount": 5200,
+      "taxCharges": 2700,
+      "totalUnits": 320,
+      "margin": 7000,
+      "ROI": 24
+    },
+    {
+      "date": "04",
+      "linePriceTotal": 48000,
+      "shippingCharges": 2300,
+      "discount": 5300,
+      "taxCharges": 2800,
+      "totalUnits": 330,
+      "margin": 7200,
+      "ROI": 25
+    },
+    {
+      "date": "05",
+      "linePriceTotal": 49000,
+      "shippingCharges": 2400,
+      "discount": 5400,
+      "taxCharges": 2900,
+      "totalUnits": 340,
+      "margin": 7500,
+      "ROI": 27
+    },
+    {
+      "date": "06",
+      "linePriceTotal": 50000,
+      "shippingCharges": 2500,
+      "discount": 5500,
+      "taxCharges": 3000,
+      "totalUnits": 350,
+      "margin": 7800,
+      "ROI": 28
+    },
+    {
+      "date": "07",
+      "linePriceTotal": 51000,
+      "shippingCharges": 2600,
+      "discount": 5600,
+      "taxCharges": 3100,
+      "totalUnits": 360,
+      "margin": 8000,
+      "ROI": 30
+    },
+    {
+      "date": "08",
+      "linePriceTotal": 52000,
+      "shippingCharges": 2700,
+      "discount": 5700,
+      "taxCharges": 3200,
+      "totalUnits": 370,
+      "margin": 8300,
+      "ROI": 32
+    },
+    {
+      "date": "09",
+      "linePriceTotal": 53000,
+      "shippingCharges": 2800,
+      "discount": 5800,
+      "taxCharges": 3300,
+      "totalUnits": 380,
+      "margin": 8500,
+      "ROI": 33
+    },
+    {
+      "date": "10",
+      "linePriceTotal": 54000,
+      "shippingCharges": 2900,
+      "discount": 5900,
+      "taxCharges": 3400,
+      "totalUnits": 390,
+      "margin": 8800,
+      "ROI": 35
+    },
+    {
+      "date": "11",
+      "linePriceTotal": 55000,
+      "shippingCharges": 3000,
+      "discount": 6000,
+      "taxCharges": 3500,
+      "totalUnits": 400,
+      "margin": 9000,
+      "ROI": 36
+    },
+    {
+      "date": "12",
+      "linePriceTotal": 56000,
+      "shippingCharges": 3100,
+      "discount": 6100,
+      "taxCharges": 3600,
+      "totalUnits": 410,
+      "margin": 9300,
+      "ROI": 38
+    },
+    {
+      "date": "13",
+      "linePriceTotal": 57000,
+      "shippingCharges": 3200,
+      "discount": 6200,
+      "taxCharges": 3700,
+      "totalUnits": 420,
+      "margin": 9500,
+      "ROI": 40
+    },
+    {
+      "date": "14",
+      "linePriceTotal": 58000,
+      "shippingCharges": 3300,
+      "discount": 6300,
+      "taxCharges": 3800,
+      "totalUnits": 430,
+      "margin": 9700,
+      "ROI": 41
+    },
+    {
+      "date": "15",
+      "linePriceTotal": 59000,
+      "shippingCharges": 3400,
+      "discount": 6400,
+      "taxCharges": 3900,
+      "totalUnits": 440,
+      "margin": 10000,
+      "ROI": 42
+    },
+    {
+      "date": "16",
+      "linePriceTotal": 60000,
+      "shippingCharges": 3500,
+      "discount": 6500,
+      "taxCharges": 4000,
+      "totalUnits": 450,
+      "margin": 10200,
+      "ROI": 43
+    },
+    {
+      "date": "17",
+      "linePriceTotal": 61000,
+      "shippingCharges": 3600,
+      "discount": 6600,
+      "taxCharges": 4100,
+      "totalUnits": 460,
+      "margin": 10500,
+      "ROI": 45
+    },
+    {
+      "date": "18",
+      "linePriceTotal": 62000,
+      "shippingCharges": 3700,
+      "discount": 6700,
+      "taxCharges": 4200,
+      "totalUnits": 470,
+      "margin": 10700,
+      "ROI": 46
+    },
+    {
+      "date": "19",
+      "linePriceTotal": 63000,
+      "shippingCharges": 3800,
+      "discount": 6800,
+      "taxCharges": 4300,
+      "totalUnits": 480,
+      "margin": 11000,
+      "ROI": 47
+    },
+    {
+      "date": "20",
+      "linePriceTotal": 64000,
+      "shippingCharges": 3900,
+      "discount": 6900,
+      "taxCharges": 4400,
+      "totalUnits": 490,
+      "margin": 11200,
+      "ROI": 49
+    },
+    {
+      "date": "21",
+      "linePriceTotal": 65000,
+      "shippingCharges": 4000,
+      "discount": 7000,
+      "taxCharges": 4500,
+      "totalUnits": 500,
+      "margin": 11500,
+      "ROI": 50
+    },
+    {
+      "date": "22",
+      "linePriceTotal": 66000,
+      "shippingCharges": 4100,
+      "discount": 7100,
+      "taxCharges": 4600,
+      "totalUnits": 510,
+      "margin": 11700,
+      "ROI": 51
+    },
+    {
+      "date": "23",
+      "linePriceTotal": 67000,
+      "shippingCharges": 4200,
+      "discount": 7200,
+      "taxCharges": 4700,
+      "totalUnits": 520,
+      "margin": 12000,
+      "ROI": 52
+    },
+    {
+      "date": "24",
+      "linePriceTotal": 68000,
+      "shippingCharges": 4300,
+      "discount": 7300,
+      "taxCharges": 4800,
+      "totalUnits": 530,
+      "margin": 12200,
+      "ROI": 54
+    },
+    {
+      "date": "25",
+      "linePriceTotal": 69000,
+      "shippingCharges": 4400,
+      "discount": 7400,
+      "taxCharges": 4900,
+      "totalUnits": 540,
+      "margin": 12500,
+      "ROI": 55
+    },
+    {
+      "date": "26",
+      "linePriceTotal": 70000,
+      "shippingCharges": 4500,
+      "discount": 7500,
+      "taxCharges": 5000,
+      "totalUnits": 550,
+      "margin": 12700,
+      "ROI": 56
+    },
+    {
+      "date": "27",
+      "linePriceTotal": 71000,
+      "shippingCharges": 4600,
+      "discount": 7600,
+      "taxCharges": 5100,
+      "totalUnits": 560,
+      "margin": 13000,
+      "ROI": 57
+    },
+    {
+      "date": "28",
+      "linePriceTotal": 72000,
+      "shippingCharges": 4700,
+      "discount": 7700,
+      "taxCharges": 5200,
+      "totalUnits": 570,
+      "margin": 13200,
+      "ROI": 59
+    },
+    {
+      "date": "29",
+      "linePriceTotal": 73000,
+      "shippingCharges": 4800,
+      "discount": 7800,
+      "taxCharges": 5300,
+      "totalUnits": 580,
+      "margin": 13500,
+      "ROI": 60
+    },
+    {
+      "date": "30",
+      "linePriceTotal": 74000,
+      "shippingCharges": 4900,
+      "discount": 7900,
+      "taxCharges": 5400,
+      "totalUnits": 590,
+      "margin": 13700,
+      "ROI": 61
+    },
+    {
+      "date": "31",
+      "linePriceTotal": 75000,
+      "shippingCharges": 5000,
+      "discount": 8000,
+      "taxCharges": 5500,
+      "totalUnits": 600,
+      "margin": 14000,
+      "ROI": 62
+    }
+  ]
 }

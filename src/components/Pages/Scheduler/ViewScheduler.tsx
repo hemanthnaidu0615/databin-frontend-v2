@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dialog } from "primereact/dialog";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
@@ -11,7 +9,6 @@ import { axiosInstance } from "../../../axios";
 import moment from "moment";
 import "./style.css";
 
-// Types
 interface Scheduler {
   title: string;
   description: string;
@@ -21,7 +18,6 @@ interface Scheduler {
   date_range_type: string | null;
 }
 
-// Fix: define filters type to allow both string and null
 type FiltersType = {
   [key: string]: {
     value: string | null;
@@ -47,8 +43,8 @@ const ViewScheduler: React.FC = () => {
 
   const fetchSchedulers = async () => {
     try {
-      const response = await axiosInstance("/schedulers/view");
-      setSchedulers(response.data);
+      const response = await axiosInstance.get("/schedulers/view");
+      setSchedulers(response.data as Scheduler[]);
     } catch (error) {
       console.error("Error fetching schedulers:", error);
       toast.current?.show({

@@ -11,7 +11,7 @@ type ApiRow = {
 };
 
 function convertToUSD(rupees: number): number {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 }
 
