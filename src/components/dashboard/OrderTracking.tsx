@@ -76,14 +76,15 @@ export default function OrderTracking(_: OrderTrackingProps) {
           ShippedPercentage?: number;
         };
 
+        console.log("API Response:", counts); // ✅ Debug log
+
         setOrderCounts({
           Shipped: counts.Shipped || 0,
           Cancelled: counts.Cancelled || 0,
           "Return Received": counts.Returned || 0,
         });
 
-        setProgressPercentage(counts.ShippedPercentage ?? 0);
-        //console.log("Fetched ShippedPercentage:", counts.ShippedPercentage);
+        setProgressPercentage(Number(counts.ShippedPercentage ?? 0));
       } catch (error) {
         console.error("Error fetching order data:", error);
       }
@@ -171,12 +172,14 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
             <div className="relative mt-4">
               <div className="max-h-[260px]" id="chartDarkStyle">
-                <Chart
-                  options={options}
-                  series={series}
-                  type="radialBar"
-                  height={260}
-                />
+                {isVisible && progressPercentage > 0 && (
+                  <Chart
+                    options={options}
+                    series={series}
+                    type="radialBar"
+                    height={260}
+                  />
+                )}
               </div>
             </div>
           </div>
