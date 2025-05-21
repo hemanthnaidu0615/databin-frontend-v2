@@ -110,7 +110,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
       setUsers((prev: any) => [
         ...prev,
         {
-          ...createdUser,
+          ...(typeof createdUser === "object" && createdUser !== null ? createdUser : {}),
           username: `${firstName} ${lastName}`,
           role: roleObj?.identifier,
         },
