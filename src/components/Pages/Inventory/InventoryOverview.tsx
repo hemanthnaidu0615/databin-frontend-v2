@@ -80,8 +80,6 @@ const InventoryOverview: React.FC<{
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
 
-
-
       try {
         const response = await axiosInstance.get("/inventory/turnover-and-alerts", {
           params: { startDate: formattedStart, endDate: formattedEnd },
@@ -90,7 +88,6 @@ const InventoryOverview: React.FC<{
           turnover_rates: { turnover_rate: number }[];
           low_stock_alerts: any[];
         };
-
 
         const rates = data.turnover_rates.map(
           (item: any) => item.turnover_rate
@@ -156,7 +153,6 @@ const InventoryOverview: React.FC<{
           params: { startDate: formattedStart, endDate: formattedEnd },
         });
         const data = res.data as AlertAPIResponse;
-
 
         setAlertsData([
           {
@@ -281,7 +277,7 @@ const InventoryOverview: React.FC<{
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 transition-all duration-500 ease-in-out">
       <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
-        <h3 className="text-lg font-semibold mb-1">Warehouse Inventory</h3>
+        <h3 className="app-subheading mb-1">Warehouse Inventory</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           Regional Performance
         </p>
@@ -289,8 +285,8 @@ const InventoryOverview: React.FC<{
         <div className="space-y-3 mb-6">
           {warehouseData.map((item, idx) => (
             <div key={idx} className="flex justify-between text-sm">
-              <span>{item.region}</span>
-              <span className="font-medium text-indigo-600 dark:text-indigo-400">
+              <span className="app-table-content">{item.region}</span>
+              <span className="font-medium text-indigo-600 dark:text-indigo-400 app-table-content">
                 {item.percentage}
               </span>
             </div>
@@ -308,17 +304,17 @@ const InventoryOverview: React.FC<{
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+        <h3 className="app-subheading mb-4 text-gray-800 dark:text-white">
           Inventory Turnover & Alerts
         </h3>
 
         <div className="grid grid-cols-3 gap-3 text-center mb-4">
           {alertsData.map((item, i) => (
             <div key={i}>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="app-widget-label text-gray-500 dark:text-gray-400">
                 {item.label}
               </p>
-              <p className={`text-xl font-semibold ${item.color}`}>
+              <p className={`app-widget-value ${item.color}`}>
                 {item.value}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -338,15 +334,15 @@ const InventoryOverview: React.FC<{
         </div>
 
         <div className="text-sm">
-          <h4 className="mb-2 font-medium text-gray-800 dark:text-white">
+          <h4 className="mb-2 font-medium text-gray-800 dark:text-white app-widget-label">
             Restock Schedule
           </h4>
           <table className="w-full text-left text-sm">
             <thead className="text-gray-500 dark:text-gray-400">
               <tr>
-                <th className="py-1.5">Product</th>
-                <th className="py-1.5">Stock</th>
-                <th className="py-1.5">Restock</th>
+                <th className="py-1.5 app-table-heading">Product</th>
+                <th className="py-1.5 app-table-heading">Stock</th>
+                <th className="py-1.5 app-table-heading">Restock</th>
               </tr>
             </thead>
             <tbody>
@@ -357,13 +353,13 @@ const InventoryOverview: React.FC<{
                     key={i}
                     className="border-t border-gray-200 dark:border-gray-700"
                   >
-                    <td className="py-2 text-gray-800 dark:text-gray-100">
+                    <td className="py-2 text-gray-800 dark:text-gray-100 app-table-content">
                       {item.product}
                     </td>
-                    <td className="py-2 text-gray-700 dark:text-gray-300">
+                    <td className="py-2 text-gray-700 dark:text-gray-300 app-table-content">
                       {item.stock}
                     </td>
-                    <td className="py-2 text-gray-700 dark:text-gray-300">
+                    <td className="py-2 text-gray-700 dark:text-gray-300 app-table-content">
                       {item.date}
                     </td>
                   </tr>

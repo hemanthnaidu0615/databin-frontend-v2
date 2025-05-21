@@ -17,8 +17,9 @@ const PipelineRow = ({
 }) => {
   return (
     <div
-      className={`flex flex-col sm:flex-row ${isFinal ? "flex-wrap justify-center" : "md:flex-wrap justify-center"
-        } items-center gap-x-4 gap-y-4 px-2 max-w-screen-xl mx-auto`}
+      className={`flex flex-col sm:flex-row ${
+        isFinal ? "flex-wrap justify-center" : "md:flex-wrap justify-center"
+      } items-center gap-x-4 gap-y-4 px-2 max-w-screen-xl mx-auto`}
     >
       {stages.map((stage, index) => {
         const isCompleted = index < currentStage;
@@ -27,10 +28,10 @@ const PipelineRow = ({
         const bgColor = isFinal
           ? "bg-slate-400 dark:bg-slate-600"
           : isCompleted
-            ? "bg-purple-500"
-            : isCurrent
-              ? "bg-emerald-600"
-              : "bg-yellow-500";
+          ? "bg-purple-500"
+          : isCurrent
+          ? "bg-emerald-600"
+          : "bg-yellow-500";
 
         return (
           <React.Fragment key={index}>
@@ -113,22 +114,22 @@ const FulfillmentPipeline = () => {
       try {
         setLoading(true);
 
-
-
-        const response = await axiosInstance.get("/fulfillment/stages-pipeline", {
-          params: {
-            startDate,
-            endDate,
-            ...(enterpriseKey ? { enterpriseKey } : {}),
-          },
-        });
+        const response = await axiosInstance.get(
+          "/fulfillment/stages-pipeline",
+          {
+            params: {
+              startDate,
+              endDate,
+              ...(enterpriseKey ? { enterpriseKey } : {}),
+            },
+          }
+        );
 
         let data = response.data as {
           stage_name: string;
           orders_count: number;
           avg_duration_hours?: number;
         }[];
-
 
         const desiredPipelineStages = [
           "Order Placed",
@@ -169,10 +170,10 @@ const FulfillmentPipeline = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="w-full py-6 space-y-10">
+    <div className="w-full py-6 space-y-12">
       {/* Fulfillment Flow */}
       <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+        <h2 className="app-subheading  mb-10">
           Fulfillment Stages Pipeline
         </h2>
         <PipelineRow stages={stagesData} currentStage={2} />
@@ -180,9 +181,7 @@ const FulfillmentPipeline = () => {
 
       {/* Final Status Flow */}
       <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
-          Final Stages
-        </h2>
+        <h2 className="app-subheading mt-8 mb-5">Final Stages</h2>
         <PipelineRow stages={finalStagesData} currentStage={-1} isFinal />
       </div>
     </div>
@@ -190,4 +189,3 @@ const FulfillmentPipeline = () => {
 };
 
 export default FulfillmentPipeline;
-

@@ -7,8 +7,11 @@ import OrdersInProcess from "./OrdersInProcess";
 const FulfillmentPage = () => {
   return (
     <div className="w-full bg-gray-50 dark:bg-black overflow-x-hidden">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-        
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
+
+        {/* ✅ Fulfillment Page Title */}
+        <h1 className="app-section-title mb-4">Fulfillment</h1>
+
         {/* Section 1: Stats Cards */}
         <div className="w-full">
           <FulfillmentStats />
@@ -26,9 +29,7 @@ const FulfillmentPage = () => {
 
         {/* Section 4: Bottleneck Chart */}
         <div className="w-full bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm">
-          <div className="w-full">
-            <BottleneckChart />
-          </div>
+          <BottleneckChart />
         </div>
 
         {/* Section 5: Orders Table */}
@@ -38,6 +39,8 @@ const FulfillmentPage = () => {
 
       </div>
     </div>
+
+    
   );
 };
 

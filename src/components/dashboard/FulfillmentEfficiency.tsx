@@ -213,10 +213,9 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       style={{ padding: "1rem" }} 
     >
       {size === "full" && (
-        <div className="flex justify-between items-center mb-15">
+        <div className="flex justify-between items-center mb-15 app-subheading">
           <h2
-            className={`text-lg font-semibold ${isDarkMode ? "text-white" : "text-gray-800"
-              }`}
+            className="app-subheading"
           >
             Fulfillment Efficiency Tracker
           </h2>

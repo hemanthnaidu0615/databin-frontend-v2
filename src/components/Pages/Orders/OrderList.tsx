@@ -131,17 +131,17 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
   return (
     <>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-left">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-left app-table-heading">
           <thead className="bg-gray-100 dark:bg-gray-900">
             <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
               <th className="py-3 px-4"></th>
-              <th className="py-3 px-4">Order ID</th>
-              <th className="py-3 px-4 hidden md:table-cell">Date</th>
-              <th className="py-3 px-4 hidden md:table-cell">Customer</th>
-              <th className="py-3 px-4 hidden md:table-cell">Product</th>
-              <th className="py-3 px-4 hidden md:table-cell">Total</th>
-              <th className="py-3 px-4 hidden md:table-cell">Status</th>
-              <th className="py-3 px-4 hidden md:table-cell">Payment</th>
+              <th className="py-3 px-4 app-table-content">Order ID</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">Date</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">Customer</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">Product</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">Total</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">Status</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">Payment</th>
             </tr>
           </thead>
 
@@ -285,7 +285,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
 
                         {/* Products Section */}
                         <div className="hidden md:block bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1">
-                          <h3 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                             Products
                           </h3>
 

@@ -218,7 +218,7 @@ chart: {
 
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+      <h2 className="app-subheading">
         Bottleneck Analysis
       </h2>
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 overflow-hidden">
