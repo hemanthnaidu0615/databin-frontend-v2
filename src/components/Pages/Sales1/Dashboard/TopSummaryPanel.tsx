@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { axiosInstance } from "../../../../axios";
 
 const convertToUSD = (rupees: number): number => {
   const exchangeRate = 0.012; // ₹1 = $0.012
@@ -36,9 +37,10 @@ const TopSummaryPanel: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/api/sales/sales-metrics?${params.toString()}`);
-        const data = await response.json();
-        setMetrics(data);
+        const response = await axiosInstance.get('sales/sales-metrics', {
+          params: params,
+        });
+        setMetrics(response.data);
       } catch (err) {
         console.error('Failed to fetch sales metrics:', err);
       }

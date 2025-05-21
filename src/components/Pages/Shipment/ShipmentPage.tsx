@@ -3,7 +3,7 @@ import ShipmentStats from './ShipmentStats';
 import ShipmentCharts from './ShipmentCharts';
 import RecentShipmentsTable from './RecentShipmentsTable';
 import { Dropdown } from 'primereact/dropdown';
-import axios from 'axios';
+import { axiosInstance } from "../../../axios";
 
 const ShipmentPage = () => {
   const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
@@ -22,9 +22,10 @@ const ShipmentPage = () => {
     const fetchFilters = async () => {
       try {
         setLoadingFilters(true);
-        const res = await axios.get<{ carriers: string[]; shipping_methods: string[] }>(
-          'http://localhost:8080/api/shipment-filters/filter-values'
+        const res = await axiosInstance.get<{ carriers: string[]; shipping_methods: string[] }>(
+          'shipment-filters/filter-values'
         );
+
         setCarriers(res.data.carriers || []);
         setShippingMethods(res.data.shipping_methods || []);
       } catch (err) {

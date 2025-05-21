@@ -3,18 +3,19 @@ import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../../axios";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(3, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -70,10 +71,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const response = await fetch(
-          `http://localhost:8080/api/order-trends-by-category?${params.toString()}`
+        const response = await axiosInstance.get<ApiResponse>(
+          `/order-trends-by-category?${params.toString()}`
         );
-        const data: ApiResponse = await response.json();
+        const data = response.data;
+
         const trends = data.order_trends;
 
         if (!trends || Object.keys(trends).length === 0) {

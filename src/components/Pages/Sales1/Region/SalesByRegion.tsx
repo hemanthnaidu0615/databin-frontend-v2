@@ -5,6 +5,7 @@ import { Column } from "primereact/column";
 import USMap from "./us-map/USMap";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
+import { axiosInstance } from "../../../../axios";
 
 interface Marker {
   color: string;
@@ -47,7 +48,7 @@ const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 export const SalesByRegion = () => {
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [stateData, setStateData] = useState<StateData[]>([]);
-  const [topStates, setTopStates] = useState<{state_name: string, state_revenue: number}[]>([]);
+  const [topStates, setTopStates] = useState<{ state_name: string, state_revenue: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,24 +79,14 @@ export const SalesByRegion = () => {
 
       try {
         // Fetch all three endpoints in parallel
-        const [statesResponse, countryResponse, topResponse] = await Promise.all([
-          fetch(`http://localhost:8080/api/sales-by-region?${params.toString()}`),
-          fetch(`http://localhost:8080/api/sales-by-region/countrywide?${params.toString()}`),
-          fetch(`http://localhost:8080/api/sales-by-region/top5?${params.toString()}`)
+        const [statesResponse, , topStatesResponse] = await Promise.all([
+          axiosInstance.get<StateData[]>(`sales-by-region?${params.toString()}`),
+          axiosInstance.get(`sales-by-region/countrywide?${params.toString()}`),
+          axiosInstance.get<{ state_name: string, state_revenue: number }[]>(`sales-by-region/top5?${params.toString()}`),
         ]);
 
-        if (!statesResponse.ok || !countryResponse.ok || !topResponse.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const [statesData,  topData] = await Promise.all([
-          statesResponse.json(),
-          countryResponse.json(),
-          topResponse.json()
-        ]);
-
-        setStateData(statesData);
-        setTopStates(topData);
+        setStateData(statesResponse.data);
+        setTopStates(topStatesResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load sales data");
@@ -142,7 +133,7 @@ export const SalesByRegion = () => {
   const colorScale = (stateCode: string) => {
     const topStateCodes = topStates.map(state => state.state_name);
     const colors = ["#58ddf5", "#65f785", "#f5901d", "#f7656c", "#8518b8"];
-    
+
     const index = topStateCodes.indexOf(stateCode);
     return index >= 0 ? colors[index] : theme === "dark" ? "#444" : "#d6d4d0";
   };

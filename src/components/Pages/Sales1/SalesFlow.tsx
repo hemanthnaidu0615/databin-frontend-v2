@@ -12,6 +12,7 @@ import {
 import "reactflow/dist/style.css";
 import dagre from "dagre";
 import { useSelector } from "react-redux";
+import { axiosInstance } from "../../../axios";
 
 // INR to USD conversion
 const convertToUSD = (rupees: number): number => {
@@ -75,7 +76,7 @@ function SalesFlow() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [rawData, setRawData] = useState<any[]>([]);
-  const [fitViewDone, setFitViewDone] = useState(false);
+  const [_, setFitViewDone] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,9 +91,9 @@ function SalesFlow() {
       });
 
       try {
-        const res = await fetch(`http://localhost:8080/api/flow/breakdown?${params}`);
-        const data = await res.json();
-        const nested = convertToHierarchy(data);
+        const res = await axiosInstance.get(`/flow/breakdown?${params}`);
+        const data = await res.data;
+        const nested = convertToHierarchy(data as any[]);
         setRawData(nested);
         convertAndSetFlowData(nested);
         setFitViewDone(false);
@@ -266,7 +267,7 @@ function SalesFlow() {
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
-                fitView={fitViewDone}
+                fitView
                 onInit={() => setFitViewDone(true)}
                 proOptions={{ hideAttribution: true }}
                 className="dark:!bg-gray-800"

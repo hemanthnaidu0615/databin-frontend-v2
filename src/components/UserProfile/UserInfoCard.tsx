@@ -4,7 +4,7 @@
 // import Input from "../form/input/InputField";
 // import Label from "../form/Label";
 import { useState, useEffect } from 'react';
-
+import { axiosInstance } from "../../axios";
 
 export default function UserInfoCard() {
   // const { isOpen, openModal, closeModal } = useModal();
@@ -19,21 +19,15 @@ export default function UserInfoCard() {
     email: ""
   });
   useEffect(() => {
-    // Replace with your actual API endpoint
-    fetch("http://localhost:8080/api/auth/me", {
-      method: "GET",
-      credentials: "include", // to send HTTP-only cookies
-    })
+
+    axiosInstance.get("/auth/me", { withCredentials: true })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch user data");
-        return res.json();
-      })
-      .then((data) => {
+
+        const data = res.data as { email: string; roleLevel: string };
         setUserData({
           name: data.email,
           role: data.roleLevel,
-          email: data.email || "unknown@example.com",
-
+          email: data.email,
         });
       })
       .catch((error) => {

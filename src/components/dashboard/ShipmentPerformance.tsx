@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
+import { axiosInstance } from "../../axios";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
@@ -17,19 +17,19 @@ const formatDateTime = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}.000`;
 };
 
 const ShipmentPerformance: React.FC<{
   size?: "small" | "full";
   onRemove?: () => void;
   onViewMore?: () => void;
-}> = ({ size = "full"}) => {
+}> = ({ size = "full" }) => {
   const [data, setData] = useState<{
     carriers: string[];
     standard: number[];
@@ -74,12 +74,13 @@ const ShipmentPerformance: React.FC<{
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const res = await axios.get(
-          "http://localhost:8080/api/shipment-performance",
+        const res = await axiosInstance.get(
+          "/shipment-performance", // Use axiosInstance with the base URL
           { params }
         );
 
-        const responseData = res.data.shipment_performance;
+        const dataResponse = res.data as { shipment_performance: any[] };
+        const responseData = dataResponse.shipment_performance;
 
         const carriers = responseData.map((item: any) => item.carrier);
         const standard = responseData.map((item: any) => item.standard);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
-import ApexCharts from "apexcharts";
+import { axiosInstance } from "../../../axios";
 
 interface Filters {
   selectedRegion: string;
@@ -28,7 +28,7 @@ const InventoryOverview: React.FC<{
   filters: Filters;
   isSidebarOpen?: boolean;
   isDarkTheme?: boolean;
-}> = ({ isSidebarOpen = true, isDarkTheme = false }) => {
+}> = ({ isDarkTheme = false }) => {
   const [warehouseData, setWarehouseData] = useState<RegionData[]>([]);
   const [alertsData, setAlertsData] = useState([
     { label: "Available", value: "0%", count: 0, color: "text-green-500" },
@@ -55,10 +55,11 @@ const InventoryOverview: React.FC<{
       const formattedEnd = formatDate(new Date(endDate));
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/inventory/region-distribution?startDate=${formattedStart}&endDate=${formattedEnd}`
-        );
-        const data: RegionData[] = await response.json();
+        const response = await axiosInstance.get<RegionData[]>("/inventory/region-distribution", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        });
+        const data = response.data;
+
         const topFour = data
           .sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage))
           .slice(0, 4);
@@ -79,16 +80,17 @@ const InventoryOverview: React.FC<{
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
+
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/inventory/turnover-and-alerts?${params.toString()}`
-        );
-        const data = await response.json();
+        const response = await axiosInstance.get("/inventory/turnover-and-alerts", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        });
+        const data = response.data as {
+          turnover_rates: { turnover_rate: number }[];
+          low_stock_alerts: any[];
+        };
+
 
         const rates = data.turnover_rates.map(
           (item: any) => item.turnover_rate
@@ -124,9 +126,9 @@ const InventoryOverview: React.FC<{
               `${date.getFullYear()}-${(date.getMonth() + 1)
                 .toString()
                 .padStart(2, "0")}-${date
-                .getDate()
-                .toString()
-                .padStart(2, "0")}`
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}`
             );
             date.setDate(date.getDate() + 1);
           }
@@ -150,10 +152,11 @@ const InventoryOverview: React.FC<{
       const formattedEnd = formatDate(new Date(endDate));
 
       try {
-        const res = await fetch(
-          `http://localhost:8080/api/inventory/turnover-alerts?startDate=${formattedStart}&endDate=${formattedEnd}`
-        );
-        const data: AlertAPIResponse = await res.json();
+        const res = await axiosInstance.get("/inventory/turnover-alerts", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        });
+        const data = res.data as AlertAPIResponse;
+
 
         setAlertsData([
           {
@@ -246,8 +249,8 @@ const InventoryOverview: React.FC<{
           turnoverCategories.length > 0 && turnoverCategories[0].length === 4
             ? "Year"
             : turnoverCategories[0]?.length <= 7
-            ? "Month"
-            : "Date",
+              ? "Month"
+              : "Date",
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {

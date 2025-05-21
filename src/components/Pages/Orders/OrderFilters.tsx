@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { axiosInstance } from "../../../axios"
+
 
 interface OrderFiltersProps {
   filters: {
@@ -39,11 +41,13 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:8080/api/order-filters/filter-values"
-        );
-        const data = await res.json();
-        setFilterOptions(data);
+        const res = await axiosInstance.get<{
+          types: string[];
+          methods: string[];
+          statuses: string[];
+          carriers: string[];
+        }>("/order-filters/filter-values");
+        setFilterOptions(res.data);
       } catch (error) {
         console.error("Failed to fetch filter options", error);
       }

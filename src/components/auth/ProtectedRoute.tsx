@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-
+import { axiosInstance } from "../../axios";
 type ProtectedRouteProps = {
   element: React.ReactElement;
   allowedRoles?: string[]; // e.g. ['admin', 'manager']
@@ -13,14 +13,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        });
+        const res = await axiosInstance.get("auth/me", { withCredentials: true });
+        const data = res.data as { roleLevel: string };
 
-        if (!res.ok) throw new Error("Not authenticated");
 
-        const data = await res.json();
         const userRoleLevel = data.roleLevel;
 
         if (!allowedRoles || allowedRoles.length === 0) {

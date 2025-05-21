@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from 'react';
+import ReactApexChart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
+import { useSelector } from 'react-redux';
+import { axiosInstance } from '../../../axios'; 
 
 const BottleneckChart = () => {
   const [isDark, setIsDark] = useState<boolean>(
@@ -13,7 +14,7 @@ const BottleneckChart = () => {
 chart: {
   type: 'bar',
   height: 320,
-  width: '100%', // <- this line
+  width: '100%', 
   toolbar: { show: false },
   background: 'transparent',
   foreColor: isDark ? '#d1d5db' : '#333',
@@ -25,7 +26,7 @@ chart: {
       bar: {
         horizontal: true,
         borderRadius: 4,
-        barHeight: "60%", // Adjusted for better spacing
+        barHeight: "60%", 
       },
     },
     dataLabels: {
@@ -52,12 +53,12 @@ chart: {
     },
     yaxis: {
       title: {
-        text: undefined, // Removed to save vertical space
+        text: undefined, 
       },
       labels: {
         style: {
           colors: isDark ? "#d1d5db" : "#333",
-          fontSize: "12px", // Reduced font size
+          fontSize: "12px",
         },
       },
     },
@@ -161,10 +162,11 @@ chart: {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/fulfillment/bottleneck-analysis?${params.toString()}`
-        );
-        const data = await response.json();
+const response = await axiosInstance.get(`/fulfillment/bottleneck-analysis`, {
+  params,
+});
+const data = response.data as Array<{ process_stage: string; avg_time: number }>;
+
 
         const defaultStagesOrder = [
           "Order Placed",
@@ -180,7 +182,7 @@ chart: {
         ];
 
         const stageMap: Record<string, number> = {};
-        data.forEach((item: any) => {
+        data.forEach((item) => {
           stageMap[item.process_stage] = parseFloat(item.avg_time.toFixed(2));
         });
 

@@ -72,10 +72,14 @@ export default function OrdersFulfillmentMetrics() {
           params.enterpriseKey = enterpriseKey;
         }
 
+        type TotalOrdersResponse = { total_orders: number };
+        type FulfillmentRateResponse = { fulfillment_rate: number };
+        type ShipmentStatusResponse = { in_transit_orders: number; delayed_percentage: number };
+
         const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
-          axiosInstance.get("/dashboard-kpi/total-orders", { params }),
-          axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
-          axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
+          axiosInstance.get<TotalOrdersResponse>("/dashboard-kpi/total-orders", { params }),
+          axiosInstance.get<FulfillmentRateResponse>("/dashboard-kpi/fulfillment-rate", { params }),
+          axiosInstance.get<ShipmentStatusResponse>("/dashboard-kpi/shipment-status-percentage", { params }),
         ]);
 
         setMetrics([

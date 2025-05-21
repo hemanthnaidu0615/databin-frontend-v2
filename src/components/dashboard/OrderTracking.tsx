@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
+import { axiosInstance } from "../../axios";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
@@ -17,12 +17,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(3, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(3, "0")}`;
 };
 
 interface OrderTrackingProps {
@@ -67,16 +67,21 @@ export default function OrderTracking(_: OrderTrackingProps) {
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const totalOrdersResponse = await axios.get(
-          `http://localhost:8080/api/dashboard-kpi/total-orders?${params.toString()}`
+        const totalOrdersResponse = await axiosInstance.get(
+          `/dashboard-kpi/total-orders?${params.toString()}`
         );
-        setTotalOrders(totalOrdersResponse.data.total_orders);
+        setTotalOrders((totalOrdersResponse.data as { total_orders: number }).total_orders);
 
-        const orderCountsResponse = await axios.get(
-          `http://localhost:8080/api/shipment-status/count?${params.toString()}`
+        const orderCountsResponse = await axiosInstance.get(
+          `/shipment-status/count?${params.toString()}`
         );
 
-        const counts = orderCountsResponse.data;
+
+        const counts = orderCountsResponse.data as {
+          Shipped?: number;
+          Cancelled?: number;
+          Returned?: number;
+        };
 
         setOrderCounts({
           Shipped: counts.Shipped || 0,
@@ -96,7 +101,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
   const progressPercentage =
     totalOrders > 0
       ? ((orderCounts.Shipped + orderCounts["Return Received"]) / totalOrders) *
-        100
+      100
       : 0;
   const series = [progressPercentage];
 

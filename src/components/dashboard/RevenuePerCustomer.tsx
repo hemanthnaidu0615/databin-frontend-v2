@@ -5,6 +5,7 @@ import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { axiosInstance } from "../../axios";
 
 // Helper function to format date to match API format
 const formatDate = (date: string) => {
@@ -67,13 +68,12 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     try {
       setIsLoading(true);
 
-      const response = await fetch(
-        `http://localhost:8080/api/revenue/top-customers?${params.toString()}`
+      const response = await axiosInstance.get(
+        `/revenue/top-customers?${params.toString()}`
       );
 
-      if (!response.ok) throw new Error("Failed to fetch revenue data");
 
-      const result = await response.json();
+      const result = response.data as { top_customers: { customer_name: string; revenue: number }[] };
 
       const formattedData = result.top_customers.map((item: any) => ({
         customer: item.customer_name,

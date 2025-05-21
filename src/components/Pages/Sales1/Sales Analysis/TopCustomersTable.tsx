@@ -9,6 +9,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
+import { axiosInstance } from "../../../../axios";
 
 const viewOptions = [
   { label: "By Revenue", value: "revenue" },
@@ -69,11 +70,10 @@ const TopCustomersTable = () => {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/analysis/customer-order-summary?${params.toString()}`
+        const response = await axiosInstance.get(
+          `analysis/customer-order-summary?${params.toString()}`
         );
-        if (!response.ok) throw new Error("Failed to fetch customers");
-        const data = await response.json();
+        const data = response.data as { customers?: Customer[] };
         setCustomers(data.customers || []);
       } catch (err) {
         console.error("Error fetching customers:", err);
@@ -89,8 +89,8 @@ const TopCustomersTable = () => {
   // Get all customers sorted by current view mode (for table)
   const sortedCustomers = useMemo(() => {
     return [...customers].sort((a, b) =>
-      viewMode === "revenue" 
-        ? b.total_spent - a.total_spent 
+      viewMode === "revenue"
+        ? b.total_spent - a.total_spent
         : b.total_orders - a.total_orders
     );
   }, [viewMode, customers]);
@@ -113,7 +113,7 @@ const TopCustomersTable = () => {
           fontSize: "12px",
           colors: theme === "dark" ? "#CBD5E1" : "#334155",
         },
-        formatter: function(value: string) {
+        formatter: function (value: string) {
           return value.length > 20 ? value.substring(0, 20) + '...' : value;
         }
       },
@@ -136,9 +136,9 @@ const TopCustomersTable = () => {
         },
       },
       labels: {
-        formatter: function(val: number) {
-          return viewMode === "revenue" 
-            ? `$${formatValue(val)}` 
+        formatter: function (val: number) {
+          return viewMode === "revenue"
+            ? `$${formatValue(val)}`
             : formatValue(val);
         }
       }
@@ -157,9 +157,9 @@ const TopCustomersTable = () => {
     legend: { show: false },
     tooltip: {
       y: {
-        formatter: function(val: number) {
-          return viewMode === "revenue" 
-            ? `$${val.toFixed(2)}` 
+        formatter: function (val: number) {
+          return viewMode === "revenue"
+            ? `$${val.toFixed(2)}`
             : `${val} orders`;
         }
       }
@@ -231,11 +231,11 @@ const TopCustomersTable = () => {
           sortMode="multiple"
           emptyMessage="No customers found for the selected filters"
         >
-          <Column 
-            field="customer_name" 
-            header="Customer Name" 
-            sortable 
-            className="text-sm" 
+          <Column
+            field="customer_name"
+            header="Customer Name"
+            sortable
+            className="text-sm"
             style={{ minWidth: '200px' }}
           />
           <Column

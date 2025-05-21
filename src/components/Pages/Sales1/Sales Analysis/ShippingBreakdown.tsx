@@ -8,6 +8,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
+import { axiosInstance } from "../../../../axios";
 
 interface Shipment {
   carrier: string;
@@ -63,11 +64,8 @@ const ShippingBreakdown = () => {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/analysis/shipment-summary?${params.toString()}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch shipments");
-        const data = await response.json();
+        const response = await axiosInstance.get(`/analysis/shipment-summary?${params.toString()}`);
+        const data = response.data as { shipments?: Shipment[] };
         setShipments(data.shipments || []);
       } catch (err) {
         console.error("Error fetching shipments:", err);
@@ -76,14 +74,13 @@ const ShippingBreakdown = () => {
         setLoading(false);
       }
     };
-
     fetchShipments();
   }, [startDate, endDate, enterpriseKey]);
 
   // Calculate carrier totals for the chart (top 10 carriers)
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
-    
+
     shipments.forEach((shipment) => {
       totals[shipment.carrier] = (totals[shipment.carrier] || 0) + shipment.shipment_cost;
     });
@@ -131,7 +128,7 @@ const ShippingBreakdown = () => {
         },
       },
       labels: {
-        formatter: function(val: number) {
+        formatter: function (val: number) {
           return `$${formatValue(convertToUSD(val))}`;
         }
       }
@@ -151,7 +148,7 @@ const ShippingBreakdown = () => {
     colors: ["#2563eb"],
     tooltip: {
       y: {
-        formatter: function(val: number) {
+        formatter: function (val: number) {
           return `$${convertToUSD(val).toFixed(2)}`;
         }
       }
@@ -214,25 +211,25 @@ const ShippingBreakdown = () => {
           sortMode="multiple"
           emptyMessage="No shipments found for the selected filters"
         >
-          <Column 
-            field="carrier" 
-            header="Carrier" 
-            sortable 
-            className="text-sm" 
+          <Column
+            field="carrier"
+            header="Carrier"
+            sortable
+            className="text-sm"
             style={{ minWidth: '120px' }}
           />
-          <Column 
-            field="shipping_method" 
-            header="Method" 
-            sortable 
-            className="text-sm" 
+          <Column
+            field="shipping_method"
+            header="Method"
+            sortable
+            className="text-sm"
             style={{ minWidth: '120px' }}
           />
-          <Column 
-            field="shipment_status" 
-            header="Status" 
-            sortable 
-            className="text-sm" 
+          <Column
+            field="shipment_status"
+            header="Status"
+            sortable
+            className="text-sm"
             style={{ minWidth: '120px' }}
           />
           <Column

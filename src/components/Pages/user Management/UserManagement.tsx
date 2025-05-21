@@ -4,7 +4,7 @@ import { Column } from "primereact/column";
 // import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { AddUser } from "./AddUser";
-import axios from "axios";
+import { axiosInstance } from "../../../axios";
 
 
 export const UserManagement = () => {
@@ -17,11 +17,12 @@ export const UserManagement = () => {
   useEffect(() => {
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/auth/users", {
-        withCredentials: true, // ensures cookies (JWT) are sent
+   const response = await axiosInstance.get("/auth/users", {
+        withCredentials: true, 
       });
 
-      const formattedUsers = response.data.map((user: any) => ({
+       const usersData = response.data as any[];
+       const formattedUsers = usersData.map((user: any) => ({
         id: user.id,
         username: user.username || user.name || user.email.split("@")[0],
         email: user.email,
