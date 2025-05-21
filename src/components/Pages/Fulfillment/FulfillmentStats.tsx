@@ -127,7 +127,6 @@ const FulfillmentStats = () => {
 
   return (
     <div className="font-sans">
-      {/* existing return block below */}
       <div className="w-full overflow-x-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           {stats.map((stat, index) => (
