@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
+import { axiosInstance } from "../../../../axios";
 
 type ApiRow = {
   productId: string;
@@ -35,8 +35,8 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
 
     const companyKey = company.toLowerCase();
 
-    axios
-      .get(`http://localhost:8080/api/sales/volume-value/${companyKey}`, {
+    axiosInstance
+      .get(`sales/volume-value/${companyKey}`, {
         params: {
           startDate: formattedStartDate,
           endDate: formattedEndDate,

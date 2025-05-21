@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { PrimeIcons } from "primereact/api";
 import "primeicons/primeicons.css";
-
+import { axiosInstance } from "../../../../axios"; 
 // 📌 INR to USD conversion
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012; // Adjust as needed
@@ -44,12 +44,20 @@ const KPISection: React.FC = () => {
       }
 
       try {
-        const response = await fetch(`http://localhost:8080/api/sales/sales-kpis?${params.toString()}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch KPI data");
-        }
+const response = await axiosInstance.get("sales/sales-kpis", {
+      params: params,
+    });
 
-        const data = await response.json();
+    // Define the expected shape of the KPI data
+    type KPIResponse = {
+      total_sales: number;
+      total_orders: number;
+      avg_order_value: number;
+      total_taxes: number;
+      total_shipping_fees: number;
+    };
+
+    const data = response.data as KPIResponse;
 
         const mappedData: KPIItem[] = [
           {

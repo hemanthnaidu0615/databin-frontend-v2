@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { useSelector } from 'react-redux';
+import { axiosInstance } from '../../../axios'; 
+
 
 const BottleneckChart = () => {
   const [isDark, setIsDark] = useState<boolean>(
@@ -161,10 +163,11 @@ const BottleneckChart = () => {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/fulfillment/bottleneck-analysis?${params.toString()}`
-        );
-        const data = await response.json();
+const response = await axiosInstance.get(`/fulfillment/bottleneck-analysis`, {
+  params,
+});
+const data = response.data as Array<{ process_stage: string; avg_time: number }>;
+
 
         const defaultStagesOrder = [
           'Order Placed',
@@ -180,7 +183,7 @@ const BottleneckChart = () => {
         ];
 
         const stageMap: Record<string, number> = {};
-        data.forEach((item: any) => {
+        data.forEach((item) => {
           stageMap[item.process_stage] = parseFloat(item.avg_time.toFixed(2));
         });
 

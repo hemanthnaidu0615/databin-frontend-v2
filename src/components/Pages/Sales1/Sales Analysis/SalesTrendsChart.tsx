@@ -6,6 +6,7 @@ import { Button } from "primereact/button";
 import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
+import { axiosInstance } from "../../../../axios";
 
 const chartTypes = [
   { label: "Bar", value: "bar" },
@@ -20,7 +21,7 @@ const SalesTrendsChart = () => {
   const [channels, setChannels] = useState<string[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [drilledMonth, setDrilledMonth] = useState<string | null>(null);
-  const [salesData, setSalesData] = useState<{order_date: string; total_amount: number}[]>([]);
+  const [salesData, setSalesData] = useState<{ order_date: string; total_amount: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,11 +55,10 @@ const SalesTrendsChart = () => {
       }
 
       try {
-        const res = await fetch(
-          `http://localhost:8080/api/analysis/sales-by-date?${params.toString()}`
+        const res = await axiosInstance.get(
+          `analysis/sales-by-date?${params.toString()}`
         );
-        if (!res.ok) throw new Error('Failed to fetch sales data');
-        const data = await res.json();
+        const data = res.data as { sales?: { order_date: string; total_amount: number }[] };
         setSalesData(data.sales || []);
       } catch (err) {
         console.error("Error fetching sales data", err);
@@ -75,11 +75,8 @@ const SalesTrendsChart = () => {
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:8080/api/analysis/channels"
-        );
-        if (!res.ok) throw new Error('Failed to fetch channels');
-        const data = await res.json();
+        const res = await axiosInstance.get("analysis/channels");
+        const data = res.data as { channels?: string[] };
         setChannels(data.channels || []);
       } catch (err) {
         console.error("Error fetching channels", err);
@@ -92,32 +89,32 @@ const SalesTrendsChart = () => {
 
   const { categories, values } = useMemo(() => {
     if (!salesData.length) return { categories: [], values: [] };
-  
+
     // Determine the start and end date based on salesData or selected range
     const start = dayjs(salesData[0].order_date);
     const end = dayjs(salesData[salesData.length - 1].order_date);
-  
+
     const map: Record<string, number> = {};
     salesData.forEach(({ order_date, total_amount }) => {
       const date = dayjs(order_date).format("YYYY-MM-DD");
       map[date] = total_amount;
     });
-  
+
     const days: string[] = [];
     const values: number[] = [];
     let curr = start;
-  
+
     while (curr.isBefore(end) || curr.isSame(end)) {
       const dateStr = curr.format("YYYY-MM-DD");
       days.push(dateStr);
       values.push(map[dateStr] ?? 0); // Fill missing with 0
       curr = curr.add(1, "day");
     }
-  
+
     return { categories: days, values };
   }, [salesData]);
-  
-  
+
+
 
   const chartOptions: ApexOptions = useMemo(
     () => ({

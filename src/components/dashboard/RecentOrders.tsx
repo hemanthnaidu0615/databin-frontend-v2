@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
+import { axiosInstance } from "../../axios";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -70,18 +71,16 @@ export default function RecentOrders() {
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const response = await fetch(
-          `http://localhost:8080/api/orders/recent-orders?${params.toString()}`
-        );
+const response = await axiosInstance.get(
+  `/orders/recent-orders?${params.toString()}`
+);
+const rawData = response.data;
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const rawData = await response.json();
         const data: Order[] = Array.isArray(rawData)
           ? rawData
-          : rawData.orders || [];
+          : (typeof rawData === "object" && rawData !== null && "orders" in rawData && Array.isArray((rawData as any).orders)
+              ? (rawData as { orders: Order[] }).orders
+              : []);
 
         const processedOrders = data.map((order) => ({
           ...order,

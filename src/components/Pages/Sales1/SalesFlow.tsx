@@ -12,6 +12,7 @@ import {
 import "reactflow/dist/style.css";
 import dagre from "dagre";
 import { useSelector } from "react-redux";
+import { axiosInstance } from "../../../axios";
 
 // INR to USD conversion
 const convertToUSD = (rupees: number): number => {
@@ -90,9 +91,9 @@ function SalesFlow() {
       });
 
       try {
-        const res = await fetch(`http://localhost:8080/api/flow/breakdown?${params}`);
-        const data = await res.json();
-        const nested = convertToHierarchy(data);
+        const res = await axiosInstance.get(`/flow/breakdown?${params}`);
+        const data = await res.data;
+        const nested = convertToHierarchy(data as any[]);
         setRawData(nested);
         convertAndSetFlowData(nested);
         setFitViewDone(false);

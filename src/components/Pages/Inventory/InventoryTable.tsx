@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Paginator } from "primereact/paginator";
 import "primereact/resources/themes/lara-dark-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
+import { axiosInstance } from "../../../axios";
 
 interface Filters {
   selectedRegion: string;
@@ -81,11 +82,13 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/inventory/widget-data?${params}`
+        const response = await axiosInstance.get(
+          "/inventory/widget-data", // We only need the path, since the base URL is set in axiosInstance
+          { params }
         );
-        const result = await response.json();
-        const apiData = result.data || [];
+
+        const data = response.data as { data?: any[] };
+        const apiData = data.data || [];
 
         const mappedData: InventoryItem[] = apiData.map((item: any) => ({
           name: item.product_name,
@@ -158,15 +161,15 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
     productSearch,
   ]);
 
-      // Insert this helper inside the InventoryTable component
-const getPageOptions = () => {
-  const total = filteredItems.length;
-  if (total <= 5) return [5];
-  if (total <= 10) return [5, 10];
-  if (total <= 20) return [5, 10, 15, 20];
-  if (total <= 50) return [10, 20, 30, 50];
-  return [10, 20, 50, 100];
-};
+  // Insert this helper inside the InventoryTable component
+  const getPageOptions = () => {
+    const total = filteredItems.length;
+    if (total <= 5) return [5];
+    if (total <= 10) return [5, 10];
+    if (total <= 20) return [5, 10, 15, 20];
+    if (total <= 50) return [10, 20, 30, 50];
+    return [10, 20, 50, 100];
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
@@ -241,9 +244,8 @@ const getPageOptions = () => {
                 <td className="py-2 px-1">{item.source}</td>
                 <td className="py-2 px-1">{item.states}</td>
                 <td
-                  className={`py-2 px-1 font-medium ${
-                    statusColors[item.status as keyof typeof statusColors]
-                  }`}
+                  className={`py-2 px-1 font-medium ${statusColors[item.status as keyof typeof statusColors]
+                    }`}
                 >
                   {item.status}
                 </td>

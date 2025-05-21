@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../../axios";
 
 interface StatisticsChartProps {
   onRemove?: () => void;
@@ -46,8 +46,8 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
 
     try {
       const [salesRes, revenueRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/sales-revenue/sales-data", { params: apiParams }),
-        axios.get("http://localhost:8080/api/sales-revenue/revenue-trends", { params: apiParams }),
+        axiosInstance.get("/sales-revenue/sales-data", { params: apiParams }),
+        axiosInstance.get("/sales-revenue/revenue-trends", { params: apiParams }),
       ]);
 
       const salesMap = new Array(12).fill(0);

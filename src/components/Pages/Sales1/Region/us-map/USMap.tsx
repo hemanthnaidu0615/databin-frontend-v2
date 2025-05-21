@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ComposableMap, Geographies, Geography, Annotation } from "react-simple-maps";
 import { useSelector } from "react-redux";
 import allStates from "../../../../dashboard/allStates.json";
+import { axiosInstance } from "../../../../../axios";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
@@ -37,8 +38,8 @@ const formatDate = (date: string) => {
     .getDate()
     .toString()
     .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
-    .getMinutes()
-    .toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
+      .getMinutes()
+      .toString().padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}`;
 };
 
 const USMap = () => {
@@ -75,11 +76,11 @@ const USMap = () => {
         if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
 
         const [mapRes] = await Promise.all([
-          fetch(`http://localhost:8080/api/sales/map-metrics?${params.toString()}`),
-          fetch(`http://localhost:8080/api/sales/metrics?${params.toString()}`),
+          axiosInstance.get(`sales/map-metrics?${params.toString()}`),
+          axiosInstance.get(`sales/metrics?${params.toString()}`),
         ]);
 
-        const mapData = await mapRes.json();
+        const mapData = mapRes.data;
 
         const formatted: Record<
           string,
@@ -119,7 +120,7 @@ const USMap = () => {
     <div className="w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900 rounded-xl relative">
       <ComposableMap
         projection="geoAlbersUsa"
-viewBox="1 1 790 590"
+        viewBox="1 1 790 590"
         style={{ width: "100%", height: "auto" }}
       >
         <Geographies geography={US_TOPO_JSON}>

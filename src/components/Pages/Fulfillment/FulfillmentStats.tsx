@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import { useSelector } from "react-redux";
 import "primeicons/primeicons.css";
+import { axiosInstance } from "../../../axios";
 
 const formatDate = (date: string | Date) => {
   const d = new Date(date);
@@ -14,7 +15,15 @@ const FulfillmentStats = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
-  const [stats, setStats] = useState([
+  type Stat = {
+    title: string;
+    value: string | number;
+    icon: string;
+    iconColor: string;
+    glowColor: string;
+  };
+
+  const [stats, setStats] = useState<Stat[]>([
     {
       title: "Orders in Pipeline",
       value: 0,
@@ -63,10 +72,20 @@ const FulfillmentStats = () => {
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const response = await fetch(
-          `http://localhost:8080/api/fulfillment/kpi?${params.toString()}`
-        );
-        const data = await response.json();
+        const response = await axiosInstance.get("/fulfillment/kpi", {
+          params: {
+            startDate: formattedStart,
+            endDate: formattedEnd,
+            ...(enterpriseKey ? { enterpriseKey } : {}),
+          },
+        });
+        const data = response.data as {
+          orders_in_pipeline?: number;
+          avg_fulfillment_time?: string | number;
+          on_time_rate?: string | number;
+          top_channel?: string;
+        };
+
 
         setStats([
           {

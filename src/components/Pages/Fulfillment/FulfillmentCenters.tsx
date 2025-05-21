@@ -4,6 +4,7 @@ import { Tag } from "primereact/tag";
 import { ProgressBar } from "primereact/progressbar";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { axiosInstance } from "../../../axios";
 
 const getRateSeverity = (rate: number) => {
   if (rate >= 95) return "success";
@@ -35,15 +36,16 @@ const FulfillmentCenters = () => {
 
       try {
         setLoading(true);
-        const baseUrl = `http://localhost:8080/api/fulfillment/fulfillment-performance`;
-        const queryParams = `?startDate=${startDate}&endDate=${endDate}`;
-        const entParam = enterpriseKey ? `&enterpriseKey=${enterpriseKey}` : "";
+     
 
-        const res = await fetch(`${baseUrl}${queryParams}${entParam}`);
-        if (!res.ok) throw new Error("Failed to fetch performance data");
-        const data = await res.json();
-
-        setCenterData(data);
+        const res = await axiosInstance.get("/fulfillment/fulfillment-performance", {
+  params: {
+    startDate,
+    endDate,
+    ...(enterpriseKey ? { enterpriseKey } : {}),
+  },
+});
+setCenterData(res.data as any[]);
       } catch (err: any) {
         setError(err.message || "Error loading data");
       } finally {

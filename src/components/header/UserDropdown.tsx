@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import  axiosInstance  from "axios";
+import { axiosInstance } from "../../axios";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +16,8 @@ export default function UserDropdown() {
     closeDropdown(); // close the dropdown
 
     try {
-      await axiosInstance.post("http://localhost:8080/api/auth/logout", {}, { withCredentials: true });
+await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
+
       window.location.href = "/signin"; // full reload to signin
     } catch (error) {
       console.error("Logout failed:", error);
@@ -27,14 +28,12 @@ export default function UserDropdown() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch("http://localhost:8080/api/auth/me", {
-          method: "GET",
-          credentials: "include", // include HTTP-only cookies
-        });
+const response = await axiosInstance.get("/auth/me", {
+  withCredentials: true,
+});
 
-        if (!response.ok) throw new Error("Failed to fetch user");
+const data = response.data as { fullName?: string; email?: string };
 
-        const data = await response.json();
         setUserData({
           fullName: data.fullName || "John Doe",
           email: data.email || "unknown@example.com",

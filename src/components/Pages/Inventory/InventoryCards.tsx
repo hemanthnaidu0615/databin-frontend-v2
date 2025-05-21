@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import { useSelector } from "react-redux";
 import "primeicons/primeicons.css";
+import { axiosInstance } from "../../../axios";
 
 // Helper function to format dates
 const formatDate = (date: string | Date) => {
@@ -31,16 +32,19 @@ const InventoryCards = () => {
         const formattedStart = formatDate(startDate);
         const formattedEnd = formatDate(endDate);
 
-        const response = await fetch(
-          `http://localhost:8080/api/inventory/stock-summary?startDate=${formattedStart}&endDate=${formattedEnd}`
-        );
+const response = await axiosInstance.get("/inventory/stock-summary", {
+  params: {
+    startDate: formattedStart,
+    endDate: formattedEnd,
+  },
+});
+setStockData(response.data as {
+  total_products: number;
+  available: number;
+  low_stock: number;
+  out_of_stock: number;
+});
 
-        if (!response.ok) {
-          throw new Error(`HTTP Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setStockData(data);
       } catch (err) {
         console.error("Failed to fetch stock summary:", err);
         setError("Unable to load stock summary.");

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { axiosInstance } from "../../../axios";
 
 // PipelineRow Component
 const PipelineRow = ({
@@ -17,9 +18,8 @@ const PipelineRow = ({
 }) => {
   return (
     <div
-      className={`flex flex-col sm:flex-row ${
-        isFinal ? "flex-wrap justify-center" : "md:flex-wrap justify-center"
-      } items-center gap-x-4 gap-y-4 px-2 max-w-screen-xl mx-auto`}
+      className={`flex flex-col sm:flex-row ${isFinal ? "flex-wrap justify-center" : "md:flex-wrap justify-center"
+        } items-center gap-x-4 gap-y-4 px-2 max-w-screen-xl mx-auto`}
     >
       {stages.map((stage, index) => {
         const isCompleted = index < currentStage;
@@ -28,10 +28,10 @@ const PipelineRow = ({
         const bgColor = isFinal
           ? "bg-slate-400 dark:bg-slate-600"
           : isCompleted
-          ? "bg-purple-500"
-          : isCurrent
-          ? "bg-emerald-600"
-          : "bg-yellow-500";
+            ? "bg-purple-500"
+            : isCurrent
+              ? "bg-emerald-600"
+              : "bg-yellow-500";
 
         return (
           <React.Fragment key={index}>
@@ -116,16 +116,22 @@ const FulfillmentPipeline = () => {
       try {
         setLoading(true);
 
-        const baseParams = `startDate=${startDate}&endDate=${endDate}`;
-        const entParam = enterpriseKey ? `&enterpriseKey=${enterpriseKey}` : "";
 
-        const response = await fetch(
-          `http://localhost:8080/api/fulfillment/stages-pipeline?${baseParams}${entParam}`
-        );
 
-        if (!response.ok) throw new Error("Failed to fetch fulfillment data.");
+        const response = await axiosInstance.get("/fulfillment/stages-pipeline", {
+          params: {
+            startDate,
+            endDate,
+            ...(enterpriseKey ? { enterpriseKey } : {}),
+          },
+        });
 
-        let data = await response.json();
+        let data = response.data as {
+          stage_name: string;
+          orders_count: number;
+          avg_duration_hours?: number;
+        }[];
+
 
         const desiredPipelineStages = [
           "Order Placed",

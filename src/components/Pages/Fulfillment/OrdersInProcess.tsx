@@ -7,18 +7,8 @@ import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { motion } from "framer-motion";
+import { axiosInstance } from "../../../axios";
 
-// Mobile detection hook
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  return isMobile;
-};
 
 interface Order {
   order_id: number;
@@ -61,7 +51,7 @@ const OrdersInProcess = () => {
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
 
-  const isMobile = useIsMobile();
+
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
@@ -95,11 +85,16 @@ const OrdersInProcess = () => {
       }
 
       try {
-        const res = await fetch(
-          `http://localhost:8080/api/fulfillment/orders-in-process?${params.toString()}`
-        );
-        const json = await res.json();
-        setOrders(json.data || []);
+        const res = await axiosInstance.get("/fulfillment/orders-in-process", {
+          params: {
+            startDate: formattedStart,
+            endDate: formattedEnd,
+            ...(enterpriseKey ? { enterpriseKey } : {}),
+          },
+        });
+        const data = res.data as { data: Order[] };
+        setOrders(data.data || []);
+
       } catch (err) {
         console.error("Failed to fetch orders-in-process:", err);
       }

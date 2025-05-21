@@ -20,7 +20,7 @@ export default function UserInfoCard() {
   });
   useEffect(() => {
 
-    axiosInstance.get("/auth/me")
+    axiosInstance.get("/auth/me", { withCredentials: true })
       .then((res) => {
 
         const data = res.data as { email: string; roleLevel: string };

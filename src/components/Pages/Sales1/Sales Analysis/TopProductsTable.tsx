@@ -9,6 +9,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
+import { axiosInstance } from "../../../../axios";
 
 const viewOptions = [
   { label: "By Revenue", value: "revenue" },
@@ -69,11 +70,10 @@ const TopProductsTable = () => {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/analysis/product-sales-summary?${params.toString()}`
+        const response = await axiosInstance.get(
+          `analysis/product-sales-summary?${params.toString()}`
         );
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const data = await response.json();
+        const data = response.data as { products?: Product[] };
         setProducts(data.products || []);
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -89,8 +89,8 @@ const TopProductsTable = () => {
   // Get all products sorted by current view mode (for table)
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) =>
-      viewMode === "revenue" 
-        ? b.total_sales - a.total_sales 
+      viewMode === "revenue"
+        ? b.total_sales - a.total_sales
         : b.units_sold - a.units_sold
     );
   }, [viewMode, products]);
@@ -113,7 +113,7 @@ const TopProductsTable = () => {
           fontSize: "12px",
           colors: theme === "dark" ? "#CBD5E1" : "#334155",
         },
-        formatter: function(value: string) {
+        formatter: function (value: string) {
           return value.length > 20 ? value.substring(0, 20) + '...' : value;
         }
       },
@@ -136,9 +136,9 @@ const TopProductsTable = () => {
         },
       },
       labels: {
-        formatter: function(val: number) {
-          return viewMode === "revenue" 
-            ? `$${formatValue(val)}` 
+        formatter: function (val: number) {
+          return viewMode === "revenue"
+            ? `$${formatValue(val)}`
             : formatValue(val);
         }
       }
@@ -157,9 +157,9 @@ const TopProductsTable = () => {
     legend: { show: false },
     tooltip: {
       y: {
-        formatter: function(val: number) {
-          return viewMode === "revenue" 
-            ? `$${val.toFixed(2)}` 
+        formatter: function (val: number) {
+          return viewMode === "revenue"
+            ? `$${val.toFixed(2)}`
             : `${val} units`;
         }
       }
@@ -231,11 +231,11 @@ const TopProductsTable = () => {
           sortMode="multiple"
           emptyMessage="No products found for the selected filters"
         >
-          <Column 
-            field="product_name" 
-            header="Product Name" 
-            sortable 
-            className="text-sm" 
+          <Column
+            field="product_name"
+            header="Product Name"
+            sortable
+            className="text-sm"
             style={{ minWidth: '200px' }}
           />
           <Column
