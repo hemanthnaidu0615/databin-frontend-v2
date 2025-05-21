@@ -186,14 +186,6 @@ const InventoryOverview: React.FC<{
     fetchAlerts();
   }, [startDate, endDate]);
 
-  // useEffect(() => {
-  //   const timeout = setTimeout(() => {
-  //     ApexCharts.exec("warehouse-chart", "updateOptions", {});
-  //     ApexCharts.exec("turnover-chart", "updateOptions", {});
-  //   }, 400);
-  //   return () => clearTimeout(timeout);
-  // }, [isSidebarOpen]);
-
   const warehouseChartOptions = {
     chart: { id: "warehouse-chart", type: "bar", toolbar: { show: false } },
     colors: ["#9614d0"],
@@ -207,7 +199,7 @@ const InventoryOverview: React.FC<{
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
-        show: false, // 👈 disables the vertical crosshair
+        show: false,
       },
     },
 
@@ -218,7 +210,7 @@ const InventoryOverview: React.FC<{
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
-        show: false, // 👈 disables the vertical crosshair
+        show: false,
       },
     },
     tooltip: { theme: isDarkTheme ? "dark" : "light" },
@@ -254,7 +246,7 @@ const InventoryOverview: React.FC<{
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
-        show: false, // 👈 disables the vertical crosshair
+        show: false,
       },
     },
     yaxis: {
@@ -266,7 +258,7 @@ const InventoryOverview: React.FC<{
     },
     tooltip: { theme: isDarkTheme ? "dark" : "light" },
     crosshairs: {
-      show: false, // 👈 disables the vertical crosshair
+      show: false,
     },
   };
 

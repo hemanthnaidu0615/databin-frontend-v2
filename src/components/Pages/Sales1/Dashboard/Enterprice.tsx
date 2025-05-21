@@ -23,11 +23,10 @@ const CompanySection: React.FC<Props> = ({ company }) => {
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === tab
                   ? "bg-black text-white dark:bg-white dark:text-black"
                   : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-              }`}
+                }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}

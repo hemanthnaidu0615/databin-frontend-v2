@@ -1,31 +1,25 @@
 .vertical-layout .p-organizationchart .p-organizationchart-node-content {
-    display: flex;
-    flex-direction: column;
-  }
+  display: flex;
+  flex-direction: column;
+}
 
 .custom-toast .p-toast-message {
-  background-color: #c87ed5; 
-  color: white; 
-  border: 1px solid #ab20c4; 
-  border-radius: 0.25rem; 
-  padding: 1rem; 
+  background-color: #c87ed5;
+  color: white;
+  border: 1px solid #ab20c4;
+  border-radius: 0.25rem;
+  padding: 1rem;
 }
 
 .custom-toast .p-toast-message-success .p-toast-message-icon {
-  color: #ab20c4; 
+  color: #ab20c4;
 }
 
 .custom-toast .p-toast-message-success .p-toast-message-summary,
 .custom-toast .p-toast-message-success .p-toast-message-detail {
-  color: white; 
+  color: white;
 }
 
 .p-toast {
-  z-index: 9999; 
+  z-index: 9999;
 }
-
-
-
-
-
-

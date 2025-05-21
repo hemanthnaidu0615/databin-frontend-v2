@@ -3,12 +3,12 @@ import { useSelector } from 'react-redux';
 import { axiosInstance } from "../../../../axios";
 
 const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012; // ₹1 = $0.012
+  const exchangeRate = 0.012;
   return parseFloat((rupees * exchangeRate).toFixed(2));
 };
 
 const formatValue = (label: string, value: string | number): string => {
-  if (label === 'ROI' || label === 'Margin') return value.toString(); // Already formatted with %
+  if (label === 'ROI' || label === 'Margin') return value.toString();
   if (typeof value === 'number') return `$ ${value.toLocaleString()}`;
   return value;
 };

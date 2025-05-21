@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
 type ProtectedRouteProps = {
   element: React.ReactElement;
-  allowedRoles?: string[]; // e.g. ['admin', 'manager']
+  allowedRoles?: string[];
 };
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ element, allowedRoles }) => {

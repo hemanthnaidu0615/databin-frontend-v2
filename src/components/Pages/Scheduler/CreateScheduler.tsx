@@ -41,34 +41,34 @@ export const CreateScheduler = () => {
   });
 
   const fetchTableNames = async () => {
-  try {
-    // Use axiosInstance instead of authFetch
-    const response = await axiosInstance.get("/table-column-fetch/tables");
+    try {
+      const response = await axiosInstance.get("/table-column-fetch/tables");
 
-    const allowedTables = [
-      "orders",
-      "shipment",
-      "inventory",
-      "order_fulfillment_event",
-    ];
+      const allowedTables = [
+        "orders",
+        "shipment",
+        "inventory",
+        "order_fulfillment_event",
+      ];
 
-    const tableOptions = response.data.tables
-      .filter((table: string) => allowedTables.includes(table))
-      .map((table: string) => {
-        const displayName =
-          table === "order_fulfillment_event" ? "fulfillment" : table;
-        return {
-          label: formatHeaderKey(displayName),
-          value: table, // keep original value for use in backend queries
-        };
-      });
+      const data = response.data as { tables: string[] };
+      const tableOptions = data.tables
+        .filter((table: string) => allowedTables.includes(table))
+        .map((table: string) => {
+          const displayName =
+            table === "order_fulfillment_event" ? "fulfillment" : table;
+          return {
+            label: formatHeaderKey(displayName),
+            value: table,
+          };
+        });
 
-    setTables(tableOptions);
-    console.log("Filtered table options:", tableOptions);
-  } catch (error) {
-    console.error("Error fetching table names:", error);
-  }
-};
+      setTables(tableOptions);
+      console.log("Filtered table options:", tableOptions);
+    } catch (error) {
+      console.error("Error fetching table names:", error);
+    }
+  };
 
   const fetchColumns = async (tableName: string) => {
     try {
@@ -121,10 +121,9 @@ export const CreateScheduler = () => {
 
       const formattedSchedulerStartDate = moment
         .utc(schedulerStartDate)
-        .format("YYYY-MM-DD[T]HH:mm:ss"); // Updated format with T separator
-
+        .format("YYYY-MM-DD[T]HH:mm:ss");
       const formattedSchedulerEndDate = schedulerEndDate
-        ? moment.utc(schedulerEndDate).format("YYYY-MM-DD[T]HH:mm:ss") // Updated format with T separator
+        ? moment.utc(schedulerEndDate).format("YYYY-MM-DD[T]HH:mm:ss")
         : null;
 
       if (
@@ -148,8 +147,8 @@ export const CreateScheduler = () => {
       const payload = {
         title,
         description,
-        bcc: bcc.join(","), // join into a comma-separated string
-        email: email[0], // or join if you allow more than one
+        bcc: bcc.join(","),
+        email: email[0],
         recurrencePattern,
         startDate: formattedSchedulerStartDate,
         endDate: formattedSchedulerEndDate,

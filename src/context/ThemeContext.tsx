@@ -8,7 +8,6 @@ import {
   ReactNode,
 } from "react";
 
-// Theme types
 type Theme = "light" | "dark";
 
 interface ThemeContextType {
@@ -16,10 +15,8 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-// Create context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Apply PrimeReact theme dynamically
 const applyPrimeTheme = (theme: Theme) => {
   const themeName = theme === "dark" ? "lara-dark-indigo" : "lara-light-indigo";
   const themeUrl = `https://unpkg.com/primereact/resources/themes/${themeName}/theme.css`;
@@ -36,31 +33,25 @@ const applyPrimeTheme = (theme: Theme) => {
   linkElement.href = themeUrl;
 };
 
-// ThemeProvider
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<Theme | null>(null); // Initially set to null for proper hydration
+  const [theme, setTheme] = useState<Theme | null>(null);
 
-  // Load theme once on mount
   useEffect(() => {
     const savedTheme = (localStorage.getItem("theme") as Theme) || "light";
     setTheme(savedTheme);
   }, []);
 
-  // Apply theme when it changes
   useEffect(() => {
-    if (theme === null) return; // Wait until the theme is set
+    if (theme === null) return;
 
-    // Save to localStorage
     localStorage.setItem("theme", theme);
 
-    // Tailwind dark class toggle
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
 
-    // PrimeReact theme switch
     applyPrimeTheme(theme);
   }, [theme]);
 
@@ -68,9 +59,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-  // Loading state (avoid flickering on initial load)
   if (theme === null) {
-    return <div>Loading...</div>; // Or a skeleton loader or any loading spinner
+    return <div>Loading...</div>;
   }
 
   return (
@@ -80,7 +70,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Custom hook
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {

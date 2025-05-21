@@ -30,7 +30,6 @@ type ApiResponse = {
   };
 };
 
-// Conversion Rate: INR to USD
 const INR_TO_USD = 1 / 83.3;
 
 const formatValue = (value: number) => {

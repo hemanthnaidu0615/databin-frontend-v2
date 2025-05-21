@@ -23,14 +23,11 @@ interface Customer {
 }
 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
-
-// INR to USD conversion
 const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012; // Adjust as needed
+  const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-// Number formatting helper
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
@@ -43,13 +40,10 @@ const TopCustomersTable = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Get filters from Redux
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
 
-  // Fetch customers data when filters change
   useEffect(() => {
     const fetchCustomers = async () => {
       if (!startDate || !endDate) return;
@@ -86,7 +80,6 @@ const TopCustomersTable = () => {
     fetchCustomers();
   }, [startDate, endDate, enterpriseKey]);
 
-  // Get all customers sorted by current view mode (for table)
   const sortedCustomers = useMemo(() => {
     return [...customers].sort((a, b) =>
       viewMode === "revenue"
@@ -95,7 +88,6 @@ const TopCustomersTable = () => {
     );
   }, [viewMode, customers]);
 
-  // Get top 10 customers sorted by current view mode (for chart)
   const topCustomers = useMemo(() => {
     return sortedCustomers.slice(0, 10);
   }, [sortedCustomers]);

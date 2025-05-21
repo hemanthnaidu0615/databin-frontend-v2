@@ -46,12 +46,10 @@ export default function RecentOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // Access the date range from Redux store
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
-  // Initialize navigate
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,16 +69,16 @@ export default function RecentOrders() {
           params.append("enterpriseKey", enterpriseKey);
         }
 
-const response = await axiosInstance.get(
-  `/orders/recent-orders?${params.toString()}`
-);
-const rawData = response.data;
+        const response = await axiosInstance.get(
+          `/orders/recent-orders?${params.toString()}`
+        );
+        const rawData = response.data;
 
         const data: Order[] = Array.isArray(rawData)
           ? rawData
           : (typeof rawData === "object" && rawData !== null && "orders" in rawData && Array.isArray((rawData as any).orders)
-              ? (rawData as { orders: Order[] }).orders
-              : []);
+            ? (rawData as { orders: Order[] }).orders
+            : []);
 
         const processedOrders = data.map((order) => ({
           ...order,
@@ -189,8 +187,8 @@ const rawData = response.data;
                         order.shipment_status === "Delivered"
                           ? "success"
                           : order.shipment_status === "Pending"
-                          ? "warning"
-                          : "error"
+                            ? "warning"
+                            : "error"
                       }
                     >
                       {order.shipment_status}

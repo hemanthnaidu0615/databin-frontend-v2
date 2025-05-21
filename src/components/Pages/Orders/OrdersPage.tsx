@@ -15,7 +15,6 @@ const defaultFilterValues = {
   orderId: "",
 };
 
-// USD conversion function (1 INR = 0.012 USD)
 function convertToUSD(rupees: number): number {
   return rupees * 0.012;
 }

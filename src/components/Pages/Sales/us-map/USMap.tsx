@@ -35,7 +35,7 @@ interface MapChartProps {
 
 
 interface Statess {
-  [key: string]: string; 
+  [key: string]: string;
 }
 
 const statess: Statess = {
@@ -108,15 +108,14 @@ const MapChart: React.FC<MapChartProps> = ({
   const [tooltip, setTooltip] = useState<{ display: boolean, content: string, x: number, y: number }>({ display: false, content: '', x: 0, y: 0 });
   const handleMouseEnter = (e: React.MouseEvent<SVGGeometryElement, MouseEvent>, stateName: string) => {
     const { clientX, clientY } = e;
-    // console.log(revenueData);
-     
-     const dataString = revenueData?.[stateName] || 'No data';
 
-     
-     const [revenuePart, quantityPart] = dataString.split(' + ');
- 
-     const content = `${stateName}\n----------------------- \n${revenuePart || 'No data'}\n${quantityPart || 'No data'}`;
- 
+    const dataString = revenueData?.[stateName] || 'No data';
+
+
+    const [revenuePart, quantityPart] = dataString.split(' + ');
+
+    const content = `${stateName}\n----------------------- \n${revenuePart || 'No data'}\n${quantityPart || 'No data'}`;
+
     setTooltip({
       display: true,
       content,
@@ -125,7 +124,7 @@ const MapChart: React.FC<MapChartProps> = ({
     });
   };
 
- 
+
   const handleMouseLeave = () => {
     setTooltip({ ...tooltip, display: false });
   };
@@ -141,7 +140,7 @@ const MapChart: React.FC<MapChartProps> = ({
                   Object?.entries(states)?.find(
                     (s) => s[1] === geo.properties.name
                   ) || [];
-                const idValue:any =
+                const idValue: any =
                   allStates?.find((s) => s.id === stateId[0])?.id || 0;
 
                 const color = colorScale(idValue as any);
@@ -273,24 +272,24 @@ const MapChart: React.FC<MapChartProps> = ({
         ))}
       </ComposableMap>
       {tooltip.display && (
-  <div
-    className="tooltip"
-    style={{
-      position: 'fixed',  // Use fixed to position relative to the viewport
-      top: `${tooltip.y + 15}px`,  // 15px below the cursor
-      left: `${tooltip.x + 15}px`,  // 15px to the right of the cursor
-      transform: `translate(${tooltip.x + 200 > window.innerWidth ? '-100%' : '0'}, ${tooltip.y + 100 > window.innerHeight ? '-100%' : '0'})`,
-      background: 'white',
-      padding: '5px',
-      border: '1px solid #ccc',
-      zIndex: 1000,
-      whiteSpace: 'pre-line',
-      pointerEvents: 'none',
-    }}
-  >
-    {tooltip.content}
-  </div>
-)}
+        <div
+          className="tooltip"
+          style={{
+            position: 'fixed',
+            top: `${tooltip.y + 15}px`,
+            left: `${tooltip.x + 15}px`,
+            transform: `translate(${tooltip.x + 200 > window.innerWidth ? '-100%' : '0'}, ${tooltip.y + 100 > window.innerHeight ? '-100%' : '0'})`,
+            background: 'white',
+            padding: '5px',
+            border: '1px solid #ccc',
+            zIndex: 1000,
+            whiteSpace: 'pre-line',
+            pointerEvents: 'none',
+          }}
+        >
+          {tooltip.content}
+        </div>
+      )}
 
     </div>
   );

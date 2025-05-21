@@ -54,9 +54,8 @@ const Header: React.FC<HeaderProps> = ({ onToggle }) => {
 
         {/* Right Section */}
         <div
-          className={`${
-            isApplicationMenuOpen ? "flex" : "hidden"
-          } flex-wrap items-center justify-between w-full gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0`}
+          className={`${isApplicationMenuOpen ? "flex" : "hidden"
+            } flex-wrap items-center justify-between w-full gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0`}
         >
           <div className="flex items-center gap-4">
             <ThemeToggleButton />

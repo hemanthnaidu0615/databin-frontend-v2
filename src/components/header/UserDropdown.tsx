@@ -12,27 +12,26 @@ export default function UserDropdown() {
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
   const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-    e.preventDefault(); // prevent the default Link behavior
-    closeDropdown(); // close the dropdown
+    e.preventDefault();
+    closeDropdown();
 
     try {
-await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
+      await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
 
-      window.location.href = "/signin"; // full reload to signin
+      window.location.href = "/signin";
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  // Fetch user data from /me on mount
   useEffect(() => {
     async function fetchUser() {
       try {
-const response = await axiosInstance.get("/auth/me", {
-  withCredentials: true,
-});
+        const response = await axiosInstance.get("/auth/me", {
+          withCredentials: true,
+        });
 
-const data = response.data as { fullName?: string; email?: string };
+        const data = response.data as { fullName?: string; email?: string };
 
         setUserData({
           fullName: data.fullName || "John Doe",

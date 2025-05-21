@@ -54,48 +54,48 @@ const ProfitabilityTable: React.FC = () => {
     setPosition((prev) => (prev === productData.length ? 1 : prev + 1));
 
   useEffect(() => {
-  const fetchTopProducts = async () => {
-    try {
-      const formattedStartDate = formatDate(startDate);
-      const formattedEndDate = formatDate(endDate);
+    const fetchTopProducts = async () => {
+      try {
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
 
-      const params: Record<string, string> = {
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-      };
+        const params: Record<string, string> = {
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+        };
 
-      if (enterpriseKey) {
-        params.enterpriseKey = enterpriseKey;
+        if (enterpriseKey) {
+          params.enterpriseKey = enterpriseKey;
+        }
+
+        const response = await axiosInstance.get("/top-sellers/top-products", {
+          params,
+        });
+
+        const json = response.data as { top_products?: any[] };
+
+        if (json.top_products && Array.isArray(json.top_products)) {
+          const transformed = json.top_products.map(
+            (product: any, index: number) => ({
+              id: index + 1,
+              name: product.product_name,
+              price: parseFloat(product.price ?? 0),
+              description: product.description ?? "No description available",
+              url: product.url ?? "#",
+              updateDate: product.update_date,
+            })
+          );
+          setProductData(transformed.slice(0, 5));
+        }
+      } catch (error) {
+        console.error("Failed to fetch top products:", error);
       }
+    };
 
-      const response = await axiosInstance.get("/top-sellers/top-products", {
-        params,
-      });
-
-      const json = response.data as { top_products?: any[] };
-
-      if (json.top_products && Array.isArray(json.top_products)) {
-        const transformed = json.top_products.map(
-          (product: any, index: number) => ({
-            id: index + 1,
-            name: product.product_name,
-            price: parseFloat(product.price ?? 0),
-            description: product.description ?? "No description available",
-            url: product.url ?? "#",
-            updateDate: product.update_date,
-          })
-        );
-        setProductData(transformed.slice(0, 5));
-      }
-    } catch (error) {
-      console.error("Failed to fetch top products:", error);
+    if (startDate && endDate) {
+      fetchTopProducts();
     }
-  };
-
-  if (startDate && endDate) {
-    fetchTopProducts();
-  }
-}, [startDate, endDate, enterpriseKey]);
+  }, [startDate, endDate, enterpriseKey]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -168,19 +168,17 @@ const ProfitabilityTable: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => setPosition(offset)}
-                  className={`cursor-pointer absolute w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${
-                    abs === 0
+                  className={`cursor-pointer absolute w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${abs === 0
                       ? "scale-105 transition-transform duration-300 ease-out"
                       : ""
-                  }`}
+                    }`}
                   style={{
                     transform: `translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`,
                     zIndex: 100 - abs,
                     opacity,
                     border: `2px solid ${abs === 0 ? "#9614d0" : "#8417b2"}`,
-                    boxShadow: `0 0 10px ${
-                      abs === 0 ? "#9614d0" : "#8417b2"
-                    }40`,
+                    boxShadow: `0 0 10px ${abs === 0 ? "#9614d0" : "#8417b2"
+                      }40`,
                     pointerEvents: abs > 2 ? "none" : "auto",
                     transition:
                       "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out, border 0.3s ease-out, box-shadow 0.3s ease-out",
@@ -188,11 +186,10 @@ const ProfitabilityTable: React.FC = () => {
                 >
                   {/* Ranking */}
                   <span
-                    className={`absolute top-2 left-2 text-4xl font-extrabold select-none pointer-events-none ${
-                      abs === 0
+                    className={`absolute top-2 left-2 text-4xl font-extrabold select-none pointer-events-none ${abs === 0
                         ? "text-transparent bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text drop-shadow-[0_0_8px_rgba(150,20,208,0.5)]"
                         : "text-purple-600 opacity-30"
-                    }`}
+                      }`}
                   >
                     #{i + 1}
                   </span>
@@ -231,13 +228,12 @@ const ProfitabilityTable: React.FC = () => {
             <button
               key={index}
               onClick={() => setPosition(index + 1)}
-              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${
-                position === index + 1
+              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${position === index + 1
                   ? "bg-purple-600 border-purple-600"
                   : theme === "dark"
-                  ? "border-gray-600 bg-gray-800"
-                  : "border-gray-300 bg-white"
-              }`}
+                    ? "border-gray-600 bg-gray-800"
+                    : "border-gray-300 bg-white"
+                }`}
               aria-label={`Go to product ${index + 1}`}
             />
           ))}

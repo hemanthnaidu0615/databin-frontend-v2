@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
 
-// Helper function to format dates
 const formatDate = (date: string | Date) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -32,18 +31,18 @@ const InventoryCards = () => {
         const formattedStart = formatDate(startDate);
         const formattedEnd = formatDate(endDate);
 
-const response = await axiosInstance.get("/inventory/stock-summary", {
-  params: {
-    startDate: formattedStart,
-    endDate: formattedEnd,
-  },
-});
-setStockData(response.data as {
-  total_products: number;
-  available: number;
-  low_stock: number;
-  out_of_stock: number;
-});
+        const response = await axiosInstance.get("/inventory/stock-summary", {
+          params: {
+            startDate: formattedStart,
+            endDate: formattedEnd,
+          },
+        });
+        setStockData(response.data as {
+          total_products: number;
+          available: number;
+          low_stock: number;
+          out_of_stock: number;
+        });
 
       } catch (err) {
         console.error("Failed to fetch stock summary:", err);
