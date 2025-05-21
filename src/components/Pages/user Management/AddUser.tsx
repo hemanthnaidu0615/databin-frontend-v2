@@ -3,7 +3,6 @@ import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
-import axios from "axios";
 import { axiosInstance } from "../../../axios";
 
 const roleMappings: any[] = [
@@ -133,9 +132,17 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
       if (onClose) onClose();
     } catch (err) {
       console.error("Registration failed:", err);
-      const errorMessage = axios.isAxiosError(err)
-        ? err.response?.data?.message || "Failed to register user."
-        : "Unexpected error occurred.";
+      let errorMessage = "Unexpected error occurred.";
+
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "isAxiosError" in err &&
+        (err as any).isAxiosError === true
+      ) {
+        const axiosErr = err as any;
+        errorMessage = axiosErr.response?.data?.message || "Failed to register user.";
+      }
 
       toast.current?.show({
         severity: "error",
