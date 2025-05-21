@@ -58,7 +58,7 @@ const FulfillmentCenters = () => {
 
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
         Fulfillment Center Performance
       </h2>
 
@@ -68,12 +68,14 @@ const FulfillmentCenters = () => {
         ) : error ? (
           <p className="text-red-500">Error: {error}</p>
         ) : (
-          <div className="max-h-[600px] overflow-y-auto">
+          <div className="max-h-[400px] overflow-y-auto">
+
             <DataTable
               value={centerData}
               paginator={false}
               responsiveLayout="scroll"
               className="p-datatable-sm w-full"
+              scrollable
             >
               <Column
                 field="center"
@@ -94,7 +96,7 @@ const FulfillmentCenters = () => {
               <Column
                 header="On-Time Rate"
                 body={(rowData) => {
-                  const rate = (rowData.on_time_rate);
+                  const rate = rowData.on_time_rate;
                   return (
                     <Tag value={`${rate}%`} severity={getRateSeverity(rate)} />
                   );

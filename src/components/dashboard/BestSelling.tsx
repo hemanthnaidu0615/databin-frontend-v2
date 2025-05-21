@@ -115,12 +115,12 @@ const ProfitabilityTable: React.FC = () => {
     <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-md font-semibold text-gray-800 dark:text-white">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
           Top Selling Products
-        </h3>
+        </h2>
         <button
           onClick={handleViewMore}
-          className="text-xs font-medium hover:underline"
+          className="text-lg font-medium hover:underline"
           style={{ color: "#9614d0" }}
         >
           View More

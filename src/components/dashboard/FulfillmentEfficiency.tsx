@@ -120,68 +120,71 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   }, [startDate, endDate, enterpriseKey]);
 
   const apexOptions: ApexOptions = {
-    chart: {
-      type: "bar",
-      stacked: true,
-      toolbar: { show: false },
-      fontFamily: "Outfit, sans-serif",
-      background: "transparent",
+  chart: {
+    type: "bar",
+    stacked: true,
+    toolbar: { show: false },
+    fontFamily: "Outfit, sans-serif",
+    background: "transparent",
+  },
+  colors: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"],
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      columnWidth: "60%",
     },
-    colors: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"],
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "60%",
+  },
+  fill: {
+    opacity: 1,
+  },
+  grid: {
+    borderColor: isDarkMode ? "#374151" : "#E5E7EB",
+    strokeDashArray: 5,
+  },
+  xaxis: {
+    categories: chartData.categories,
+    crosshairs: { show: false },
+    title: {
+      text: "Day",
+      offsetY: 10,
+      style: {
+        fontSize: "16px",
+        fontWeight: 400, 
+        color: isDarkMode ? "#F3F4F6" : "#1F2937",
       },
     },
-    fill: {
-      opacity: 1,
-    },
-    grid: {
-      borderColor: isDarkMode ? "#374151" : "#E5E7EB",
-      strokeDashArray: 5,
-    },
-    xaxis: {
-      categories: chartData.categories,
-      crosshairs: { show: false },
-      title: {
-        text: "Day",
-        offsetY: 10,
-        style: {
-          fontSize: "16px",
-          fontWeight: 700,
-          color: isDarkMode ? "#F3F4F6" : "#1F2937",
-        },
-      },
-      labels: {
-        style: {
-          fontSize: "12px",
-          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-        },
+    labels: {
+      style: {
+        fontSize: "12px",
+        colors: isDarkMode ? "#D1D5DB" : "#4B5563",
+        fontWeight: 400, 
       },
     },
-    yaxis: {
-      title: {
-        text: "Orders",
-        rotate: -90,
-        offsetX: -10,
-        style: {
-          fontSize: "16px",
-          fontWeight: 700,
-          color: isDarkMode ? "#F3F4F6" : "#1F2937",
-        },
-      },
-      labels: {
-        formatter: formatValue,
-        style: {
-          fontSize: "12px",
-          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-        },
+  },
+  yaxis: {
+    title: {
+      text: "Orders",
+      rotate: -90,
+      offsetX: -10,
+      style: {
+        fontSize: "16px",
+        fontWeight: 400, // 👈 not bold
+        color: isDarkMode ? "#F3F4F6" : "#1F2937",
       },
     },
-    tooltip: { theme: isDarkMode ? "dark" : "light" },
-    responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
-  };
+    labels: {
+      formatter: formatValue,
+      style: {
+        fontSize: "12px",
+        colors: isDarkMode ? "#D1D5DB" : "#4B5563",
+        fontWeight: 400,
+      },
+    },
+  },
+  tooltip: { theme: isDarkMode ? "dark" : "light" },
+  responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
+};
+
 
   const series = [
     { name: "Picked", data: chartData.picked },
@@ -207,7 +210,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         ? "border-gray-700 bg-gray-900 dark:border-gray-800"
         : "border-gray-200 bg-white"
         }`}
-      style={{ padding: "1rem" }}
+      style={{ padding: "1rem" }} 
     >
       {size === "full" && (
         <div className="flex justify-between items-center mb-15">

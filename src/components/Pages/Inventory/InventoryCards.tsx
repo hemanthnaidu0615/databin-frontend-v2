@@ -92,7 +92,7 @@ const InventoryCards = () => {
         cardData.map((card, index) => (
           <div
             key={index}
-            className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
+          className="group relative flex flex-col gap-2 px-4 py-3 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
             style={{ borderLeftColor: card.border }}
           >
             <div
