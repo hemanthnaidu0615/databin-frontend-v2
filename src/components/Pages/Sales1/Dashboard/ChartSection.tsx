@@ -122,14 +122,15 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             },
           },
           title: {
-            text: "Dates",
+            text: "Date",
             style: { color: labelColor },
           },
         },
         yaxis: {
           labels: {
             style: { colors: labelColor },
-            formatter: (value: number) => `$${(value / 1_000_000).toFixed(1)}M`,
+            formatter: (value: number) =>
+              value === 0 ? "$0M" : `$${(value / 1_000_000).toFixed(1)}M`,
           },
           title: {
             text: "Order Amount ($)",
@@ -188,20 +189,20 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       {(selectedChart === "Bar" ||
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
-          <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-            <div style={{ width: dynamicChartWidth, height: "400px" }}>
-              <Chart
-                options={getChartOptions(
-                  selectedChart.toLowerCase() as "bar" | "line" | "pie"
-                )}
-                series={selectedChart === "Pie" ? pieSeries : series}
-                type={selectedChart.toLowerCase() as any}
-                height="100%"
-                width="100%"
-              />
-            </div>
+        <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+          <div style={{ width: dynamicChartWidth, height: "400px" }}>
+            <Chart
+              options={getChartOptions(
+                selectedChart.toLowerCase() as "bar" | "line" | "pie"
+              )}
+              series={selectedChart === "Pie" ? pieSeries : series}
+              type={selectedChart.toLowerCase() as any}
+              height="100%"
+              width="100%"
+            />
           </div>
-        )}
+        </div>
+      )}
 
       {selectedChart === "Table" && (
         <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -236,10 +237,6 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           </div>
         </div>
       )}
-
-      <div className="text-center mt-3 text-gray-400 dark:text-gray-500 text-xs">
-        [ {company} Chart Placeholder ]
-      </div>
     </div>
   );
 };
