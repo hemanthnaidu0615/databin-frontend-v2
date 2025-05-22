@@ -126,7 +126,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             style: { color: labelColor },
           },
           crosshairs: {
-            show: false, // <--- disables crosshair
+            show: false, 
           },
         },
         yaxis: {
