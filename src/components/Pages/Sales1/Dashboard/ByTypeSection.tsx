@@ -102,7 +102,7 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
             </thead>
           </table>
 
-          {/* Scrollable tbody wrapper only for "By Item" */}
+          
           {title === "By Item" ? (
             <div
               style={{
