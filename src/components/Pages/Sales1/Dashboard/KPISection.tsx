@@ -60,7 +60,10 @@ const KPISection: React.FC = () => {
         const mappedData: KPIItem[] = [
           {
             title: "Total Sales",
-            value: `$${convertToUSD(Number(data.total_sales)).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+            value: `$${convertToUSD(Number(data.total_sales)).toLocaleString(
+              undefined,
+              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+            )}`,
             icon: PrimeIcons.DOLLAR,
             border: "#8b5cf6",
             iconColor: "text-purple-500",
@@ -73,22 +76,35 @@ const KPISection: React.FC = () => {
             iconColor: "text-green-500",
           },
           {
-            title: "Avg. Order Value",
-            value: `$${convertToUSD(Number(data.avg_order_value)).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+            title: "Average Order Value",
+            value: `$${convertToUSD(
+              Number(data.avg_order_value)
+            ).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
             icon: PrimeIcons.CHART_BAR,
             border: "#f59e0b",
             iconColor: "text-yellow-500",
           },
           {
             title: "Total Taxes",
-            value: `$${convertToUSD(Number(data.total_taxes)).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+            value: `$${convertToUSD(Number(data.total_taxes)).toLocaleString(
+              undefined,
+              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+            )}`,
             icon: PrimeIcons.PERCENTAGE,
             border: "#ef4444",
             iconColor: "text-red-500",
           },
           {
             title: "Shipping Fees",
-            value: `$${convertToUSD(Number(data.total_shipping_fees)).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+            value: `$${convertToUSD(
+              Number(data.total_shipping_fees)
+            ).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
             icon: PrimeIcons.SEND,
             border: "#3b82f6",
             iconColor: "text-blue-500",
