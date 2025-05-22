@@ -89,7 +89,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateRes.data.fulfillment_rate}%`,
+            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
@@ -103,7 +103,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             label: "Delayed Orders",
-            value: `${shipmentStatusRes.data.delayed_percentage}%`,
+            value: `${shipmentStatusRes.data.delayed_percentage}`,
             iconColor: "text-red-500",
             glowColor: "#F87171",
           },
