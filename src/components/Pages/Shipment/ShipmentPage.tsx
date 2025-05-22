@@ -12,10 +12,7 @@ const ShipmentPage = () => {
   const [loadingFilters, setLoadingFilters] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const clearFilters = () => {
-    setSelectedCarrier("");
-    setSelectedMethod("");
-  };
+
 
   useEffect(() => {
     const fetchFilters = async () => {

@@ -73,15 +73,6 @@ const OrdersInProcess = () => {
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
-
-      if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
-      }
-
       try {
         const res = await axiosInstance.get("/fulfillment/orders-in-process", {
           params: {
@@ -100,23 +91,6 @@ const OrdersInProcess = () => {
     fetchOrders();
   }, [startDate, endDate, enterpriseKey]);
 
-  const header = (
-    <div className="flex justify-between items-center gap-2 flex-wrap">
-      <h2 className="app-subheading">Orders in Process</h2>
-      <span className="p-input-icon-left w-full md:w-auto">
-        <InputText
-          type="search"
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setGlobalFilter(e.target.value)
-          }
-          placeholder="Search Orders"
-          className="p-inputtext-sm w-full"
-          style={{ paddingLeft: "2rem" }}
-        />
-      </span>
-    </div>
-  );
-
   const filteredOrders = orders.filter(
     (order) =>
       globalFilter === "" ||
@@ -133,22 +107,10 @@ const OrdersInProcess = () => {
     return [10, 20, 50, 100];
   };
 
-  const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
-  const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
-
   const handleViewClick = (order: Order) => {
     setSelectedOrder(order);
     setVisible(true);
   };
-
-  const actionTemplate = (rowData: Order) => (
-    <Button
-      label="View"
-      icon="pi pi-eye"
-      className="p-button-sm p-button-text"
-      onClick={() => handleViewClick(rowData)}
-    />
-  );
 
   return (
     <div className="mt-6">
