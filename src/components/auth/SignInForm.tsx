@@ -54,8 +54,14 @@ function Signin() {
       });
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || "Login failed. Please try again.");
-    } finally {
+
+      if (err.response && err.response.status === 401) {
+        setError("Invalid email or password");
+      } else {
+        setError("Login failed. Please try again later.");
+      }
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -142,7 +148,7 @@ function Signin() {
                 <button
                   type="button"
                   className="text-gray-500 dark:text-gray-300 cursor-pointer"
-                  onClick={() => navigate("/forgot-password")}
+                  onClick={() => navigate("/change-password")}
                 >
                   Forgot Password?
                 </button>
