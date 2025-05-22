@@ -77,7 +77,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
         const response = await axiosInstance.get("/inventory/widget-data", {
           params,
         });
-
         const data = response.data as { data?: any[] };
         const apiData = data.data || [];
 
@@ -105,24 +104,19 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
       if (filters.selectedRegion) {
         data = data.filter(
-          (item) =>
-            item.warehouse.toLowerCase() ===
-            filters.selectedRegion.toLowerCase()
+          (item) => item.warehouse.toLowerCase() === filters.selectedRegion.toLowerCase()
         );
       }
 
       if (filters.selectedSource) {
         data = data.filter(
-          (item) =>
-            item.source.toLowerCase() === filters.selectedSource.toLowerCase()
+          (item) => item.source.toLowerCase() === filters.selectedSource.toLowerCase()
         );
       }
 
       if (filters.selectedLocation) {
         data = data.filter((item) =>
-          item.states
-            .toLowerCase()
-            .includes(filters.selectedLocation.toLowerCase())
+          item.states.toLowerCase().includes(filters.selectedLocation.toLowerCase())
         );
       }
 
@@ -144,13 +138,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
     };
 
     applyFilters();
-  }, [
-    inventoryItems,
-    filters,
-    selectedStatus,
-    selectedCategory,
-    productSearch,
-  ]);
+  }, [inventoryItems, filters, selectedStatus, selectedCategory, productSearch]);
 
   const getPageOptions = () => {
     const total = filteredItems.length;
@@ -201,9 +189,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
             className="px-3 py-1 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30"
           >
             <option value="">Category</option>
-            {Array.from(
-              new Set(inventoryItems.map((item) => item.category))
-            ).map((cat, i) => (
+            {Array.from(new Set(inventoryItems.map((item) => item.category))).map((cat, i) => (
               <option key={i} value={cat}>
                 {cat}
               </option>
@@ -212,6 +198,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
         </div>
       </div>
 
+      {/* Desktop Table */}
       <div className="overflow-hidden">
         <table className="hidden md:table min-w-full text-sm text-left">
           <thead className="border-b dark:border-gray-700">
@@ -249,6 +236,30 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
         </table>
       </div>
 
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4 mt-4">
+        {filteredItems.slice(first, first + rows).map((item, idx) => (
+          <div key={idx} className="border rounded-lg p-6 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
+              {item.name}
+            </div>
+            <div className="grid grid-cols-2 text-xs gap-y-2 text-gray-700 dark:text-gray-300">
+              <div><strong>Category:</strong> {item.category}</div>
+              <div><strong>Warehouse:</strong> {item.warehouse}</div>
+              <div><strong>Source:</strong> {item.source}</div>
+              <div><strong>State:</strong> {item.states}</div>
+              <div>
+                <strong>Status:</strong>{" "}
+                <span className={statusColors[item.status as keyof typeof statusColors]}>
+                  {item.status}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination Section */}
       <div className="p-4 bg-white dark:bg-gray-900 rounded-b-lg">
         {!isMobile && (
           <div className="flex justify-center dark:text-gray-100">
@@ -260,7 +271,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                 setFirst(e.first);
                 setRows(e.rows);
               }}
-              template="RowsPerPageDropdown CurrentPageReport PrevPageLink PageLinks NextPageLink"
+              template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
               rowsPerPageOptions={[5, 10, 20]}
               className="w-full text-sm dark:text-white"
@@ -292,8 +303,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                 </select>
               </div>
               <div className="text-black dark:text-white font-medium">
-                Page {Math.floor(first / rows) + 1} of{" "}
-                {Math.ceil(filteredItems.length / rows)}
+                Page {Math.floor(first / rows) + 1} of {Math.ceil(filteredItems.length / rows)}
               </div>
             </div>
 
@@ -301,25 +311,21 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               <button
                 onClick={() => setFirst(0)}
                 disabled={first === 0}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏮ First
               </button>
               <button
                 onClick={() => setFirst(Math.max(0, first - rows))}
                 disabled={first === 0}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Prev
               </button>
               <button
-                onClick={() =>
-                  setFirst(
-                    first + rows < filteredItems.length ? first + rows : first
-                  )
-                }
+                onClick={() => setFirst(first + rows)}
                 disabled={first + rows >= filteredItems.length}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Next
               </button>
@@ -328,7 +334,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                   setFirst((Math.ceil(filteredItems.length / rows) - 1) * rows)
                 }
                 disabled={first + rows >= filteredItems.length}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏭ Last
               </button>

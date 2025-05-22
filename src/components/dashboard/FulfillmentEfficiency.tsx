@@ -5,9 +5,9 @@ import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
-
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
+
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -30,23 +30,15 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   const navigate = useNavigate();
 
   const [chartData, setChartData] = useState({
-    categories: [] as string[],
-    picked: [] as number[],
-    packed: [] as number[],
-    shipped: [] as number[],
-    delivered: [] as number[],
+    categories: ["Picked", "Packed", "Shipped", "Delivered"],
+    totals: [0, 0, 0, 0],
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // const [isDropdownOpen, setDropdownOpen] = useState(false);
-
-  // const dropdownRef = useRef<HTMLDivElement | null>(null);
-  // const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange || [];
-  // Get enterpriseKey from Redux
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
   const formatValue = (Orders: number) => {
@@ -54,24 +46,6 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     if (Orders >= 1_000) return (Orders / 1_000).toFixed(1) + "k";
     return Orders.toFixed(0);
   };
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event: MouseEvent) => {
-  //     if (
-  //       dropdownRef.current &&
-  //       !dropdownRef.current.contains(event.target as Node) &&
-  //       buttonRef.current &&
-  //       !buttonRef.current.contains(event.target as Node)
-  //     ) {
-  //       setDropdownOpen(false);
-  //     }
-  //   };
-
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClickOutside);
-  //   };
-  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,18 +71,27 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           `/fulfillment-efficiency/summary?${params.toString()}`
         );
 
-        const result = response.data as { fulfillment_summary: Record<string, { Picked?: number; Packed?: number; Shipped?: number; Delivered?: number }> };
+        const result = response.data as {
+          fulfillment_summary: Record<
+            "Picked" | "Packed" | "Shipped" | "Delivered",
+            Record<string, number>
+          >;
+        };
+
         const summary = result.fulfillment_summary;
 
-        const categories = Object.keys(summary);
-        const picked = categories.map((date) => summary[date].Picked ?? 0);
-        const packed = categories.map((date) => summary[date].Packed ?? 0);
-        const shipped = categories.map((date) => summary[date].Shipped ?? 0);
-        const delivered = categories.map(
-          (date) => summary[date].Delivered ?? 0
-        );
+        const sumValues = (obj: Record<string, number>) =>
+          Object.values(obj || {}).reduce((sum, value) => sum + value, 0);
 
-        setChartData({ categories, picked, packed, shipped, delivered });
+        const picked = sumValues(summary.Picked);
+        const packed = sumValues(summary.Packed);
+        const shipped = sumValues(summary.Shipped);
+        const delivered = sumValues(summary.Delivered);
+
+        setChartData({
+          categories: ["Picked", "Packed", "Shipped", "Delivered"],
+          totals: [picked, packed, shipped, delivered],
+        });
       } catch (err: any) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -120,77 +103,76 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   }, [startDate, endDate, enterpriseKey]);
 
   const apexOptions: ApexOptions = {
-  chart: {
-    type: "bar",
-    stacked: true,
-    toolbar: { show: false },
-    fontFamily: "Outfit, sans-serif",
-    background: "transparent",
-  },
-  colors: ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"],
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      columnWidth: "60%",
+    chart: {
+      type: "bar",
+      stacked: false,
+      toolbar: { show: false },
+      fontFamily: "Outfit, sans-serif",
+      background: "transparent",
     },
-  },
-  fill: {
-    opacity: 1,
-  },
-  grid: {
-    borderColor: isDarkMode ? "#374151" : "#E5E7EB",
-    strokeDashArray: 5,
-  },
-  xaxis: {
-    categories: chartData.categories,
-    crosshairs: { show: false },
-    title: {
-      text: "Day",
-      offsetY: 10,
-      style: {
-        fontSize: "16px",
-        fontWeight: 400, 
-        color: isDarkMode ? "#F3F4F6" : "#1F2937",
+    colors: ["#3B82F6"],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "50%",
       },
     },
-    labels: {
-      style: {
-        fontSize: "12px",
-        colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-        fontWeight: 400, 
+    fill: {
+      opacity: 1,
+    },
+    grid: {
+      borderColor: isDarkMode ? "#374151" : "#E5E7EB",
+      strokeDashArray: 5,
+      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    },
+    xaxis: {
+      categories: chartData.categories,
+      title: {
+        text: "Stage",
+        offsetY: 10,
+        style: {
+          fontSize: "16px",
+          fontWeight: 400,
+          color: isDarkMode ? "#F3F4F6" : "#1F2937",
+        },
+      },
+      labels: {
+        style: {
+          fontSize: "12px",
+          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
+          fontWeight: 400,
+        },
       },
     },
-  },
-  yaxis: {
-    title: {
-      text: "Orders",
-      rotate: -90,
-      offsetX: -10,
-      style: {
-        fontSize: "16px",
-        fontWeight: 400, // 👈 not bold
-        color: isDarkMode ? "#F3F4F6" : "#1F2937",
+    yaxis: {
+      title: {
+        text: "Orders",
+        rotate: -90,
+        offsetX: -10,
+        style: {
+          fontSize: "16px",
+          fontWeight: 400,
+          color: isDarkMode ? "#F3F4F6" : "#1F2937",
+        },
+      },
+      labels: {
+        formatter: formatValue,
+        style: {
+          fontSize: "12px",
+          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
+          fontWeight: 400,
+        },
       },
     },
-    labels: {
-      formatter: formatValue,
-      style: {
-        fontSize: "12px",
-        colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-        fontWeight: 400,
-      },
-    },
-  },
-  tooltip: { theme: isDarkMode ? "dark" : "light" },
-  responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
-};
-
+    tooltip: { theme: isDarkMode ? "dark" : "light" },
+    responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
+  };
 
   const series = [
-    { name: "Picked", data: chartData.picked },
-    { name: "Packed", data: chartData.packed },
-    { name: "Shipped", data: chartData.shipped },
-    { name: "Delivered", data: chartData.delivered },
+    {
+      name: "Orders",
+      data: chartData.totals,
+    },
   ];
 
   function handleViewMore(
@@ -206,76 +188,30 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl shadow-md border ${isDarkMode
-        ? "border-gray-700 bg-gray-900 dark:border-gray-800"
-        : "border-gray-200 bg-white"
-        }`}
-      style={{ padding: "1rem" }} 
+      className={`overflow-hidden rounded-2xl shadow-md border ${
+        isDarkMode
+          ? "border-gray-700 bg-gray-900 dark:border-gray-800"
+          : "border-gray-200 bg-white"
+      }`}
+      style={{ padding: "1rem" }}
     >
       {size === "full" && (
         <div className="flex justify-between items-center mb-15 app-subheading">
           <h2
             className="app-subheading"
           >
-            Fulfillment Efficiency Tracker
+            Fulfillment Efficiency Summary
           </h2>
 
-          <div className="relative inline-block">
-            {/* Dropdown section commented out */}
-            {/* <button
-              ref={buttonRef}
-              className="dropdown-toggle"
-              onClick={() => setDropdownOpen(!isDropdownOpen)}
-            >
-              <MoreDotIcon
-                className={`size-6 ${
-                  isDarkMode
-                    ? "text-gray-400 hover:text-gray-300"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              />
-            </button>
- 
-            {isDropdownOpen && (
-              <div
-                ref={dropdownRef}
-                className={`absolute right-0 mt-2 w-40 rounded-lg shadow-md z-50 ${
-                  isDarkMode
-                    ? "bg-gray-800 text-gray-300"
-                    : "bg-white text-gray-600"
-                }`}
-              >
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    onViewMore?.();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-white/10"
-                >
-                  View More
-                </button>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    onRemove?.();
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-200 dark:hover:bg-white/10"
-                >
-                  Remove
-                </button>
-              </div>
-            )} */}
-            <button
-              onClick={handleViewMore}
-              className="text-xs font-medium hover:underline"
-              style={{ color: "#9614d0" }}
-            >
-              View More
-            </button>
-          </div>
+          <button
+            onClick={handleViewMore}
+            className="text-xs font-medium hover:underline"
+            style={{ color: "#9614d0" }}
+          >
+            View More
+          </button>
         </div>
       )}
-
       <div className="w-full" style={{ height: size === "small" ? 220 : 400 }}>
         {isLoading ? (
           <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
@@ -283,17 +219,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           <p className="text-sm text-red-500">Error: {error}</p>
         ) : (
           <Chart
-            options={{
-              ...apexOptions,
-              chart: {
-                ...apexOptions.chart,
-                height: "100%",
-              },
-              grid: {
-                ...apexOptions.grid,
-                padding: { top: 0, right: 0, bottom: 0, left: 0 },
-              },
-            }}
+            options={apexOptions}
             series={series}
             type="bar"
             height="100%"

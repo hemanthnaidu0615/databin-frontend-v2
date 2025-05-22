@@ -1,13 +1,39 @@
 import { useTheme } from "../../context/ThemeContext";
 
 export const ThemeToggleButton: React.FC = () => {
-  const { toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className="relative flex items-center justify-center w-9 h-9 rounded-full transition-colors bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white">
+      className="group relative flex items-center justify-center w-9 h-9 rounded-full transition-colors bg-transparent hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-300 hover:text-black dark:hover:text-white"
+      aria-label="Toggle dark mode"
+    >
+      {/* Tooltip */}
+      <span
+        className="
+    pointer-events-none
+    absolute
+    bottom-[calc(100%-2px)]  /* slightly above the previous fix */
+    w-max
+    rounded
+    bg-black
+    px-2
+    py-1
+    text-xs
+    font-medium
+    text-white
+    opacity-0
+    transition-opacity
+    duration-200
+    group-hover:opacity-100
+    whitespace-nowrap
+  "
+      >
+        {theme === "dark" ? "Light Mode" : "Dark Mode"}
+      </span>
 
+      {/* Sun Icon - shows only in dark mode */}
       <svg
         className="hidden dark:block"
         width="25"
@@ -23,6 +49,8 @@ export const ThemeToggleButton: React.FC = () => {
           fill="currentColor"
         />
       </svg>
+
+      {/* Moon Icon - shows only in light mode */}
       <svg
         className="dark:hidden"
         width="20"
