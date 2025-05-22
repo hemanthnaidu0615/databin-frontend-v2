@@ -49,7 +49,7 @@ const TopSummaryPanel: React.FC = () => {
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
-  if (!metrics) return null; // or a loader
+  if (!metrics) return null; 
 
   const financialBreakdown = [
     { label: 'Line Price Total', value: convertToUSD(metrics.line_price_total), sign: '+', color: 'bg-green-500' },
@@ -66,7 +66,6 @@ const TopSummaryPanel: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 items-center w-full px-4">
-      {/* Top Box: Total Booked Breakdown */}
       <div className="w-full max-w-screen-xl p-4 border rounded-2xl shadow-md bg-white dark:bg-gray-900 dark:border-gray-700 flex flex-wrap items-center justify-center gap-3">
         <div className="flex flex-col items-center text-center px-2 shrink-0">
           <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Booked</span>
