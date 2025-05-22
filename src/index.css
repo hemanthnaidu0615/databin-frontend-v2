@@ -353,22 +353,7 @@ layer(base);
   @apply p-0! pl-6!;
 }
 
-.jvectormap-container {
-  @apply bg-gray-50! dark:bg-gray-900!;
-}
-.jvectormap-region.jvectormap-element {
-  @apply fill-gray-300! hover:fill-brand-500! dark:fill-gray-700! dark:hover:fill-brand-500!;
-}
-.jvectormap-marker.jvectormap-element {
-  @apply stroke-gray-200! dark:stroke-gray-800!;
-}
-.jvectormap-tip {
-  @apply bg-brand-500! border-none! px-2! py-1!;
-}
-.jvectormap-zoomin,
-.jvectormap-zoomout {
-  @apply hidden!;
-}
+
 
 .stocks-slider-outer .swiper-button-next:after,
 .stocks-slider-outer .swiper-button-prev:after {
@@ -781,23 +766,23 @@ span.flatpickr-weekday,
 /* Use these only for dashboard KPI/stat cards, data tables, and search input */
 
 .app-widget-value {
-  font-size: 1.5rem;               /* ~24px instead of 36px */
+  font-size: 1.5rem;              
   font-weight: 700;
-  line-height: 2rem;               /* ~32px */
+  line-height: 2rem;              
   font-family: var(--font-outfit, 'Outfit', sans-serif);
 }
 
 .app-widget-label {
-  font-size: 0.95rem;              /* ~15.2px instead of 20px */
+  font-size: 0.95rem;             
   font-weight: 500;
-  line-height: 1.4rem;             /* ~22.4px */
+  line-height: 1.4rem;             
   font-family: var(--font-outfit, 'Outfit', sans-serif);
 }
 
 .app-table-heading {
-  font-size: 1.1rem;                 /* 16px - more balanced */
+  font-size: 1.1rem;                 
   font-weight: 600;
-  line-height: 1.5rem;             /* 24px for spacing */
+  line-height: 1.5rem;             
   font-family: var(--font-outfit, 'Outfit', sans-serif);
   color: #bfc6d7;
 }
@@ -807,7 +792,7 @@ span.flatpickr-weekday,
 }
 
 .app-table-content {
-  font-size: var(--text-theme-md);                /* 17px for better clarity */
+  font-size: var(--text-theme-md);                
   font-weight: 500;
   line-height: var(--text-theme-sm--line-height, 20px);
   font-family: var(--font-outfit, 'Outfit', sans-serif);
@@ -820,16 +805,16 @@ span.flatpickr-weekday,
 
 /* ✅ Subheading for context titles or section labels */
 .app-subheading {
-  font-size: 1.3rem;              /* 16px - slightly larger for better legibility */
-  font-weight: 600;             /* Match your section/subsection headers */
-  line-height: 1.625rem;        /* ~26px for good vertical spacing */
+  font-size: 1.3rem;              
+  font-weight: 600;            
+  line-height: 1.625rem;        
   font-family: var(--font-outfit, 'Outfit', sans-serif);
   color: #1e293b;
-  margin-bottom: 0.75rem;       /* Ensure spacing below the heading */
+  margin-bottom: 0.75rem;      
 }
 
 .dark .app-subheading {
-  color: #f1f5f9;               /* slate-100 */
+  color: #f1f5f9;             
 }
 
 
@@ -837,15 +822,15 @@ span.flatpickr-weekday,
 /* Use for major section headers like 'Inventory List', 'Warehouse Inventory', etc. */
 
 .app-section-title {
-  font-size: 1.5rem;         /* 20px */
+  font-size: 1.5rem;        
   font-weight: 600;
-  line-height: 1.75rem;       /* 28px */
+  line-height: 1.75rem;       
   font-family: var(--font-outfit, 'Outfit', sans-serif);
-  color: #1e293b;             /* slate-800 (light mode) */
+  color: #1e293b;            
 }
 
 .dark .app-section-title {
-  color: #f1f5f9;             /* slate-100 (dark mode) */
+  color: #f1f5f9;             
 }
 
 /* ===================== KPI SEARCH BAR ===================== */
@@ -855,8 +840,8 @@ span.flatpickr-weekday,
   font-weight: 500;
   color: #fff;
   background: #232a39;
-  border-radius: 0.75rem;       /* rounded-xl */
-  border: 2px solid #333846;    /* slightly darker border */
+  border-radius: 0.75rem;      
+  border: 2px solid #333846;    
   padding: 0.6rem 1rem;
   height: 2.5rem;
   outline: none;
@@ -882,8 +867,8 @@ span.flatpickr-weekday,
     text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 
      font-medium;
 
-  padding: 0.625rem 0.875rem; /* matches your screenshot (10px top/bottom, 14px sides) */
-  min-height: 42px; /* for consistent height */
+  padding: 0.625rem 0.875rem; 
+  min-height: 42px; 
   line-height: 1.5;
 }
 

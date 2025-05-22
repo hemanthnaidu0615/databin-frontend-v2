@@ -154,7 +154,7 @@ export const CreateSchedulerUsingQuery = () => {
   return (
     <div className="create-scheduler-page">
       <Toast ref={toast} className="custom-toast" />
-      <h1 style={{ fontSize: "1.5rem" }}>Create Scheduler with Query</h1>
+      <h1 className="app-subheading">Create Scheduler with Query</h1>
 
       <div className="p-fluid">
         {/* Title Field */}

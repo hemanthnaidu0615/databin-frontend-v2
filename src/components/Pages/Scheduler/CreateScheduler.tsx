@@ -262,7 +262,7 @@ export const CreateScheduler = () => {
   return (
     <div className="create-scheduler-page">
       <Toast ref={toast} className="custom-toast" />
-      <h1 style={{ fontSize: "1.5rem" }}>Create Scheduler</h1>
+      <h1 className="app-subheading ">Create Scheduler</h1>
 
       <div className="p-fluid">
         <div className="p-field">

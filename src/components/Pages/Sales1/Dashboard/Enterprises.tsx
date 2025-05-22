@@ -14,9 +14,8 @@ const CompanySection: React.FC<Props> = ({ company }) => {
 
   return (
     <div className="w-full px-4 md:px-6 lg:px-8 max-w-screen-xl mx-auto space-y-6">
-      {/* Header Section: Company Name + Tabs */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-2xl app-section-title">
           {company}
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -35,7 +34,7 @@ const CompanySection: React.FC<Props> = ({ company }) => {
         </div>
       </div>
 
-      {/* Active Tab Content */}
+
       <div>
         {activeTab === "Chart" && <ChartSection company={company} />}
         {activeTab === "By Type" && <ByTypeSection company={company} />}

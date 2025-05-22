@@ -202,18 +202,18 @@ const TopCustomersTable = () => {
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h2 className="app-subheading">
           Customer Orders
         </h2>
         <Dropdown
           value={viewMode}
           options={viewOptions}
           onChange={(e) => setViewMode(e.value)}
-          className="w-40"
+          className="w-50"
         />
       </div>
 
-      <div className="px-4 pt-2 pb-6">
+      <div className="px-4 pt-2 pb-6 app-table-heading">
         <DataTable
           value={sortedCustomers}
           stripedRows
@@ -227,14 +227,14 @@ const TopCustomersTable = () => {
             field="customer_name"
             header="Customer Name"
             sortable
-            className="text-sm"
+            className="app-table-content"
             style={{ minWidth: '200px' }}
           />
           <Column
             field="total_orders"
             header="Orders"
             sortable
-            className="text-sm"
+            className="app-table-content"
             body={(rowData) => formatValue(rowData.total_orders)}
             style={{ minWidth: '100px' }}
           />
@@ -242,7 +242,7 @@ const TopCustomersTable = () => {
             field="total_spent"
             header="Total Spent (USD)"
             sortable
-            className="text-sm"
+            className="app-table-content"
             body={(rowData) => `$${formatValue(convertToUSD(rowData.total_spent))}`}
             style={{ minWidth: '150px' }}
           />
@@ -250,7 +250,7 @@ const TopCustomersTable = () => {
       </div>
 
       <div className="px-4 pb-6">
-        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">
+        <h3 className="app-subheading mb-4">
           Top 10 Customers Visualization
         </h3>
         {topCustomers.length > 0 ? (

@@ -172,11 +172,11 @@ export const SalesByRegion = () => {
   return (
     <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
       <div className="flex justify-between px-3 py-2">
-        <h1 className="text-2xl font-semibold">Sales by Region</h1>
+        <h1 className="text-2xl app-section-title">Sales by Region</h1>
       </div>
       <div className="flex flex-col flex-1 shadow-lg rounded-lg border-2 border-slate-200 dark:border-slate-700 divide-y-2 divide-slate-200 dark:divide-slate-700 divide-dashed px-2 bg-white dark:bg-gray-900">
         <div className="flex justify-between p-2">
-          <h3 className="text-xl flex items-center font-bold">
+          <h3 className="app-subheading">
             Countrywide Sales
           </h3>
         </div>
@@ -210,7 +210,7 @@ export const SalesByRegion = () => {
           </div>
 
           <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-            <h3 className="text-lg mb-2 font-semibold">
+            <h3 className="app-subheading">
               Revenues by State
             </h3>
 
@@ -218,7 +218,7 @@ export const SalesByRegion = () => {
               <DataTable
                 value={tableData}
                 size="small"
-                className="text-sm"
+                className="app-table-heading"
                 showGridlines
                 scrollable
                 scrollHeight="flex"
@@ -227,26 +227,26 @@ export const SalesByRegion = () => {
                   field="state"
                   header="State"
                   pt={{
-                    bodyCell: { className: "h-5 text-center dark:text-white" },
+                    bodyCell: { className: "app-table-content" },
                   }}
                   headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="totalDollar"
                   header="Total $ Value"
-                  pt={{ bodyCell: { className: "h-5 text-center" } }}
+                  pt={{ bodyCell: { className: "app-table-content" } }}
                   headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="percentage"
                   header="Percentage"
-                  pt={{ bodyCell: { className: "h-5 text-center" } }}
+                  pt={{ bodyCell: { className: "app-table-content" } }}
                   headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="quantity"
                   header="Quantity"
-                  pt={{ bodyCell: { className: "h-5 text-center" } }}
+                  pt={{ bodyCell: { className: "app-table-content" } }}
                   headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
               </DataTable>

@@ -125,6 +125,9 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             text: "Date",
             style: { color: labelColor },
           },
+          crosshairs: {
+            show: false, 
+          },
         },
         yaxis: {
           labels: {

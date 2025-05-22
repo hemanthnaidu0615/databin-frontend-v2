@@ -49,7 +49,7 @@ const TopSummaryPanel: React.FC = () => {
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
-  if (!metrics) return null; // or a loader
+  if (!metrics) return null; 
 
   const financialBreakdown = [
     { label: 'Line Price Total', value: convertToUSD(metrics.line_price_total), sign: '+', color: 'bg-green-500' },
@@ -66,11 +66,10 @@ const TopSummaryPanel: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 items-center w-full px-4">
-      {/* Top Box: Total Booked Breakdown */}
       <div className="w-full max-w-screen-xl p-4 border rounded-2xl shadow-md bg-white dark:bg-gray-900 dark:border-gray-700 flex flex-wrap items-center justify-center gap-3">
         <div className="flex flex-col items-center text-center px-2 shrink-0">
           <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Booked</span>
-          <span className="text-lg font-bold text-purple-700 dark:text-purple-400">
+          <span className="text-lg font-bold text-black-700 dark:text-white-400">
             $ {convertToUSD(metrics.total_booked).toLocaleString()}
           </span>
           <div className="mt-1 h-1 w-full rounded-full bg-blue-500" />
@@ -80,7 +79,7 @@ const TopSummaryPanel: React.FC = () => {
           <React.Fragment key={item.label}>
             <div className="flex flex-col items-center text-center px-2 shrink-0">
               <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{item.label}</span>
-              <span className="text-base font-semibold text-purple-700 dark:text-purple-400">
+              <span className="text-base font-semibold text-dark-700 dark:text-white-400">
                 $ {item.value.toLocaleString()}
               </span>
               <div className={`mt-1 h-1 w-full rounded-full ${item.color}`} />
