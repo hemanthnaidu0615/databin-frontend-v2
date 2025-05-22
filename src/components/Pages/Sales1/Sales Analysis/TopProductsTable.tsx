@@ -202,7 +202,7 @@ const TopProductsTable = () => {
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h2 className="app-subheading">
           Product Sales
         </h2>
         <Dropdown
@@ -213,7 +213,7 @@ const TopProductsTable = () => {
         />
       </div>
 
-      <div className="px-4 pt-2 pb-6">
+      <div className="px-4 pt-2 pb-6 app-table-heading">
         <DataTable
           value={sortedProducts}
           stripedRows
@@ -227,14 +227,14 @@ const TopProductsTable = () => {
             field="product_name"
             header="Product Name"
             sortable
-            className="text-sm"
+            className="app-table-content"
             style={{ minWidth: '200px' }}
           />
           <Column
             field="units_sold"
             header="Units Sold"
             sortable
-            className="text-sm"
+            className="app-table-content"
             body={(rowData) => formatValue(rowData.units_sold)}
             style={{ minWidth: '100px' }}
           />
@@ -242,7 +242,7 @@ const TopProductsTable = () => {
             field="total_sales"
             header="Total Sales (USD)"
             sortable
-            className="text-sm"
+            className="app-table-content"
             body={(rowData) => `$${formatValue(convertToUSD(rowData.total_sales))}`}
             style={{ minWidth: '150px' }}
           />

@@ -125,6 +125,9 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             text: "Dates",
             style: { color: labelColor },
           },
+          crosshairs: {
+            show: false, // <--- disables crosshair
+          },
         },
         yaxis: {
           labels: {
@@ -188,20 +191,20 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       {(selectedChart === "Bar" ||
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
-          <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-            <div style={{ width: dynamicChartWidth, height: "400px" }}>
-              <Chart
-                options={getChartOptions(
-                  selectedChart.toLowerCase() as "bar" | "line" | "pie"
-                )}
-                series={selectedChart === "Pie" ? pieSeries : series}
-                type={selectedChart.toLowerCase() as any}
-                height="100%"
-                width="100%"
-              />
-            </div>
+        <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+          <div style={{ width: dynamicChartWidth, height: "400px" }}>
+            <Chart
+              options={getChartOptions(
+                selectedChart.toLowerCase() as "bar" | "line" | "pie"
+              )}
+              series={selectedChart === "Pie" ? pieSeries : series}
+              type={selectedChart.toLowerCase() as any}
+              height="100%"
+              width="100%"
+            />
           </div>
-        )}
+        </div>
+      )}
 
       {selectedChart === "Table" && (
         <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">

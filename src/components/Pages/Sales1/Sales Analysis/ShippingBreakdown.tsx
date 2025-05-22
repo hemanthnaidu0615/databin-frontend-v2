@@ -189,12 +189,12 @@ const ShippingBreakdown = () => {
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
       <div className="px-4 pt-4">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        <h2 className="app-subheading mb-4">
           Shipping Breakdown
         </h2>
       </div>
 
-      <div className="px-4 pb-6">
+      <div className="px-4 pb-6  app-table-heading ">
         <DataTable
           value={shipments}
           stripedRows
@@ -208,28 +208,28 @@ const ShippingBreakdown = () => {
             field="carrier"
             header="Carrier"
             sortable
-            className="text-sm"
+            className="app-table-content"
             style={{ minWidth: '120px' }}
           />
           <Column
             field="shipping_method"
             header="Method"
             sortable
-            className="text-sm"
+            className="app-table-content"
             style={{ minWidth: '120px' }}
           />
           <Column
             field="shipment_status"
             header="Status"
             sortable
-            className="text-sm"
+            className="app-table-content"
             style={{ minWidth: '120px' }}
           />
           <Column
             field="shipment_cost"
             header="Cost (USD)"
             sortable
-            className="text-sm"
+            className="app-table-content"
             body={(rowData) => `$${formatValue(convertToUSD(rowData.shipment_cost))}`}
             style={{ minWidth: '120px' }}
           />
@@ -237,7 +237,7 @@ const ShippingBreakdown = () => {
       </div>
 
       <div className="px-4 pb-6">
-        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">
+        <h3 className="app-subheading mb-4">
           Top 10 Carriers by Total Cost
         </h3>
         {Object.keys(carrierTotals).length > 0 ? (

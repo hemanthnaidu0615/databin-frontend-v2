@@ -75,20 +75,20 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
       <div className="max-h-[320px] overflow-y-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left bg-white dark:bg-gray-800">
-              <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+            <tr className="text-left bg-white dark:bg-gray-800 ">
+              <th className="px-4 py-2 app-table-heading">
                 Item ID
               </th>
-              <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+              <th className="px-4 py-2 app-table-heading">
                 Web Category
               </th>
-              <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+              <th className="px-4 py-2 app-table-heading">
                 Brand Name
               </th>
-              <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+              <th className="px-4 py-2 app-table-heading">
                 Quantity
               </th>
-              <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+              <th className="px-4 py-2 app-table-heading">
                 Total (USD)
               </th>
             </tr>
@@ -99,19 +99,19 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
                 key={idx}
                 className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
               >
-                <td className="px-4 py-2 text-gray-800 dark:text-gray-200">
+                <td className="px-4 py-2 app-table-content">
                   {row.productId}
                 </td>
-                <td className="px-4 py-2 text-gray-800 dark:text-gray-200">
+                <td className="px-4 py-2 app-table-content">
                   {row.category}
                 </td>
-                <td className="px-4 py-2 text-gray-800 dark:text-gray-200">
+                <td className="px-4 py-2 app-table-content">
                   {row.brand}
                 </td>
-                <td className="px-4 py-2 text-gray-800 dark:text-gray-200">
+                <td className="px-4 py-2 app-table-content">
                   {row.totalQuantity.toLocaleString()}
                 </td>
-                <td className="px-4 py-2 text-gray-800 dark:text-gray-200">
+                <td className="px-4 py-2 app-table-content">
                   ${formatValue(row.totalAmountUSD)}
                 </td>
               </tr>

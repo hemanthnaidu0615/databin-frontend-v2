@@ -7,7 +7,7 @@ import ShippingBreakdown from "./ShippingBreakdown";
 const SalesAnalysis = () => {
   return (
     <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
-      <h1 className="text-2xl font-bold mb-6">Sales Analysis</h1>
+      <h1 className="app-section-title">Sales Analysis</h1>
 
       <div className="overflow-x-auto">
         <TabView

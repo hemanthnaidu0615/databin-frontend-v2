@@ -83,19 +83,19 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
           key={title}
           className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700"
         >
-          <div className="bg-violet-100 dark:bg-violet-950 px-4 py-2 font-semibold text-gray-800 dark:text-violet-100">
+          <div className="bg-violet-100 dark:bg-violet-950 px-4 py-2 app-table-heading">
             {title}
           </div>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left bg-white dark:bg-gray-800">
-                <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+              <tr className="text-center bg-white dark:bg-gray-800">
+                <th className="px-1 py-2 app-table-content">
                   Name
                 </th>
-                <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="px-5 py-2 app-table-content">
                   Units
                 </th>
-                <th className="px-4 py-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="app-table-content  ">
                   Total Amount
                 </th>
               </tr>
