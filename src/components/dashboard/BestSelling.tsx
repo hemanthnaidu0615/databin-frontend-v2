@@ -115,7 +115,7 @@ const ProfitabilityTable: React.FC = () => {
     <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+        <h2 className="app-subheading">
           Top Selling Products
         </h2>
         <button

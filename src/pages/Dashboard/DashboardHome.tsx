@@ -33,7 +33,7 @@ export default function Home() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-6 xl:grid-cols-12 gap-4 md:gap-6 p-4">
-        {/* 📊 Overview */}
+        <h1 className="app-section-title">Dashboard</h1>
         <div className="col-span-full">
           <Memoized.EcommerceMetrics />
         </div>

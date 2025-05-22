@@ -37,13 +37,14 @@ const InventoryCards = () => {
             endDate: formattedEnd,
           },
         });
-        setStockData(response.data as {
-          total_products: number;
-          available: number;
-          low_stock: number;
-          out_of_stock: number;
-        });
-
+        setStockData(
+          response.data as {
+            total_products: number;
+            available: number;
+            low_stock: number;
+            out_of_stock: number;
+          }
+        );
       } catch (err) {
         console.error("Failed to fetch stock summary:", err);
         setError("Unable to load stock summary.");
@@ -85,39 +86,43 @@ const InventoryCards = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-      {error ? (
-        <div className="col-span-full text-red-500 text-sm">{error}</div>
-      ) : (
-        cardData.map((card, index) => (
-          <div
-            key={index}
-          className="group relative flex flex-col gap-2 px-4 py-3 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
-            style={{ borderLeftColor: card.border }}
-          >
-            <div
-              className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
-              style={{
-                borderColor: card.border,
-                boxShadow: `0 0 15px ${card.border}`,
-              }}
-            ></div>
+    <>
+      <h2 className="app-section-title mb-4">Inventory</h2>
 
-            <div className="relative z-10 flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <i className={`pi ${card.icon} ${card.iconColor} text-lg`} />
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                  {card.label}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        {error ? (
+          <div className="col-span-full text-red-500 text-sm">{error}</div>
+        ) : (
+          cardData.map((card, index) => (
+            <div
+              key={index}
+              className="group relative flex flex-col gap-2 px-4 py-3 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
+              style={{ borderLeftColor: card.border }}
+            >
+              <div
+                className="absolute inset-0 rounded-xl border-2 opacity-0 group-hover:opacity-60 group-hover:shadow-[0_0_15px] transition duration-300 pointer-events-none"
+                style={{
+                  borderColor: card.border,
+                  boxShadow: `0 0 15px ${card.border}`,
+                }}
+              ></div>
+
+              <div className="relative z-10 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <i className={`pi ${card.icon} ${card.iconColor} text-lg`} />
+                  <p className="app-widget-label text-gray-600 dark:text-gray-300">
+                    {card.label}
+                  </p>
+                </div>
+                <p className="app-widget-value text-gray-900 dark:text-white">
+                  {card.value.toLocaleString()}
                 </p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {card.value.toLocaleString()}
-              </p>
             </div>
-          </div>
-        ))
-      )}
-    </div>
+          ))
+        )}
+      </div>
+    </>
   );
 };
 

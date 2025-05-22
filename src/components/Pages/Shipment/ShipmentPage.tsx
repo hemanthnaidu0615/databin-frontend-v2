@@ -1,36 +1,36 @@
-import { useEffect, useState } from 'react';
-import ShipmentStats from './ShipmentStats';
-import ShipmentCharts from './ShipmentCharts';
-import RecentShipmentsTable from './RecentShipmentsTable';
-import { Dropdown } from 'primereact/dropdown';
+import { useEffect, useState } from "react";
+import ShipmentStats from "./ShipmentStats";
+import ShipmentCharts from "./ShipmentCharts";
+import RecentShipmentsTable from "./RecentShipmentsTable";
 import { axiosInstance } from "../../../axios";
 
 const ShipmentPage = () => {
-  const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedCarrier, setSelectedCarrier] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState("");
   const [carriers, setCarriers] = useState<string[]>([]);
   const [shippingMethods, setShippingMethods] = useState<string[]>([]);
-  const [loadingFilters, setLoadingFilters] = useState<boolean>(true);
+  const [loadingFilters, setLoadingFilters] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const clearFilters = () => {
-    setSelectedCarrier(null);
-    setSelectedMethod(null);
+    setSelectedCarrier("");
+    setSelectedMethod("");
   };
 
   useEffect(() => {
     const fetchFilters = async () => {
       try {
         setLoadingFilters(true);
-        const res = await axiosInstance.get<{ carriers: string[]; shipping_methods: string[] }>(
-          'shipment-filters/filter-values'
-        );
+        const res = await axiosInstance.get<{
+          carriers: string[];
+          shipping_methods: string[];
+        }>("shipment-filters/filter-values");
 
         setCarriers(res.data.carriers || []);
         setShippingMethods(res.data.shipping_methods || []);
       } catch (err) {
-        console.error('Failed to fetch filters:', err);
-        setError('Failed to load shipment filters.');
+        console.error("Failed to fetch filters:", err);
+        setError("Failed to load shipment filters.");
       } finally {
         setLoadingFilters(false);
       }
@@ -41,63 +41,73 @@ const ShipmentPage = () => {
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 overflow-x-hidden">
-      <div>
-        <h1 className="text-2xl font-bold">Shipment Analytics</h1>
-        <p className="text-sm text-zinc-400">
-          Get insights into your shipping performance and activity.
-        </p>
-      </div>
+      <h1 className="app-section-title">Shipment Analytics</h1>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-start">
+        {/* Carrier Dropdown */}
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Carrier</label>
-          <Dropdown
+          <label className="app-dropdown-label">Carrier</label>
+          <select
+            className="app-dropdown"
             value={selectedCarrier}
-            options={carriers}
-            onChange={(e) => setSelectedCarrier(e.value)}
-            placeholder="Select Carrier"
-            className="w-full"
+            onChange={(e) => setSelectedCarrier(e.target.value)}
             disabled={loadingFilters}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Shipping Method</label>
-          <Dropdown
-            value={selectedMethod}
-            options={shippingMethods}
-            onChange={(e) => setSelectedMethod(e.value)}
-            placeholder="Select Method"
-            className="w-full"
-            disabled={loadingFilters}
-          />
-        </div>
-        <div className="flex justify-end">
-          <button
-            onClick={clearFilters}
-            className="text-sm px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
           >
-            Clear Filters
-          </button>
+            <option value="">All carriers</option>
+            {carriers.map((carrier) => (
+              <option key={carrier} value={carrier}>
+                {carrier}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Method Dropdown */}
+        <div>
+          <label className="app-dropdown-label">Shipping Method</label>
+          <select
+            className="app-dropdown"
+            value={selectedMethod}
+            onChange={(e) => setSelectedMethod(e.target.value)}
+            disabled={loadingFilters}
+          >
+            <option value="">All methods</option>
+            {shippingMethods.map((method) => (
+              <option key={method} value={method}>
+                {method}
+              </option>
+            ))}
+          </select>
+        </div>
+
+      
+
       </div>
 
-      {/* Optional error display */}
+      {/* Error message if filters fail */}
       {error && <p className="text-red-500 text-sm">{error}</p>}
 
-      {/* KPIs */}
-    <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 overflow-x-hidden">
-        <ShipmentStats selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+      {/* KPI Cards */}
+      <ShipmentStats
+        selectedCarrier={selectedCarrier || null}
+        selectedMethod={selectedMethod || null}
+      />
+
+      {/* Shipment Charts */}
+      <div className="overflow-x-auto">
+        <ShipmentCharts
+          selectedCarrier={selectedCarrier || null}
+          selectedMethod={selectedMethod || null}
+        />
       </div>
 
-      {/* Charts */}
+      {/* Shipment Table */}
       <div className="overflow-x-auto">
-        <ShipmentCharts selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <RecentShipmentsTable selectedCarrier={selectedCarrier} selectedMethod={selectedMethod} />
+        <RecentShipmentsTable
+          selectedCarrier={selectedCarrier || null}
+          selectedMethod={selectedMethod || null}
+        />
       </div>
     </div>
   );

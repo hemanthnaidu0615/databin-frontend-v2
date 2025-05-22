@@ -50,20 +50,14 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
           axiosInstance.get(`shipment-dashboard-kpi/average-delivery-time?${params}`),
         ]);
 
-        const totalData = totalRes.data as { total_shipments: number };
-        const onTimeData = onTimeRes.data as { on_time_shipments: number };
-        const delayedData = delayedRes.data as { delayed_shipments: number };
-        const avgTimeData = avgTimeRes.data as { average_delivery_time: string };
-
-        setTotalShipments(totalData.total_shipments);
-        setOnTimeShipments(onTimeData.on_time_shipments);
-        setDelayedShipments(delayedData.delayed_shipments);
-        setAvgDeliveryTime(avgTimeData.average_delivery_time);
+        setTotalShipments(totalRes.data.total_shipments);
+        setOnTimeShipments(onTimeRes.data.on_time_shipments);
+        setDelayedShipments(delayedRes.data.delayed_shipments);
+        setAvgDeliveryTime(avgTimeRes.data.average_delivery_time);
       } catch (error) {
         console.error('Error fetching shipment stats:', error);
       }
     };
-
 
     fetchStats();
   }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
@@ -103,7 +97,7 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 font-sans">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
       {stats.map((stat, index) => (
         <div
           key={index}
@@ -120,10 +114,10 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
 
           <div className="flex items-center gap-2 relative z-10 text-black/60 dark:text-white/80">
             <i className={`pi ${stat.icon} ${stat.iconColor} text-lg`} />
-            <span className="text-sm font-medium">{stat.title}</span>
+            <span className="app-widget-label">{stat.title}</span>
           </div>
 
-          <div className="text-2xl font-extrabold relative z-10">{stat.value}</div>
+          <div className="app-widget-value relative z-10">{stat.value}</div>
         </div>
       ))}
     </div>

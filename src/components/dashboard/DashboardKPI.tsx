@@ -72,14 +72,10 @@ export default function OrdersFulfillmentMetrics() {
           params.enterpriseKey = enterpriseKey;
         }
 
-        type TotalOrdersResponse = { total_orders: number };
-        type FulfillmentRateResponse = { fulfillment_rate: number };
-        type ShipmentStatusResponse = { in_transit_orders: number; delayed_percentage: number };
-
         const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
-          axiosInstance.get<TotalOrdersResponse>("/dashboard-kpi/total-orders", { params }),
-          axiosInstance.get<FulfillmentRateResponse>("/dashboard-kpi/fulfillment-rate", { params }),
-          axiosInstance.get<ShipmentStatusResponse>("/dashboard-kpi/shipment-status-percentage", { params }),
+          axiosInstance.get("/dashboard-kpi/total-orders", { params }),
+          axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
+          axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
         ]);
 
         setMetrics([
@@ -93,7 +89,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
+            value: `${fulfillmentRateRes.data.fulfillment_rate}%`,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
@@ -107,7 +103,7 @@ export default function OrdersFulfillmentMetrics() {
           {
             icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             label: "Delayed Orders",
-            value: `${shipmentStatusRes.data.delayed_percentage}`,
+            value: `${shipmentStatusRes.data.delayed_percentage}%`,
             iconColor: "text-red-500",
             glowColor: "#F87171",
           },
@@ -123,7 +119,7 @@ export default function OrdersFulfillmentMetrics() {
   }, [startDate, endDate, enterpriseKey]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 font-outfit">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
       {metrics.map((item, index) => (
         <div
           key={index}
@@ -140,10 +136,10 @@ export default function OrdersFulfillmentMetrics() {
 
           <div className="flex items-center gap-3 relative z-10 text-black/60 dark:text-white/80">
             <i className={`pi ${item.icon} ${item.iconColor} text-lg`} />
-            <span className="text-sm font-medium">{item.label}</span>
+            <span className="app-widget-label">{item.label}</span>
           </div>
 
-          <div className="text-2xl font-extrabold relative z-10">{item.value}</div>
+          <div className="app-widget-value relative z-10">{item.value}</div>
         </div>
       ))}
     </div>

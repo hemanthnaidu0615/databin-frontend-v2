@@ -37,14 +37,16 @@ const FulfillmentCenters = () => {
       try {
         setLoading(true);
 
-
-        const res = await axiosInstance.get("/fulfillment/fulfillment-performance", {
-          params: {
-            startDate,
-            endDate,
-            ...(enterpriseKey ? { enterpriseKey } : {}),
-          },
-        });
+        const res = await axiosInstance.get(
+          "/fulfillment/fulfillment-performance",
+          {
+            params: {
+              startDate,
+              endDate,
+              ...(enterpriseKey ? { enterpriseKey } : {}),
+            },
+          }
+        );
         setCenterData(res.data as any[]);
       } catch (err: any) {
         setError(err.message || "Error loading data");
@@ -58,7 +60,7 @@ const FulfillmentCenters = () => {
 
   return (
     <div className="mt-6">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+      <h2 className="app-subheading">
         Fulfillment Center Performance
       </h2>
 
@@ -69,7 +71,6 @@ const FulfillmentCenters = () => {
           <p className="text-red-500">Error: {error}</p>
         ) : (
           <div className="max-h-[400px] overflow-y-auto">
-
             <DataTable
               value={centerData}
               paginator={false}
@@ -79,33 +80,48 @@ const FulfillmentCenters = () => {
             >
               <Column
                 field="center"
-                header="Center"
+                header={<span className="app-table-heading">Center</span>}
+                body={(rowData) => (
+                  <span className="app-table-content">{rowData.center}</span>
+                )}
                 className="whitespace-nowrap"
               />
               <Column
                 field="orders"
-                header="Orders"
+                header={<span className="app-table-heading">Orders</span>}
+                body={(rowData) => (
+                  <span className="app-table-content">{rowData.orders}</span>
+                )}
                 className="whitespace-nowrap text-right"
               />
               <Column
                 field="avg_time_days"
-                header="Avg Time"
-                body={(rowData) => `${rowData.avg_time_days} days`}
+                header={<span className="app-table-heading">Avg Time</span>}
+                body={(rowData) => (
+                  <span className="app-table-content">
+                    {rowData.avg_time_days} days
+                  </span>
+                )}
                 className="whitespace-nowrap text-right"
               />
               <Column
-                header="On-Time Rate"
+                header={<span className="app-table-heading">On-Time Rate</span>}
                 body={(rowData) => {
                   const rate = rowData.on_time_rate;
                   return (
-                    <Tag value={`${rate}%`} severity={getRateSeverity(rate)} />
+                    <span className="app-table-content">
+                      <Tag
+                        value={`${rate}%`}
+                        severity={getRateSeverity(rate)}
+                      />
+                    </span>
                   );
                 }}
                 className="whitespace-nowrap text-center"
               />
               {!isMobile && (
                 <Column
-                  header="Capacity"
+                  header={<span className="app-table-heading">Capacity</span>}
                   body={() => (
                     <ProgressBar
                       value={Math.floor(Math.random() * 40 + 60)}

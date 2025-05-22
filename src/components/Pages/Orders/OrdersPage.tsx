@@ -137,7 +137,7 @@ const OrdersPage: React.FC = () => {
   return (
     <div className="p-6 dark:bg-white/[0.03] dark:text-white/90">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+        <h1 className="app-section-title">
           Orders
         </h1>
         <div className="flex gap-2">
