@@ -4,6 +4,10 @@ import { useSelector } from "react-redux";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
 
+const formatValue = (value: number) => {
+  return new Intl.NumberFormat("en-IN").format(value);
+};
+
 const formatDate = (date: string | Date) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
@@ -32,21 +36,21 @@ const FulfillmentStats = () => {
       glowColor: "#8B5CF6",
     },
     {
-      title: "Avg Fulfillment Time",
+      title: "Average Fulfillment Time",
       value: "-",
       icon: PrimeIcons.CLOCK,
       iconColor: "text-green-500",
       glowColor: "#22C55E",
     },
     {
-      title: "On-Time Rate",
+      title: "On-Time Fulfillment Rate",
       value: "-",
       icon: PrimeIcons.CHECK_CIRCLE,
       iconColor: "text-yellow-500",
       glowColor: "#FACC15",
     },
     {
-      title: "Top Channel",
+      title: "Top Fulfillment Channel",
       value: "-",
       icon: PrimeIcons.SEND,
       iconColor: "text-blue-500",
@@ -90,27 +94,27 @@ const FulfillmentStats = () => {
         setStats([
           {
             title: "Orders in Pipeline",
-            value: data.orders_in_pipeline ?? 0,
+            value: formatValue(data.orders_in_pipeline ?? 0),
             icon: PrimeIcons.INBOX,
             iconColor: "text-purple-500",
             glowColor: "#8B5CF6",
           },
           {
-            title: "Avg Fulfillment Time",
+            title: "Average Fulfillment Time",
             value: data.avg_fulfillment_time ?? "-",
             icon: PrimeIcons.CLOCK,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
           {
-            title: "On-Time Rate",
+            title: "On-Time Fulfillment Rate",
             value: data.on_time_rate ?? "-",
             icon: PrimeIcons.CHECK_CIRCLE,
             iconColor: "text-yellow-500",
             glowColor: "#FACC15",
           },
           {
-            title: "Top Channel",
+            title: "Top Fulfillment Channel",
             value: data.top_channel ?? "-",
             icon: PrimeIcons.SEND,
             iconColor: "text-blue-500",

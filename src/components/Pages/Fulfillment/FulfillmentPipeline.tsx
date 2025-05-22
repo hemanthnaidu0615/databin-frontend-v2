@@ -46,7 +46,9 @@ const PipelineRow = ({
               </div>
               <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
                 {stage.avg_duration_hours != null
-                  ? `${stage.avg_duration_hours.toFixed(1)} hrs`
+                  ? stage.avg_duration_hours === 0
+                    ? "0 hrs"
+                    : `${stage.avg_duration_hours.toFixed(1)} hrs`
                   : "–"}
               </div>
             </div>

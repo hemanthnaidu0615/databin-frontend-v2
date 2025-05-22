@@ -73,6 +73,15 @@ const OrdersInProcess = () => {
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
 
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
+
+      if (enterpriseKey) {
+        params.append("enterpriseKey", enterpriseKey);
+      }
+
       try {
         const res = await axiosInstance.get("/fulfillment/orders-in-process", {
           params: {
@@ -82,7 +91,12 @@ const OrdersInProcess = () => {
           },
         });
         const data = res.data as { data: Order[] };
-        setOrders(data.data || []);
+        setOrders(
+          (data.data || []).map((order) => ({
+            ...order,
+            status: mapEventToStatus(order.event),
+          }))
+        );
       } catch (err) {
         console.error("Failed to fetch orders-in-process:", err);
       }
@@ -90,6 +104,25 @@ const OrdersInProcess = () => {
 
     fetchOrders();
   }, [startDate, endDate, enterpriseKey]);
+
+  const header = (
+    <div className="flex justify-between items-center gap-2 flex-wrap">
+      <h2 className="text-sm md:text-lg font-semibold">
+        Orders Under Fulfillment
+      </h2>
+      <span className="p-input-icon-left w-full md:w-auto">
+        <InputText
+          type="search"
+          onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setGlobalFilter(e.target.value)
+          }
+          placeholder="Search Orders"
+          className="p-inputtext-sm w-full"
+          style={{ paddingLeft: "2rem" }}
+        />
+      </span>
+    </div>
+  );
 
   const filteredOrders = orders.filter(
     (order) =>
@@ -107,10 +140,22 @@ const OrdersInProcess = () => {
     return [10, 20, 50, 100];
   };
 
+  const eventTemplate = (rowData: Order) => <Tag value={rowData.event} />;
+  const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
+
   const handleViewClick = (order: Order) => {
     setSelectedOrder(order);
     setVisible(true);
   };
+
+  const actionTemplate = (rowData: Order) => (
+    <Button
+      label="View"
+      icon="pi pi-eye"
+      className="p-button-sm p-button-text"
+      onClick={() => handleViewClick(rowData)}
+    />
+  );
 
   return (
     <div className="mt-6">
@@ -122,21 +167,7 @@ const OrdersInProcess = () => {
             paginator
             rows={rows}
             stripedRows
-            header={
-              <div className="flex justify-between items-center gap-2 flex-wrap mb-3">
-                <h2 className="app-section-title">Orders in Process</h2>
-                <span className="p-input-icon-left w-full md:w-auto">
-                  <InputText
-                    type="search"
-                    onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setGlobalFilter(e.target.value)
-                    }
-                    placeholder="Search Orders"
-                    className="app-search-input w-full"
-                  />
-                </span>
-              </div>
-            }
+            header={header}
             globalFilter={globalFilter}
             className="p-datatable-sm"
             paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
@@ -151,44 +182,15 @@ const OrdersInProcess = () => {
             responsiveLayout="scroll"
             scrollable
           >
+            <Column field="order_id" header="Order ID" sortable />
             <Column
-              field="order_id"
-              header={<span className="app-table-heading">Order ID</span>}
-              body={(rowData) => (
-                <span className="app-table-content">{rowData.order_id}</span>
-              )}
+              field="status"
+              header="Status"
               sortable
+              body={(rowData) => <Tag value={rowData.status} />}
             />
-            <Column
-              header={<span className="app-table-heading">Status</span>}
-              body={(rowData) => (
-                <span className="app-table-content">
-                  <Tag value={rowData.event} />
-                </span>
-              )}
-              sortable
-            />
-            <Column
-              field="eta"
-              header={<span className="app-table-heading">ETA</span>}
-              body={(rowData) => (
-                <span className="app-table-content">
-                  {formatETA(rowData.eta)}
-                </span>
-              )}
-              sortable
-            />
-            <Column
-              header={<span className="app-table-heading">Action</span>}
-              body={(rowData) => (
-                <button
-                  onClick={() => handleViewClick(rowData)}
-                  className="text-purple-500 hover:underline text-sm font-medium"
-                >
-                  View
-                </button>
-              )}
-            />
+            <Column field="eta" header="ETA" body={etaTemplate} sortable />
+            <Column header="Action" body={actionTemplate} />
           </DataTable>
         </div>
 
