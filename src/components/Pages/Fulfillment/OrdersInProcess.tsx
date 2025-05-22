@@ -9,7 +9,6 @@ import { Dialog } from "primereact/dialog";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../../../axios";
 
-
 interface Order {
   order_id: number;
   customer?: string;
@@ -51,8 +50,6 @@ const OrdersInProcess = () => {
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(5);
 
-
-
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
@@ -63,7 +60,8 @@ const OrdersInProcess = () => {
       .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
   const formatETA = (eta: string) => {
-    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-") return eta;
+    if (!eta || eta === "Delivered" || eta === "Ready" || eta === "-")
+      return eta;
     const date = new Date(eta);
     return isNaN(date.getTime()) ? eta : date.toISOString().slice(0, 10);
   };
@@ -93,8 +91,12 @@ const OrdersInProcess = () => {
           },
         });
         const data = res.data as { data: Order[] };
-        setOrders(data.data || []);
-
+        setOrders(
+          (data.data || []).map((order) => ({
+            ...order,
+            status: mapEventToStatus(order.event),
+          }))
+        );
       } catch (err) {
         console.error("Failed to fetch orders-in-process:", err);
       }
@@ -105,7 +107,9 @@ const OrdersInProcess = () => {
 
   const header = (
     <div className="flex justify-between items-center gap-2 flex-wrap">
-      <h2 className="text-sm md:text-lg font-semibold">Orders in Process</h2>
+      <h2 className="text-sm md:text-lg font-semibold">
+        Orders Under Fulfillment
+      </h2>
       <span className="p-input-icon-left w-full md:w-auto">
         <InputText
           type="search"
@@ -179,7 +183,12 @@ const OrdersInProcess = () => {
             scrollable
           >
             <Column field="order_id" header="Order ID" sortable />
-            <Column header="Status" body={eventTemplate} sortable />
+            <Column
+              field="status"
+              header="Status"
+              sortable
+              body={(rowData) => <Tag value={rowData.status} />}
+            />
             <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
           </DataTable>
@@ -193,8 +202,13 @@ const OrdersInProcess = () => {
               className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-sm font-semibold">Order ID: {order.order_id}</h3>
-                <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+                <h3 className="text-sm font-semibold">
+                  Order ID: {order.order_id}
+                </h3>
+                <Tag
+                  value={mapEventToStatus(order.event)}
+                  className="text-xs"
+                />
               </div>
               <p className="text-xs mt-1">Event: {order.event}</p>
               <p className="text-xs">ETA: {formatETA(order.eta)}</p>
@@ -267,9 +281,7 @@ const OrdersInProcess = () => {
               </button>
               <button
                 onClick={() =>
-                  setFirst(
-                    (Math.ceil(filteredOrders.length / rows) - 1) * rows
-                  )
+                  setFirst((Math.ceil(filteredOrders.length / rows) - 1) * rows)
                 }
                 disabled={first + rows >= filteredOrders.length}
                 className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
