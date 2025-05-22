@@ -135,7 +135,7 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <h2 className="app-subheading">
             Revenue Per Customer
           </h2>
         </div>

@@ -172,10 +172,10 @@ const FulfillmentPipeline = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="w-full py-6 space-y-10">
+    <div className="w-full py-6 space-y-12">
       {/* Fulfillment Flow */}
       <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-        <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+        <h2 className="app-subheading  mb-10">
           Fulfillment Stages Pipeline
         </h2>
         <PipelineRow stages={stagesData} currentStage={2} />
@@ -183,9 +183,7 @@ const FulfillmentPipeline = () => {
 
       {/* Final Status Flow */}
       <div className="max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4">
-          Final Stages
-        </h2>
+        <h2 className="app-subheading mt-8 mb-5">Final Stages</h2>
         <PipelineRow stages={finalStagesData} currentStage={-1} isFinal />
       </div>
     </div>

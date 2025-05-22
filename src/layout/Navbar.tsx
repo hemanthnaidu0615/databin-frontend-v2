@@ -4,7 +4,6 @@ import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
 import { useScrollLock } from "../hooks/useScrollLock";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
-import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import Logo from "../images/logo.png";
 
@@ -16,7 +15,7 @@ import { axiosInstance } from "../axios";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-import { UserManagement } from "../components/Pages/user Management/UserManagement";
+
 
 const Navbar: React.FC = () => {
   const [enterpriseKey, setEnterpriseKey] = useState("All");

@@ -776,3 +776,119 @@ span.flatpickr-weekday,
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
 }
+
+/* ===================== ALL THE HEADINGS ===================== */
+/* Use these only for dashboard KPI/stat cards, data tables, and search input */
+
+.app-widget-value {
+  font-size: 1.5rem;               /* ~24px instead of 36px */
+  font-weight: 700;
+  line-height: 2rem;               /* ~32px */
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+}
+
+.app-widget-label {
+  font-size: 0.95rem;              /* ~15.2px instead of 20px */
+  font-weight: 500;
+  line-height: 1.4rem;             /* ~22.4px */
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+}
+
+.app-table-heading {
+  font-size: 1.1rem;                 /* 16px - more balanced */
+  font-weight: 600;
+  line-height: 1.5rem;             /* 24px for spacing */
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  color: #bfc6d7;
+}
+
+.dark .app-table-heading {
+  color: #bfc6d7;
+}
+
+.app-table-content {
+  font-size: var(--text-theme-md);                /* 17px for better clarity */
+  font-weight: 500;
+  line-height: var(--text-theme-sm--line-height, 20px);
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  color: #232a39;
+}
+
+.dark .app-table-content {
+  color: #fff;
+}
+
+/* ✅ Subheading for context titles or section labels */
+.app-subheading {
+  font-size: 1.3rem;              /* 16px - slightly larger for better legibility */
+  font-weight: 600;             /* Match your section/subsection headers */
+  line-height: 1.625rem;        /* ~26px for good vertical spacing */
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  color: #1e293b;
+  margin-bottom: 0.75rem;       /* Ensure spacing below the heading */
+}
+
+.dark .app-subheading {
+  color: #f1f5f9;               /* slate-100 */
+}
+
+
+
+/* Use for major section headers like 'Inventory List', 'Warehouse Inventory', etc. */
+
+.app-section-title {
+  font-size: 1.5rem;         /* 20px */
+  font-weight: 600;
+  line-height: 1.75rem;       /* 28px */
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  color: #1e293b;             /* slate-800 (light mode) */
+}
+
+.dark .app-section-title {
+  color: #f1f5f9;             /* slate-100 (dark mode) */
+}
+
+/* ===================== KPI SEARCH BAR ===================== */
+.app-search-input {
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: #232a39;
+  border-radius: 0.75rem;       /* rounded-xl */
+  border: 2px solid #333846;    /* slightly darker border */
+  padding: 0.6rem 1rem;
+  height: 2.5rem;
+  outline: none;
+  transition: border 0.2s;
+  box-sizing: border-box;
+}
+.app-search-input::placeholder {
+  color: #98a2b3;
+  opacity: 1;
+  font-weight: 400;
+}
+.app-search-input:focus {
+  border-color: #465fff;
+}
+.dark .app-search-input {
+  background: #232a39;
+  color: #fff;
+  border-color: #333846;
+}
+/* Dropdown input */
+.app-dropdown {
+  @apply w-full rounded-lg border border-gray-300 dark:border-white/30 bg-white dark:bg-gray-800 
+    text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 
+     font-medium;
+
+  padding: 0.625rem 0.875rem; /* matches your screenshot (10px top/bottom, 14px sides) */
+  min-height: 42px; /* for consistent height */
+  line-height: 1.5;
+}
+
+
+/* Dropdown label */
+.app-dropdown-label {
+  @apply text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block;
+}

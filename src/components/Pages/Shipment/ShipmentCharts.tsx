@@ -218,7 +218,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
       {/* Shipment Status Donut Chart */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-zinc-200 dark:border-gray-800">
-        <h3 className="text-lg font-semibold mb-4 text-zinc-800 dark:text-zinc-100">
+        <h3 className="app-subheading">
           Shipment Status
         </h3>
         <Chart
@@ -231,7 +231,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
 
       {/* Carrier Performance Bar Chart */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-zinc-200 dark:border-gray-800">
-        <h3 className="text-lg font-semibold mb-4 text-zinc-800 dark:text-zinc-100">
+        <h3 className="app-subheading">
           Carrier Performance
         </h3>
         <Chart

@@ -62,23 +62,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
       const formattedStart = new Date(startDate).toISOString();
       const formattedEnd = new Date(endDate).toISOString();
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
-
-      if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
-      }
-
-      if (selectedCarrier) {
-        params.append("carrier", selectedCarrier);
-      }
-
-      if (selectedMethod) {
-        params.append("shippingMethod", selectedMethod);
-      }
-
       try {
         const response = await axiosInstance.get(`recent-shipments`, {
           params: {
@@ -206,20 +189,28 @@ const RecentShipmentsTable: React.FC<Props> = ({
     return [10, 20, 50, 100];
   };
 
+  // =========================
+  // CUSTOM RENDER FUNCTIONS
+  // =========================
+
+  const TableHeader = (
+    <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
+      <h2 className="app-subheading">Recent Shipments</h2>
+      <span className="p-input-icon-left w-full md:w-auto">
+        <InputText
+          type="search"
+          placeholder="Search Shipment ID"
+          className="app-search-input w-full"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </span>
+    </div>
+  );
+
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
-        <h2 className="text-sm md:text-lg font-semibold">Recent Shipments</h2>
-        <span className="p-input-icon-left w-full md:w-auto">
-          <InputText
-            type="search"
-            placeholder="Search Shipment ID"
-            className="p-inputtext-sm w-full"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </span>
-      </div>
+      {TableHeader}
 
       <DataTable
         value={
@@ -244,28 +235,45 @@ const RecentShipmentsTable: React.FC<Props> = ({
         scrollable
         scrollHeight="flex"
       >
-        <Column field="shipment_id" header="Shipment ID" sortable />
-        <Column field="customer_name" header="Customer" sortable />
-        <Column field="carrier" header="Carrier" sortable />
+        <Column
+          field="shipment_id"
+          header={<span className="app-table-heading">Shipment ID</span>}
+          body={(rowData) => <span className="app-table-content">{rowData.shipment_id}</span>}
+          sortable
+        />
+        <Column
+          field="customer_name"
+          header={<span className="app-table-heading">Customer</span>}
+          body={(rowData) => <span className="app-table-content">{rowData.customer_name}</span>}
+          sortable
+        />
+        <Column
+          field="carrier"
+          header={<span className="app-table-heading">Carrier</span>}
+          body={(rowData) => <span className="app-table-content">{rowData.carrier}</span>}
+          sortable
+        />
         <Column
           field="actual_shipment_date"
-          header="Ship Date"
-          body={(rowData) => formatDate(rowData.actual_shipment_date)}
+          header={<span className="app-table-heading">Ship Date</span>}
+          body={(rowData) => <span className="app-table-content">{formatDate(rowData.actual_shipment_date)}</span>}
           sortable
         />
         <Column
           field="shipment_status"
-          header="Status"
+          header={<span className="app-table-heading">Status</span>}
           body={(rowData) => (
-            <Tag
-              value={rowData.shipment_status}
-              severity={getStatusSeverity(rowData.shipment_status)}
-            />
+            <span className="app-table-content">
+              <Tag
+                value={rowData.shipment_status}
+                severity={getStatusSeverity(rowData.shipment_status)}
+              />
+            </span>
           )}
           sortable
         />
         <Column
-          header="Action"
+          header={<span className="app-table-heading">Action</span>}
           body={(rowData) => (
             <button
               onClick={() => showDetails(rowData)}

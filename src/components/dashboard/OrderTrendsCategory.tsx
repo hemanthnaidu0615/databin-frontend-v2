@@ -179,7 +179,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
         <div className="flex justify-between items-center mb-10">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <h2 className="app-subheading">
             Order Trends by Product Category
           </h2>
           <div className="relative">

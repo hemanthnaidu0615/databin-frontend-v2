@@ -178,7 +178,7 @@ const barOptions: ApexOptions = {
       {isVisible && (
         <>
           <div className="flex justify-between items-center mb-16">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+            <h2 className="app-subheading">
               Shipment Performance
             </h2>
 
