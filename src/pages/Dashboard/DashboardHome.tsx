@@ -28,7 +28,7 @@ export default function Home() {
   return (
     <>
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin"
+        title="Databin"
         description="This is the React.js Ecommerce Dashboard for TailAdmin"
       />
 
