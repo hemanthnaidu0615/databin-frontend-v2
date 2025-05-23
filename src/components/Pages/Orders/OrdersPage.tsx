@@ -4,6 +4,8 @@ import OrderFilters from "./OrderFilters";
 import OrderList from "./OrderList";
 import { fetchOrders } from "./ordersData";
 import { Order } from "./ordersData";
+import { axiosInstance } from "../../../axios";
+import * as XLSX from "xlsx";
 
 const defaultFilterValues = {
   status: "All statuses",
@@ -50,10 +52,55 @@ const OrdersPage: React.FC = () => {
   const [startDate, endDate] = dateRange;
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
-
   useEffect(() => {
     loadOrders();
   }, [filters, startDate, endDate, enterpriseKey]);
+
+  const exportOrders = async () => {
+    try {
+      const params = new URLSearchParams();
+
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+
+      if (filters.status !== "All statuses")
+        params.append("status", filters.status);
+      if (filters.orderType !== "All types")
+        params.append("orderType", filters.orderType);
+      if (filters.paymentMethod !== "All methods")
+        params.append("paymentMethod", filters.paymentMethod);
+      if (filters.carrier !== "All carriers")
+        params.append("carrier", filters.carrier);
+      if (filters.customer) params.append("searchCustomer", filters.customer);
+      if (filters.orderId) params.append("searchOrderId", filters.orderId);
+      if (enterpriseKey && enterpriseKey !== "All")
+        params.append("enterpriseKey", enterpriseKey);
+
+      const response = await axiosInstance.get(`/orders/filtered`, {
+        params,
+      });
+
+      let fetchedOrders = response.data;
+
+      if (!Array.isArray(fetchedOrders)) {
+        console.error("Unexpected data format for fetched orders.");
+        alert("Failed to export orders: Invalid data received.");
+        return;
+      }
+
+      const filteredForPrice = fetchedOrders.filter((order: any) =>
+        priceRangeMatch(order.total, filters.priceRange)
+      );
+      const worksheet = XLSX.utils.json_to_sheet(filteredForPrice);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Orders");
+
+      XLSX.writeFile(workbook, "filtered_orders.xlsx");
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export orders.");
+    }
+  };
 
   const loadOrders = async () => {
     try {
@@ -137,16 +184,18 @@ const OrdersPage: React.FC = () => {
   return (
     <div className="p-6 dark:bg-white/[0.03] dark:text-white/90">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="app-section-title">
-          Orders
-        </h1>
+        <h1 className="app-section-title">Orders</h1>
         <div className="flex gap-2">
-          <button className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10">
+          <button
+            className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10"
+            onClick={exportOrders}
+          >
             Export
           </button>
-          <button className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10">
+
+          {/* <button className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10">
             Print
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -164,4 +213,4 @@ const OrdersPage: React.FC = () => {
   );
 };
 
-export default OrdersPage
+export default OrdersPage;
