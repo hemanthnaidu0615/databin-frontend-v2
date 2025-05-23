@@ -69,7 +69,6 @@ const OrdersInProcess = () => {
     return isNaN(date.getTime()) ? eta : date.toISOString().slice(0, 10);
   };
 
-
   useEffect(() => {
     setPage(0);
   }, [globalFilter]);
@@ -90,7 +89,10 @@ const OrdersInProcess = () => {
           params.enterpriseKey = enterpriseKey;
         }
 
-        const res = await axiosInstance.get<{ data: Order[]; count: number }>("/fulfillment/orders-in-process", { params });
+        const res = await axiosInstance.get<{ data: Order[]; count: number }>(
+          "/fulfillment/orders-in-process",
+          { params }
+        );
         const { data, count } = res.data;
 
         setOrders(
@@ -111,7 +113,6 @@ const OrdersInProcess = () => {
 
     fetchOrders();
   }, [startDate, endDate, enterpriseKey, page, rows]);
-
 
   const header = (
     <div className="flex justify-between items-center gap-2 flex-wrap">
@@ -161,8 +162,6 @@ const OrdersInProcess = () => {
     />
   );
 
-
-
   return (
     <div className="mt-6">
       <div className="border rounded-xl shadow-sm p-4 overflow-x-auto bg-white dark:bg-gray-900">
@@ -192,13 +191,12 @@ const OrdersInProcess = () => {
             <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
           </DataTable>
-
         </div>
 
         {/* Mobile View */}
         <div className="sm:hidden">
           <h2 className="app-subheading  mb-4">Orders Under Fulfillment</h2>
-          {filteredOrders.slice(first, first + rows).map((order) => (
+          {filteredOrders.map((order) => (
             <div
               key={order.order_id}
               className="p-4 mb-4 rounded-lg shadow-md bg-white dark:bg-gray-800"
@@ -207,7 +205,10 @@ const OrdersInProcess = () => {
                 <h3 className="text-sm font-semibold">
                   Order ID: {order.order_id}
                 </h3>
-                <Tag value={mapEventToStatus(order.event)} className="text-xs" />
+                <Tag
+                  value={mapEventToStatus(order.event)}
+                  className="text-xs"
+                />
               </div>
               <p className="text-xs mt-1">Event: {order.event}</p>
               <p className="text-xs">ETA: {formatETA(order.eta)}</p>
