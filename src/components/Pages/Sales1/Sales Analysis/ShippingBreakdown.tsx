@@ -25,8 +25,8 @@ const convertToUSD = (rupees: number): number => {
 };
 
 const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
 };
 
@@ -61,7 +61,13 @@ const ShippingBreakdown = () => {
       try {
         const response = await axiosInstance.get(`/analysis/shipment-summary?${params.toString()}`);
         const data = response.data as { shipments?: Shipment[] };
-        setShipments(data.shipments || []);
+       setShipments(
+  (data.shipments || []).map((s) => ({
+    ...s,
+    shipment_cost_usd: convertToUSD(s.shipment_cost),
+  }))
+);
+
       } catch (err) {
         console.error("Error fetching shipments:", err);
         setError("Failed to load shipment data");
@@ -103,7 +109,7 @@ const ShippingBreakdown = () => {
         },
       },
       title: {
-        text: "Carrier",
+        text: "Carriers",
         style: {
           fontSize: "14px",
           fontWeight: "normal",
@@ -113,7 +119,7 @@ const ShippingBreakdown = () => {
     },
     yaxis: {
       title: {
-        text: "Total Cost (USD)",
+        text: "Total Cost ($)",
         style: {
           fontSize: "14px",
           fontWeight: "normal",
@@ -225,14 +231,15 @@ const ShippingBreakdown = () => {
             className="app-table-content"
             style={{ minWidth: '120px' }}
           />
-          <Column
-            field="shipment_cost"
-            header="Cost (USD)"
-            sortable
-            className="app-table-content"
-            body={(rowData) => `$${formatValue(convertToUSD(rowData.shipment_cost))}`}
-            style={{ minWidth: '120px' }}
-          />
+  <Column
+  field="shipment_cost_usd"
+  header="Cost ($)"
+  sortable
+  className="app-table-content"
+  body={(rowData) => `$${formatValue(rowData.shipment_cost_usd)}`}
+  style={{ minWidth: '120px' }}
+/>
+
         </DataTable>
       </div>
 

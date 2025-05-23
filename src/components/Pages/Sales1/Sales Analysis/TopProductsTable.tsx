@@ -29,8 +29,8 @@ const convertToUSD = (rupees: number): number => {
 };
 
 const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
 };
 
@@ -71,7 +71,7 @@ const TopProductsTable = () => {
         setProducts(data.products || []);
       } catch (err) {
         console.error("Error fetching products:", err);
-        setError("Failed to load product data");
+        setError("Failed to load products data");
       } finally {
         setLoading(false);
       }
@@ -110,8 +110,9 @@ const TopProductsTable = () => {
         }
       },
       title: {
-        text: "Product",
+        text: "Products",
         style: {
+          
           fontSize: "14px",
           fontWeight: "normal",
           color: theme === "dark" ? "#CBD5E1" : "#64748B",
@@ -120,7 +121,7 @@ const TopProductsTable = () => {
     },
     yaxis: {
       title: {
-        text: viewMode === "revenue" ? "Total Sales (USD)" : "Units Sold",
+        text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
         style: {
           fontSize: "14px",
           fontWeight: "normal",
@@ -209,7 +210,7 @@ const TopProductsTable = () => {
           value={viewMode}
           options={viewOptions}
           onChange={(e) => setViewMode(e.value)}
-          className="w-40"
+          className="w-43"
         />
       </div>
 
@@ -240,7 +241,7 @@ const TopProductsTable = () => {
           />
           <Column
             field="total_sales"
-            header="Total Sales (USD)"
+            header="Total Sales ($)"
             sortable
             className="app-table-content"
             body={(rowData) => `$${formatValue(convertToUSD(rowData.total_sales))}`}
