@@ -248,7 +248,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                         </div>
 
                         {/* 2. Customer Information */}
-                        <div className="hidden md:block bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
+                        <div className=" bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                             Customer Information
                           </h3>
@@ -294,7 +294,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                         </div>
 
                         {/* Products Section */}
-                        <div className="hidden md:block bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1">
+                        <div className=" bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1">
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                             Products
                           </h3>
@@ -344,7 +344,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                           <hr className="border-gray-300 dark:border-white/10 my-5" />
 
                           {/* Totals */}
-                          <div className="hidden md:block space-y-2 text-sm">
+                          <div className=" space-y-2 text-sm">
                             {(() => {
                               const products =
                                 orderDetails.get(order.id)?.products ||
