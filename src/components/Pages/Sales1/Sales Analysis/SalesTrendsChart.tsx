@@ -147,7 +147,7 @@ const SalesTrendsChart = () => {
           },
         },
         title: {
-          text: "Date",
+          text: "Dates",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -157,16 +157,20 @@ const SalesTrendsChart = () => {
       },
       yaxis: {
         title: {
-          text: "Sales",
+          text: "Sales ($)",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
             color: theme === "dark" ? "#CBD5E1" : "#64748B",
           },
         },
-        labels: {
-          formatter: (val: number) => `$${val.toLocaleString()}`,
-        },
+  labels: {
+    formatter: (val: number) => {
+      if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+      if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
+      return `$${val}`;
+    },
+  },
       },
       stroke: {
         curve: "smooth",
@@ -226,12 +230,12 @@ const SalesTrendsChart = () => {
           value={chartType}
           options={chartTypes}
           onChange={(e) => setChartType(e.value)}
-          className="w-32"
+          className="w-46"
         />
         <Dropdown
           value={selectedChannel}
           options={[
-            { label: "All", value: "all" },
+            { label: "Sales Channel", value: "all" },
             ...channels.map((ch) => ({
               label: ch,
               value: ch,
@@ -241,8 +245,9 @@ const SalesTrendsChart = () => {
             setSelectedChannel(e.value);
             setDrilledMonth(null);
           }}
-          className="w-40"
+       
           placeholder="Select Channel"
+          className="w-46"
           disabled={channels.length === 0}
         />
       </div>
