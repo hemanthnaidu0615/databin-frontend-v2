@@ -15,7 +15,7 @@ import { axiosInstance } from "../axios";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-
+import { useTheme } from "../context/ThemeContext"; // ✅ Added
 
 const Navbar: React.FC = () => {
   const [enterpriseKey, setEnterpriseKey] = useState("All");
@@ -32,6 +32,8 @@ const Navbar: React.FC = () => {
     isMobileRightOpen,
     toggleMobileRightSidebar,
   } = useSidebar();
+
+  const { theme } = useTheme(); // ✅ Added
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
     new Date("2025-03-19"),
@@ -185,7 +187,6 @@ const Navbar: React.FC = () => {
               )}
 
               <ThemeToggleButton />
-              {/* <NotificationDropdown /> */}
               <UserDropdown />
             </div>
           ) : (
@@ -200,7 +201,18 @@ const Navbar: React.FC = () => {
         </div>
       </header>
 
-      {/* Mobile Right Sidebar Drawer */}
+      {/* ✅ Mobile Right Sidebar Drawer Backdrop */}
+      {isMobileRightOpen && (
+        <div
+          className={`fixed inset-0 z-[99999] transition-opacity duration-300 md:hidden ${
+            theme === "dark" ? "bg-gray-900" : "bg-gray-300"
+          } bg-opacity-50`}
+          onClick={toggleMobileRightSidebar}
+          role="presentation"
+          aria-hidden="true"
+        />
+      )}
+      {/* ✅ Mobile Right Sidebar Drawer */}
       <div
         className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${
           isMobileRightOpen ? "translate-x-0" : "translate-x-full"
@@ -225,7 +237,28 @@ const Navbar: React.FC = () => {
                 ref={calendarRef}
                 value={dateRange}
                 selectionMode="range"
-                onChange={handleDateChange}
+                onChange={(e) => {
+                  const newDates = e.value;
+
+                  if (
+                    Array.isArray(newDates) &&
+                    newDates.length === 2 &&
+                    newDates[0] instanceof Date &&
+                    newDates[1] instanceof Date
+                  ) {
+                    // Both dates selected, fully valid
+                    setDateRange([newDates[0], newDates[1]]);
+                    dispatch(setDates([newDates[0], newDates[1]]));
+                    calendarRef.current?.hide?.();
+                    toggleMobileRightSidebar();
+                  } else if (Array.isArray(newDates)) {
+                    // Partial range (e.g., only "from" selected)
+                    setDateRange(newDates as [Date, Date]); // allow setting partially
+                  } else {
+                    // reset or undefined
+                    setDateRange(null);
+                  }
+                }}
                 dateFormat="yy-mm-dd"
                 placeholder="Select Date Range"
                 className="w-full"
@@ -236,6 +269,7 @@ const Navbar: React.FC = () => {
               />
             </div>
           )}
+
           {!shouldHideEnterpriseKey && (
             <div>
               <label className="block text-xs text-gray-500 mb-1">
@@ -243,7 +277,10 @@ const Navbar: React.FC = () => {
               </label>
               <select
                 value={enterpriseKey}
-                onChange={(e) => setEnterpriseKey(e.target.value)}
+                onChange={(e) => {
+                  setEnterpriseKey(e.target.value);
+                  toggleMobileRightSidebar(); // ✅ auto-close after selection
+                }}
                 className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white text-sm"
               >
                 {enterpriseKeys.map((key) => (
@@ -255,11 +292,17 @@ const Navbar: React.FC = () => {
             </div>
           )}
           <div className="border-t border-gray-300 dark:border-gray-700" />
-
+            {/* ✅ Auto-close on theme toggle */}
           <div className="flex items-center justify-between gap-4 px-1 pt-2">
-            <ThemeToggleButton />
-            {/* <NotificationDropdown /> */}
-            <UserDropdown />
+            <div
+              onClick={() => {
+                toggleMobileRightSidebar(); 
+              }}
+            >
+              <ThemeToggleButton />
+            </div>
+              {/* ✅ Auto-close on user dropdown interaction */}
+              <UserDropdown />
           </div>
         </div>
       </div>

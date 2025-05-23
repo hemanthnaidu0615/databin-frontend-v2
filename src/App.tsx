@@ -24,7 +24,6 @@ import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
 import SalesAnalysis from "./components/Pages/Sales1/Sales Analysis/SalesAnalysis";
 import { SalesByRegion } from "./components/Pages/Sales1/Region/SalesByRegion";
@@ -32,58 +31,49 @@ import SalesFlow from "./components/Pages/Sales1/SalesFlow";
 import Scheduler from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
 import { UserManagement } from "./components/Pages/user Management/UserManagement";
+import { ThemeProvider } from "./context/ThemeContext"; // ✅ IMPORT THIS
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Routes>
-        {/* Auth Routes */}
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+    <ThemeProvider> {/* ✅ WRAP ENTIRE APP IN THIS */}
+      <Router>
+        <ScrollToTop />
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
 
-        {/* Protected Layout & Routes */}
-        <Route path="/" element={<ProtectedRoute element={<AppLayout />} />}>
-          <Route index element={<Home />} />
-
-          {/* User Management (Admin/Manager Only) */}
-          <Route
-            path="usermanagement"
-            element={
-              <ProtectedRoute
-                element={<UserManagement />}
-                allowedRoles={["admin", "manager"]}
-              />
-            }
-          />
-
-          {/* General Pages */}
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="sales/analysis" element={<SalesAnalysis />} />
-          <Route path="sales/dashboard" element={<DummyDashboard />} />
-          <Route path="sales/region" element={<SalesByRegion />} />
-          <Route path="sales/flow" element={<SalesFlow />} />
-          <Route path="inventory" element={<InventoryPage />} />
-          <Route path="shipment" element={<ShipmentPage />} />
-          <Route path="fulfillment" element={<FulfillmentPage />} />
-          <Route path="scheduler" element={<Scheduler />} />
-          <Route path="profile" element={<UserProfiles />} />
-          <Route path="calendar" element={<Calendar />} />
-          <Route path="blank" element={<Blank />} />
-          <Route path="basic-tables" element={<BasicTables />} />
-          <Route path="alerts" element={<Alerts />} />
-          <Route path="avatars" element={<Avatars />} />
-          <Route path="badge" element={<Badges />} />
-          <Route path="buttons" element={<Buttons />} />
-          <Route path="images" element={<Images />} />
-          <Route path="videos" element={<Videos />} />
-          <Route path="line-chart" element={<LineChart />} />
-          <Route path="bar-chart" element={<BarChart />} />
-
-          {/* Fallback Page inside Protected Layout */}
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* Protected Layout & Routes */}
+          <Route path="/" element={<ProtectedRoute element={<AppLayout />} />}>
+            <Route index element={<Home />} />
+            <Route path="usermanagement" element={
+              <ProtectedRoute element={<UserManagement />} allowedRoles={["admin", "manager"]} />
+            } />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="sales/analysis" element={<SalesAnalysis />} />
+            <Route path="sales/dashboard" element={<DummyDashboard />} />
+            <Route path="sales/region" element={<SalesByRegion />} />
+            <Route path="sales/flow" element={<SalesFlow />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="shipment" element={<ShipmentPage />} />
+            <Route path="fulfillment" element={<FulfillmentPage />} />
+            <Route path="scheduler" element={<Scheduler />} />
+            <Route path="profile" element={<UserProfiles />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="blank" element={<Blank />} />
+            <Route path="basic-tables" element={<BasicTables />} />
+            <Route path="alerts" element={<Alerts />} />
+            <Route path="avatars" element={<Avatars />} />
+            <Route path="badge" element={<Badges />} />
+            <Route path="buttons" element={<Buttons />} />
+            <Route path="images" element={<Images />} />
+            <Route path="videos" element={<Videos />} />
+            <Route path="line-chart" element={<LineChart />} />
+            <Route path="bar-chart" element={<BarChart />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }

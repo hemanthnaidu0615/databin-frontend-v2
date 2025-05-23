@@ -117,7 +117,7 @@ const OrdersInProcess = () => {
             setGlobalFilter(e.target.value)
           }
           placeholder="Search Orders"
-          className="p-inputtext-sm w-full"
+          className="app-search-input"
           style={{ paddingLeft: "2rem" }}
         />
       </span>
@@ -196,6 +196,7 @@ const OrdersInProcess = () => {
 
         {/* Mobile View */}
         <div className="sm:hidden">
+          <h2 className="app-subheading  mb-4">Orders Under Fulfillment</h2>
           {filteredOrders.slice(first, first + rows).map((order) => (
             <div
               key={order.order_id}
