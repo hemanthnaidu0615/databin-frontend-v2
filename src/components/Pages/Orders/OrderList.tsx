@@ -9,9 +9,7 @@ export const fetchOrderDetails = async (
   orderId: string
 ): Promise<any | null> => {
   try {
-    const response = await axiosInstance.get(
-      `/orders/${orderId}/details`
-    );
+    const response = await axiosInstance.get(`/orders/${orderId}/details`);
     const data = response.data as { value?: any };
 
     if (typeof data.value === "string") {
@@ -136,12 +134,24 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
             <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
               <th className="py-3 px-4"></th>
               <th className="py-3 px-4 app-table-content">Order ID</th>
-              <th className="py-3 px-4 hidden md:table-cell app-table-content">Date</th>
-              <th className="py-3 px-4 hidden md:table-cell app-table-content">Customer</th>
-              <th className="py-3 px-4 hidden md:table-cell app-table-content">Product</th>
-              <th className="py-3 px-4 hidden md:table-cell app-table-content">Total</th>
-              <th className="py-3 px-4 hidden md:table-cell app-table-content">Status</th>
-              <th className="py-3 px-4 hidden md:table-cell app-table-content">Payment</th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">
+                Date
+              </th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">
+                Customer
+              </th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">
+                Product
+              </th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">
+                Total
+              </th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">
+                Status
+              </th>
+              <th className="py-3 px-4 hidden md:table-cell app-table-content">
+                Payment
+              </th>
             </tr>
           </thead>
 
@@ -345,7 +355,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 (acc: number, p: any) =>
                                   acc +
                                   (p.quantity ?? p.qty) *
-                                  (p.unit_price ?? p.price),
+                                    (p.unit_price ?? p.price),
                                 0
                               );
 
@@ -537,19 +547,21 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                       <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                                     )}
                                     <span
-                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
+                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
+                                        step.Delayed
                                           ? "bg-red-500 border-red-500"
                                           : step.complete
-                                            ? "bg-green-500 border-green-500"
-                                            : "bg-gray-400 border-gray-400"
-                                        }`}
+                                          ? "bg-green-500 border-green-500"
+                                          : "bg-gray-400 border-gray-400"
+                                      }`}
                                     />
                                     <div className="ml-4">
                                       <p
-                                        className={`text-sm font-medium ${step.Delayed
+                                        className={`text-sm font-medium ${
+                                          step.Delayed
                                             ? "text-red-600 dark:text-red-400"
                                             : "text-gray-800 dark:text-white"
-                                          }`}
+                                        }`}
                                       >
                                         {step.label}
                                       </p>
@@ -607,84 +619,80 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
               className="dark:text-gray-100 dark:bg-gray-900"
             />
           </div>
+          {/* Mobile paginator for screens < sm */}
+          <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2">
+                <label htmlFor="mobileRows" className="whitespace-nowrap">
+                  Rows per page:
+                </label>
+                <select
+                  id="mobileRows"
+                  value={rows}
+                  onChange={(e) => {
+                    setRows(Number(e.target.value));
+                    setFirst(0); // reset to first page
+                  }}
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                >
+                  {options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between sm:hidden text-sm text-gray-700 dark:text-gray-100">
-            <div className="flex items-center gap-2">
-              <label htmlFor="mobileRows" className="whitespace-nowrap">
-                Rows per page:
-              </label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setFirst(0); // reset to first page
-                }}
-                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
-              >
-                {options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <div>
+                Page {Math.floor(first / rows) + 1} of{" "}
+                {Math.ceil(orders.length / rows)}
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-3 bg-gray-900 text-white p-4 rounded-md text-sm">
-              <div className="flex items-center gap-4">
-                <div className="font-medium">
-                  Page {Math.floor(first / rows) + 1} of{" "}
-                  {Math.ceil(orders.length / rows)}
-                </div>
-              </div>
+            <div className="flex justify-between gap-2">
+              <button
+                onClick={() => onPageChange({ first: 0, rows })}
+                disabled={first === 0}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ⏮ First
+              </button>
 
-              {/* Right: Navigation buttons */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => onPageChange({ first: 0, rows })}
-                  disabled={first === 0}
-                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  ⏮ First
-                </button>
+              <button
+                onClick={() =>
+                  onPageChange({ first: Math.max(0, first - rows), rows })
+                }
+                disabled={first === 0}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Prev
+              </button>
 
-                <button
-                  onClick={() =>
-                    onPageChange({ first: Math.max(0, first - rows), rows })
-                  }
-                  disabled={first === 0}
-                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Prev
-                </button>
+              <button
+                onClick={() =>
+                  onPageChange({
+                    first: first + rows < orders.length ? first + rows : first,
+                    rows,
+                  })
+                }
+                disabled={first + rows >= orders.length}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
 
-                <button
-                  onClick={() =>
-                    onPageChange({
-                      first:
-                        first + rows < orders.length ? first + rows : first,
-                      rows,
-                    })
-                  }
-                  disabled={first + rows >= orders.length}
-                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-
-                <button
-                  onClick={() =>
-                    onPageChange({
-                      first: (Math.ceil(orders.length / rows) - 1) * rows,
-                      rows,
-                    })
-                  }
-                  disabled={first + rows >= orders.length}
-                  className="px-3 py-1 rounded bg-gray-800 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  ⏭ Last
-                </button>
-              </div>
+              <button
+                onClick={() =>
+                  onPageChange({
+                    first: (Math.ceil(orders.length / rows) - 1) * rows,
+                    rows,
+                  })
+                }
+                disabled={first + rows >= orders.length}
+                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ⏭ Last
+              </button>
             </div>
           </div>
 
@@ -1004,19 +1012,21 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                                 <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                               )}
                               <span
-                                className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
+                                className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
+                                  step.Delayed
                                     ? "bg-red-500 border-red-500"
                                     : step.complete
-                                      ? "bg-green-500 border-green-500"
-                                      : "bg-gray-400 border-gray-400"
-                                  }`}
+                                    ? "bg-green-500 border-green-500"
+                                    : "bg-gray-400 border-gray-400"
+                                }`}
                               />
                               <div className="ml-4">
                                 <p
-                                  className={`text-sm font-medium ${step.Delayed
+                                  className={`text-sm font-medium ${
+                                    step.Delayed
                                       ? "text-red-600 dark:text-red-400"
                                       : "text-gray-800 dark:text-white"
-                                    }`}
+                                  }`}
                                 >
                                   {step.label}
                                 </p>

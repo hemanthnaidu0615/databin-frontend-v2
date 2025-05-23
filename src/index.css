@@ -784,7 +784,7 @@ span.flatpickr-weekday,
   font-weight: 600;
   line-height: 1.5rem;             
   font-family: var(--font-outfit, 'Outfit', sans-serif);
-  color: #bfc6d7;
+  color: #0b0c0f;
 }
 
 .dark .app-table-heading {
@@ -796,7 +796,7 @@ span.flatpickr-weekday,
   font-weight: 500;
   line-height: var(--text-theme-sm--line-height, 20px);
   font-family: var(--font-outfit, 'Outfit', sans-serif);
-  color: #232a39;
+  color: #323a4b;
 }
 
 .dark .app-table-content {
@@ -838,29 +838,33 @@ span.flatpickr-weekday,
   font-family: var(--font-outfit, 'Outfit', sans-serif);
   font-size: 1rem;
   font-weight: 500;
-  color: #fff;
-  background: #232a39;
-  border-radius: 0.75rem;      
-  border: 2px solid #333846;    
+  color: #1f2937; /* light theme text color */
+  background: #f9fafb; /* light theme background */
+  border-radius: 0.75rem;
+  border: 2px solid #d1d5db; /* light theme border */
   padding: 0.6rem 1rem;
   height: 2.5rem;
   outline: none;
   transition: border 0.2s;
   box-sizing: border-box;
 }
+
 .app-search-input::placeholder {
-  color: #98a2b3;
+  color: #6b7280;
   opacity: 1;
   font-weight: 400;
 }
+
 .app-search-input:focus {
   border-color: #465fff;
 }
+
 .dark .app-search-input {
-  background: #232a39;
   color: #fff;
+  background: #232a39;
   border-color: #333846;
 }
+
 /* Dropdown input */
 .app-dropdown {
   @apply w-full rounded-lg border border-gray-300 dark:border-white/30 bg-white dark:bg-gray-800 

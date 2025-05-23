@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../../axios";
+import { useSidebar } from "../../context/SidebarContext";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,16 +12,25 @@ export default function UserDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
+  const { toggleMobileRightSidebar, screenSize } = useSidebar(); // ✅ Access sidebar control
+
   const handleLogout = async (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
     closeDropdown();
+    if (screenSize === "mobile") toggleMobileRightSidebar(); // ✅ Close sidebar only on mobile
 
     try {
       await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
-
       window.location.href = "/signin";
     } catch (error) {
       console.error("Logout failed:", error);
+    }
+  };
+
+  const handleDropdownAction = () => {
+    closeDropdown();
+    if (screenSize === "mobile") {
+      toggleMobileRightSidebar(); // ✅ Close sidebar after action on mobile only
     }
   };
 
@@ -58,7 +68,7 @@ export default function UserDropdown() {
       setPosition({
         top: rect.bottom + window.scrollY,
         left,
-      });
+        });
     }
     setIsOpen(!isOpen);
   }
@@ -96,16 +106,19 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-2 flex items-center justify-center bg-purple-700 text-white rounded-full h-8 w-8 text-sm font-medium">
-          {userData?.email
-            ? userData.email.charAt(0).toUpperCase()
-            : "U"}
+          {userData?.email ? userData.email.charAt(0).toUpperCase() : "U"}
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
-          {userData?.email ? userData.email.split("@")[0].charAt(0).toUpperCase() + userData.email.split("@")[0].slice(1) : "User"}
+          {userData?.email
+            ? userData.email.split("@")[0].charAt(0).toUpperCase() +
+              userData.email.split("@")[0].slice(1)
+            : "User"}
         </span>
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
           width="18"
           height="20"
           viewBox="0 0 18 20"
@@ -136,7 +149,10 @@ export default function UserDropdown() {
             <div className="flex w-full flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
               <div>
                 <span className="block mr-1 font-medium text-theme-sm">
-                  {userData?.email ? userData.email.split("@")[0].charAt(0).toUpperCase() + userData.email.split("@")[0].slice(1) : "User"}
+                  {userData?.email
+                    ? userData.email.split("@")[0].charAt(0).toUpperCase() +
+                      userData.email.split("@")[0].slice(1)
+                    : "User"}
                 </span>
                 <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
                   {userData?.email || "john@example.com"}
@@ -147,7 +163,7 @@ export default function UserDropdown() {
                 <li>
                   <Link
                     to="/profile"
-                    onClick={closeDropdown}
+                    onClick={handleDropdownAction}
                     className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                   >
                     Edit profile
@@ -156,7 +172,7 @@ export default function UserDropdown() {
                 <li>
                   <Link
                     to="/settings"
-                    onClick={closeDropdown}
+                    onClick={handleDropdownAction}
                     className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                   >
                     Account settings
@@ -165,7 +181,7 @@ export default function UserDropdown() {
                 <li>
                   <Link
                     to="/support"
-                    onClick={closeDropdown}
+                    onClick={handleDropdownAction}
                     className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                   >
                     Support
@@ -180,7 +196,6 @@ export default function UserDropdown() {
               >
                 Sign out
               </Link>
-
             </div>
           </div>,
           document.body
