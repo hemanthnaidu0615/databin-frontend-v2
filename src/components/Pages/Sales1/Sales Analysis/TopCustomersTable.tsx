@@ -29,8 +29,8 @@ const convertToUSD = (rupees: number): number => {
 };
 
 const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
 };
 
@@ -110,7 +110,7 @@ const TopCustomersTable = () => {
         }
       },
       title: {
-        text: "Customer",
+        text: "Customers",
         style: {
           fontSize: "14px",
           fontWeight: "normal",
@@ -120,7 +120,7 @@ const TopCustomersTable = () => {
     },
     yaxis: {
       title: {
-        text: viewMode === "revenue" ? "Total Spent (USD)" : "Orders",
+        text: viewMode === "revenue" ? "Total Spent ($)" : "Orders",
         style: {
           fontSize: "14px",
           fontWeight: "normal",
@@ -215,7 +215,7 @@ const TopCustomersTable = () => {
 
       <div className="px-4 pt-2 pb-6 app-table-heading">
         <DataTable
-          value={sortedCustomers}
+          value={customers}
           stripedRows
           responsiveLayout="scroll"
           scrollable
@@ -240,7 +240,7 @@ const TopCustomersTable = () => {
           />
           <Column
             field="total_spent"
-            header="Total Spent (USD)"
+            header="Total Spent ($)"
             sortable
             className="app-table-content"
             body={(rowData) => `$${formatValue(convertToUSD(rowData.total_spent))}`}
