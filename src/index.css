@@ -882,18 +882,18 @@ span.flatpickr-weekday,
   @apply text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block;
 }
 
-/* index.css */
-.apexcharts-text {
-  font-family: 'Outfit', sans-serif;
-  font-size: 14px;
-  font-weight: normal;
-  color: #6B7280;
+/* Fix ApexCharts tooltip for light theme */
+html:not(.dark) .apexcharts-tooltip {
+  background: #ffffff !important; /* white background */
+  color: #000000 !important; /* black text */
+  border: 1px solid #e5e7eb !important; /* light border */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
-.apexcharts-text tspan {
-  font-size: 11px;
+html:not(.dark) .apexcharts-tooltip-title {
+  color: #000000 !important;
 }
 
-.dark .apexcharts-text {
-  color: #9CA3AF; /* Tailwind's gray-400 for better contrast in dark mode */
+html:not(.dark) .apexcharts-tooltip-series-group .apexcharts-tooltip-text {
+  color: #000000 !important;
 }

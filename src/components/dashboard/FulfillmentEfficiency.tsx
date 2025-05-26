@@ -26,7 +26,6 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   onViewMore,
 }) => {
   const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
   const navigate = useNavigate();
 
   const [chartData, setChartData] = useState({
@@ -102,70 +101,64 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
+  // Simplified barOptions style
   const apexOptions: ApexOptions = {
     chart: {
       type: "bar",
-      stacked: false,
+      stacked: true,
       toolbar: { show: false },
-      fontFamily: "Outfit, sans-serif",
-      background: "transparent",
     },
-    colors: ["#3B82F6"],
+    colors: ["#3B82F6", "#FF9800", "#4CAF50"],
     plotOptions: {
       bar: {
-        horizontal: false,
-        columnWidth: "50%",
+        columnWidth: "70%",
       },
     },
-    fill: {
-      opacity: 1,
-    },
-    grid: {
-      borderColor: isDarkMode ? "#374151" : "#E5E7EB",
-      strokeDashArray: 5,
-      padding: { top: 0, right: 0, bottom: 0, left: 0 },
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => formatValue(val),
+      style: {
+        colors: ["#fff"],
+        fontSize: "12px",
+      },
     },
     xaxis: {
       categories: chartData.categories,
       title: {
         text: "Stage",
-        offsetY: 10,
         style: {
-          fontSize: "16px",
-          fontWeight: 400,
-          color: isDarkMode ? "#F3F4F6" : "#1F2937",
+          fontWeight: "400",
+          fontSize: "14px",
         },
       },
       labels: {
         style: {
           fontSize: "12px",
-          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-          fontWeight: 400,
         },
       },
+      crosshairs: { show: false },
     },
     yaxis: {
       title: {
         text: "Orders",
-        rotate: -90,
-        offsetX: -10,
         style: {
-          fontSize: "16px",
-          fontWeight: 400,
-          color: isDarkMode ? "#F3F4F6" : "#1F2937",
+          fontWeight: "400",
+          fontSize: "14px",
         },
       },
       labels: {
-        formatter: formatValue,
+        formatter: (val: number) => formatValue(val),
         style: {
           fontSize: "12px",
-          colors: isDarkMode ? "#D1D5DB" : "#4B5563",
-          fontWeight: 400,
         },
       },
     },
-    tooltip: { theme: isDarkMode ? "dark" : "light" },
-    responsive: [{ breakpoint: 768, options: { chart: { height: 300 } } }],
+    tooltip: {
+      y: {
+        formatter: (val: number) => formatValue(val),
+      },
+    },
+    legend: { position: "bottom" },
   };
 
   const series = [
@@ -189,19 +182,15 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   return (
     <div
       className={`overflow-hidden rounded-2xl shadow-md border ${
-        isDarkMode
+        theme === "dark"
           ? "border-gray-700 bg-gray-900 dark:border-gray-800"
           : "border-gray-200 bg-white"
       }`}
       style={{ padding: "1rem" }}
     >
       {size === "full" && (
-        <div className="flex justify-between items-center mb-15 app-subheading">
-          <h2
-            className="app-subheading"
-          >
-            Fulfillment Efficiency Summary
-          </h2>
+        <div className="flex justify-between items-center mb-20 app-subheading">
+          <h2 className="app-subheading">Fulfillment Efficiency Summary</h2>
 
           <button
             onClick={handleViewMore}
@@ -212,7 +201,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
           </button>
         </div>
       )}
-      <div className="w-full" style={{ height: size === "small" ? 220 : 400 }}>
+      <div className="w-full mb-11" style={{ height: size === "small" ? 220 : 400 }}>
         {isLoading ? (
           <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>
         ) : error ? (
