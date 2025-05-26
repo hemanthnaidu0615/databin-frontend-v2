@@ -3,6 +3,8 @@ import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
+// import AccountSettings from "./pages/AccountSettings";
+import Support from "./pages/Support";
 import Videos from "./pages/UiElements/Videos";
 import Images from "./pages/UiElements/Images";
 import Alerts from "./pages/UiElements/Alerts";
@@ -59,6 +61,8 @@ export default function App() {
             <Route path="fulfillment" element={<FulfillmentPage />} />
             <Route path="scheduler" element={<Scheduler />} />
             <Route path="profile" element={<UserProfiles />} />
+            {/* <Route path="account-settings" element={<AccountSettings />} /> */}
+            <Route path="support" element={<Support />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="blank" element={<Blank />} />
             <Route path="basic-tables" element={<BasicTables />} />

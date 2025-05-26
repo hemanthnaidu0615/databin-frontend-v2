@@ -881,3 +881,19 @@ span.flatpickr-weekday,
 .app-dropdown-label {
   @apply text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block;
 }
+
+/* index.css */
+.apexcharts-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  color: #6B7280;
+}
+
+.apexcharts-text tspan {
+  font-size: 11px;
+}
+
+.dark .apexcharts-text {
+  color: #9CA3AF; /* Tailwind's gray-400 for better contrast in dark mode */
+}
