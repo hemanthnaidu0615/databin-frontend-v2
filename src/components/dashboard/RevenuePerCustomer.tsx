@@ -39,8 +39,8 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
 
 
   const formatValue = (Revenue: number) => {
-    if (Revenue >= 1_000_000) return (Revenue / 1_000_000).toFixed(1) + "m";
-    if (Revenue >= 1_000) return (Revenue / 1_000).toFixed(1) + "k";
+    if (Revenue >= 1_000_000) return (Revenue / 1_000_000).toFixed(1) + "M";
+    if (Revenue >= 1_000) return (Revenue / 1_000).toFixed(1) + "K";
     return Revenue.toFixed(0);
   };
 

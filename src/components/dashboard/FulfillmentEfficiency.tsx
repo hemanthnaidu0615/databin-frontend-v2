@@ -42,8 +42,8 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
   const formatValue = (Orders: number) => {
-    if (Orders >= 1_000_000) return (Orders / 1_000_000).toFixed(1) + "m";
-    if (Orders >= 1_000) return (Orders / 1_000).toFixed(1) + "k";
+    if (Orders >= 1_000_000) return (Orders / 1_000_000).toFixed(1) + "M";
+    if (Orders >= 1_000) return (Orders / 1_000).toFixed(1) + "K";
     return Orders.toFixed(0);
   };
 
