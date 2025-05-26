@@ -15,14 +15,10 @@ interface Shipment {
   shipping_method: string;
   shipment_status: string;
   shipment_cost: number;
+  shipment_cost_usd?: number;
 }
 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
-
-const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012;
-  return rupees * exchangeRate;
-};
 
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -30,14 +26,28 @@ const formatValue = (value: number): string => {
   return value.toFixed(0);
 };
 
+function convertToUSD(rupees: number): number {
+  const exchangeRate = 0.012;
+  return rupees * exchangeRate;
+}
+
 const ShippingBreakdown = () => {
   const { theme } = useTheme();
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  const [page, setPage] = useState(0);
+  const [rows, setRows] = useState(10);
+
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
+
+  useEffect(() => {
+    setPage(0);
+  }, [startDate, endDate, enterpriseKey]);
 
   useEffect(() => {
     const fetchShipments = async () => {
@@ -52,39 +62,43 @@ const ShippingBreakdown = () => {
       const params = new URLSearchParams({
         startDate: formattedStart,
         endDate: formattedEnd,
+        page: page.toString(),
+        size: rows.toString(),
       });
 
       if (enterpriseKey) {
-        params.append('enterpriseKey', enterpriseKey);
+        params.append("enterpriseKey", enterpriseKey);
       }
 
       try {
         const response = await axiosInstance.get(`/analysis/shipment-summary?${params.toString()}`);
-        const data = response.data as { shipments?: Shipment[] };
-       setShipments(
-  (data.shipments || []).map((s) => ({
-    ...s,
-    shipment_cost_usd: convertToUSD(s.shipment_cost),
-  }))
-);
+        const data = response.data as { shipments: Shipment[]; count: number };
 
+        setShipments(
+          (data.shipments || []).map((s) => ({
+            ...s,
+            shipment_cost_usd: convertToUSD(s.shipment_cost),
+          }))
+        );
+        setTotalRecords(data.count || 0);
       } catch (err) {
         console.error("Error fetching shipments:", err);
         setError("Failed to load shipment data");
+        setShipments([]);
+        setTotalRecords(0);
       } finally {
         setLoading(false);
       }
     };
+
     fetchShipments();
-  }, [startDate, endDate, enterpriseKey]);
+  }, [startDate, endDate, enterpriseKey, page, rows]);
 
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
-
     shipments.forEach((shipment) => {
-      totals[shipment.carrier] = (totals[shipment.carrier] || 0) + shipment.shipment_cost;
+      totals[shipment.carrier] = (totals[shipment.carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
     });
-
     return Object.entries(totals)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -107,7 +121,9 @@ const ShippingBreakdown = () => {
           fontSize: "12px",
           colors: theme === "dark" ? "#CBD5E1" : "#334155",
         },
+
       },
+      crosshairs: { show: false },
       title: {
         text: "Carriers",
         style: {
@@ -127,14 +143,12 @@ const ShippingBreakdown = () => {
         },
       },
       labels: {
-        formatter: function (val: number) {
-          return `$${formatValue(convertToUSD(val))}`;
-        }
-      }
+        formatter: (val: number) => `$${formatValue(val)}`,
+
+      },
+
     },
-    dataLabels: {
-      enabled: false,
-    },
+    dataLabels: { enabled: false },
     plotOptions: {
       bar: {
         borderRadius: 4,
@@ -147,19 +161,22 @@ const ShippingBreakdown = () => {
     colors: ["#2563eb"],
     tooltip: {
       y: {
-        formatter: function (val: number) {
-          return `$${convertToUSD(val).toFixed(2)}`;
-        }
-      }
-    }
+        formatter: (val: number) => `$${val.toFixed(2)}`,
+      },
+    },
   }), [carrierTotals, theme]);
 
   const chartSeries = [
     {
       name: "Shipping Cost (USD)",
-      data: Object.values(carrierTotals).map(cost => convertToUSD(cost)),
+      data: Object.values(carrierTotals),
     },
   ];
+
+  const onPage = (event: any) => {
+    setPage(event.page);
+    setRows(event.rows);
+  };
 
   if (!startDate || !endDate) {
     return (
@@ -185,9 +202,7 @@ const ShippingBreakdown = () => {
   if (error) {
     return (
       <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="p-4 text-red-500 dark:text-red-400">
-          {error}
-        </div>
+        <div className="p-4 text-red-500 dark:text-red-400">{error}</div>
       </Card>
     );
   }
@@ -195,12 +210,10 @@ const ShippingBreakdown = () => {
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
       <div className="px-4 pt-4">
-        <h2 className="app-subheading mb-4">
-          Shipping Breakdown
-        </h2>
+        <h2 className="app-subheading mb-4">Shipping Breakdown</h2>
       </div>
 
-      <div className="px-4 pb-6  app-table-heading ">
+      <div className="px-4 pb-6 app-table-heading">
         <DataTable
           value={shipments}
           stripedRows
@@ -209,51 +222,34 @@ const ShippingBreakdown = () => {
           scrollHeight="400px"
           sortMode="multiple"
           emptyMessage="No shipments found for the selected filters"
+          paginator
+          lazy
+          loading={loading}
+          totalRecords={totalRecords}
+          first={page * rows}
+          rows={rows}
+          onPage={onPage}
+          rowsPerPageOptions={[5, 10, 20, 50, 100]}
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} shipments"
+          paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
         >
+          <Column field="carrier" header="Carrier" sortable style={{ minWidth: "120px" }} />
+          <Column field="shipping_method" header="Method" sortable style={{ minWidth: "120px" }} />
+          <Column field="shipment_status" header="Status" sortable style={{ minWidth: "120px" }} />
           <Column
-            field="carrier"
-            header="Carrier"
+            field="shipment_cost_usd"
+            header="Cost ($)"
             sortable
-            className="app-table-content"
-            style={{ minWidth: '120px' }}
+            body={(rowData) => `$${formatValue(rowData.shipment_cost_usd ?? 0)}`}
+            style={{ minWidth: "120px" }}
           />
-          <Column
-            field="shipping_method"
-            header="Method"
-            sortable
-            className="app-table-content"
-            style={{ minWidth: '120px' }}
-          />
-          <Column
-            field="shipment_status"
-            header="Status"
-            sortable
-            className="app-table-content"
-            style={{ minWidth: '120px' }}
-          />
-  <Column
-  field="shipment_cost_usd"
-  header="Cost ($)"
-  sortable
-  className="app-table-content"
-  body={(rowData) => `$${formatValue(rowData.shipment_cost_usd)}`}
-  style={{ minWidth: '120px' }}
-/>
-
         </DataTable>
       </div>
 
       <div className="px-4 pb-6">
-        <h3 className="app-subheading mb-4">
-          Top 10 Carriers by Total Cost
-        </h3>
+        <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
         {Object.keys(carrierTotals).length > 0 ? (
-          <Chart
-            options={chartOptions}
-            series={chartSeries}
-            type="bar"
-            height={350}
-          />
+          <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
         ) : (
           <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">
             No shipment data available for visualization
