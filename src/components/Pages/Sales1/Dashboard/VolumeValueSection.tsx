@@ -89,7 +89,7 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
                 Quantity
               </th>
               <th className="px-4 py-2 app-table-heading">
-                Total (USD)
+                Total Amount
               </th>
             </tr>
           </thead>
