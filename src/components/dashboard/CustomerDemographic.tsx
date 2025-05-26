@@ -74,8 +74,8 @@ const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
 
 const formatValue = (value: number) => {
   const usd = value * INR_TO_USD;
-  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}m`;
-  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}k`;
+  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}M`;
+  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}K`;
   return `$${usd.toFixed(0)}`;
 };
 

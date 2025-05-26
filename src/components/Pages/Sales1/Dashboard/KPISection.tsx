@@ -57,29 +57,30 @@ const KPISection: React.FC = () => {
 
         const data = response.data as KPIResponse;
 
+        const formatValue = (value: number): string => {
+          if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+          if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
+          return value.toFixed(0);
+        };
+
         const mappedData: KPIItem[] = [
           {
             title: "Total Sales",
-            value: `$${convertToUSD(Number(data.total_sales)).toLocaleString(
-              undefined,
-              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-            )}`,
+            value: `$${formatValue(convertToUSD(Number(data.total_sales)))}`,
             icon: PrimeIcons.DOLLAR,
             border: "#8b5cf6",
             iconColor: "text-purple-500",
           },
           {
             title: "Total Orders",
-            value: Number(data.total_orders).toLocaleString(),
+            value: formatValue(Number(data.total_orders)),
             icon: PrimeIcons.SHOPPING_CART,
             border: "#22c55e",
             iconColor: "text-green-500",
           },
           {
             title: "Average Order Value",
-            value: `$${convertToUSD(
-              Number(data.avg_order_value)
-            ).toLocaleString(undefined, {
+            value: `$${convertToUSD(Number(data.avg_order_value)).toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}`,
@@ -89,27 +90,20 @@ const KPISection: React.FC = () => {
           },
           {
             title: "Total Taxes",
-            value: `$${convertToUSD(Number(data.total_taxes)).toLocaleString(
-              undefined,
-              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-            )}`,
+            value: `$${formatValue(convertToUSD(Number(data.total_taxes)))}`,
             icon: PrimeIcons.PERCENTAGE,
             border: "#ef4444",
             iconColor: "text-red-500",
           },
           {
             title: "Shipping Fees",
-            value: `$${convertToUSD(
-              Number(data.total_shipping_fees)
-            ).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`,
+            value: `$${formatValue(convertToUSD(Number(data.total_shipping_fees)))}`,
             icon: PrimeIcons.SEND,
             border: "#3b82f6",
             iconColor: "text-blue-500",
           },
         ];
+
 
         setKpis(mappedData);
       } catch (error) {

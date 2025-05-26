@@ -7,11 +7,21 @@ const convertToUSD = (rupees: number): number => {
   return parseFloat((rupees * exchangeRate).toFixed(2));
 };
 
+const formatCurrencyCompact = (value: number): string => {
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
+  return value.toFixed(0);
+};
+
 const formatValue = (label: string, value: string | number): string => {
   if (label === 'ROI' || label === 'Margin') return value.toString();
-  if (typeof value === 'number') return `$ ${value.toLocaleString()}`;
+  if (typeof value === 'number') {
+    const formatted = formatCurrencyCompact(value);
+    return label === 'Total Units' ? formatted : `$ ${formatted}`;
+  }
   return value;
 };
+
 
 const TopSummaryPanel: React.FC = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
@@ -49,7 +59,7 @@ const TopSummaryPanel: React.FC = () => {
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
-  if (!metrics) return null; 
+  if (!metrics) return null;
 
   const financialBreakdown = [
     { label: 'Line Price Total', value: convertToUSD(metrics.line_price_total), sign: '+', color: 'bg-green-500' },
@@ -60,17 +70,18 @@ const TopSummaryPanel: React.FC = () => {
 
   const summaryMetrics = [
     { label: 'Margin', value: metrics.margin_percent, color: 'bg-indigo-500' },
-    { label: 'Total Units', value: metrics.total_units.toLocaleString(), color: 'bg-teal-500' },
+    { label: 'Total Units', value: metrics.total_units, color: 'bg-teal-500' },
     { label: 'ROI', value: metrics.roi_percent, color: 'bg-orange-500' },
   ];
 
   return (
     <div className="flex flex-col gap-6 items-center w-full px-4">
+      {/* Top Box: Financial Breakdown */}
       <div className="w-full max-w-screen-xl p-4 border rounded-2xl shadow-md bg-white dark:bg-gray-900 dark:border-gray-700 flex flex-wrap items-center justify-center gap-3">
         <div className="flex flex-col items-center text-center px-2 shrink-0">
           <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Booked</span>
           <span className="text-lg font-bold text-black-700 dark:text-white-400">
-            $ {convertToUSD(metrics.total_booked).toLocaleString()}
+            $ {formatCurrencyCompact(convertToUSD(metrics.total_booked))}
           </span>
           <div className="mt-1 h-1 w-full rounded-full bg-blue-500" />
         </div>
@@ -80,7 +91,7 @@ const TopSummaryPanel: React.FC = () => {
             <div className="flex flex-col items-center text-center px-2 shrink-0">
               <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{item.label}</span>
               <span className="text-base font-semibold text-dark-700 dark:text-white-400">
-                $ {item.value.toLocaleString()}
+                $ {formatCurrencyCompact(item.value)}
               </span>
               <div className={`mt-1 h-1 w-full rounded-full ${item.color}`} />
             </div>

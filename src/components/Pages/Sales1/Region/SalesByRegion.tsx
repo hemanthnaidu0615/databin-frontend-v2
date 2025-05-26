@@ -36,8 +36,8 @@ const convertToUSD = (rupees: number): number => {
 };
 
 const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "m";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "k";
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
 };
 
@@ -115,7 +115,7 @@ export const SalesByRegion = () => {
   const convertToTableData = (data: StateData[]): TableData[] => {
     return data.map((state) => ({
       state: state.state_name,
-      totalDollar: formatterUSD.format(convertToUSD(state.state_revenue)),
+      totalDollar: `$ ${formatValue(convertToUSD(state.state_revenue))}`,
       percentage: `${state.revenue_percentage?.toFixed(2) || 0}%`,
       quantity: formatValue(state.state_quantity),
       avgRevenue: formatterUSD.format(convertToUSD(state.average_revenue_per_unit || 0))
