@@ -43,14 +43,17 @@ const formatDate = (date: Date): string => {
 
 const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<InventoryItem[]>([]);
   const [productSearch, setProductSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(5);
+  const [rows, setRows] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
   const isMobile = useIsMobile();
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const [startDate, endDate] = dateRange || [];
 
   const statusColors = {
     Available: "text-green-500",
@@ -58,103 +61,86 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
     "Low Stock": "text-yellow-500",
   };
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange || [];
+  const fetchData = async () => {
+    if (!startDate || !endDate) return;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!startDate || !endDate) return;
+    const formattedStart = formatDate(new Date(startDate));
+    const formattedEnd = formatDate(new Date(endDate));
+    const page = first / rows;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
-
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
-
-      try {
-        const response = await axiosInstance.get("/inventory/widget-data", {
-          params,
-        });
-        const data = response.data as { data?: any[] };
-        const apiData = data.data || [];
-
-        const mappedData: InventoryItem[] = apiData.map((item: any) => ({
-          name: item.product_name,
-          category: item.category_name,
-          warehouse: item.warehouse_name,
-          source: item.warehouse_function,
-          states: item.warehouse_state,
-          status: item.inventory_status,
-        }));
-
-        setInventoryItems(mappedData);
-      } catch (error) {
-        console.error("Failed to fetch inventory data:", error);
-      }
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      page: page.toString(),
+      size: rows.toString(),
+      ...(productSearch && { searchProduct: productSearch }),
+      ...(selectedStatus && { statusFilter: selectedStatus }),
+      ...(selectedCategory && { categoryFilter: selectedCategory }),
     };
 
-    fetchData();
-  }, [startDate, endDate]);
+    try {
+      const response = await axiosInstance.get("/inventory/widget-data", {
+        params,
+      });
 
-  useEffect(() => {
-    const applyFilters = () => {
-      let data = [...inventoryItems];
+      const data = response.data as { count?: number; data?: any[] };
+      setTotalCount(data.count || 0);
 
+      const mappedData: InventoryItem[] = (data.data || []).map((item: any) => ({
+        name: item.product_name,
+        category: item.category_name,
+        warehouse: item.warehouse_name,
+        source: item.warehouse_function,
+        states: item.warehouse_state,
+        status: item.inventory_status,
+      }));
+
+      let filtered = mappedData;
       if (filters.selectedRegion) {
-        data = data.filter(
-          (item) => item.warehouse.toLowerCase() === filters.selectedRegion.toLowerCase()
+        filtered = filtered.filter(item =>
+          item.warehouse.toLowerCase() === filters.selectedRegion.toLowerCase()
         );
       }
-
       if (filters.selectedSource) {
-        data = data.filter(
-          (item) => item.source.toLowerCase() === filters.selectedSource.toLowerCase()
+        filtered = filtered.filter(item =>
+          item.source.toLowerCase() === filters.selectedSource.toLowerCase()
         );
       }
-
       if (filters.selectedLocation) {
-        data = data.filter((item) =>
+        filtered = filtered.filter(item =>
           item.states.toLowerCase().includes(filters.selectedLocation.toLowerCase())
         );
       }
 
-      if (selectedStatus) {
-        data = data.filter((item) => item.status === selectedStatus);
-      }
+      setInventoryItems(filtered);
+    } catch (error) {
+      console.error("Failed to fetch inventory data:", error);
+    }
+  };
 
-      if (selectedCategory) {
-        data = data.filter((item) => item.category === selectedCategory);
-      }
+  useEffect(() => {
+    fetchData();
+  }, [startDate, endDate, first, rows, productSearch, selectedStatus, selectedCategory, filters]);
 
-      if (productSearch) {
-        data = data.filter((item) =>
-          item.name.toLowerCase().includes(productSearch.toLowerCase())
-        );
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      try {
+        const response = await axiosInstance.get("/inventory/category-names");
+        setAllCategories(Array.isArray(response.data) ? response.data.map((cat: any) => cat.name) : []);
+      } catch (error) {
+        console.error("Failed to fetch all categories:", error);
       }
-
-      setFilteredItems(data);
     };
 
-    applyFilters();
-  }, [inventoryItems, filters, selectedStatus, selectedCategory, productSearch]);
+    fetchAllCategories();
+  }, []);
 
-  const getPageOptions = () => {
-    const total = filteredItems.length;
-    if (total <= 5) return [5];
-    if (total <= 10) return [5, 10];
-    if (total <= 20) return [5, 10, 15, 20];
-    if (total <= 50) return [10, 20, 30, 50];
-    return [10, 20, 50, 100];
-  };
+
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
       <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-        <h3 className=" app-section-title ">
-          Inventory List
-        </h3>
+        <h3 className="app-section-title">Inventory List</h3>
         <div className="flex gap-2 flex-wrap items-center">
           <input
             type="text"
@@ -179,7 +165,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
             <option value="Out of Stock">Out of Stock</option>
             <option value="Low Stock">Low Stock</option>
           </select>
-
           <select
             value={selectedCategory}
             onChange={(e) => {
@@ -189,12 +174,13 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
             className="px-3 py-1 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30"
           >
             <option value="">Category</option>
-            {Array.from(new Set(inventoryItems.map((item) => item.category))).map((cat, i) => (
+            {allCategories.map((cat, i) => (
               <option key={i} value={cat}>
                 {cat}
               </option>
             ))}
           </select>
+
         </div>
       </div>
 
@@ -212,21 +198,15 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredItems.slice(first, first + rows).map((item, idx) => (
+            {inventoryItems.map((item, idx) => (
               <tr key={idx} className="border-t dark:border-gray-700">
                 <td className="py-2 px-1 app-table-content">{item.name}</td>
                 <td className="py-2 px-1 app-table-content">{item.category}</td>
-                <td className="py-2 px-1 app-table-content">
-                  {item.warehouse}
-                </td>
+                <td className="py-2 px-1 app-table-content">{item.warehouse}</td>
                 <td className="py-2 px-1 app-table-content">{item.source}</td>
                 <td className="py-2 px-1 app-table-content">{item.states}</td>
                 <td className="py-2 px-1 app-table-content font-medium">
-                  <span
-                    className={
-                      statusColors[item.status as keyof typeof statusColors]
-                    }
-                  >
+                  <span className={statusColors[item.status as keyof typeof statusColors]}>
                     {item.status}
                   </span>
                 </td>
@@ -238,11 +218,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4 mt-4">
-        {filteredItems.slice(first, first + rows).map((item, idx) => (
+        {inventoryItems.map((item, idx) => (
           <div key={idx} className="border rounded-lg p-6 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <div className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-              {item.name}
-            </div>
+            <div className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">{item.name}</div>
             <div className="grid grid-cols-2 text-xs gap-y-2 text-gray-700 dark:text-gray-300">
               <div><strong>Category:</strong> {item.category}</div>
               <div><strong>Warehouse:</strong> {item.warehouse}</div>
@@ -266,14 +244,14 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
             <Paginator
               first={first}
               rows={rows}
-              totalRecords={filteredItems.length}
+              totalRecords={totalCount}
               onPageChange={(e) => {
                 setFirst(e.first);
                 setRows(e.rows);
               }}
               template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
               currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
-              rowsPerPageOptions={[5, 10, 20]}
+              rowsPerPageOptions={[5, 10, 20, 50]}
               className="w-full text-sm dark:text-white"
             />
           </div>
@@ -295,7 +273,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                   }}
                   className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
                 >
-                  {getPageOptions().map((option) => (
+                  {[5, 10, 20, 50].map((option) => (
                     <option key={option} value={option}>
                       {option}
                     </option>
@@ -303,7 +281,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                 </select>
               </div>
               <div className="text-black dark:text-white font-medium">
-                Page {Math.floor(first / rows) + 1} of {Math.ceil(filteredItems.length / rows)}
+                Page {Math.floor(first / rows) + 1} of {Math.ceil(totalCount / rows)}
               </div>
             </div>
 
@@ -324,16 +302,14 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               </button>
               <button
                 onClick={() => setFirst(first + rows)}
-                disabled={first + rows >= filteredItems.length}
+                disabled={first + rows >= totalCount}
                 className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Next
               </button>
               <button
-                onClick={() =>
-                  setFirst((Math.ceil(filteredItems.length / rows) - 1) * rows)
-                }
-                disabled={first + rows >= filteredItems.length}
+                onClick={() => setFirst((Math.ceil(totalCount / rows) - 1) * rows)}
+                disabled={first + rows >= totalCount}
                 className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏭ Last
@@ -342,6 +318,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
           </div>
         )}
       </div>
+
     </div>
   );
 };
