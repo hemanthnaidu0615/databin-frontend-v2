@@ -115,7 +115,7 @@ export const SalesByRegion = () => {
   const convertToTableData = (data: StateData[]): TableData[] => {
     return data.map((state) => ({
       state: state.state_name,
-      totalDollar: formatterUSD.format(convertToUSD(state.state_revenue)),
+      totalDollar: `$ ${formatValue(convertToUSD(state.state_revenue))}`,
       percentage: `${state.revenue_percentage?.toFixed(2) || 0}%`,
       quantity: formatValue(state.state_quantity),
       avgRevenue: formatterUSD.format(convertToUSD(state.average_revenue_per_unit || 0))
