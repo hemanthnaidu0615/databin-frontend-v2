@@ -66,15 +66,6 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
-
-      if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
-      if (selectedCarrier) params.append("carrier", selectedCarrier);
-      if (selectedMethod) params.append("shippingMethod", selectedMethod);
-
       try {
         const response = await axiosInstance.get("shipment-status/distribution", {
           params: {
@@ -129,11 +120,8 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
         text: "Carrier",
         style: { color: labelColor, fontSize: "13px", fontWeight: 500 },
       },
-      crosshairs: {
-        show: false,
-      },
+      crosshairs: { show: false },
     },
-
     yaxis: {
       labels: {
         style: { colors: labelColor, fontSize: "13px", fontWeight: 500 },
@@ -149,7 +137,8 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
     colors: ["#8b5cf6"],
     dataLabels: { enabled: false },
     tooltip: {
-      theme: "dark",
+      // Dynamically choose theme based on dark mode
+      theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
       x: { show: true },
       y: {
         formatter: (val) => `${val} shipments`,
@@ -167,23 +156,6 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
-
-      if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
-      }
-
-      if (selectedCarrier) {
-        params.append("carrier", selectedCarrier);
-      }
-
-      if (selectedMethod) {
-        params.append("shippingMethod", selectedMethod);
-      }
-
       try {
         const response = await axiosInstance.get("carrier-performance", {
           params: {
@@ -195,7 +167,6 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
           },
         });
         const data = response.data as Array<{ carrier: string; shipment_count: number }>;
-
 
         console.log("Carrier performance data:", data);
 
@@ -218,9 +189,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-8">
       {/* Shipment Status Donut Chart */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-zinc-200 dark:border-gray-800">
-        <h3 className="app-subheading">
-          Shipment Status
-        </h3>
+        <h3 className="app-subheading">Shipment Status</h3>
         <Chart
           options={statusOptions}
           series={statusSeries}
@@ -231,9 +200,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
 
       {/* Carrier Performance Bar Chart */}
       <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border border-zinc-200 dark:border-gray-800">
-        <h3 className="app-subheading">
-          Carrier Performance
-        </h3>
+        <h3 className="app-subheading">Carrier Performance</h3>
         <Chart
           options={carrierOptions}
           series={carrierSeries}

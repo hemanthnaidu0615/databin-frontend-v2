@@ -120,7 +120,7 @@ const ProfitabilityTable: React.FC = () => {
         </h2>
         <button
           onClick={handleViewMore}
-          className="text-lg font-medium hover:underline"
+          className="text-xs font-medium hover:underline"
           style={{ color: "#9614d0" }}
         >
           View More

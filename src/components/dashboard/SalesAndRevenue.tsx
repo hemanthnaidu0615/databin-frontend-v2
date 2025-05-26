@@ -15,15 +15,15 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}.000`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
-export default function StatisticsChart({ }: StatisticsChartProps) {
+export default function StatisticsChart({}: StatisticsChartProps) {
   const navigate = useNavigate();
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
@@ -31,7 +31,9 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
 
   const [startDate, endDate] = dateRange;
 
-  const [salesByMonth, setSalesByMonth] = useState<number[]>(new Array(12).fill(0));
+  const [salesByMonth, setSalesByMonth] = useState<number[]>(
+    new Array(12).fill(0)
+  );
   const [revenue, setRevenue] = useState<number[]>(new Array(12).fill(0));
 
   const fetchChartData = async () => {
@@ -47,18 +49,28 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     try {
       const [salesRes, revenueRes] = await Promise.all([
         axiosInstance.get("/sales-revenue/sales-data", { params: apiParams }),
-        axiosInstance.get("/sales-revenue/revenue-trends", { params: apiParams }),
+        axiosInstance.get("/sales-revenue/revenue-trends", {
+          params: apiParams,
+        }),
       ]);
 
       const salesMap = new Array(12).fill(0);
-      (salesRes.data as { sales_data: { month: string; total_sales: number }[] }).sales_data.forEach((item) => {
+      (
+        salesRes.data as {
+          sales_data: { month: string; total_sales: number }[];
+        }
+      ).sales_data.forEach((item) => {
         const monthIndex = new Date(item.month).getMonth();
         salesMap[monthIndex] = item.total_sales;
       });
       setSalesByMonth(salesMap);
 
       const monthlyRevenueMap = new Array(12).fill(0);
-      (revenueRes.data as { revenue_trends: { month: string; monthly_revenue: number }[] }).revenue_trends.forEach((item) => {
+      (
+        revenueRes.data as {
+          revenue_trends: { month: string; monthly_revenue: number }[];
+        }
+      ).revenue_trends.forEach((item) => {
         const monthIndex = new Date(item.month).getMonth();
         monthlyRevenueMap[monthIndex] = item.monthly_revenue;
       });
@@ -78,75 +90,75 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     return value.toFixed(0);
   };
 
-  const options: ApexOptions = {
-    legend: { show: true },
-    colors: ["#9614d0", "#d5baff"],
-    chart: {
-      fontFamily: "Outfit, sans-serif",
-      type: "area",
-      toolbar: { show: false },
+const options: ApexOptions = {
+  legend: { show: true, position: "bottom" },
+  colors: ["#9614d0", "#d5baff"],
+  chart: {
+    type: "area",
+    toolbar: { show: false },
+  },
+  stroke: { curve: "smooth", width: [2, 2] },
+  fill: { type: "gradient", gradient: { opacityFrom: 0.65, opacityTo: 0 } },
+  markers: {
+    size: 3,
+    strokeColors: "#fff",
+    strokeWidth: 2,
+    hover: { size: 5 },
+  },
+  grid: {
+    xaxis: { lines: { show: false } },
+    yaxis: { lines: { show: true } },
+  },
+  dataLabels: { enabled: false },
+  tooltip: {
+    enabled: true,
+    y: {
+      formatter: formatValue,
     },
-    stroke: { curve: "smooth", width: [2, 2] },
-    fill: { type: "gradient", gradient: { opacityFrom: 0.65, opacityTo: 0 } },
-    markers: {
-      size: 3,
-      strokeColors: "#fff",
-      strokeWidth: 2,
-      hover: { size: 5 },
-    },
-    grid: {
-      xaxis: { lines: { show: false } },
-      yaxis: { lines: { show: true } },
-    },
-    dataLabels: { enabled: false },
-    tooltip: {
-      enabled: true,
-      y: {
-        formatter: formatValue,
+  },
+  xaxis: {
+    type: "category",
+    categories: [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ],
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    title: {
+      text: "Month",
+      style: {
+        fontWeight: "normal",
+        fontSize: "14px",
+        color: "#9614d0",
       },
     },
-    xaxis: {
-      type: "category",
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-      title: {
-        text: "Month",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: "#6B7280",
-        },
+    labels: {
+      style: {
+        fontSize: "12px",
+  
       },
     },
-    yaxis: {
-      labels: {
-        style: { fontSize: "11px", colors: ["#6B7280"] },
-        formatter: formatValue,
-      },
-      title: {
-        text: "Value",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: "#6B7280",
-        },
+    crosshairs: { show: false },
+  },
+  yaxis: {
+    title: {
+      text: "Value",
+      style: {
+        fontWeight: "normal",
+        fontSize: "14px",
+        color: "#9614d0",
       },
     },
-  };
+    labels: {
+      formatter: formatValue,
+      style: {
+        fontSize: "12px",
+
+      },
+    },
+  },
+};
+
 
   const handleViewMore = () => {
     navigate("/sales/dashboard");
@@ -160,9 +172,7 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
   return (
     <div className="min-h-[400px] flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex justify-between mb-1">
-        <h3 className="app-subheading">
-          Sales & Revenue
-        </h3>
+        <h3 className="app-subheading">Sales & Revenue</h3>
         <button
           onClick={handleViewMore}
           className="text-xs font-medium hover:underline"
