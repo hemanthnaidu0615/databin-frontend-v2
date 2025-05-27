@@ -36,8 +36,8 @@ const Navbar: React.FC = () => {
   const { theme } = useTheme(); // ✅ Added
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
-    new Date("2025-03-19"),
-    new Date("2025-03-20"),
+    new Date("2025-05-26"),
+    new Date("2025-05-27"),
   ]);
 
   useScrollLock(isMobileRightOpen);

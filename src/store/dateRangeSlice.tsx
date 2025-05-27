@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  dates: ["2025-03-19T00:00:00.000Z", "2025-03-20T00:00:00.000Z"],
+  dates: ["2025-05-27T00:00:00.000Z", "2025-05-28T00:00:00.000Z"],
 };
 
 const dateRangeSlice = createSlice({
