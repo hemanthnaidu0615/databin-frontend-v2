@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import OrderFilters from "./OrderFilters";
-import OrderList from "./OrderList";
+// import OrderList from "./OrderList";
+import OrderList1 from "./OrdersList1";
 import { fetchOrders } from "./ordersData";
 import { Order } from "./ordersData";
 import { axiosInstance } from "../../../axios";
@@ -207,7 +208,8 @@ const OrdersPage: React.FC = () => {
       />
 
       <div className="mt-6">
-        <OrderList orders={filteredOrders} />
+        {/* <OrderList orders={filteredOrders} /> */}
+        <OrderList1 orders={filteredOrders} />
       </div>
     </div>
   );
