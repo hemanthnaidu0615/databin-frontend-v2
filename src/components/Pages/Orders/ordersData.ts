@@ -7,6 +7,7 @@ export interface Product {
   qty: number;
   price: number;
   estimatedDelivery?: string;
+  discount?: number; // 🆕 added!
 }
 
 export interface Order {
@@ -15,6 +16,7 @@ export interface Order {
   customer: string;
   product: string;
   total: number;
+  discount?: number; // 🆕 added!
   status: "Delivered" | "Delayed" | "In Transit";
   orderType?: string;
   paymentMethod: "Credit Card" | "PayPal" | "Google Pay";
@@ -22,8 +24,7 @@ export interface Order {
   shippingInfo?: {
     carrier: string | null;
     trackingId: string | null;
-    eta: string | null;
-    delivered: string | null;
+    method: string | null;
   };
   fulfillmentTimeline?: {
     orderPlaced: string | null;
@@ -41,8 +42,12 @@ export interface Order {
 const safeString = (value: any, fallback: string = "N/A") =>
   value ?? fallback;
 
-const safeNumber = (value: any, fallback: number = 0) =>
-  typeof value === "number" ? value : fallback;
+const safeNumber = (value: any, fallback: number = 0) => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && !isNaN(Number(value))) return Number(value);
+  return fallback;
+};
+
 
 const formatDate = (date: any): string =>
   new Date(date).toISOString().split("T")[0];
@@ -54,19 +59,18 @@ const mapProduct = (
 ): Product => ({
   name: safeString(p.name),
   specs: safeString(p.category, ""),
-  // ⏬ If order status is "Delayed", default product status to "Pending"
   status: orderStatus === "Delayed" ? "Pending" : orderStatus,
   qty: safeNumber(p.quantity ?? p.qty),
   price: safeNumber(p.unit_price ?? p.price),
   estimatedDelivery: eta ?? undefined,
+  discount: safeNumber(p.discount ?? 0), // 🟢 Product-level discount
 });
 
 
 const mapShippingInfo = (shipping: any) => ({
   carrier: shipping.carrier ?? null,
   trackingId: shipping.tracking_id ?? null,
-  eta: shipping.eta ?? null,
-  delivered: shipping.delivered ?? null,
+  method: shipping.method ?? null,
 });
 
 const mapCustomerDetails = (info: any) => ({
@@ -130,23 +134,25 @@ export const fetchOrders = async (
       const statusFinal: Order["status"] =
         summary.status ?? order.shipment_status ?? "Pending";
 
+      const eta = summary.eta ?? null;
+      const delivered = summary.delivered ?? null;
+
       return {
-        id: String(summary.order_id ?? order.order_id),
-        date: formatDate(summary.order_date ?? order.order_date),
-        customer: safeString(customerInfo.name ?? order.customer_name, "Unknown"),
-        product: order.product_name ?? products[0]?.name ?? "N/A",
-        total: products[0]?.total ?? order.total ?? 0,
-        status: statusFinal,
-        paymentMethod:
-          summary.payment_method ?? order.payment_method ?? "PayPal",
-        orderType: summary.order_type ?? "Online",
-        products: products.map((p: any) =>
-          mapProduct(p, statusFinal, shipping.eta ?? null)
-        ),
-        shippingInfo: mapShippingInfo(shipping),
-        fulfillmentTimeline: mapFulfillmentTimeline(timeline),
-        customerDetails: mapCustomerDetails(customerInfo),
-      };
+  id: String(summary.order_id ?? order.order_id),
+  date: formatDate(summary.order_date ?? order.order_date),
+  customer: safeString(customerInfo.name ?? order.customer_name, "Unknown"),
+  product: order.product_name ?? products[0]?.name ?? "N/A",
+  total: products[0]?.total ?? order.total ?? 0,
+  discount: safeNumber(summary.discount ?? 0), // 🟢 Order-level discount
+  status: statusFinal,
+  paymentMethod: summary.payment_method ?? order.payment_method ?? "PayPal",
+  orderType: summary.order_type ?? "Online",
+  products: products.map((p: any) => mapProduct(p, statusFinal, eta)),
+  shippingInfo: mapShippingInfo(shipping),
+  fulfillmentTimeline: mapFulfillmentTimeline(timeline),
+  customerDetails: mapCustomerDetails(customerInfo),
+};
+
     });
   } catch (error) {
     console.error("Error fetching orders:", error);

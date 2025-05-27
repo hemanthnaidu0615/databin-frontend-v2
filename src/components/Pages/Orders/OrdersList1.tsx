@@ -6,6 +6,8 @@ import { Paginator } from "primereact/paginator";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+(jsPDF as any).API.autoTable = autoTable;
+
 export const fetchOrderDetails = async (
   orderId: string
 ): Promise<any | null> => {
@@ -138,44 +140,185 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
 
   const handleDownloadInvoice = (order: Order, details: any) => {
     const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Invoice", 14, 20);
+    const marginLeft = 14;
+    let y = 20;
 
-    // Order Summary
+    // Header
+    doc.setFontSize(18);
+    doc.text("INVOICE", marginLeft, y);
+
+    y += 10;
     doc.setFontSize(12);
-    doc.text(`Order ID: ${order.id}`, 14, 30);
-    doc.text(`Date: ${order.date}`, 14, 36);
-    doc.text(`Customer: ${order.customer}`, 14, 42);
-    doc.text(`Status: ${order.status}`, 14, 48);
+    doc.text(`Order ID: ${order.id}`, marginLeft, y);
+    y += 6;
+    doc.text(`Date: ${order.date}`, marginLeft, y);
+    y += 6;
+    doc.text(`Customer: ${order.customer}`, marginLeft, y);
+    y += 6;
+    doc.text(`Status: ${order.status}`, marginLeft, y);
 
-    // Customer Info
+    y += 10;
+    doc.setFont("helvetica", "bold");
+    doc.text("Customer Information", marginLeft, y);
+    doc.setFont("helvetica", "normal");
+
     const customerInfo = details.customer_info ?? {};
-    doc.text(`Email: ${customerInfo.email ?? "N/A"}`, 14, 60);
-    doc.text(`Phone: ${customerInfo.phone ?? "N/A"}`, 14, 66);
-    doc.text(`Address: ${customerInfo.address ?? "N/A"}`, 14, 72);
+    y += 6;
+    doc.text(`Name: ${order.customer}`, marginLeft, y);
+    y += 6;
+    doc.text(`Email: ${customerInfo.email ?? "N/A"}`, marginLeft, y);
+    y += 6;
+    doc.text(`Phone: ${customerInfo.phone ?? "N/A"}`, marginLeft, y);
+    y += 6;
+    doc.text(`Address: ${customerInfo.address ?? "N/A"}`, marginLeft, y);
+
+    y += 10;
+    doc.setFont("helvetica", "bold");
+    doc.text("Order Summary", marginLeft, y);
+    doc.setFont("helvetica", "normal");
+
+    y += 6;
+    doc.text(`Payment Method: ${order.paymentMethod}`, marginLeft, y);
+    y += 6;
+    doc.text(
+      `Order Type: ${details.order_summary?.order_type ?? "N/A"}`,
+      marginLeft,
+      y
+    );
+    y += 6;
+    doc.text(
+      `ETA: ${
+        details.order_summary?.eta
+          ? new Date(details.order_summary.eta).toLocaleString()
+          : "N/A"
+      }`,
+      marginLeft,
+      y
+    );
+    y += 6;
+    doc.text(
+      `Delivered: ${
+        details.order_summary?.delivered
+          ? new Date(details.order_summary.delivered).toLocaleString()
+          : "N/A"
+      }`,
+      marginLeft,
+      y
+    );
 
     // Products Table
+    y += 10;
     const products = details.products ?? order.products ?? [];
     const productRows = products.map((p: any) => [
       p.name,
+      p.category || p.specs || "",
       p.quantity ?? p.qty,
       formatUSD(p.unit_price ?? p.price),
       formatUSD((p.quantity ?? p.qty) * (p.unit_price ?? p.price)),
     ]);
 
     autoTable(doc, {
-      startY: 80,
-      head: [["Product", "Qty", "Unit Price", "Total"]],
+      startY: y,
+      head: [["Product", "Category", "Qty", "Unit Price", "Total"]],
       body: productRows,
+      theme: "grid",
+      headStyles: { fillColor: [22, 160, 133], textColor: 255 },
+      styles: { fontSize: 10 },
     });
 
+    // Totals
+    const subtotal = products.reduce(
+      (acc: number, p: any) =>
+        acc + (p.quantity ?? p.qty) * (p.unit_price ?? p.price),
+      0
+    );
+    const shipping = products.reduce(
+      (acc: number, p: any) => acc + (p.shipping ?? 0),
+      0
+    );
+    const tax = products.reduce((acc: number, p: any) => acc + (p.tax ?? 0), 0);
+    const discount = products.reduce(
+      (acc: number, p: any) => acc + (p.discount ?? 0),
+      0
+    );
+    const total = subtotal + shipping + tax - discount;
+
+    let finalY = (doc as any).lastAutoTable.finalY + 10;
+
+    doc.setFontSize(12);
+    doc.text(`Subtotal: ${formatUSD(subtotal)}`, marginLeft, finalY);
+    finalY += 6;
+    doc.text(`Shipping: ${formatUSD(shipping)}`, marginLeft, finalY);
+    finalY += 6;
+    doc.text(`Tax: ${formatUSD(tax)}`, marginLeft, finalY);
+    finalY += 6;
+    doc.text(`Discount: ${formatUSD(discount)}`, marginLeft, finalY);
+    finalY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total: ${formatUSD(total)}`, marginLeft, finalY);
+    doc.setFont("helvetica", "normal");
+
+    // Fulfillment Timeline
+    finalY += 10;
+    doc.setFont("helvetica", "bold");
+    doc.text("Fulfillment Timeline", marginLeft, finalY);
+    doc.setFont("helvetica", "normal");
+
+    const timeline = details.fulfillment_timeline ?? {};
+    finalY += 6;
+    doc.text(
+      `Order Placed: ${
+        timeline.order_placed
+          ? new Date(timeline.order_placed).toLocaleString()
+          : "N/A"
+      }`,
+      marginLeft,
+      finalY
+    );
+    finalY += 6;
+    doc.text(
+      `Payment Confirmed: ${
+        timeline.payment_confirmed
+          ? new Date(timeline.payment_confirmed).toLocaleString()
+          : "N/A"
+      }`,
+      marginLeft,
+      finalY
+    );
+    finalY += 6;
+    doc.text(
+      `Delivered: ${
+        timeline.delivered
+          ? new Date(timeline.delivered).toLocaleString()
+          : "N/A"
+      }`,
+      marginLeft,
+      finalY
+    );
+
+    // Save file
     doc.save(`invoice_${order.id}.pdf`);
   };
-
   // 🟡 Helper: Generate expanded sections
   const getExpandedSections = (order: Order): ExpandedSection[] => {
     const details = orderDetails.get(order.id) || {};
     const products = details.products || order.products || [];
+
+    // 🌟 Adjust Delivered to be after ETA only if it's incorrect
+    if (
+      order.status === "Delayed" &&
+      details.order_summary?.eta &&
+      details.order_summary?.delivered
+    ) {
+      const etaDate = new Date(details.order_summary.eta);
+      const deliveredDate = new Date(details.order_summary.delivered);
+
+      if (deliveredDate < etaDate) {
+        // Adjust delivered to be 5 minutes after ETA
+        const adjustedDelivered = new Date(etaDate.getTime() + 5 * 60 * 1000);
+        details.order_summary.delivered = adjustedDelivered.toISOString();
+      }
+    }
 
     const sections: ExpandedSection[] = [
       {
@@ -186,6 +329,12 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
           Status: <OrderStatusBadge status={order.status} />,
           "Payment Method": order.paymentMethod,
           "Order Type": details.order_summary?.order_type ?? "N/A",
+          ETA: details.order_summary?.eta
+            ? new Date(details.order_summary.eta).toLocaleString()
+            : "N/A",
+          Delivered: details.order_summary?.delivered
+            ? new Date(details.order_summary.delivered).toLocaleString()
+            : "N/A",
         },
       },
       {
@@ -207,27 +356,55 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
         title: "Shipping Information",
         data: {
           Carrier: details.shipping_info?.carrier ?? "N/A",
-          "Tracking #": details.shipping_info?.tracking_id ?? "N/A",
+          Tracking: details.shipping_info?.tracking_id ?? "N/A",
           Method: details.shipping_info?.method ?? "N/A",
-          ETA: details.shipping_info?.eta ?? "N/A",
-          Delivered: details.shipping_info?.delivered ?? "N/A",
         },
       },
       {
         title: "Fulfillment Timeline",
         timeline: [
-          { label: "Order Placed", date: order.date, complete: true },
-          { label: "Payment Confirmed", date: order.date, complete: true },
+          {
+            label: "Order Placed",
+            date: details.fulfillment_timeline?.order_placed
+              ? new Date(
+                  details.fulfillment_timeline.order_placed
+                ).toLocaleString()
+              : "N/A",
+            complete: true,
+          },
+          {
+            label: "Payment Confirmed",
+            date: details.fulfillment_timeline?.payment_confirmed
+              ? new Date(
+                  details.fulfillment_timeline.payment_confirmed
+                ).toLocaleString()
+              : "N/A",
+            complete: true,
+          },
           order.status === "Delivered"
-            ? { label: "Delivered", date: "Apr 04", complete: true }
+            ? {
+                label: "Delivered",
+                date: details.order_summary?.delivered
+                  ? new Date(details.order_summary.delivered).toLocaleString()
+                  : "N/A",
+                complete: true,
+              }
             : order.status === "Delayed"
             ? {
                 label: "Delayed",
-                date: "Apr 04",
+                date: details.order_summary?.eta
+                  ? new Date(details.order_summary.eta).toLocaleString()
+                  : "N/A",
                 complete: false,
                 Delayed: true,
               }
-            : { label: "Delivered", date: "", complete: false },
+            : {
+                label: "Delivered",
+                date: details.order_summary?.eta
+                  ? new Date(details.order_summary.eta).toLocaleString()
+                  : "N/A",
+                complete: false,
+              },
         ],
       },
       { title: "Actions" },
@@ -309,19 +486,28 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                               (p.quantity ?? p.qty) * (p.unit_price ?? p.price),
                             0
                           );
+
                           const shipping = products.reduce(
                             (acc, p) => acc + (p.shipping ?? 0),
                             0
                           );
+
                           const tax = products.reduce(
                             (acc, p) => acc + (p.tax ?? 0),
                             0
                           );
+
+                          const discount = products.reduce(
+                            (acc, p) => acc + (p.discount ?? 0),
+                            0
+                          );
+
                           const total =
                             products.reduce(
                               (acc, p) => acc + (p.total ?? 0),
                               0
                             ) || subtotal + shipping + tax;
+
                           return (
                             <div
                               key={idx}
@@ -394,6 +580,14 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                   </span>
                                   <span className="text-gray-900 dark:text-white">
                                     {formatUSD(tax)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Discount
+                                  </span>
+                                  <span className="text-gray-900 dark:text-white">
+                                    {formatUSD(discount)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between font-semibold text-base pt-3">
