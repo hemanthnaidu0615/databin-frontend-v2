@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { axiosInstance } from "../../axios";
 import "primeicons/primeicons.css";
+import logo from "../../images/logo.png";
 
-type UserData = {
-  email: string;
-  role: {
-    identifier: string;
-  };
-};
+const features = [
+  { title: "Custom Alerts & Thresholds", icon: "pi pi-bell" },
+  { title: "Automated Alerting", icon: "pi pi-bolt" },
+  { title: "Role-Based Views", icon: "pi pi-users" },
+  { title: "Real-time Dashboard", icon: "pi pi-chart-bar" },
+  { title: "Live Data Visualizations", icon: "pi pi-chart-line" },
+  { title: "Performance Metrics Monitoring", icon: "pi pi-sliders-h" },
+];
 
 function Signin() {
   const [email, setEmail] = useState("");
@@ -23,154 +27,158 @@ function Signin() {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
-  const isValidEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email) return setError("Email is required");
-    if (!isValidEmail(email))
-      return setError("Please enter a valid email address");
-    if (!password) return setError("Password is required");
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
 
     setError("");
     setLoading(true);
 
     try {
-      const response = await axiosInstance.post<UserData>(
+      const { data } = await axiosInstance.post(
         "auth/login",
         { email, password },
         { withCredentials: true }
       );
-      const userData = response.data;
+      const role = data.role.identifier || "";
+      const isAdmin = role.includes("admin") || role.includes("manager");
 
-      const roleIdentifier = userData.role.identifier ?? "";
-      const isAdminOrManager =
-        roleIdentifier.includes("admin") || roleIdentifier.includes("manager");
-
-      navigate("/", {
-        state: { user: userData, showUserManagement: isAdminOrManager },
-      });
-    } catch (err: any) {
-      console.error("Login error:", err);
-
-      if (err.response && err.response.status === 401) {
-        setError("Invalid email or password");
-      } else {
-        setError("Login failed. Please try again later.");
-      }
-    }
-    finally {
+      navigate("/", { state: { user: data, showUserManagement: isAdmin } });
+    } catch {
+      setError("Invalid credentials or server error.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all duration-500 ease-in-out">
-      {/* Theme Toggle Button */}
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-gradient-to-tr from-[#f6edff] to-[#e9f0ff] dark:from-gray-900 dark:to-black transition-all duration-500">
+      {/* Dark mode toggle */}
+      <div className="absolute top-6 right-6 z-10">
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white hover:scale-105 transition-all duration-300 ease-in-out"
+          className="p-3 rounded-full bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-md"
         >
-          <i
-            className={`pi ${darkMode ? "pi-sun" : "pi-moon"}`}
-            style={{ fontSize: "1rem" }}
-          ></i>
+          <i className={`pi ${darkMode ? "pi-sun" : "pi-moon"}`} />
         </button>
       </div>
 
-      {/* Login Card */}
-      <div className="relative py-3 sm:max-w-sm sm:mx-auto w-full">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#9614d0] to-[#9614d0] shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-        <div className="relative px-4 py-10 bg-white dark:bg-gray-800 shadow-lg sm:rounded-3xl sm:p-20">
-          <form onSubmit={handleSubmit}>
-            <div className="max-w-md mx-auto">
-              <h1 className="text-2xl font-semibold mb-4 text-center">Login</h1>
+      {/* Feature Panel */}
+      <motion.div
+        className="w-full lg:w-1/2 p-6 sm:p-10 flex flex-col justify-center space-y-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md"
+        initial={{ x: -50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="flex items-center gap-4 mb-4">
+          <img src={logo} alt="logo" className="h-10" />
+          <h1 className="text-xl sm:text-2xl font-bold text-[#9614d0] dark:text-white">
+            Welcome to Databin
+          </h1>
+        </div>
 
-              {/* Email Input */}
-              <div className="mb-6">
-                <label htmlFor="email" className="block text-sm font-medium">
-                  Email
-                </label>
+        <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg max-w-xl">
+          Power your decisions with advanced alerting, live dashboards, and real-time metrics.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {features.map((feature, idx) => (
+            <motion.div
+              key={idx}
+              className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-900 shadow-md border-l-4 border-[#9614d0] select-none"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * idx, type: "spring", stiffness: 100, damping: 12 }}
+            >
+              <motion.i
+                className={`${feature.icon} text-[#9614d0] text-xl`}
+                initial={{ rotate: 0 }}
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{
+                  delay: 0.3 + idx * 0.1,
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  ease: "easeInOut",
+                }}
+              />
+              <span className="text-gray-800 dark:text-white font-medium">
+                {feature.title}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Login Panel */}
+      <motion.div
+        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10"
+        initial={{ x: 50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.div
+          className="w-full max-w-md bg-white/90 dark:bg-gray-800/90 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 backdrop-blur-xl"
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+        >
+          <h2 className="text-xl sm:text-2xl font-bold text-center text-[#9614d0] dark:text-white">
+            Sign In
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm mb-1 text-gray-800 dark:text-white">Email</label>
+              <input
+                type="email"
+                className="w-full px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9614d0]"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1 text-gray-800 dark:text-white">Password</label>
+              <div className="relative">
                 <input
-                  type="text"
-                  id="email"
-                  className="mt-1 w-full bg-transparent border-b-2 border-gray-300 focus:outline-none h-10"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  className="w-full px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9614d0]"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
-              </div>
-
-              {/* Password Input */}
-              <div className="relative mb-6">
-                <label htmlFor="password" className="block text-sm font-medium">
-                  Password
-                </label>
-                <div className="flex items-center border-b-2 border-gray-300">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    className="flex-1 h-10 bg-transparent focus:outline-none"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="px-2 text-gray-500 dark:text-gray-300"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    <i
-                      className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"
-                        }`}
-                      style={{ fontSize: "1rem" }}
-                    ></i>
-                  </button>
-                </div>
-              </div>
-
-              {/* Error Message */}
-              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className={`bg-[#9614d0] text-white rounded-md px-4 py-2 w-full cursor-pointer ${loading ? "opacity-60" : ""
-                  }`}
-              >
-                {loading ? "Logging in..." : "Submit"}
-              </button>
-
-              {/* Forgot Password */}
-              <div className="mt-4 text-center">
                 <button
                   type="button"
-                  className="text-gray-500 dark:text-gray-300 cursor-pointer"
-                  onClick={() => navigate("/change-password")}
+                  className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-300"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  Forgot Password?
+                  <i className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"}`} />
                 </button>
               </div>
-
-              {/* Optional Signup Section */}
-              {/* <div className="mt-4 text-center">
-<p>
-                  New user?
-<button
-                    type="button"
-                    className="ml-2 border border-[#9614d0] px-4 py-2 rounded text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-[#9614d0] hover:text-white transition"
-                    onClick={() => navigate('/signup')}
->
-                    Sign up
-</button>
-</p>
-</div> */}
             </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-2 bg-[#9614d0] text-white rounded-md transition ${
+                loading ? "opacity-50" : ""
+              }`}
+            >
+              {loading ? "Signing in..." : "Login"}
+            </button>
           </form>
-        </div>
-      </div>
+
+          <div className="text-center text-sm">
+            <button
+              className="text-gray-500 dark:text-gray-300 underline"
+              onClick={() => navigate("/change-password")}
+            >
+              Forgot Password?
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
