@@ -26,17 +26,62 @@ export interface Order {
     delivered: string | null;
   };
   fulfillmentTimeline?: {
-    orderPlaced: string;
-    paymentConfirmed: string;
+    orderPlaced: string | null;
+    paymentConfirmed: string | null;
     delivered: string | null;
   };
   customerDetails?: {
-    email?: string;
-    phone?: string;
-    address?: string;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
   };
 }
 
+// 🟡 Helpers
+const safeString = (value: any, fallback: string = "N/A") =>
+  value ?? fallback;
+
+const safeNumber = (value: any, fallback: number = 0) =>
+  typeof value === "number" ? value : fallback;
+
+const formatDate = (date: any): string =>
+  new Date(date).toISOString().split("T")[0];
+
+const mapProduct = (
+  p: any,
+  orderStatus: Order["status"],
+  eta: string | null
+): Product => ({
+  name: safeString(p.name),
+  specs: safeString(p.category, ""),
+  // ⏬ If order status is "Delayed", default product status to "Pending"
+  status: orderStatus === "Delayed" ? "Pending" : orderStatus,
+  qty: safeNumber(p.quantity ?? p.qty),
+  price: safeNumber(p.unit_price ?? p.price),
+  estimatedDelivery: eta ?? undefined,
+});
+
+
+const mapShippingInfo = (shipping: any) => ({
+  carrier: shipping.carrier ?? null,
+  trackingId: shipping.tracking_id ?? null,
+  eta: shipping.eta ?? null,
+  delivered: shipping.delivered ?? null,
+});
+
+const mapCustomerDetails = (info: any) => ({
+  email: info.email ?? null,
+  phone: info.phone ?? null,
+  address: info.address ?? null,
+});
+
+const mapFulfillmentTimeline = (timeline: any) => ({
+  orderPlaced: timeline.order_placed ?? null,
+  paymentConfirmed: timeline.payment_confirmed ?? null,
+  delivered: timeline.delivered ?? null,
+});
+
+// 🟡 Main fetch function
 export const fetchOrders = async (
   startDate: string,
   endDate: string,
@@ -47,7 +92,6 @@ export const fetchOrders = async (
   searchCustomer?: string,
   searchOrderId?: string,
   enterpriseKey?: string
-
 ): Promise<Order[]> => {
   if (
     !startDate ||
@@ -59,68 +103,49 @@ export const fetchOrders = async (
   }
 
   try {
-    const response = await axiosInstance.get(
-      "/orders/filtered",
-      {
-        params: {
-          startDate,
-          endDate,
-          status,
-          orderType,
-          paymentMethod,
-          carrier,
-          searchCustomer,
-          searchOrderId,
-          enterpriseKey,
-        },
-      });
+    const response = await axiosInstance.get("/orders/filtered", {
+      params: {
+        startDate,
+        endDate,
+        status,
+        orderType,
+        paymentMethod,
+        carrier,
+        searchCustomer,
+        searchOrderId,
+        enterpriseKey,
+      },
+    });
 
-    const filteredOrders = response.data;
-    if (!Array.isArray(filteredOrders)) return [];
+    const rawOrders = response.data;
+    if (!Array.isArray(rawOrders)) return [];
 
-    return filteredOrders.map((order: any): Order => {
+    return rawOrders.map((order: any): Order => {
       const summary = order.order_summary ?? {};
       const products = order.products ?? [];
       const customerInfo = order.customer_info ?? {};
       const shipping = order.shipping_info ?? {};
       const timeline = order.fulfillment_timeline ?? {};
 
+      const statusFinal: Order["status"] =
+        summary.status ?? order.shipment_status ?? "Pending";
+
       return {
         id: String(summary.order_id ?? order.order_id),
-        date: new Date(summary.order_date ?? order.order_date)
-          .toISOString()
-          .split("T")[0],
-        customer: customerInfo.name ?? order.customer_name ?? "Unknown",
+        date: formatDate(summary.order_date ?? order.order_date),
+        customer: safeString(customerInfo.name ?? order.customer_name, "Unknown"),
         product: order.product_name ?? products[0]?.name ?? "N/A",
         total: products[0]?.total ?? order.total ?? 0,
-        status: summary.status ?? order.shipment_status ?? "Pending",
+        status: statusFinal,
         paymentMethod:
           summary.payment_method ?? order.payment_method ?? "PayPal",
         orderType: summary.order_type ?? "Online",
-        products: products.map((p: any) => ({
-          name: p.name,
-          specs: p.category ?? "",
-          status: summary.status ?? "Pending",
-          qty: p.quantity ?? 0,
-          price: p.unit_price ?? 0,
-          estimatedDelivery: shipping.eta ?? null,
-        })),
-        shippingInfo: {
-          carrier: shipping.carrier ?? null,
-          trackingId: shipping.tracking_id ?? null,
-          eta: shipping.eta ?? null,
-          delivered: shipping.delivered ?? null,
-        },
-        fulfillmentTimeline: {
-          orderPlaced: timeline.order_placed ?? null,
-          paymentConfirmed: timeline.payment_confirmed ?? null,
-          delivered: timeline.delivered ?? null,
-        },
-        customerDetails: {
-          email: customerInfo.email ?? null,
-          phone: customerInfo.phone ?? null,
-          address: customerInfo.address ?? null,
-        },
+        products: products.map((p: any) =>
+          mapProduct(p, statusFinal, shipping.eta ?? null)
+        ),
+        shippingInfo: mapShippingInfo(shipping),
+        fulfillmentTimeline: mapFulfillmentTimeline(timeline),
+        customerDetails: mapCustomerDetails(customerInfo),
       };
     });
   } catch (error) {

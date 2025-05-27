@@ -1052,7 +1052,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                           View Invoice
                         </button>
                         <button className="w-full rounded-xl px-4 py-2 bg-white text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 transition-colors">
-                          Print Order
+                          Print 
                         </button>
                       </div>
                     </div>

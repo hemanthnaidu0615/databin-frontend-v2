@@ -2,28 +2,9 @@ import React, { useState, useCallback } from "react";
 import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { axiosInstance } from "../../../axios";
-
-// 🟢 Reusable Key-Value Display Component
-const KeyValueDisplay: React.FC<{ data: Record<string, any>; title: string }> = ({
-  data,
-  title,
-}) => (
-  <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
-    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-      {title}
-    </h3>
-    <div className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
-      {Object.entries(data).map(([key, value]) => (
-        <div key={key} className="flex justify-between items-center">
-          <span className="text-gray-500 dark:text-gray-400">{key}</span>
-          <span className="text-right text-gray-900 dark:text-white font-medium">
-            {value}
-          </span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+import { Paginator } from "primereact/paginator";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export const fetchOrderDetails = async (
   orderId: string
@@ -75,7 +56,9 @@ const statusColors: Record<string, string> = {
   Delayed: "bg-red-600",
 };
 
-const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({ status }) => (
+const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({
+  status,
+}) => (
   <span
     className={`inline-block px-2 py-1 text-xs rounded-full text-white ${statusColors[status]}`}
   >
@@ -83,6 +66,36 @@ const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({ status }) => 
   </span>
 );
 
+// 🟡 Reusable Key-Value Display
+const KeyValueDisplay: React.FC<{
+  data: Record<string, any>;
+  title: string;
+}> = ({ data, title }) => (
+  <div className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl">
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+      {title}
+    </h3>
+    <div className="text-sm space-y-2 text-gray-600 dark:text-gray-300">
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} className="flex justify-between items-center">
+          <span className="text-gray-500 dark:text-gray-400">{key}</span>
+          <span className="text-right text-gray-900 dark:text-white font-medium">
+            {value}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// 🟡 Section Types
+type ExpandedSection =
+  | { title: string; data: Record<string, any> }
+  | { title: "Products"; products: any[] }
+  | { title: "Fulfillment Timeline"; timeline: any[] }
+  | { title: "Actions" };
+
+// 🟡 Main Component
 const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = useState<Map<string, any>>(new Map());
@@ -95,9 +108,8 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
       if (orderDetails.has(orderId) || loadingOrderDetails.get(orderId)) return;
       setLoadingOrderDetails((prev) => new Map(prev).set(orderId, true));
       fetchOrderDetails(orderId).then((details) => {
-        if (details) {
+        if (details)
           setOrderDetails((prev) => new Map(prev).set(orderId, details));
-        }
         setLoadingOrderDetails((prev) => new Map(prev).set(orderId, false));
       });
     },
@@ -113,6 +125,115 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     if (!expandedOrderIds.includes(order.id) && !orderDetails.has(order.id)) {
       fetchAndSetDetails(order.id);
     }
+  };
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(20);
+  const options = [20, 50, 100];
+
+  const onPageChange = (e: { first: number; rows: number }) => {
+    setFirst(e.first);
+    setRows(e.rows);
+    setExpandedOrderIds([]);
+  };
+
+  const handleDownloadInvoice = (order: Order, details: any) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Invoice", 14, 20);
+
+    // Order Summary
+    doc.setFontSize(12);
+    doc.text(`Order ID: ${order.id}`, 14, 30);
+    doc.text(`Date: ${order.date}`, 14, 36);
+    doc.text(`Customer: ${order.customer}`, 14, 42);
+    doc.text(`Status: ${order.status}`, 14, 48);
+
+    // Customer Info
+    const customerInfo = details.customer_info ?? {};
+    doc.text(`Email: ${customerInfo.email ?? "N/A"}`, 14, 60);
+    doc.text(`Phone: ${customerInfo.phone ?? "N/A"}`, 14, 66);
+    doc.text(`Address: ${customerInfo.address ?? "N/A"}`, 14, 72);
+
+    // Products Table
+    const products = details.products ?? order.products ?? [];
+    const productRows = products.map((p: any) => [
+      p.name,
+      p.quantity ?? p.qty,
+      formatUSD(p.unit_price ?? p.price),
+      formatUSD((p.quantity ?? p.qty) * (p.unit_price ?? p.price)),
+    ]);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [["Product", "Qty", "Unit Price", "Total"]],
+      body: productRows,
+    });
+
+    doc.save(`invoice_${order.id}.pdf`);
+  };
+
+  // 🟡 Helper: Generate expanded sections
+  const getExpandedSections = (order: Order): ExpandedSection[] => {
+    const details = orderDetails.get(order.id) || {};
+    const products = details.products || order.products || [];
+
+    const sections: ExpandedSection[] = [
+      {
+        title: "Order Summary",
+        data: {
+          "Order ID": order.id,
+          "Order Date": order.date,
+          Status: <OrderStatusBadge status={order.status} />,
+          "Payment Method": order.paymentMethod,
+          "Order Type": details.order_summary?.order_type ?? "N/A",
+        },
+      },
+      {
+        title: "Customer Information",
+        data: {
+          Name: order.customer,
+          Email: details.customer_info?.email ?? "N/A",
+          Phone:
+            cleanAndFormatPhoneNumber(details.customer_info?.phone ?? "") ||
+            "N/A",
+          Address: details.customer_info?.address ?? "N/A",
+        },
+      },
+      {
+        title: "Products",
+        products,
+      },
+      {
+        title: "Shipping Information",
+        data: {
+          Carrier: details.shipping_info?.carrier ?? "N/A",
+          "Tracking #": details.shipping_info?.tracking_id ?? "N/A",
+          Method: details.shipping_info?.method ?? "N/A",
+          ETA: details.shipping_info?.eta ?? "N/A",
+          Delivered: details.shipping_info?.delivered ?? "N/A",
+        },
+      },
+      {
+        title: "Fulfillment Timeline",
+        timeline: [
+          { label: "Order Placed", date: order.date, complete: true },
+          { label: "Payment Confirmed", date: order.date, complete: true },
+          order.status === "Delivered"
+            ? { label: "Delivered", date: "Apr 04", complete: true }
+            : order.status === "Delayed"
+            ? {
+                label: "Delayed",
+                date: "Apr 04",
+                complete: false,
+                Delayed: true,
+              }
+            : { label: "Delivered", date: "", complete: false },
+        ],
+      },
+      { title: "Actions" },
+    ];
+
+    return sections;
   };
 
   return (
@@ -130,9 +251,8 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             <th className="py-3 px-4 hidden md:table-cell">Payment</th>
           </tr>
         </thead>
-
         <tbody className="text-sm text-gray-800 dark:text-gray-200">
-          {orders.map((order) => (
+          {orders.slice(first, first + rows).map((order) => (
             <React.Fragment key={order.id}>
               <tr
                 className="hover:bg-gray-50 hover:dark:bg-white/[0.05] transition-colors cursor-pointer"
@@ -147,8 +267,12 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                 </td>
                 <td className="py-3 px-4">{order.id}</td>
                 <td className="py-3 px-4 hidden md:table-cell">{order.date}</td>
-                <td className="py-3 px-4 hidden md:table-cell">{order.customer}</td>
-                <td className="py-3 px-4 hidden md:table-cell">{order.product}</td>
+                <td className="py-3 px-4 hidden md:table-cell">
+                  {order.customer}
+                </td>
+                <td className="py-3 px-4 hidden md:table-cell">
+                  {order.product}
+                </td>
                 <td className="py-3 px-4 hidden md:table-cell">
                   {formatUSD(order.total)}
                 </td>
@@ -167,43 +291,191 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                     className="px-4 pb-6 pt-2 bg-gray-50 dark:bg-gray-950 rounded-b-lg"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {[
-                        {
-                          title: "Order Summary",
-                          data: {
-                            "Order ID": order.id,
-                            "Order Date": order.date,
-                            Status: <OrderStatusBadge status={order.status} />,
-                            "Payment Method": order.paymentMethod,
-                            "Order Type":
-                              orderDetails.get(order.id)?.order_summary
-                                ?.order_type ?? "N/A",
-                          },
-                        },
-                        {
-                          title: "Customer Information",
-                          data: {
-                            Name: order.customer,
-                            Email:
-                              orderDetails.get(order.id)?.customer_info?.email ??
-                              "N/A",
-                            Phone:
-                              cleanAndFormatPhoneNumber(
-                                orderDetails.get(order.id)?.customer_info?.phone ??
-                                  ""
-                              ) || "N/A",
-                            Address:
-                              orderDetails.get(order.id)?.customer_info?.address ??
-                              "N/A",
-                          },
-                        },
-                      ].map((section, idx) => (
-                        <KeyValueDisplay
-                          key={idx}
-                          title={section.title}
-                          data={section.data}
-                        />
-                      ))}
+                      {getExpandedSections(order).map((section, idx) => {
+                        if ("data" in section) {
+                          return (
+                            <KeyValueDisplay
+                              key={idx}
+                              title={section.title}
+                              data={section.data}
+                            />
+                          );
+                        }
+                        if ("products" in section) {
+                          const products = section.products;
+                          const subtotal = products.reduce(
+                            (acc, p) =>
+                              acc +
+                              (p.quantity ?? p.qty) * (p.unit_price ?? p.price),
+                            0
+                          );
+                          const shipping = products.reduce(
+                            (acc, p) => acc + (p.shipping ?? 0),
+                            0
+                          );
+                          const tax = products.reduce(
+                            (acc, p) => acc + (p.tax ?? 0),
+                            0
+                          );
+                          const total =
+                            products.reduce(
+                              (acc, p) => acc + (p.total ?? 0),
+                              0
+                            ) || subtotal + shipping + tax;
+                          return (
+                            <div
+                              key={idx}
+                              className="bg-gray-100 dark:bg-white/5 text-gray-800 dark:text-gray-300 p-6 rounded-xl col-span-1"
+                            >
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                                Products
+                              </h3>
+
+                              <div className="space-y-6">
+                                {products.map((product: any, i: number) => {
+                                  const quantity =
+                                    product.quantity ?? product.qty;
+                                  const unitPrice =
+                                    product.unit_price ?? product.price;
+                                  const totalPrice = quantity * unitPrice;
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="border-b border-gray-200 dark:border-white/10 pb-4 last:border-none last:pb-0"
+                                    >
+                                      <div className="flex justify-between items-start">
+                                        <div>
+                                          <div className="text-base font-medium text-gray-900 dark:text-white">
+                                            {product.name}
+                                          </div>
+                                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                                            {product.category ||
+                                              product.specs ||
+                                              ""}
+                                          </div>
+                                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                            Qty: {quantity}
+                                          </div>
+                                          <div className="text-xs text-gray-600 dark:text-gray-400">
+                                            Unit Price: {formatUSD(unitPrice)}
+                                          </div>
+                                        </div>
+                                        <div className="text-right text-gray-900 dark:text-white font-semibold">
+                                          {formatUSD(totalPrice)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <hr className="border-gray-300 dark:border-white/10 my-5" />
+
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Subtotal
+                                  </span>
+                                  <span className="text-gray-900 dark:text-white">
+                                    {formatUSD(subtotal)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Shipping
+                                  </span>
+                                  <span className="text-gray-900 dark:text-white">
+                                    {formatUSD(shipping)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Tax
+                                  </span>
+                                  <span className="text-gray-900 dark:text-white">
+                                    {formatUSD(tax)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between font-semibold text-base pt-3">
+                                  <span className="text-gray-900 dark:text-white">
+                                    Total
+                                  </span>
+                                  <span className="text-gray-900 dark:text-white">
+                                    {formatUSD(total)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        } else if ("timeline" in section) {
+                          return (
+                            <div
+                              key={idx}
+                              className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl"
+                            >
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                Fulfillment Timeline
+                              </h3>
+                              <div className="relative pl-6">
+                                {section.timeline.map((step, i, arr) => (
+                                  <div key={i} className="relative pb-8">
+                                    {i !== arr.length - 1 && (
+                                      <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
+                                    )}
+                                    <span
+                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
+                                        step.Delayed
+                                          ? "bg-red-500 border-red-500"
+                                          : step.complete
+                                          ? "bg-green-500 border-green-500"
+                                          : "bg-gray-400 border-gray-400"
+                                      }`}
+                                    />
+                                    <div className="ml-4">
+                                      <p
+                                        className={`text-sm font-medium ${
+                                          step.Delayed
+                                            ? "text-red-600 dark:text-red-400"
+                                            : "text-gray-800 dark:text-white"
+                                        }`}
+                                      >
+                                        {step.label}
+                                      </p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                                        {step.date || "In Transit"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        } else if (section.title === "Actions") {
+                          return (
+                            <div
+                              key={idx}
+                              className="bg-gray-100 dark:bg-white/5 p-4 rounded-xl flex flex-col"
+                            >
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                                Actions
+                              </h3>
+                              <div className="space-y-2">
+                                <button
+                                  onClick={() =>
+                                    handleDownloadInvoice(
+                                      order,
+                                      orderDetails.get(order.id)
+                                    )
+                                  }
+                                  className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl"
+                                >
+                                  View Invoice
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        }
+                      })}
                     </div>
                   </td>
                 </tr>
@@ -212,6 +484,101 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
           ))}
         </tbody>
       </table>
+
+      {/* Paginator */}
+      <div className="p-4 bg-white dark:bg-gray-900 rounded-b-lg">
+        {/* Full paginator for screens >= sm */}
+        <div
+          className="hidden sm:block dark:text-gray-100 
+      [&_.p-paginator]:bg-white 
+      [&_.p-paginator]:dark:bg-gray-900 
+      [&_.p-paginator]:border-none"
+        >
+          <Paginator
+            first={first}
+            rows={rows}
+            totalRecords={orders.length}
+            onPageChange={onPageChange}
+            rowsPerPageOptions={options}
+            template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+            className="dark:text-gray-100 dark:bg-gray-900"
+          />
+        </div>
+
+        {/* Mobile paginator for screens < sm */}
+        <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
+          <div className="flex flex-col gap-2 mb-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="mobileRows" className="whitespace-nowrap">
+                Rows per page:
+              </label>
+              <select
+                id="mobileRows"
+                value={rows}
+                onChange={(e) => {
+                  setRows(Number(e.target.value));
+                  setFirst(0);
+                }}
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
+              >
+                {options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              Page {Math.floor(first / rows) + 1} of{" "}
+              {Math.ceil(orders.length / rows)}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-between gap-2">
+            <button
+              onClick={() => onPageChange({ first: 0, rows })}
+              disabled={first === 0}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              ⏮ First
+            </button>
+            <button
+              onClick={() =>
+                onPageChange({ first: Math.max(0, first - rows), rows })
+              }
+              disabled={first === 0}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() =>
+                onPageChange({
+                  first: first + rows < orders.length ? first + rows : first,
+                  rows,
+                })
+              }
+              disabled={first + rows >= orders.length}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              Next
+            </button>
+            <button
+              onClick={() =>
+                onPageChange({
+                  first: (Math.ceil(orders.length / rows) - 1) * rows,
+                  rows,
+                })
+              }
+              disabled={first + rows >= orders.length}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              ⏭ Last
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
