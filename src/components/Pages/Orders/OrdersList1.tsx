@@ -3,6 +3,8 @@ import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { axiosInstance } from "../../../axios";
 import { Paginator } from "primereact/paginator";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export const fetchOrderDetails = async (
   orderId: string
@@ -132,6 +134,42 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     setFirst(e.first);
     setRows(e.rows);
     setExpandedOrderIds([]);
+  };
+
+  const handleDownloadInvoice = (order: Order, details: any) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Invoice", 14, 20);
+
+    // Order Summary
+    doc.setFontSize(12);
+    doc.text(`Order ID: ${order.id}`, 14, 30);
+    doc.text(`Date: ${order.date}`, 14, 36);
+    doc.text(`Customer: ${order.customer}`, 14, 42);
+    doc.text(`Status: ${order.status}`, 14, 48);
+
+    // Customer Info
+    const customerInfo = details.customer_info ?? {};
+    doc.text(`Email: ${customerInfo.email ?? "N/A"}`, 14, 60);
+    doc.text(`Phone: ${customerInfo.phone ?? "N/A"}`, 14, 66);
+    doc.text(`Address: ${customerInfo.address ?? "N/A"}`, 14, 72);
+
+    // Products Table
+    const products = details.products ?? order.products ?? [];
+    const productRows = products.map((p: any) => [
+      p.name,
+      p.quantity ?? p.qty,
+      formatUSD(p.unit_price ?? p.price),
+      formatUSD((p.quantity ?? p.qty) * (p.unit_price ?? p.price)),
+    ]);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [["Product", "Qty", "Unit Price", "Total"]],
+      body: productRows,
+    });
+
+    doc.save(`invoice_${order.id}.pdf`);
   };
 
   // 🟡 Helper: Generate expanded sections
@@ -422,11 +460,16 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                 Actions
                               </h3>
                               <div className="space-y-2">
-                                <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl">
+                                <button
+                                  onClick={() =>
+                                    handleDownloadInvoice(
+                                      order,
+                                      orderDetails.get(order.id)
+                                    )
+                                  }
+                                  className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl"
+                                >
                                   View Invoice
-                                </button>
-                                <button className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl">
-                                  Print Order
                                 </button>
                               </div>
                             </div>
