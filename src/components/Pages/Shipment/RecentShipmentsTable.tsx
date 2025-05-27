@@ -238,25 +238,35 @@ const RecentShipmentsTable: React.FC<Props> = ({
         <Column
           field="shipment_id"
           header={<span className="app-table-heading">Shipment ID</span>}
-          body={(rowData) => <span className="app-table-content">{rowData.shipment_id}</span>}
+          body={(rowData) => (
+            <span className="app-table-content">{rowData.shipment_id}</span>
+          )}
           sortable
         />
         <Column
           field="customer_name"
           header={<span className="app-table-heading">Customer</span>}
-          body={(rowData) => <span className="app-table-content">{rowData.customer_name}</span>}
+          body={(rowData) => (
+            <span className="app-table-content">{rowData.customer_name}</span>
+          )}
           sortable
         />
         <Column
           field="carrier"
           header={<span className="app-table-heading">Carrier</span>}
-          body={(rowData) => <span className="app-table-content">{rowData.carrier}</span>}
+          body={(rowData) => (
+            <span className="app-table-content">{rowData.carrier}</span>
+          )}
           sortable
         />
         <Column
           field="actual_shipment_date"
           header={<span className="app-table-heading">Ship Date</span>}
-          body={(rowData) => <span className="app-table-content">{formatDate(rowData.actual_shipment_date)}</span>}
+          body={(rowData) => (
+            <span className="app-table-content">
+              {formatDate(rowData.actual_shipment_date)}
+            </span>
+          )}
           sortable
         />
         <Column
@@ -288,8 +298,9 @@ const RecentShipmentsTable: React.FC<Props> = ({
       {/* Mobile-Only Custom Pagination */}
       {isMobile && (
         <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-          <div className="flex items-center justify-between gap-2 mb-2 w-full">
-            <div className="flex items-center gap-2">
+          {/* Top: Rows per page dropdown + page info stacked */}
+          <div className="flex flex-col gap-2 mb-2 w-full">
+            <div className="flex flex-col gap-1">
               <label htmlFor="mobileRows" className="whitespace-nowrap">
                 Rows per page:
               </label>
@@ -300,7 +311,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
                   setRows(Number(e.target.value));
                   setFirst(0);
                 }}
-                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
               >
                 {getPageOptions().map((option) => (
                   <option key={option} value={option}>
@@ -309,25 +320,25 @@ const RecentShipmentsTable: React.FC<Props> = ({
                 ))}
               </select>
             </div>
-
-            <div>
+            <div className="text-black dark:text-white font-medium">
               Page {Math.floor(first / rows) + 1} of{" "}
               {Math.ceil(filteredShipments.length / rows)}
             </div>
           </div>
 
-          <div className="flex justify-between gap-2 text-sm w-full px-2">
+          {/* Bottom: Pagination buttons with wrap */}
+          <div className="flex flex-wrap justify-between gap-2 text-sm w-full px-2">
             <button
               onClick={() => setFirst(0)}
               disabled={first === 0}
-              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               ⏮ First
             </button>
             <button
               onClick={() => setFirst(Math.max(0, first - rows))}
               disabled={first === 0}
-              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               Prev
             </button>
@@ -338,7 +349,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
                 )
               }
               disabled={first + rows >= filteredShipments.length}
-              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               Next
             </button>
@@ -349,7 +360,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
                 )
               }
               disabled={first + rows >= filteredShipments.length}
-              className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               ⏭ Last
             </button>

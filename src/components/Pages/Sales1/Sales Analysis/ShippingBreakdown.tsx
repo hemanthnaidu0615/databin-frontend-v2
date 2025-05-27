@@ -71,7 +71,9 @@ const ShippingBreakdown = () => {
       }
 
       try {
-        const response = await axiosInstance.get(`/analysis/shipment-summary?${params.toString()}`);
+        const response = await axiosInstance.get(
+          `/analysis/shipment-summary?${params.toString()}`
+        );
         const data = response.data as { shipments: Shipment[]; count: number };
 
         setShipments(
@@ -97,7 +99,8 @@ const ShippingBreakdown = () => {
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
     shipments.forEach((shipment) => {
-      totals[shipment.carrier] = (totals[shipment.carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
+      totals[shipment.carrier] =
+        (totals[shipment.carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
     });
     return Object.entries(totals)
       .sort((a, b) => b[1] - a[1])
@@ -108,63 +111,63 @@ const ShippingBreakdown = () => {
       }, {} as Record<string, number>);
   }, [shipments]);
 
-  const chartOptions: ApexOptions = useMemo(() => ({
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
-    },
-    xaxis: {
-      categories: Object.keys(carrierTotals),
-      labels: {
-        style: {
-          fontSize: "12px",
-          colors: theme === "dark" ? "#CBD5E1" : "#334155",
-        },
-
+  const chartOptions: ApexOptions = useMemo(
+    () => ({
+      chart: {
+        type: "bar",
+        toolbar: { show: false },
+        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
       },
-      crosshairs: { show: false },
-      title: {
-        text: "Carriers",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+      xaxis: {
+        categories: Object.keys(carrierTotals),
+        labels: {
+          style: {
+            fontSize: "12px",
+            colors: theme === "dark" ? "#CBD5E1" : "#334155",
+          },
         },
-      },
-    },
-    yaxis: {
-      title: {
-        text: "Total Cost ($)",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+        crosshairs: { show: false },
+        title: {
+          text: "Carriers",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
         },
       },
-      labels: {
-        formatter: (val: number) => `$${formatValue(val)}`,
-
+      yaxis: {
+        title: {
+          text: "Total Cost ($)",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
+        },
+        labels: {
+          formatter: (val: number) => `$${formatValue(val)}`,
+        },
       },
-
-    },
-    dataLabels: { enabled: false },
-    plotOptions: {
-      bar: {
-        borderRadius: 4,
-        columnWidth: "50%",
+      dataLabels: { enabled: false },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          columnWidth: "50%",
+        },
       },
-    },
-    grid: {
-      borderColor: theme === "dark" ? "#334155" : "#E5E7EB",
-    },
-    colors: ["#2563eb"],
-    tooltip: {
-      y: {
-        formatter: (val: number) => `$${val.toFixed(2)}`,
+      grid: {
+        borderColor: theme === "dark" ? "#334155" : "#E5E7EB",
       },
-    },
-  }), [carrierTotals, theme]);
+      colors: ["#2563eb"],
+      tooltip: {
+        y: {
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
+      },
+    }),
+    [carrierTotals, theme]
+  );
 
   const chartSeries = [
     {
@@ -223,6 +226,7 @@ const ShippingBreakdown = () => {
           sortMode="multiple"
           emptyMessage="No shipments found for the selected filters"
           paginator
+          paginatorClassName="hidden sm:flex" // hides top paginator on mobile
           lazy
           loading={loading}
           totalRecords={totalRecords}
@@ -233,29 +237,124 @@ const ShippingBreakdown = () => {
           currentPageReportTemplate="Showing {first} to {last} of {totalRecords} shipments"
           paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
         >
-          <Column field="carrier" header="Carrier" sortable style={{ minWidth: "120px" }} />
-          <Column field="shipping_method" header="Method" sortable style={{ minWidth: "120px" }} />
-          <Column field="shipment_status" header="Status" sortable style={{ minWidth: "120px" }} />
+          <Column
+            field="carrier"
+            header="Carrier"
+            sortable
+            style={{ minWidth: "120px" }}
+          />
+          <Column
+            field="shipping_method"
+            header="Method"
+            sortable
+            style={{ minWidth: "120px" }}
+          />
+          <Column
+            field="shipment_status"
+            header="Status"
+            sortable
+            style={{ minWidth: "120px" }}
+          />
           <Column
             field="shipment_cost_usd"
             header="Cost ($)"
             sortable
-            body={(rowData) => `$${formatValue(rowData.shipment_cost_usd ?? 0)}`}
+            body={(rowData) =>
+              `$${formatValue(rowData.shipment_cost_usd ?? 0)}`
+            }
             style={{ minWidth: "120px" }}
           />
         </DataTable>
+
+        {/* Mobile Pagination (only visible on small screens) */}
+        <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
+          <div className="flex flex-col gap-2 mb-2">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="mobileRows" className="whitespace-nowrap">
+                Rows per page:
+              </label>
+              <select
+                id="mobileRows"
+                value={rows}
+                onChange={(e) => {
+                  setRows(Number(e.target.value));
+                  setPage(0);
+                }}
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
+              >
+                {[5, 10, 20, 50, 100].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              Page {page + 1} of {Math.ceil(totalRecords / rows)}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-between gap-2">
+            <button
+              onClick={() => setPage(0)}
+              disabled={page === 0}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              ⏮ First
+            </button>
+            <button
+              onClick={() => setPage(Math.max(0, page - 1))}
+              disabled={page === 0}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <button
+              onClick={() =>
+                setPage(
+                  page + 1 < Math.ceil(totalRecords / rows) ? page + 1 : page
+                )
+              }
+              disabled={(page + 1) * rows >= totalRecords}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => setPage(Math.ceil(totalRecords / rows) - 1)}
+              disabled={(page + 1) * rows >= totalRecords}
+              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+            >
+              ⏭ Last
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="px-4 pb-6">
         <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
         {Object.keys(carrierTotals).length > 0 ? (
-          <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
+          <Chart
+            options={chartOptions}
+            series={chartSeries}
+            type="bar"
+            height={350}
+          />
         ) : (
           <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">
             No shipment data available for visualization
           </div>
         )}
       </div>
+
+      {/* Extra: forcibly hide PrimeReact paginator on mobile */}
+      <style>{`
+        @media (max-width: 640px) {
+          .p-datatable .p-paginator {
+            display: none !important;
+          }
+        }
+      `}</style>
     </Card>
   );
 };

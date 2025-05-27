@@ -86,29 +86,36 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       const data = response.data as { count?: number; data?: any[] };
       setTotalCount(data.count || 0);
 
-      const mappedData: InventoryItem[] = (data.data || []).map((item: any) => ({
-        name: item.product_name,
-        category: item.category_name,
-        warehouse: item.warehouse_name,
-        source: item.warehouse_function,
-        states: item.warehouse_state,
-        status: item.inventory_status,
-      }));
+      const mappedData: InventoryItem[] = (data.data || []).map(
+        (item: any) => ({
+          name: item.product_name,
+          category: item.category_name,
+          warehouse: item.warehouse_name,
+          source: item.warehouse_function,
+          states: item.warehouse_state,
+          status: item.inventory_status,
+        })
+      );
 
       let filtered = mappedData;
       if (filters.selectedRegion) {
-        filtered = filtered.filter(item =>
-          item.warehouse.toLowerCase() === filters.selectedRegion.toLowerCase()
+        filtered = filtered.filter(
+          (item) =>
+            item.warehouse.toLowerCase() ===
+            filters.selectedRegion.toLowerCase()
         );
       }
       if (filters.selectedSource) {
-        filtered = filtered.filter(item =>
-          item.source.toLowerCase() === filters.selectedSource.toLowerCase()
+        filtered = filtered.filter(
+          (item) =>
+            item.source.toLowerCase() === filters.selectedSource.toLowerCase()
         );
       }
       if (filters.selectedLocation) {
-        filtered = filtered.filter(item =>
-          item.states.toLowerCase().includes(filters.selectedLocation.toLowerCase())
+        filtered = filtered.filter((item) =>
+          item.states
+            .toLowerCase()
+            .includes(filters.selectedLocation.toLowerCase())
         );
       }
 
@@ -120,13 +127,26 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, first, rows, productSearch, selectedStatus, selectedCategory, filters]);
+  }, [
+    startDate,
+    endDate,
+    first,
+    rows,
+    productSearch,
+    selectedStatus,
+    selectedCategory,
+    filters,
+  ]);
 
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
         const response = await axiosInstance.get("/inventory/category-names");
-        setAllCategories(Array.isArray(response.data) ? response.data.map((cat: any) => cat.name) : []);
+        setAllCategories(
+          Array.isArray(response.data)
+            ? response.data.map((cat: any) => cat.name)
+            : []
+        );
       } catch (error) {
         console.error("Failed to fetch all categories:", error);
       }
@@ -134,8 +154,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
     fetchAllCategories();
   }, []);
-
-
 
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
@@ -180,7 +198,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               </option>
             ))}
           </select>
-
         </div>
       </div>
 
@@ -202,11 +219,17 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               <tr key={idx} className="border-t dark:border-gray-700">
                 <td className="py-2 px-1 app-table-content">{item.name}</td>
                 <td className="py-2 px-1 app-table-content">{item.category}</td>
-                <td className="py-2 px-1 app-table-content">{item.warehouse}</td>
+                <td className="py-2 px-1 app-table-content">
+                  {item.warehouse}
+                </td>
                 <td className="py-2 px-1 app-table-content">{item.source}</td>
                 <td className="py-2 px-1 app-table-content">{item.states}</td>
                 <td className="py-2 px-1 app-table-content font-medium">
-                  <span className={statusColors[item.status as keyof typeof statusColors]}>
+                  <span
+                    className={
+                      statusColors[item.status as keyof typeof statusColors]
+                    }
+                  >
                     {item.status}
                   </span>
                 </td>
@@ -219,16 +242,33 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4 mt-4">
         {inventoryItems.map((item, idx) => (
-          <div key={idx} className="border rounded-lg p-6 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <div className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">{item.name}</div>
+          <div
+            key={idx}
+            className="border rounded-lg p-6 dark:border-gray-700 bg-white dark:bg-gray-800"
+          >
+            <div className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
+              {item.name}
+            </div>
             <div className="grid grid-cols-2 text-xs gap-y-2 text-gray-700 dark:text-gray-300">
-              <div><strong>Category:</strong> {item.category}</div>
-              <div><strong>Warehouse:</strong> {item.warehouse}</div>
-              <div><strong>Source:</strong> {item.source}</div>
-              <div><strong>State:</strong> {item.states}</div>
+              <div>
+                <strong>Category:</strong> {item.category}
+              </div>
+              <div>
+                <strong>Warehouse:</strong> {item.warehouse}
+              </div>
+              <div>
+                <strong>Source:</strong> {item.source}
+              </div>
+              <div>
+                <strong>State:</strong> {item.states}
+              </div>
               <div>
                 <strong>Status:</strong>{" "}
-                <span className={statusColors[item.status as keyof typeof statusColors]}>
+                <span
+                  className={
+                    statusColors[item.status as keyof typeof statusColors]
+                  }
+                >
                   {item.status}
                 </span>
               </div>
@@ -259,8 +299,9 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
 
         {isMobile && (
           <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-            <div className="flex items-center justify-between gap-2 mb-2 w-full">
-              <div className="flex items-center gap-2">
+            {/* Top: Rows per page + Page info (stacked vertically) */}
+            <div className="flex flex-col gap-2 mb-2 w-full">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="mobileRows" className="whitespace-nowrap">
                   Rows per page:
                 </label>
@@ -271,7 +312,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                     setRows(Number(e.target.value));
                     setFirst(0);
                   }}
-                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
                 >
                   {[5, 10, 20, 50].map((option) => (
                     <option key={option} value={option}>
@@ -281,36 +322,40 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
                 </select>
               </div>
               <div className="text-black dark:text-white font-medium">
-                Page {Math.floor(first / rows) + 1} of {Math.ceil(totalCount / rows)}
+                Page {Math.floor(first / rows) + 1} of{" "}
+                {Math.ceil(totalCount / rows)}
               </div>
             </div>
 
-            <div className="flex justify-between gap-2 text-sm w-full px-2">
+            {/* Bottom: Pagination buttons (wraps if needed) */}
+            <div className="flex flex-wrap justify-between gap-2 w-full">
               <button
                 onClick={() => setFirst(0)}
                 disabled={first === 0}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏮ First
               </button>
               <button
                 onClick={() => setFirst(Math.max(0, first - rows))}
                 disabled={first === 0}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Prev
               </button>
               <button
                 onClick={() => setFirst(first + rows)}
                 disabled={first + rows >= totalCount}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Next
               </button>
               <button
-                onClick={() => setFirst((Math.ceil(totalCount / rows) - 1) * rows)}
+                onClick={() =>
+                  setFirst((Math.ceil(totalCount / rows) - 1) * rows)
+                }
                 disabled={first + rows >= totalCount}
-                className="px-3 py-1.5 rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏭ Last
               </button>
@@ -318,7 +363,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
           </div>
         )}
       </div>
-
     </div>
   );
 };

@@ -224,9 +224,10 @@ const OrdersInProcess = () => {
           ))}
 
           {/* Mobile Pagination */}
-          <div className="mt-4 text-sm text-gray-800 dark:text-gray-100">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
+          <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
+            {/* Top: Rows per page & page info stacked */}
+            <div className="flex flex-col gap-2 mb-2 w-full">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="mobileRows" className="whitespace-nowrap">
                   Rows per page:
                 </label>
@@ -237,7 +238,7 @@ const OrdersInProcess = () => {
                     setRows(Number(e.target.value));
                     setPage(0);
                   }}
-                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
                   disabled={loading}
                 >
                   {[5, 10, 20, 50, 100].map((option) => (
@@ -247,24 +248,24 @@ const OrdersInProcess = () => {
                   ))}
                 </select>
               </div>
-
-              <div>
+              <div className="text-black dark:text-white font-medium">
                 Page {page + 1} of {Math.ceil(totalRecords / rows)}
               </div>
             </div>
 
-            <div className="flex justify-between gap-2">
+            {/* Pagination buttons */}
+            <div className="flex flex-wrap justify-between gap-2 w-full">
               <button
                 onClick={() => setPage(0)}
                 disabled={page === 0 || loading}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white disabled:opacity-50"
               >
                 ⏮ First
               </button>
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0 || loading}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white disabled:opacity-50"
               >
                 Prev
               </button>
@@ -275,14 +276,14 @@ const OrdersInProcess = () => {
                   )
                 }
                 disabled={page + 1 >= Math.ceil(totalRecords / rows) || loading}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white disabled:opacity-50"
               >
                 Next
               </button>
               <button
                 onClick={() => setPage(Math.ceil(totalRecords / rows) - 1)}
                 disabled={page + 1 >= Math.ceil(totalRecords / rows) || loading}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 disabled:opacity-50"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 text-black dark:text-white disabled:opacity-50"
               >
                 ⏭ Last
               </button>

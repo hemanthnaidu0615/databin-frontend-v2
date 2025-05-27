@@ -621,8 +621,9 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
           </div>
           {/* Mobile paginator for screens < sm */}
           <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2">
+            {/* Rows per page dropdown & page info */}
+            <div className="flex flex-col gap-2 mb-2">
+              <div className="flex flex-col gap-1">
                 <label htmlFor="mobileRows" className="whitespace-nowrap">
                   Rows per page:
                 </label>
@@ -631,9 +632,9 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                   value={rows}
                   onChange={(e) => {
                     setRows(Number(e.target.value));
-                    setFirst(0); // reset to first page
+                    setFirst(0);
                   }}
-                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800"
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
                 >
                   {options.map((option) => (
                     <option key={option} value={option}>
@@ -642,18 +643,18 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                   ))}
                 </select>
               </div>
-
               <div>
                 Page {Math.floor(first / rows) + 1} of{" "}
                 {Math.ceil(orders.length / rows)}
               </div>
             </div>
 
-            <div className="flex justify-between gap-2">
+            {/* Pagination buttons (flex-wrap on mobile) */}
+            <div className="flex flex-wrap justify-between gap-2">
               <button
                 onClick={() => onPageChange({ first: 0, rows })}
                 disabled={first === 0}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
               >
                 ⏮ First
               </button>
@@ -663,7 +664,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                   onPageChange({ first: Math.max(0, first - rows), rows })
                 }
                 disabled={first === 0}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
               >
                 Prev
               </button>
@@ -676,7 +677,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                   })
                 }
                 disabled={first + rows >= orders.length}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
               >
                 Next
               </button>
@@ -689,7 +690,7 @@ const OrderList: React.FC<Props> = ({ orders = [] }) => {
                   })
                 }
                 disabled={first + rows >= orders.length}
-                className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
               >
                 ⏭ Last
               </button>
