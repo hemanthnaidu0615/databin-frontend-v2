@@ -104,68 +104,85 @@ function SalesFlow() {
   }, [startDate, endDate]);
 
   const convertToHierarchy = (flatData: any[]) => {
-    const grouped = new Map();
+  // Step 1: Aggregate sales per (enterprise, category)
+  const enterpriseCategoryTotals = new Map<string, Map<string, number>>();
 
-    for (const item of flatData) {
-      // const { enterprise_key, category_name, product_name, total_sales } = item;
-      const { enterprise_key, category_name, total_sales } = item;
+  for (const item of flatData) {
+    const { enterprise_key, category_name, total_sales } = item;
+    const usdSales = convertToUSD(total_sales);
 
-      if (!grouped.has(enterprise_key)) {
-        grouped.set(enterprise_key, new Map());
-      }
-
-      const categories = grouped.get(enterprise_key);
-      if (!categories.has(category_name)) {
-        categories.set(category_name, []);
-      }
-
-      // categories.get(category_name).push({
-      //   key: product_name,
-      //   original_order_total_amount: convertToUSD(total_sales),
-      // });
-
-      const currentList = categories.get(category_name);
-      currentList.push(convertToUSD(total_sales));
-
-
+    if (!enterpriseCategoryTotals.has(enterprise_key)) {
+      enterpriseCategoryTotals.set(enterprise_key, new Map());
     }
 
-    const result: any[] = [];
-    for (const [enterprise, cats] of grouped) {
-      const children: any[] = [];
-      let enterpriseTotal = 0;
+    const categoryMap = enterpriseCategoryTotals.get(enterprise_key)!;
+    categoryMap.set(
+      category_name,
+      (categoryMap.get(category_name) || 0) + usdSales
+    );
+  }
 
-      for (const [catName, products] of cats) {
-        // const catTotal = products.reduce((sum: number, p: { original_order_total_amount: number }) => sum + p.original_order_total_amount, 0);
-        const catTotal = products.reduce(
-          (sum: number, p: number) => sum + p,
-          0
-        );
-
-        enterpriseTotal += catTotal;
-
-        children.push({
-          key: catName,
-          original_order_total_amount: catTotal,
-          // children: products,
-        });
-      }
-
-      result.push({
-        key: enterprise,
-        original_order_total_amount: enterpriseTotal,
-        children,
-      });
+  // Step 2: Get all unique category names from all enterprises
+  const allCategories = new Set<string>();
+  for (const categoryMap of enterpriseCategoryTotals.values()) {
+    for (const category of categoryMap.keys()) {
+      allCategories.add(category);
     }
+  }
 
-    return [
-      {
-        key: "Total Sales",
-        original_order_total_amount: result.reduce((sum, e) => sum + e.original_order_total_amount, 0),
-        children: result,
-      },
-    ];
+  const uniqueCategories = Array.from(allCategories);
+  // Step 3: Split into 2 unique sets of 15
+  const categoriesForAWD = uniqueCategories.slice(0, 15);
+  const categoriesForAWW = uniqueCategories.slice(15, 30);
+
+  // Step 4: Build children nodes for each enterprise
+  const buildChildren = (enterprise: string, allowedCategories: string[]) => {
+    const categoryMap = enterpriseCategoryTotals.get(enterprise);
+    if (!categoryMap) return [];
+
+    return allowedCategories
+      .map((cat) => {
+        const total = categoryMap.get(cat) || 0;
+        return {
+          key: cat,
+          original_order_total_amount: total,
+        };
+      })
+      .filter((item) => item.original_order_total_amount > 0);
   };
+
+  const AWDChildren = buildChildren("AWD", categoriesForAWD);
+  const AWWChildren = buildChildren("AWW", categoriesForAWW);
+
+  // Step 5: Return top-level structure
+  return [
+    {
+      key: "Total Sales",
+      original_order_total_amount:
+        AWDChildren.reduce((sum, c) => sum + c.original_order_total_amount, 0) +
+        AWWChildren.reduce((sum, c) => sum + c.original_order_total_amount, 0),
+      children: [
+        {
+          key: "AWD",
+          original_order_total_amount: AWDChildren.reduce(
+            (sum, c) => sum + c.original_order_total_amount,
+            0
+          ),
+          children: AWDChildren,
+        },
+        {
+          key: "AWW",
+          original_order_total_amount: AWWChildren.reduce(
+            (sum, c) => sum + c.original_order_total_amount,
+            0
+          ),
+          children: AWWChildren,
+        },
+      ],
+    },
+  ];
+};
+
 
   const convertAndSetFlowData = (data: any[]) => {
     nodeIdCounter = 1;
