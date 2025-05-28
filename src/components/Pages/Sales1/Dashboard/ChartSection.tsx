@@ -10,7 +10,7 @@ interface Props {
 }
 
 interface OrderData {
-  order_date: string;
+  period: string;
   fulfilment_channel: string;
   total_order_amount: number;
 }
@@ -23,6 +23,34 @@ const formatDate = (date: string | Date): string => {
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}T00:00:00`;
 };
+function getXAxisTitle(categories: string[]): string {
+  if (categories.length === 0) return "Date";
+
+  const first = new Date(categories[0]);
+  const last = new Date(categories[categories.length - 1]);
+
+  console.log("First date:", first);
+  console.log("Last date:", last);
+
+  const diffMs = last.getTime() - first.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  console.log("Difference in days:", diffDays);
+
+  if (diffDays <= 1) {
+    return "Date"; // For 1 day or less
+  }
+  if (diffDays <= 7) {
+    return "Dates"; // 2 to 7 days
+  }
+  if (diffDays <= 30) {
+    return "Weeks"; // 8 to 30 days
+  }
+  if (diffDays <= 365) {
+    return "Months"; // 31 to 365 days
+  }
+  return "Years"; // More than 1 year
+}
 
 const ChartSection: React.FC<Props> = ({ company }) => {
   const [selectedChart, setSelectedChart] = useState("Bar");
@@ -45,20 +73,22 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       const url = company === "AWW" ? "/sales/charts/aww" : "/sales/charts/awd";
 
       try {
-        const response = await axiosInstance.get<OrderData[]>(url, {
+        const response = await axiosInstance.get<{
+          data: OrderData[];
+        }>(url, {
           params: {
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
           },
         });
 
-        const rawData = response.data;
+        const rawData = response.data.data;
 
         const channels = ["Online", "Retail Store", "Warehouse"];
         const dateMap = new Map<string, Record<string, number>>();
 
         rawData.forEach((item) => {
-          const date = item.order_date;
+          const date = item.period; // <-- updated
           const channel = item.fulfilment_channel;
           const amountUsd = item.total_order_amount / usdRate;
 
@@ -120,13 +150,15 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             style: {
               colors: Array(categories.length).fill(labelColor),
             },
+            rotate: -45,
+            rotateAlways: true, // Helps fit all date labels
           },
           title: {
-            text: "Date",
+            text: getXAxisTitle(categories), // Dynamically set title
             style: { color: labelColor },
           },
           crosshairs: {
-            show: false, 
+            show: false,
           },
         },
         yaxis: {
@@ -145,6 +177,11 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             horizontal: false,
             columnWidth: "60%",
           },
+        },
+        stroke: {
+          show: true,
+          width: 3,
+          curve: "smooth", // Makes it a nice curved line
         },
         dataLabels: { enabled: false },
       };
