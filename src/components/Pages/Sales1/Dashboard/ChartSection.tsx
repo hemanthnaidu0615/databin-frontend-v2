@@ -38,18 +38,18 @@ function getXAxisTitle(categories: string[]): string {
   console.log("Difference in days:", diffDays);
 
   if (diffDays <= 1) {
-    return "Date"; // For 1 day or less
+    return "Date";
   }
   if (diffDays <= 7) {
-    return "Dates"; // 2 to 7 days
+    return "Dates";
   }
   if (diffDays <= 30) {
-    return "Weeks"; // 8 to 30 days
+    return "Weeks";
   }
   if (diffDays <= 365) {
-    return "Months"; // 31 to 365 days
+    return "Months";
   }
-  return "Years"; // More than 1 year
+  return "Years";
 }
 
 const ChartSection: React.FC<Props> = ({ company }) => {
@@ -88,7 +88,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         const dateMap = new Map<string, Record<string, number>>();
 
         rawData.forEach((item) => {
-          const date = item.period; // <-- updated
+          const date = item.period;
           const channel = item.fulfilment_channel;
           const amountUsd = item.total_order_amount / usdRate;
 
@@ -139,6 +139,12 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       tooltip: {
         theme: isDark ? "dark" : "light",
       },
+      markers: {
+        size: 4,
+        hover: {
+          size: 6,
+        },
+      },
     };
 
     if (type === "bar" || type === "line") {
@@ -151,10 +157,10 @@ const ChartSection: React.FC<Props> = ({ company }) => {
               colors: Array(categories.length).fill(labelColor),
             },
             rotate: -45,
-            rotateAlways: true, // Helps fit all date labels
+            rotateAlways: true,
           },
           title: {
-            text: getXAxisTitle(categories), // Dynamically set title
+            text: getXAxisTitle(categories),
             style: { color: labelColor },
           },
           crosshairs: {
@@ -181,7 +187,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         stroke: {
           show: true,
           width: 3,
-          curve: "smooth", // Makes it a nice curved line
+          curve: "smooth",
         },
         dataLabels: { enabled: false },
       };
@@ -198,11 +204,12 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   };
 
   const dynamicChartWidth = useMemo(() => {
-    const baseWidthPerCategory = 60;
-    const padding = 100;
-    return selectedChart === "Pie"
-      ? "100%"
-      : `${categories.length * baseWidthPerCategory + padding}px`;
+    const baseWidthPerCategory = 40;
+    const minWidth = 320;
+    const maxWidth = 1400;
+    const calculatedWidth = categories.length * baseWidthPerCategory + 100;
+
+    return `clamp(${minWidth}px, ${calculatedWidth}px, ${maxWidth}px)`;
   }, [categories.length, selectedChart]);
 
   const chartOptions = ["Bar", "Line", "Pie", "Table"];
@@ -230,7 +237,13 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
         <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-          <div style={{ width: dynamicChartWidth, height: "400px" }}>
+          <div
+            style={{
+              width: dynamicChartWidth,
+              height: "400px",
+              maxWidth: "100%",
+            }}
+          >
             <Chart
               options={getChartOptions(
                 selectedChart.toLowerCase() as "bar" | "line" | "pie"
