@@ -16,9 +16,7 @@ interface ProductData {
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
 
 function convertToUSD(rupees: number): number {
@@ -48,10 +46,8 @@ const ProfitabilityTable: React.FC = () => {
     navigate("/orders");
   };
 
-  const moveLeft = () =>
-    setPosition((prev) => (prev === 1 ? productData.length : prev - 1));
-  const moveRight = () =>
-    setPosition((prev) => (prev === productData.length ? 1 : prev + 1));
+  const moveLeft = () => setPosition((prev) => (prev === 1 ? productData.length : prev - 1));
+  const moveRight = () => setPosition((prev) => (prev === productData.length ? 1 : prev + 1));
 
   useEffect(() => {
     const fetchTopProducts = async () => {
@@ -68,23 +64,18 @@ const ProfitabilityTable: React.FC = () => {
           params.enterpriseKey = enterpriseKey;
         }
 
-        const response = await axiosInstance.get("/top-sellers/top-products", {
-          params,
-        });
-
+        const response = await axiosInstance.get("/top-sellers/top-products", { params });
         const json = response.data as { top_products?: any[] };
 
         if (json.top_products && Array.isArray(json.top_products)) {
-          const transformed = json.top_products.map(
-            (product: any, index: number) => ({
-              id: index + 1,
-              name: product.product_name,
-              price: parseFloat(product.price ?? 0),
-              description: product.description ?? "No description available",
-              url: product.url ?? "#",
-              updateDate: product.update_date,
-            })
-          );
+          const transformed = json.top_products.map((product: any, index: number) => ({
+            id: index + 1,
+            name: product.product_name,
+            price: parseFloat(product.price ?? 0),
+            description: product.description ?? "No description available",
+            url: product.url ?? "#",
+            updateDate: product.update_date,
+          }));
           setProductData(transformed.slice(0, 5));
         }
       } catch (error) {
@@ -111,13 +102,52 @@ const ProfitabilityTable: React.FC = () => {
     return () => clearInterval(interval);
   }, [productData.length]);
 
+  // 👇 Swipe gesture support
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndX = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+      const deltaX = touchEndX - touchStartX;
+      if (Math.abs(deltaX) > 50) {
+        if (deltaX > 0) {
+          moveLeft();
+        } else {
+          moveRight();
+        }
+      }
+    };
+
+    const carouselContainer = document.querySelector(".carousel-container") as HTMLDivElement | null;
+
+    if (carouselContainer) {
+      carouselContainer.addEventListener("touchstart", (e) => handleTouchStart(e as TouchEvent), { passive: true });
+      carouselContainer.addEventListener("touchmove", (e) => handleTouchMove(e as TouchEvent), { passive: true });
+      carouselContainer.addEventListener("touchend", handleTouchEnd as EventListener);
+    }
+
+    return () => {
+      if (carouselContainer) {
+        carouselContainer.removeEventListener("touchstart", (e) => handleTouchStart(e as TouchEvent));
+        carouselContainer.removeEventListener("touchmove", (e) => handleTouchMove(e as TouchEvent));
+        carouselContainer.removeEventListener("touchend", handleTouchEnd as EventListener);
+      }
+    };
+  }, [productData.length]);
+
   return (
     <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="app-subheading">
-          Top Selling Products
-        </h2>
+        <h2 className="app-subheading">Top Selling Products</h2>
         <button
           onClick={handleViewMore}
           className="text-xs font-medium hover:underline"
@@ -130,7 +160,7 @@ const ProfitabilityTable: React.FC = () => {
       {/* Carousel */}
       <div className="w-full overflow-visible relative">
         <div
-          className="relative flex items-center justify-center w-full h-[380px] pt-2"
+          className="relative flex items-center justify-center w-full h-[380px] pt-2 carousel-container"
           style={{ perspective: "600px" }}
         >
           {/* Arrows (Desktop Only) */}
@@ -168,37 +198,32 @@ const ProfitabilityTable: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => setPosition(offset)}
-                  className={`cursor-pointer absolute w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${abs === 0
-                      ? "scale-105 transition-transform duration-300 ease-out"
-                      : ""
-                    }`}
+                  className={`cursor-pointer absolute w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${
+                    abs === 0 ? "scale-105 transition-transform duration-300 ease-out" : ""
+                  }`}
                   style={{
                     transform: `translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`,
                     zIndex: 100 - abs,
                     opacity,
                     border: `2px solid ${abs === 0 ? "#9614d0" : "#8417b2"}`,
-                    boxShadow: `0 0 10px ${abs === 0 ? "#9614d0" : "#8417b2"
-                      }40`,
+                    boxShadow: `0 0 10px ${abs === 0 ? "#9614d0" : "#8417b2"}40`,
                     pointerEvents: abs > 2 ? "none" : "auto",
                     transition:
                       "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out, border 0.3s ease-out, box-shadow 0.3s ease-out",
                   }}
                 >
-                  {/* Ranking */}
                   <span
-                    className={`absolute top-2 left-2 text-4xl font-extrabold select-none pointer-events-none ${abs === 0
+                    className={`absolute top-2 left-2 text-4xl font-extrabold select-none pointer-events-none ${
+                      abs === 0
                         ? "text-transparent bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text drop-shadow-[0_0_8px_rgba(150,20,208,0.5)]"
                         : "text-purple-600 opacity-30"
-                      }`}
+                    }`}
                   >
                     #{i + 1}
                   </span>
 
-                  {/* Content */}
                   <div className="mt-20 w-full">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                      {product.name}
-                    </h4>
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{product.name}</h4>
                     <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 whitespace-normal break-words">
                       {product.description.length > 100
                         ? product.description.slice(0, 100) + "..."
@@ -228,12 +253,13 @@ const ProfitabilityTable: React.FC = () => {
             <button
               key={index}
               onClick={() => setPosition(index + 1)}
-              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${position === index + 1
+              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${
+                position === index + 1
                   ? "bg-purple-600 border-purple-600"
                   : theme === "dark"
-                    ? "border-gray-600 bg-gray-800"
-                    : "border-gray-300 bg-white"
-                }`}
+                  ? "border-gray-600 bg-gray-800"
+                  : "border-gray-300 bg-white"
+              }`}
               aria-label={`Go to product ${index + 1}`}
             />
           ))}
