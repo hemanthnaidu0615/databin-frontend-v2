@@ -10,7 +10,7 @@ interface Props {
 }
 
 interface OrderData {
-  order_date: string;
+  period: string;
   fulfilment_channel: string;
   total_order_amount: number;
 }
@@ -23,6 +23,34 @@ const formatDate = (date: string | Date): string => {
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}T00:00:00`;
 };
+function getXAxisTitle(categories: string[]): string {
+  if (categories.length === 0) return "Date";
+
+  const first = new Date(categories[0]);
+  const last = new Date(categories[categories.length - 1]);
+
+  console.log("First date:", first);
+  console.log("Last date:", last);
+
+  const diffMs = last.getTime() - first.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  console.log("Difference in days:", diffDays);
+
+  if (diffDays <= 1) {
+    return "Date";
+  }
+  if (diffDays <= 7) {
+    return "Dates";
+  }
+  if (diffDays <= 30) {
+    return "Weeks";
+  }
+  if (diffDays <= 365) {
+    return "Months";
+  }
+  return "Years";
+}
 
 const ChartSection: React.FC<Props> = ({ company }) => {
   const [selectedChart, setSelectedChart] = useState("Bar");
@@ -45,20 +73,22 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       const url = company === "AWW" ? "/sales/charts/aww" : "/sales/charts/awd";
 
       try {
-        const response = await axiosInstance.get<OrderData[]>(url, {
+        const response = await axiosInstance.get<{
+          data: OrderData[];
+        }>(url, {
           params: {
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
           },
         });
 
-        const rawData = response.data;
+        const rawData = response.data.data;
 
         const channels = ["Online", "Retail Store", "Warehouse"];
         const dateMap = new Map<string, Record<string, number>>();
 
         rawData.forEach((item) => {
-          const date = item.order_date;
+          const date = item.period;
           const channel = item.fulfilment_channel;
           const amountUsd = item.total_order_amount / usdRate;
 
@@ -109,6 +139,12 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       tooltip: {
         theme: isDark ? "dark" : "light",
       },
+      markers: {
+        size: 4,
+        hover: {
+          size: 6,
+        },
+      },
     };
 
     if (type === "bar" || type === "line") {
@@ -120,13 +156,15 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             style: {
               colors: Array(categories.length).fill(labelColor),
             },
+            rotate: -45,
+            rotateAlways: true,
           },
           title: {
-            text: "Date",
+            text: getXAxisTitle(categories),
             style: { color: labelColor },
           },
           crosshairs: {
-            show: false, 
+            show: false,
           },
         },
         yaxis: {
@@ -146,6 +184,11 @@ const ChartSection: React.FC<Props> = ({ company }) => {
             columnWidth: "60%",
           },
         },
+        stroke: {
+          show: true,
+          width: 3,
+          curve: "smooth",
+        },
         dataLabels: { enabled: false },
       };
     }
@@ -161,11 +204,12 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   };
 
   const dynamicChartWidth = useMemo(() => {
-    const baseWidthPerCategory = 60;
-    const padding = 100;
-    return selectedChart === "Pie"
-      ? "100%"
-      : `${categories.length * baseWidthPerCategory + padding}px`;
+    const baseWidthPerCategory = 40;
+    const minWidth = 320;
+    const maxWidth = 1400;
+    const calculatedWidth = categories.length * baseWidthPerCategory + 100;
+
+    return `clamp(${minWidth}px, ${calculatedWidth}px, ${maxWidth}px)`;
   }, [categories.length, selectedChart]);
 
   const chartOptions = ["Bar", "Line", "Pie", "Table"];
@@ -193,7 +237,13 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
         <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-          <div style={{ width: dynamicChartWidth, height: "400px" }}>
+          <div
+            style={{
+              width: dynamicChartWidth,
+              height: "400px",
+              maxWidth: "100%",
+            }}
+          >
             <Chart
               options={getChartOptions(
                 selectedChart.toLowerCase() as "bar" | "line" | "pie"
