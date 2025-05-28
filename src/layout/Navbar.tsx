@@ -330,7 +330,7 @@ const Navbar: React.FC = () => {
             >
               <ThemeToggleButton />
             </div>
-            {/* ✅ Auto-close on user dropdown interaction */}
+           
             <UserDropdown />
           </div>
         </div>

@@ -247,7 +247,7 @@ const AppSidebar: React.FC = () => {
   return (
     <aside
       className={`
-        flex flex-col
+        flex flex-col fixed
         bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
         transition-all duration-300 ease-in-out
         ${isExpanded || isHovered ? "lg:w-[290px]" : "lg:w-[90px]"}
@@ -289,11 +289,6 @@ const AppSidebar: React.FC = () => {
                     : "justify-start"
                 }`}
               >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
-                ) : (
-                  <HorizontaLDots className="size-6" />
-                )}
               </h2>
               {renderMenuItems(navItems)}
             </div>
