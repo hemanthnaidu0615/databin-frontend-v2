@@ -8,19 +8,32 @@ const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   return (
-    <div className="min-h-screen xl:flex">
-      <div>
-        <AppSidebar />
-        <Backdrop />
-      </div>
-      <div
-        className={`flex-1 transition-all duration-300 ease-in-out ${isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]"
-          } ${isMobileOpen ? "ml-0" : ""}`}
-      >
-        <AppHeader />
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+    <div className="min-h-screen flex flex-col">
+      {/* Navbar at the top */}
+      <AppHeader />
+
+      {/* Container that starts BELOW the Navbar */}
+      <div className="flex flex-1 h-[calc(100vh-64px)]">
+        {/* Sidebar */}
+        <aside
+          className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
+          transition-all duration-300 ease-in-out
+          ${isExpanded || isHovered ? "lg:w-[290px]" : "lg:w-[90px]"}
+          ${isMobileOpen ? "fixed top-16 left-0 w-[290px] h-[calc(100vh-64px)] z-50" : "hidden lg:block"}`}
+        >
+          <AppSidebar />
+          <Backdrop />
+          {/* <Backdrop /> */}
+        </aside>
+
+        {/* Main Content */}
+        <main
+          className={`flex-1 p-4 mx-auto max-w-[--breakpoint-2xl] md:p-6
+          transition-all duration-300 ease-in-out
+          ${isExpanded || isHovered ? "lg:ml-0" : "lg:ml-0"}`}
+        >
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );

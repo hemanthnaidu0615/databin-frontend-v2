@@ -15,7 +15,7 @@ import { axiosInstance } from "../axios";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-import { useTheme } from "../context/ThemeContext"; // ✅ Added
+import { useTheme } from "../context/ThemeContext";
 
 const Navbar: React.FC = () => {
   const [enterpriseKey, setEnterpriseKey] = useState("All");
@@ -25,6 +25,8 @@ const Navbar: React.FC = () => {
   const location = useLocation();
 
   const {
+    isExpanded,
+    isHovered,
     isMobileOpen,
     toggleSidebar,
     toggleMobileSidebar,
@@ -33,7 +35,7 @@ const Navbar: React.FC = () => {
     toggleMobileRightSidebar,
   } = useSidebar();
 
-  const { theme } = useTheme(); // ✅ Added
+  const { theme } = useTheme();
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
     new Date("2025-05-26"),
@@ -108,11 +110,20 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-[40] w-full bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90">
-        <div className="flex items-center justify-between w-full gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
+      <header
+        className={`
+    sticky top-0 z-[40] w-full
+    bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur
+    supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90
+    transition-all duration-300 ease-in-out
+    $
+  `}
+      >
+        <div className="flex items-center justify-between w-full gap-3 px-3 py-3 overflow-x-auto lg:overflow-visible lg:px-6 lg:py-4">
           <div className="flex items-center gap-3 shrink-0">
+            {/* Sidebar toggle button */}
             <button
-              className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11"
+              className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:hidden"
               onClick={handleToggle}
               aria-label="Toggle Sidebar"
             >
@@ -137,20 +148,38 @@ const Navbar: React.FC = () => {
               )}
             </button>
 
-            <Link
-              to="/"
-              className="flex items-center gap-2 shrink-0 lg:hidden md:hidden"
-            >
+            {/* ✅ Logo + Data-Bin text (hidden on md and below) */}
+            {/* ✅ Logo + Data-Bin text for desktop */}
+            <Link to="/" className="hidden lg:flex items-center gap-2 shrink-0">
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
               <img
                 className="hidden dark:block w-6 h-6"
                 src={Logo}
                 alt="Logo"
               />
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+              <span className="text-lg font-semibold text-gray-900 dark:text-white leading-none flex items-center">
                 Data-Bin
               </span>
             </Link>
+
+            {/* ✅ Logo + Data-Bin text for mobile only */}
+            {/* ✅ Logo + Data-Bin text for mobile only - absolutely centered */}
+            <div className="absolute inset-0 flex justify-center items-center pointer-events-none lg:hidden">
+              <Link
+                to="/"
+                className="flex items-center gap-2 pointer-events-auto"
+              >
+                <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
+                <img
+                  className="hidden dark:block w-6 h-6"
+                  src={Logo}
+                  alt="Logo"
+                />
+                <span className="text-lg font-semibold text-gray-900 dark:text-white leading-none flex items-center">
+                  Data-Bin
+                </span>
+              </Link>
+            </div>
           </div>
 
           {screenSize !== "mobile" ? (
@@ -292,17 +321,17 @@ const Navbar: React.FC = () => {
             </div>
           )}
           <div className="border-t border-gray-300 dark:border-gray-700" />
-            {/* ✅ Auto-close on theme toggle */}
+          {/* ✅ Auto-close on theme toggle */}
           <div className="flex items-center justify-between gap-4 px-1 pt-2">
             <div
               onClick={() => {
-                toggleMobileRightSidebar(); 
+                toggleMobileRightSidebar();
               }}
             >
               <ThemeToggleButton />
             </div>
-              {/* ✅ Auto-close on user dropdown interaction */}
-              <UserDropdown />
+            {/* ✅ Auto-close on user dropdown interaction */}
+            <UserDropdown />
           </div>
         </div>
       </div>
