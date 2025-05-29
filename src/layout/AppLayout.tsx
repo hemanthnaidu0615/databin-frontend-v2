@@ -1,7 +1,7 @@
 import { SidebarProvider, useSidebar } from "../context/SidebarContext";
 import { Outlet } from "react-router";
 import AppHeader from "./Navbar";
-import Backdrop from "./Backdrop";
+
 import AppSidebar from "./AppSidebar";
 
 const LayoutContent: React.FC = () => {
@@ -22,7 +22,7 @@ const LayoutContent: React.FC = () => {
           ${isMobileOpen ? "fixed top-16 left-0 w-[290px] h-[calc(100vh-64px)] z-50" : "hidden lg:block"}`}
         >
           <AppSidebar />
-          <Backdrop />
+
           {/* <Backdrop /> */}
         </aside>
 
