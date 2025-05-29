@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Logo from "../images/logo.png";
 import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
   CopyIcon,
   GridIcon,
-  HorizontaLDots,
   PieChartIcon,
-  PlugInIcon,
   TableIcon,
   UserManagementIcon,
 } from "../icons";
@@ -139,7 +136,7 @@ const AppSidebar: React.FC = () => {
 
   const handleLinkClick = () => {
     if (screenSize === "mobile" || screenSize === "tablet") {
-      toggleMobileSidebar(); // ✅ close sidebar on mobile & tablet
+      toggleMobileSidebar(); 
     }
   };
 
@@ -260,22 +257,6 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* ✅ Logo + Data-Bin section only for tablet screens */}
-      <Link
-        to="/"
-        onClick={() => {
-          if (screenSize === "tablet") {
-            toggleMobileSidebar();
-          }
-        }}
-        className="hidden md:flex lg:hidden items-center gap-2 px-5 py-4 border-b border-gray-200 dark:border-gray-800"
-      >
-        <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
-        <img className="hidden dark:block w-6 h-6" src={Logo} alt="Logo" />
-        <span className="text-lg font-semibold text-gray-900 dark:text-white leading-none flex items-center">
-          Data-Bin
-        </span>
-      </Link>
 
       {/* Sidebar inner content */}
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar px-5">
