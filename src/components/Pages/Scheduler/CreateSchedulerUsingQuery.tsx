@@ -331,6 +331,8 @@ export const CreateSchedulerUsingQuery = () => {
               marginTop: "1rem",
               background: "#9614d0",
               border: "none",
+              color: "white",
+              transition: "none"
             }}
           />
         </div>
@@ -340,8 +342,12 @@ export const CreateSchedulerUsingQuery = () => {
           <Button
             label="Save Scheduler"
             onClick={handleSaveScheduler}
-            style={{ background: "#9614d0", border: "none" }}
-            className="button button w-auto ml-auto mr-auto bg-purple-500 border-none"
+            style={{
+              backgroundColor: "#9614d0",
+              border: "none",
+              color: "white",
+            }}
+            className="w-auto ml-auto mr-auto text-sm hover:brightness-90 transition-none"
           />
         </div>
       </div>
