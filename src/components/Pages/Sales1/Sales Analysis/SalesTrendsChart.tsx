@@ -21,9 +21,12 @@ const SalesTrendsChart = () => {
   const [channels, setChannels] = useState<string[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [drilledMonth, setDrilledMonth] = useState<string | null>(null);
-  const [salesData, setSalesData] = useState<{ order_date: string; total_amount: number }[]>([]);
+  const [salesData, setSalesData] = useState<
+    { period: string; total_amount: number }[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aggregationLevel, setAggregationLevel] = useState<string>("day");
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
@@ -45,22 +48,27 @@ const SalesTrendsChart = () => {
       });
 
       if (enterpriseKey) {
-        params.append('enterpriseKey', enterpriseKey);
+        params.append("enterpriseKey", enterpriseKey);
       }
 
       if (selectedChannel && selectedChannel !== "all") {
-        params.append('fulfillmentChannel', selectedChannel);
+        params.append("fulfillmentChannel", selectedChannel);
       }
 
       try {
         const res = await axiosInstance.get(
           `analysis/sales-by-date?${params.toString()}`
         );
-        const data = res.data as { sales?: { order_date: string; total_amount: number }[] };
+        const data = res.data as {
+          sales?: { period: string; total_amount: number }[];
+          aggregation_level?: string;
+        };
+
         setSalesData(data.sales || []);
+        setAggregationLevel(data.aggregation_level || "day");
       } catch (err) {
         console.error("Error fetching sales data", err);
-        setError('Failed to load sales data. Please try again.');
+        setError("Failed to load sales data. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -77,7 +85,7 @@ const SalesTrendsChart = () => {
         setChannels(data.channels || []);
       } catch (err) {
         console.error("Error fetching channels", err);
-        setError('Failed to load channel options. Using default channels.');
+        setError("Failed to load channel options. Using default channels.");
       }
     };
 
@@ -87,30 +95,25 @@ const SalesTrendsChart = () => {
   const { categories, values } = useMemo(() => {
     if (!salesData.length) return { categories: [], values: [] };
 
-    const start = dayjs(salesData[0].order_date);
-    const end = dayjs(salesData[salesData.length - 1].order_date);
-
-    const map: Record<string, number> = {};
-    salesData.forEach(({ order_date, total_amount }) => {
-      const date = dayjs(order_date).format("YYYY-MM-DD");
-      map[date] = total_amount;
+    const categories = salesData.map((entry) => {
+      const date = dayjs(entry.period);
+      switch (aggregationLevel) {
+        case "week":
+          return `${date.format("MMM D")}`;
+        case "month":
+          return date.format("MMMM YYYY");
+        case "year":
+          return date.format("YYYY");
+        case "day":
+        default:
+          return date.format("MMM D, YYYY");
+      }
     });
 
-    const days: string[] = [];
-    const values: number[] = [];
-    let curr = start;
+    const values = salesData.map((entry) => entry.total_amount);
 
-    while (curr.isBefore(end) || curr.isSame(end)) {
-      const dateStr = curr.format("YYYY-MM-DD");
-      days.push(dateStr);
-      values.push(map[dateStr] ?? 0);
-      curr = curr.add(1, "day");
-    }
-
-    return { categories: days, values };
-  }, [salesData]);
-
-
+    return { categories, values };
+  }, [salesData, aggregationLevel]);
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
@@ -130,7 +133,10 @@ const SalesTrendsChart = () => {
       tooltip: {
         enabled: true,
         theme: theme === "dark" ? "dark" : "light",
-        x: { formatter: (val) => String(val) },
+        x: {
+          formatter: (val: number) => String(val),
+        },
+
         y: {
           formatter: (val: number) => `$${val.toLocaleString()}`,
           title: { formatter: () => "Sales" },
@@ -147,7 +153,14 @@ const SalesTrendsChart = () => {
           },
         },
         title: {
-          text: "Dates",
+          text:
+            aggregationLevel === "day"
+              ? "Date"
+              : aggregationLevel === "week"
+              ? "Week"
+              : aggregationLevel === "month"
+              ? "Month"
+              : "Year",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -164,13 +177,13 @@ const SalesTrendsChart = () => {
             color: theme === "dark" ? "#CBD5E1" : "#64748B",
           },
         },
-  labels: {
-    formatter: (val: number) => {
-      if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
-      if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
-      return `$${val}`;
-    },
-  },
+        labels: {
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
+            return `$${val}`;
+          },
+        },
       },
       stroke: {
         curve: "smooth",
@@ -190,7 +203,7 @@ const SalesTrendsChart = () => {
       },
       legend: { show: false },
     }),
-    [chartType, theme, categories, drilledMonth]
+    [chartType, theme, categories, drilledMonth, aggregationLevel]
   );
 
   if (!startDate || !endDate) {
@@ -245,7 +258,6 @@ const SalesTrendsChart = () => {
             setSelectedChannel(e.value);
             setDrilledMonth(null);
           }}
-       
           placeholder="Select Channel"
           className="w-46"
           disabled={channels.length === 0}
