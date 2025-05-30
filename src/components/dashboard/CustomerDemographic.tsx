@@ -132,6 +132,14 @@ const DemographicCard = () => {
   };
 
   useEffect(() => {
+    const savedScroll = sessionStorage.getItem("scrollPosition");
+    if (savedScroll !== null) {
+      window.scrollTo({ top: parseInt(savedScroll, 10), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
+  useEffect(() => {
     async function fetchData() {
       try {
         const formattedStart = formatDate(startDate);
@@ -229,8 +237,10 @@ const DemographicCard = () => {
   }, [startDate, endDate, enterpriseKey]);
 
   const handleViewMore = () => {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales/region");
   };
+
 
   return (
     <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
@@ -245,7 +255,7 @@ const DemographicCard = () => {
             onClick={handleViewMore}
             className="sm:hidden text-purple-600 text-sm font-medium self-start"
           >
-            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
           </button>
 
         </div>

@@ -58,6 +58,15 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const navigate = useNavigate();
 
   useEffect(() => {
+    const savedScroll = sessionStorage.getItem("scrollPosition");
+    if (savedScroll !== null) {
+      window.scrollTo({ top: parseInt(savedScroll, 10), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const formattedStartDate = formatDate(startDate);
@@ -174,8 +183,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   };
 
   const handleViewMore = () => {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
   };
+
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
@@ -191,7 +202,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
               onClick={handleViewMore}
               className="sm:hidden text-purple-600 text-sm font-medium self-start"
             >
-               <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+              <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
             </button>
           </div>
 

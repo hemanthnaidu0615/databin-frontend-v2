@@ -49,6 +49,14 @@ export default function OrderTracking(_: OrderTrackingProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const scrollY = sessionStorage.getItem("scrollPosition");
+    if (scrollY) {
+      window.scrollTo({ top: parseInt(scrollY), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem("orderTrackingVisible", String(isVisible));
   }, [isVisible]);
 
@@ -135,8 +143,10 @@ export default function OrderTracking(_: OrderTrackingProps) {
   }
 
   function handleViewMore() {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
   }
+
 
   return (
     <div className="rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03] w-full max-w-full">
@@ -164,7 +174,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
                   onClick={handleViewMore}
                   className="sm:hidden text-purple-600 text-sm font-medium self-start"
                 >
-                   <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+                  <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
                 </button>
 
               </div>

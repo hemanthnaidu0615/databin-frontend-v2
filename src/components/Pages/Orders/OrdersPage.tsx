@@ -54,6 +54,10 @@ const OrdersPage: React.FC = () => {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     loadOrders();
   }, [filters, startDate, endDate, enterpriseKey]);
 

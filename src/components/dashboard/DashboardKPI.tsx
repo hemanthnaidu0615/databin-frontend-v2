@@ -78,32 +78,43 @@ export default function OrdersFulfillmentMetrics() {
           axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
         ]);
 
+        // Type assertion for totalOrdersRes.data
+        const totalOrdersData = totalOrdersRes.data as { total_orders: number };
+        // Type assertion for shipmentStatusRes.data
+        const shipmentStatusData = shipmentStatusRes.data as {
+          in_transit_orders: number;
+          delayed_percentage: number;
+        };
+
+        // Type assertion for fulfillmentRateRes.data
+        const fulfillmentRateData = fulfillmentRateRes.data as { fulfillment_rate: number };
+
         setMetrics([
           {
             icon: PrimeIcons.BOX,
             label: "Total Orders",
-            value: formatValue(totalOrdersRes.data.total_orders),
+            value: formatValue(totalOrdersData.total_orders),
             iconColor: "text-purple-500",
             glowColor: "#8B5CF6",
           },
           {
             icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
+            value: `${fulfillmentRateData.fulfillment_rate}`,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
           {
             icon: PrimeIcons.SEND,
             label: "Orders in Transit",
-            value: formatValue(shipmentStatusRes.data.in_transit_orders),
+            value: formatValue(shipmentStatusData.in_transit_orders),
             iconColor: "text-yellow-500",
             glowColor: "#FACC15",
           },
           {
             icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             label: "Delayed Orders",
-            value: `${shipmentStatusRes.data.delayed_percentage}`,
+            value: `${shipmentStatusData.delayed_percentage}`,
             iconColor: "text-red-500",
             glowColor: "#F87171",
           },

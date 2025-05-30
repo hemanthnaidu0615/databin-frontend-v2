@@ -49,6 +49,15 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   };
 
   useEffect(() => {
+    const savedScroll = sessionStorage.getItem("scrollPosition");
+    if (savedScroll) {
+      window.scrollTo({ top: parseInt(savedScroll, 10), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!startDate || !endDate) return;
 
@@ -174,6 +183,8 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ): void {
     event.preventDefault();
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+
     if (onViewMore) {
       onViewMore();
     } else {
@@ -181,11 +192,12 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     }
   }
 
+
   return (
     <div
       className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark"
-          ? "border-gray-700 bg-gray-900 dark:border-gray-800"
-          : "border-gray-200 bg-white"
+        ? "border-gray-700 bg-gray-900 dark:border-gray-800"
+        : "border-gray-200 bg-white"
         }`}
       style={{ padding: "1rem" }}
     >

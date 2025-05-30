@@ -12,7 +12,9 @@ const ShipmentPage = () => {
   const [loadingFilters, setLoadingFilters] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -78,7 +80,7 @@ const ShipmentPage = () => {
           </select>
         </div>
 
-      
+
 
       </div>
 

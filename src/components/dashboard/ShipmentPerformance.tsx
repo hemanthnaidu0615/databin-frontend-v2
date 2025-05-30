@@ -61,6 +61,14 @@ const ShipmentPerformance: React.FC<{
   }, [isVisible]);
 
   useEffect(() => {
+    const scrollY = sessionStorage.getItem("scrollPosition");
+    if (scrollY) {
+      window.scrollTo({ top: parseInt(scrollY, 10), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -162,7 +170,10 @@ const ShipmentPerformance: React.FC<{
     { name: "Same-Day", data: data.sameDay },
   ];
 
-  const handleViewMore = () => navigate("/shipment");
+  const handleViewMore = () => {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+    navigate("/shipment");
+  };
   const restoreChart = () => setIsVisible(true);
 
   return (

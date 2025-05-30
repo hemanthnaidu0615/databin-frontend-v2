@@ -86,6 +86,16 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     fetchChartData();
   }, [startDate, endDate, enterpriseKey]);
 
+
+  useEffect(() => {
+    const scrollY = sessionStorage.getItem("scrollPosition");
+    if (scrollY) {
+      window.scrollTo({ top: parseInt(scrollY), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
+
   const formatValue = (value: number) => {
     if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
     if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
@@ -163,8 +173,10 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
 
 
   const handleViewMore = () => {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales/dashboard");
   };
+
 
   const series = [
     { name: "Sales", data: salesByMonth },
@@ -184,7 +196,7 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
             onClick={handleViewMore}
             className="sm:hidden text-purple-600 text-sm font-medium self-start"
           >
-            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
           </button>
         </div>
 
