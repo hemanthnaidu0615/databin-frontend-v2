@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 interface ProductData {
   id: number;
@@ -86,7 +86,7 @@ const ProfitabilityTable: React.FC = () => {
               updateDate: product.update_date,
             })
           );
-          setProductData(transformed.slice(0, 5));
+          setProductData(transformed.slice(0, 10));
         }
       } catch (error) {
         console.error("Failed to fetch top products:", error);
@@ -178,16 +178,18 @@ const ProfitabilityTable: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
         <div className="flex items-start justify-between w-full sm:w-auto">
-          <h2 className="app-subheading flex-1 mr-2">
-            Top Selling products
-          </h2>
+          <h2 className="app-subheading flex-1 mr-2">Top Selling products</h2>
 
           {/* Mobile arrow (→) aligned right */}
           <button
             onClick={handleViewMore}
             className="sm:hidden text-purple-600 text-sm font-medium self-start"
           >
-             <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+            <FontAwesomeIcon
+              icon={faShareFromSquare}
+              size="lg"
+              style={{ color: "#9614d0" }}
+            />
           </button>
         </div>
 
@@ -239,7 +241,7 @@ const ProfitabilityTable: React.FC = () => {
               const scale = abs === 0 ? 1.03 : 1 - abs * 0.04;
               const rotateY = -r * 15;
               const translateX = r * 100;
-              const opacity = abs > 2 ? 0 : 1;
+              const opacity = abs > 4 ? 0 : 1;
 
               return (
                 <div
@@ -301,7 +303,7 @@ const ProfitabilityTable: React.FC = () => {
         </div>
 
         {/* Dots (Mobile Only) */}
-        <div className="flex sm:hidden justify-center gap-2 mt-3 z-50">
+        <div className="flex justify-center gap-2 mt-3 z-50">
           {productData.map((_, index) => (
             <button
               key={index}
