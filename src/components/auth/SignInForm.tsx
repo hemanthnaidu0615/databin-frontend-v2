@@ -66,7 +66,7 @@ function Signin() {
       >
         <div className="flex items-center gap-4 mb-4">
           <img src={logo} alt="logo" className="h-10" />
-          <h1 className="text-xl sm:text-2xl font-bold text-[#9614d0] dark:text-[#d5b1ec]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#9614d0] dark:text-[#9614d0]">
             Welcome to Databin
           </h1>
         </div>
@@ -119,7 +119,7 @@ function Signin() {
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
         >
-          <h2 className="text-xl sm:text-2xl font-bold text-center text-[#9614d0] dark:text-[#d5b1ec]">
+          <h2 className="text-xl sm:text-2xl font-bold text-center text-[#9614d0] dark:text-[#9614d0]">
             Sign In
           </h2>
 
