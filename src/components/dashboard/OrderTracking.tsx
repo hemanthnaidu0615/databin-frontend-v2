@@ -5,6 +5,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -17,12 +19,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(3, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(3, "0")}`;
 };
 
 interface OrderTrackingProps {
@@ -151,24 +153,35 @@ export default function OrderTracking(_: OrderTrackingProps) {
       {isVisible && (
         <>
           <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="app-subheading">
+            <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+              <div className="flex items-start justify-between w-full sm:w-auto">
+                <h2 className="app-subheading flex-1 mr-2">
                   Order Tracking
                 </h2>
-                <p className="mt-1 text-gray-500 text-xs dark:text-gray-400">
-                  Monitor orders and fulfillment speed
-                </p>
-              </div>
 
+                {/* Mobile arrow (→) aligned right */}
+                <button
+                  onClick={handleViewMore}
+                  className="sm:hidden text-purple-600 text-sm font-medium self-start"
+                >
+                   <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+                </button>
+
+              </div>
+              <p className="mt-1 text-gray-500 text-xs dark:text-gray-400">
+                Monitor orders and fulfillment speed
+              </p>
+
+
+              {/* Desktop & tablet "View More" */}
               <button
                 onClick={handleViewMore}
-                className="text-xs font-medium hover:underline mt-14"
-                style={{ color: "#9614d0" }}
+                className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
               >
                 View More
               </button>
             </div>
+
 
             <div className="relative mt-4">
               <div className="max-h-[260px]" id="chartDarkStyle">

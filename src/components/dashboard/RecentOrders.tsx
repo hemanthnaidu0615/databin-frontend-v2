@@ -10,6 +10,8 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -106,18 +108,30 @@ export default function RecentOrders() {
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="app-subheading">
-          Recent Orders
-        </h2>
+      <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+        <div className="flex items-start justify-between w-full sm:w-auto">
+          <h2 className="app-subheading flex-1 mr-2">
+            Recent Orders
+          </h2>
+
+          {/* Mobile arrow (→) aligned right */}
+          <button
+            onClick={handleViewMore}
+            className="sm:hidden text-purple-600 text-sm font-medium self-start"
+          >
+            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+          </button>
+        </div>
+
+        {/* Desktop & tablet "View More" */}
         <button
           onClick={handleViewMore}
-          className="text-xs font-medium hover:underline"
-          style={{ color: "#9614d0" }}
+          className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
         >
           View More
         </button>
       </div>
+
 
       <div className="w-full">
         <Table className="w-full table-fixed">

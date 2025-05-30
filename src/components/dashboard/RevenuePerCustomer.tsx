@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
+
+
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -134,10 +138,32 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="app-subheading">
-            Revenue Per Customer
-          </h2>
+        <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+          <div className="flex items-start justify-between w-full sm:w-auto">
+            <h2 className="app-subheading flex-1 mr-2">
+              Revenue Per Customer
+            </h2>
+
+            {/* Mobile arrow (→) */}
+            <button
+              onClick={onViewMore}
+              className="sm:hidden text-purple-600 w-6 shadow text-xl font-medium self-start"
+            >
+              {/* &#x2197; */}
+              {/* &#x21aa; */}
+              {/* &#x21f1; */}
+             <FontAwesomeIcon icon={faShareFromSquare} size="sm" style={{color: "#9614d0",}} />
+              
+            </button>
+          </div>
+
+          {/* Desktop & tablet "View More" */}
+          <button
+            onClick={onViewMore}
+            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
+          >
+            View More
+          </button>
         </div>
       )}
 
@@ -160,17 +186,10 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
               <Column field="revenue" header="Revenue" />
             </DataTable>
           )}
-
-          <button
-            onClick={onViewMore}
-            className="absolute top-4 right-4 text-xs font-medium hover:underline"
-            style={{ color: "#9614d0" }}
-          >
-            View More
-          </button>
         </>
       )}
     </div>
+
   );
 };
 

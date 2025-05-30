@@ -4,6 +4,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -178,20 +180,30 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
-        <div className="flex justify-between items-center mb-10">
-          <h2 className="app-subheading">
-            Order Trends by Product Category
-          </h2>
-          <div className="relative">
+        <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+          <div className="flex items-start justify-between w-full sm:w-auto">
+            <h2 className="app-subheading flex-1 mr-2">
+              Order Trends By Product Category
+            </h2>
+
+            {/* Mobile arrow (→) aligned right */}
             <button
               onClick={handleViewMore}
-              className="text-xs font-medium hover:underline"
-              style={{ color: "#9614d0" }}
+              className="sm:hidden text-purple-600 text-sm font-medium self-start"
             >
-              View More
+               <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
             </button>
           </div>
+
+          {/* Desktop & tablet "View More" */}
+          <button
+            onClick={handleViewMore}
+            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
+          >
+            View More
+          </button>
         </div>
+
       )}
 
       <div className="h-[420px] sm:h-[490px]">

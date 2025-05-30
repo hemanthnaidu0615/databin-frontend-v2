@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import allStates from "./allStates.json";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
@@ -84,12 +86,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}`;
 };
 
 const DemographicCard = () => {
@@ -199,23 +201,34 @@ const DemographicCard = () => {
 
   return (
     <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
-      <div className="flex justify-between items-start ">
-        <div>
-          <div className="app-subheading">
-            Customers Demographic
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Customers and revenue per state
-          </div>
+      <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+        <div className="flex items-start justify-between w-full sm:w-auto">
+          <h2 className="app-subheading flex-1 mr-2">
+            Customer Demographic
+          </h2>
+
+          {/* Mobile arrow (→) aligned right */}
+          <button
+            onClick={handleViewMore}
+            className="sm:hidden text-purple-600 text-sm font-medium self-start"
+          >
+            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+          </button>
+
         </div>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Customers and revenue per state
+        </div>
+
+        {/* Desktop & tablet "View More" */}
         <button
           onClick={handleViewMore}
-          className="text-xs font-medium hover:underline"
-          style={{ color: "#9614d0" }}
+          className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
         >
           View More
         </button>
       </div>
+
 
       <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
         <ComposableMap
