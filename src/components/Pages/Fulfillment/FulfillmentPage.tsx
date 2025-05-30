@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import FulfillmentStats from "./FulfillmentStats";
 import FulfillmentPipeline from "./FulfillmentPipeline";
 import FulfillmentCenters from "./FulfillmentCenters";
@@ -5,6 +6,10 @@ import BottleneckChart from "./BottleneckChart";
 import OrdersInProcess from "./OrdersInProcess";
 
 const FulfillmentPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="w-full bg-gray-50 dark:bg-black overflow-x-hidden">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
@@ -40,7 +45,7 @@ const FulfillmentPage = () => {
       </div>
     </div>
 
-    
+
   );
 };
 

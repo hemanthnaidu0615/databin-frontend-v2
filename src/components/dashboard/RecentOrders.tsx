@@ -53,6 +53,14 @@ export default function RecentOrders() {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
 
   const navigate = useNavigate();
+  useEffect(() => {
+    const scrollY = sessionStorage.getItem("scrollPosition");
+    if (scrollY) {
+      window.scrollTo({ top: parseInt(scrollY), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
 
   useEffect(() => {
     console.log("Fetching recent orders...");
@@ -103,8 +111,10 @@ export default function RecentOrders() {
   }, [startDate, endDate, enterpriseKey]);
 
   function handleViewMore() {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
   }
+
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">

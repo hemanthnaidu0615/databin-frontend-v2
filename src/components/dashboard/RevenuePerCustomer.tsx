@@ -90,6 +90,14 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
+  useEffect(() => {
+    const scrollY = sessionStorage.getItem("scrollPosition");
+    if (scrollY) {
+      window.scrollTo({ top: parseInt(scrollY), behavior: "auto" });
+      sessionStorage.removeItem("scrollPosition");
+    }
+  }, []);
+
   const apexOptions: ApexOptions = {
     chart: {
       type: "bar",
@@ -133,7 +141,11 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   };
 
 
-  const onViewMore = () => navigate("/sales/dashboard");
+  const onViewMore = () => {
+    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+    navigate("/sales/dashboard");
+  };
+
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
@@ -152,8 +164,8 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
               {/* &#x2197; */}
               {/* &#x21aa; */}
               {/* &#x21f1; */}
-             <FontAwesomeIcon icon={faShareFromSquare} size="sm" style={{color: "#9614d0",}} />
-              
+              <FontAwesomeIcon icon={faShareFromSquare} size="sm" style={{ color: "#9614d0", }} />
+
             </button>
           </div>
 
