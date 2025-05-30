@@ -37,6 +37,16 @@ export default function Home() {
         <div className="col-span-full">
           <Memoized.EcommerceMetrics />
         </div>
+        <div className="sm:col-span-6 xl:col-span-12">
+          <div className="grid gap-4">
+            {/* Customer Segmentation Widget */}
+            <div>
+              <div className="bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
+                <Memoized.CustomerSegmentation />
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* 📈 Sales & Revenue */}
         <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
@@ -92,39 +102,6 @@ export default function Home() {
           <div className="w-full xl:w-1/2 h-full">
             <div className="h-full bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
               <Memoized.DemographicCard />
-            </div>
-          </div>
-        </div>
-
-        {/* 🔄 Product Trends */}
-        {/* <div className="sm:col-span-6 xl:col-span-12 flex flex-col xl:flex-row gap-4">
-          <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.OrderValueSegment />
-            </div>
-          </div>
-          <div className="w-full xl:w-1/2 h-full">
-            <div className="h-full bg-white dark:bg-gray-900 rounded-2xl shadow p-4">
-              <Memoized.SalesFunnel />
-            </div>
-          </div>
-        </div> */}
-
-        {/* 🧾 Top Row: Inventory + Customer Segmentation (side by side, matching height) */}
-        {/* Inventory Health Widget */}
-        {/* <div className="sm:col-span-6 xl:col-span-12">
-          <div className="bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
-            <Memoized.InventoryHealth />
-          </div>
-        </div> */}
-        {/* 📊 Combined Widget Container */}
-        <div className="sm:col-span-6 xl:col-span-12">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {/* Customer Segmentation Widget */}
-            <div className="col-span-1">
-              <div className="bg-white dark:bg-[#0E1625] dark:border-[#1C2738] dark:border dark:ring-1 dark:ring-white/10 dark:shadow-md rounded-2xl shadow-md p-4">
-                <Memoized.CustomerSegmentation />
-              </div>
             </div>
           </div>
         </div>
