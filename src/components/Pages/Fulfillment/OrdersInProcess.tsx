@@ -17,20 +17,39 @@ interface Order {
   eta: string;
 }
 
+interface TimelineEvent {
+  event: string;
+  event_type: string;
+  eta: string;
+}
+
+const statusColors: Record<string, string> = {
+  "Order Placed": "bg-yellow-500",
+  Processing: "bg-blue-500",
+  "Ready for Pickup": "bg-blue-500",
+  Completed: "bg-green-600",
+  Unknown: "bg-gray-400",
+};
+
+
+const getStatusColor = (status: string) => {
+  return statusColors[status] || "bg-gray-400";
+};
+
 const mapEventToStatus = (event: string): string => {
   switch (event) {
     case "Order Placed":
+      return "Order Placed";
     case "Processing":
+    case "Store Pickup":
+    case "Ship to Home":
     case "Distribution Center":
     case "Warehouse":
     case "Vendor Drop Shipping":
-    case "Ship to Home":
-      return "Processing";
-    case "Store Pickup":
+    case "Same-Day Delivery":
     case "Locker Pickup":
     case "Curbside Pickup":
-      return "Ready for Pickup";
-    case "Same-Day Delivery":
+      return "Processing";
     case "Shipped":
       return "Shipped";
     case "Cancelled":
@@ -52,6 +71,10 @@ const OrdersInProcess = () => {
   const [rows, setRows] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  const [orderTimeline, setOrderTimeline] = useState<TimelineEvent[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineError, setTimelineError] = useState<string | null>(null);
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
@@ -116,9 +139,7 @@ const OrdersInProcess = () => {
 
   const header = (
     <div className="flex justify-between items-center gap-2 flex-wrap">
-      <h2 className="text-sm md:text-lg font-semibold">
-        Orders Under Fulfillment
-      </h2>
+      <h2 className="text-sm md:text-lg font-semibold">Orders In Process</h2>
       <span className="p-input-icon-left w-full md:w-auto">
         <InputText
           type="search"
@@ -148,9 +169,27 @@ const OrdersInProcess = () => {
 
   const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
 
-  const handleViewClick = (order: Order) => {
+  const handleViewClick = async (order: Order) => {
     setSelectedOrder(order);
     setVisible(true);
+    setTimelineLoading(true);
+    setTimelineError(null);
+    setOrderTimeline([]);
+
+    try {
+      const res = await axiosInstance.get<{ timeline: TimelineEvent[] }>(
+        "/fulfillment/details",
+        {
+          params: { orderId: order.order_id },
+        }
+      );
+      setOrderTimeline(res.data.timeline);
+    } catch (err) {
+      console.error("Failed to fetch order details timeline:", err);
+      setTimelineError("Failed to load order timeline");
+    } finally {
+      setTimelineLoading(false);
+    }
   };
 
   const actionTemplate = (rowData: Order) => (
@@ -186,7 +225,12 @@ const OrdersInProcess = () => {
               field="status"
               header="Status"
               sortable
-              body={(rowData) => <Tag value={rowData.status} />}
+              body={(rowData) => (
+                <Tag
+                  value={rowData.status}
+                  className={`text-white ${getStatusColor(rowData.status)}`}
+                />
+              )}
             />
             <Column field="eta" header="ETA" body={etaTemplate} sortable />
             <Column header="Action" body={actionTemplate} />
@@ -207,7 +251,9 @@ const OrdersInProcess = () => {
                 </h3>
                 <Tag
                   value={mapEventToStatus(order.event)}
-                  className="text-xs"
+                  className={`text-xs text-white ${getStatusColor(
+                    mapEventToStatus(order.event)
+                  )}`}
                 />
               </div>
               <p className="text-xs mt-1">Event: {order.event}</p>
@@ -225,7 +271,6 @@ const OrdersInProcess = () => {
 
           {/* Mobile Pagination */}
           <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
-            {/* Top: Rows per page & page info stacked */}
             <div className="flex flex-col gap-2 mb-2 w-full">
               <div className="flex flex-col gap-1">
                 <label htmlFor="mobileRows" className="whitespace-nowrap">
@@ -253,7 +298,6 @@ const OrdersInProcess = () => {
               </div>
             </div>
 
-            {/* Pagination buttons */}
             <div className="flex flex-wrap justify-between gap-2 w-full">
               <button
                 onClick={() => setPage(0)}
@@ -292,9 +336,8 @@ const OrdersInProcess = () => {
         </div>
       </div>
 
-      {/* Dialog Modal */}
       <Dialog
-        header={`Order Details: ${selectedOrder?.order_id}`}
+        header={`Order Details`}
         visible={visible}
         onHide={() => setVisible(false)}
         style={{ width: "40rem" }}
@@ -304,24 +347,63 @@ const OrdersInProcess = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="space-y-6"
+          className="flex flex-col md:flex-row gap-6"
         >
-          {selectedOrder ? (
-            <>
-              <div>
-                <strong>Status:</strong> {mapEventToStatus(selectedOrder.event)}
+          <div className="md:w-1/3 text-sm space-y-4">
+            <div>
+              <span className="font-semibold">Order ID:</span>  <span className="text-sm">{selectedOrder?.order_id} </span>
+            </div>
+            <div className="flex text-sm items-center gap-2">
+              <span className="font-semibold">Status:</span>
+              {selectedOrder && (
+                <Tag
+                  value={mapEventToStatus(selectedOrder.event)}
+                  className={`text-white "text-sm" ${getStatusColor(mapEventToStatus(selectedOrder.event))}`}
+                />
+              )}
+
+            </div>
+            {selectedOrder && (
+              <div className="mt-2">
+                <span className="font-semibold">ETA: </span><span className="text-sm"> {formatETA(selectedOrder.eta)}</span>
               </div>
-              <div>
-                <strong>ETA:</strong> {formatETA(selectedOrder.eta)}
-              </div>
-              <div>
-                <strong>Event:</strong> {selectedOrder.event}
-              </div>
-            </>
-          ) : (
-            <p>No order selected.</p>
-          )}
+            )}
+
+          </div>
+
+          <div className="md:flex-1 text-sm">
+
+
+            <h3 className="font-semibold mb-4">Timeline</h3>
+
+            {timelineLoading && <p>Loading timeline...</p>}
+            {timelineError && <p className="text-red-500">{timelineError}</p>}
+            {!timelineLoading && !timelineError && orderTimeline.length === 0 && (
+              <p>No timeline data available.</p>
+            )}
+
+            {!timelineLoading && !timelineError && orderTimeline.length > 0 && (
+              <ol className="relative ml-6 before:absolute before:top-[8px] before:bottom-[30px] before:left-[1rem] before:w-px before:bg-gray-500 dark:before:bg-gray-600">  {orderTimeline.map((event, index) => {
+                const isLast = index === orderTimeline.length - 1;
+                return (
+                  <li key={event.event} className="mb-6 relative">
+                    <span
+                      className={`absolute left-2 top-1.5 flex h-4 w-4 items-center justify-center rounded-full ring-2 ring-transparent dark:ring-gray-900 ${isLast ? "bg-green-600" : getStatusColor(mapEventToStatus(event.event_type))
+                        }`}
+                    />
+                    <div className="ml-8">
+                      <p className="mb-1 text-sm font-semibold">{event.event_type}</p>
+                      <p className="text-xs">ETA: {formatETA(event.eta)}</p>
+                    </div>
+                  </li>
+                );
+              })}
+              </ol>
+
+            )}
+          </div>
         </motion.div>
+
       </Dialog>
     </div>
   );
