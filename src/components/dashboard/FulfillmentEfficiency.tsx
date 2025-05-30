@@ -7,6 +7,8 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -181,25 +183,37 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl shadow-md border ${
-        theme === "dark"
+      className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark"
           ? "border-gray-700 bg-gray-900 dark:border-gray-800"
           : "border-gray-200 bg-white"
-      }`}
+        }`}
       style={{ padding: "1rem" }}
     >
       {size === "full" && (
-        <div className="flex justify-between items-center mb-20 app-subheading">
-          <h2 className="app-subheading">Fulfillment Efficiency Summary</h2>
+        <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+          <div className="flex items-start justify-between w-full sm:w-auto">
+            <h2 className="app-subheading flex-1 mr-2">
+              Fulfillment Efficeincy Summary
+            </h2>
 
+            {/* Mobile arrow (→) aligned right */}
+            <button
+              onClick={handleViewMore}
+              className="sm:hidden text-purple-600 text-sm font-medium self-start"
+            >
+              <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+            </button>
+          </div>
+
+          {/* Desktop & tablet "View More" */}
           <button
             onClick={handleViewMore}
-            className="text-xs font-medium hover:underline"
-            style={{ color: "#9614d0" }}
+            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
           >
             View More
           </button>
         </div>
+
       )}
       <div className="w-full mb-11" style={{ height: size === "small" ? 220 : 400 }}>
         {isLoading ? (

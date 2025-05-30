@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 interface ProductData {
   id: number;
@@ -174,12 +176,25 @@ const ProfitabilityTable: React.FC = () => {
   return (
     <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="app-subheading">Top Selling Products</h2>
+      <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+        <div className="flex items-start justify-between w-full sm:w-auto">
+          <h2 className="app-subheading flex-1 mr-2">
+            Top Selling products
+          </h2>
+
+          {/* Mobile arrow (→) aligned right */}
+          <button
+            onClick={handleViewMore}
+            className="sm:hidden text-purple-600 text-sm font-medium self-start"
+          >
+             <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{color: "#9614d0",}} />
+          </button>
+        </div>
+
+        {/* Desktop & tablet "View More" */}
         <button
           onClick={handleViewMore}
-          className="text-xs font-medium hover:underline"
-          style={{ color: "#9614d0" }}
+          className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
         >
           View More
         </button>

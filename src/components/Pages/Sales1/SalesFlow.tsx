@@ -280,7 +280,7 @@ function SalesFlow() {
       <div className="max-w-full w-full mx-auto">
         <div className="mb-4">
           <h1 className="app-section-title mb-2">
-            Sales Flow (USD)
+            Sales Flow
           </h1>
         </div>
 

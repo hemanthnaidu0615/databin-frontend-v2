@@ -5,6 +5,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -100,58 +102,58 @@ const ShipmentPerformance: React.FC<{
     }
   }, [startDate, endDate, enterpriseKey]);
 
-const barOptions: ApexOptions = {
-  chart: { type: "bar", stacked: true, toolbar: { show: false } },
-  colors: ["#4CAF50", "#FF9800", "#2196F3"],
-  plotOptions: { bar: { columnWidth: "70%" } },
-  dataLabels: {
-    enabled: true,
-    formatter: function (val: number) {
-      return formatValue(val);
-    },
-    style: {
-      colors: ["#fff"],
-      fontSize: "12px",
-    },
-  },
-  xaxis: {
-    categories: data.carriers,
-    title: {
-      text: "Carriers",
-      style: {
-        fontWeight: "400",
-        fontSize: "14px",
+  const barOptions: ApexOptions = {
+    chart: { type: "bar", stacked: true, toolbar: { show: false } },
+    colors: ["#4CAF50", "#FF9800", "#2196F3"],
+    plotOptions: { bar: { columnWidth: "70%" } },
+    dataLabels: {
+      enabled: true,
+      formatter: function (val: number) {
+        return formatValue(val);
       },
-    },
-    labels: {
       style: {
+        colors: ["#fff"],
         fontSize: "12px",
       },
     },
-    crosshairs: { show: false },
-  },
-  yaxis: {
-    title: {
-      text: "Number of Shipments",
-      style: {
-        fontWeight: "400",
-        fontSize: "14px",
+    xaxis: {
+      categories: data.carriers,
+      title: {
+        text: "Carriers",
+        style: {
+          fontWeight: "400",
+          fontSize: "14px",
+        },
+      },
+      labels: {
+        style: {
+          fontSize: "12px",
+        },
+      },
+      crosshairs: { show: false },
+    },
+    yaxis: {
+      title: {
+        text: "Number of Shipments",
+        style: {
+          fontWeight: "400",
+          fontSize: "14px",
+        },
+      },
+      labels: {
+        formatter: (val: number) => formatValue(val),
+        style: {
+          fontSize: "12px",
+        },
       },
     },
-    labels: {
-      formatter: (val: number) => formatValue(val),
-      style: {
-        fontSize: "12px",
+    tooltip: {
+      y: {
+        formatter: (val: number) => formatValue(val),
       },
     },
-  },
-  tooltip: {
-    y: {
-      formatter: (val: number) => formatValue(val),
-    },
-  },
-  legend: { position: "bottom" },
-};
+    legend: { position: "bottom" },
+  };
 
 
   const barSeries = [
@@ -177,18 +179,30 @@ const barOptions: ApexOptions = {
 
       {isVisible && (
         <>
-          <div className="flex justify-between items-center mb-16">
-            <h2 className="app-subheading">
-              Shipment Performance
-            </h2>
+          <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+            <div className="flex items-start justify-between w-full sm:w-auto">
+              <h2 className="app-subheading flex-1 mr-2">
+                Shipment Performance
+              </h2>
 
+              {/* Mobile arrow (→) aligned right */}
+              <button
+                onClick={handleViewMore}
+                className="sm:hidden text-purple-600 text-sm font-medium self-start"
+              >
+                <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+              </button>
+            </div>
+
+            {/* Desktop & tablet "View More" */}
             <button
               onClick={handleViewMore}
-              className="text-xs font-medium text-purple-600 hover:underline"
+              className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
             >
               View More
             </button>
           </div>
+
 
           {isLoading ? (
             <p className="text-gray-600 dark:text-gray-300">Loading data...</p>
