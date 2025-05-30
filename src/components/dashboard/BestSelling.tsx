@@ -73,7 +73,6 @@ const ProfitabilityTable: React.FC = () => {
         const response = await axiosInstance.get("/top-sellers/top-products", {
           params,
         });
-
         const json = response.data as { top_products?: any[] };
 
         if (json.top_products && Array.isArray(json.top_products)) {
@@ -113,6 +112,67 @@ const ProfitabilityTable: React.FC = () => {
     return () => clearInterval(interval);
   }, [productData.length]);
 
+  // 👇 Swipe gesture support
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndX = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = () => {
+      const deltaX = touchEndX - touchStartX;
+      if (Math.abs(deltaX) > 50) {
+        if (deltaX > 0) {
+          moveLeft();
+        } else {
+          moveRight();
+        }
+      }
+    };
+
+    const carouselContainer = document.querySelector(
+      ".carousel-container"
+    ) as HTMLDivElement | null;
+
+    if (carouselContainer) {
+      carouselContainer.addEventListener(
+        "touchstart",
+        (e) => handleTouchStart(e as TouchEvent),
+        { passive: true }
+      );
+      carouselContainer.addEventListener(
+        "touchmove",
+        (e) => handleTouchMove(e as TouchEvent),
+        { passive: true }
+      );
+      carouselContainer.addEventListener(
+        "touchend",
+        handleTouchEnd as EventListener
+      );
+    }
+
+    return () => {
+      if (carouselContainer) {
+        carouselContainer.removeEventListener("touchstart", (e) =>
+          handleTouchStart(e as TouchEvent)
+        );
+        carouselContainer.removeEventListener("touchmove", (e) =>
+          handleTouchMove(e as TouchEvent)
+        );
+        carouselContainer.removeEventListener(
+          "touchend",
+          handleTouchEnd as EventListener
+        );
+      }
+    };
+  }, [productData.length]);
+
   return (
     <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
       {/* Header */}
@@ -140,9 +200,12 @@ const ProfitabilityTable: React.FC = () => {
         </button>
       </div>
 
+      {/* Carousel Container */}
+      <div className="w-full max-w-full overflow-hidden relative carousel-container">
+        {/* Edge Fade */}
+        <div className="absolute left-0 top-0 w-6 h-full bg-gradient-to-r from-white dark:from-gray-900 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 w-6 h-full bg-gradient-to-l from-white dark:from-gray-900 to-transparent z-10 pointer-events-none" />
 
-      {/* Carousel */}
-      <div className="w-full overflow-visible relative">
         <div
           className="relative flex items-center justify-center w-full h-[380px] pt-2"
           style={{ perspective: "600px" }}
@@ -182,33 +245,34 @@ const ProfitabilityTable: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => setPosition(offset)}
-                  className={`cursor-pointer absolute w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${abs === 0
-                    ? "scale-105 transition-transform duration-300 ease-out"
-                    : ""
-                    }`}
+                  className={`cursor-pointer absolute w-[90%] max-w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${
+                    abs === 0
+                      ? "scale-105 transition-transform duration-300 ease-out"
+                      : ""
+                  }`}
                   style={{
                     transform: `translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`,
                     zIndex: 100 - abs,
                     opacity,
                     border: `2px solid ${abs === 0 ? "#9614d0" : "#8417b2"}`,
-                    boxShadow: `0 0 10px ${abs === 0 ? "#9614d0" : "#8417b2"
-                      }40`,
+                    boxShadow: `0 0 10px ${
+                      abs === 0 ? "#9614d0" : "#8417b2"
+                    }40`,
                     pointerEvents: abs > 2 ? "none" : "auto",
                     transition:
                       "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out, border 0.3s ease-out, box-shadow 0.3s ease-out",
                   }}
                 >
-                  {/* Ranking */}
                   <span
-                    className={`absolute top-2 left-2 text-4xl font-extrabold select-none pointer-events-none ${abs === 0
-                      ? "text-transparent bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text drop-shadow-[0_0_8px_rgba(150,20,208,0.5)]"
-                      : "text-purple-600 opacity-30"
-                      }`}
+                    className={`absolute top-2 left-2 text-4xl font-extrabold select-none pointer-events-none ${
+                      abs === 0
+                        ? "text-transparent bg-gradient-to-r from-purple-400 to-fuchsia-500 bg-clip-text drop-shadow-[0_0_8px_rgba(150,20,208,0.5)]"
+                        : "text-purple-600 opacity-30"
+                    }`}
                   >
                     #{i + 1}
                   </span>
 
-                  {/* Content */}
                   <div className="mt-20 w-full">
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
                       {product.name}
@@ -242,12 +306,13 @@ const ProfitabilityTable: React.FC = () => {
             <button
               key={index}
               onClick={() => setPosition(index + 1)}
-              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${position === index + 1
-                ? "bg-purple-600 border-purple-600"
-                : theme === "dark"
+              className={`w-2.5 h-2.5 rounded-full border-2 transition-all duration-300 ${
+                position === index + 1
+                  ? "bg-purple-600 border-purple-600"
+                  : theme === "dark"
                   ? "border-gray-600 bg-gray-800"
                   : "border-gray-300 bg-white"
-                }`}
+              }`}
               aria-label={`Go to product ${index + 1}`}
             />
           ))}

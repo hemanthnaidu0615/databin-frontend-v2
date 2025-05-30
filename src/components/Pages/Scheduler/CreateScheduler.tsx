@@ -167,7 +167,6 @@ export const CreateScheduler = () => {
         }
       );
 
-
       if (response.status !== 200) {
         throw new Error(
           `HTTP error! Status: ${response.status}, Message: ${response.statusText}`
@@ -433,7 +432,7 @@ export const CreateScheduler = () => {
             selectAll
             selectAllLabel={
               schedulerData.columnSelection.length ===
-                getTableColumns(data).slice(1).length
+              getTableColumns(data).slice(1).length
                 ? "Deselect All"
                 : "Select All"
             }
@@ -461,9 +460,13 @@ export const CreateScheduler = () => {
         <div className="flex justify-end">
           <Button
             label="Save Scheduler"
-            style={{ background: "#9614d0", border: "none" }}
             onClick={handleSaveScheduler}
-            className="button w-auto ml-auto mr-auto bg-purple-500 border-none"
+            style={{
+              backgroundColor: "#9614d0",
+              border: "none",
+              color: "white",
+            }}
+            className="w-auto ml-auto mr-auto text-sm hover:brightness-90 transition-none"
           />
         </div>
       </div>
