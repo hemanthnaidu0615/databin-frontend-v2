@@ -771,12 +771,29 @@ span.flatpickr-weekday,
   line-height: 2rem;              
   font-family: var(--font-outfit, 'Outfit', sans-serif);
 }
+@media screen and (max-width:640px){
+  .app-widget-value {
+  font-size: 1.2rem;              
+  font-weight: 700;
+  line-height: 2rem;              
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+}
+}
 
 .app-widget-label {
   font-size: 0.95rem;             
   font-weight: 500;
   line-height: 1.4rem;             
   font-family: var(--font-outfit, 'Outfit', sans-serif);
+}
+
+@media screen and (max-width:640px){
+.app-widget-label {
+  font-size: 0.8rem;             
+  font-weight: 500;
+  line-height: 1.4rem;             
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+}
 }
 
 .app-table-heading {
