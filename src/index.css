@@ -897,3 +897,8 @@ html:not(.dark) .apexcharts-tooltip-title {
 html:not(.dark) .apexcharts-tooltip-series-group .apexcharts-tooltip-text {
   color: #000000 !important;
 }
+
+.product-sales-header {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}

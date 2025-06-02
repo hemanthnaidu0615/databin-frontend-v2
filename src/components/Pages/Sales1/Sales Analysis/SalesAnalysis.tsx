@@ -11,8 +11,11 @@ const SalesAnalysis = () => {
 
       <div className="overflow-x-auto">
         <TabView
-          className="mt-4"
+          // Removed the default mt-4 margin using Tailwind's important modifier
+          className="!mt-0"
           pt={{
+            // Also override the default margin added by PrimeReact
+            root: { className: "!mt-0" },
             navContainer: {
               className: "flex gap-8",
             },
@@ -24,7 +27,7 @@ const SalesAnalysis = () => {
             </div>
           </TabPanel>
           <TabPanel header="Top Products">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto p-0 m-0">
               <TopProductsTable />
             </div>
           </TabPanel>
