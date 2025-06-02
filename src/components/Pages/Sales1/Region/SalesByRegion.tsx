@@ -224,33 +224,35 @@ export const SalesByRegion = () => {
                 className="app-table-heading"
                 showGridlines
                 scrollable
-                scrollHeight="flex"
+                scrollHeight="400px"
+                style={{ minWidth: "100%" }}
               >
+
                 <Column
                   field="state"
                   header="State"
                   pt={{
                     bodyCell: { className: "app-table-content" },
                   }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="totalDollar"
                   header="Total $ Value"
                   pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="percentage"
                   header="Percentage"
                   pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="quantity"
                   header="Quantity"
                   pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
               </DataTable>
             </div>
