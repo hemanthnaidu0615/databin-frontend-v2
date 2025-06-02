@@ -6,6 +6,7 @@ import USMap from "./us-map/USMap";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 interface Marker {
   color: string;
@@ -169,6 +170,39 @@ export const SalesByRegion = () => {
   };
 
 
+  const toggleRowExpansion = (stateName: string) => {
+    setExpandedRows((prevExpanded) => {
+      const isExpanded = prevExpanded && prevExpanded[stateName];
+      if (isExpanded) {
+        const newExpanded = { ...prevExpanded };
+        delete newExpanded[stateName];
+        return newExpanded;
+      } else {
+        return { ...prevExpanded, [stateName]: true };
+      }
+    });
+  };
+
+  const expanderBodyTemplate = (data: TableData) => {
+    const isExpanded = expandedRows && expandedRows[data.state];
+    return (
+      <td className="py-3 px-4">
+        <button
+          onClick={() => toggleRowExpansion(data.state)}
+          aria-label={isExpanded ? "Collapse row" : "Expand row"}
+          style={{ background: "none", border: "none", cursor: "pointer" }}
+        >
+          {isExpanded ? (
+            <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+          ) : (
+            <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+          )}
+        </button>
+      </td>
+    );
+  };
+
+
   if (!startDate || !endDate) {
     return (
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
@@ -201,22 +235,46 @@ export const SalesByRegion = () => {
   return (
     <>
       <style>{`
-        @media (max-width: 768px) {
-          /* Hide all except expander and state columns on mobile */
-          .hide-on-mobile {
-            display: none;
-          }
-          .expander-column {
-            width: 3em;
-          }
-        }
-        @media (min-width: 769px) {
-          /* Hide expander column on desktop */
-          .expander-column {
-            display: none;
-          }
-        }
-      `}</style>
+  @media (max-width: 768px) {
+    /* Hide all except expander and state columns on mobile */
+    .hide-on-mobile {
+      display: none;
+    }
+    .expander-column {
+      width: 3em;
+      text-align: center;
+    }
+
+    /* Remove border between rows */
+    .p-datatable tbody tr {
+      border-bottom: none !important;
+    }
+
+    /* Remove borders from all table cells */
+    .p-datatable tbody td {
+      border: none !important;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Optional: reduce padding if needed */
+    .p-datatable tbody tr > td {
+      padding: 0.5rem 0.75rem !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    /* Hide expander column on desktop */
+    .expander-column {
+      display: none;
+    }
+  }
+
+  .expander-button {
+    transition: transform 0.3s ease;
+  }
+`}</style>
+
 
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
         <div className="flex justify-between px-3 py-2">
@@ -265,19 +323,28 @@ export const SalesByRegion = () => {
                   value={tableData}
                   size="small"
                   className="app-table-heading"
-                  showGridlines
+                  showGridlines={!mobileView}
                   scrollable
                   scrollHeight="400px"
                   expandedRows={mobileView ? expandedRows : undefined}
-                  onRowToggle={mobileView ? (e) => setExpandedRows(
-                    typeof e.data === "object" && !Array.isArray(e.data) ? e.data : {}
-                  ) : undefined}
+                  onRowToggle={
+                    mobileView
+                      ? (e) =>
+                        setExpandedRows(
+                          typeof e.data === "object" && !Array.isArray(e.data) ? e.data : {}
+                        )
+                      : undefined
+                  }
                   rowExpansionTemplate={mobileView ? rowExpansionTemplate : undefined}
                   dataKey="state"
                   style={{ minWidth: "100%" }}
                 >
                   {mobileView && (
-                    <Column expander className="expander-column" />
+                    <Column
+                      body={expanderBodyTemplate}
+                      className="expander-column"
+                      style={{ width: "3em", textAlign: "center" }}
+                    />
                   )}
                   <Column
                     field="state"
@@ -310,7 +377,6 @@ export const SalesByRegion = () => {
                     headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white hide-on-mobile"
                     pt={{ bodyCell: { className: "app-table-content" } }}
                   />
-
                 </DataTable>
               </div>
             </div>
