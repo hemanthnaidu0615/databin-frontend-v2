@@ -44,7 +44,7 @@ const TopProductsTable = () => {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
 
-  // 🟣 ADDED: Mobile pagination states
+
   const [rows, setRows] = useState(5);
   const [first, setFirst] = useState(0);
 
