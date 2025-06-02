@@ -207,12 +207,11 @@ const OrdersInProcess = () => {
         {/* Desktop View */}
         <div className="hidden sm:block">
           <DataTable
-            value={orders}
+            value={filteredOrders}
             paginator
             first={page * rows}
             rows={rows}
             totalRecords={totalRecords}
-            lazy
             loading={loading}
             onPage={onPage}
             header={header}
