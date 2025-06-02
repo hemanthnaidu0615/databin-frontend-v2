@@ -104,84 +104,84 @@ function SalesFlow() {
   }, [startDate, endDate]);
 
   const convertToHierarchy = (flatData: any[]) => {
-  // Step 1: Aggregate sales per (enterprise, category)
-  const enterpriseCategoryTotals = new Map<string, Map<string, number>>();
+    // Step 1: Aggregate sales per (enterprise, category)
+    const enterpriseCategoryTotals = new Map<string, Map<string, number>>();
 
-  for (const item of flatData) {
-    const { enterprise_key, category_name, total_sales } = item;
-    const usdSales = convertToUSD(total_sales);
+    for (const item of flatData) {
+      const { enterprise_key, category_name, total_sales } = item;
+      const usdSales = convertToUSD(total_sales);
 
-    if (!enterpriseCategoryTotals.has(enterprise_key)) {
-      enterpriseCategoryTotals.set(enterprise_key, new Map());
+      if (!enterpriseCategoryTotals.has(enterprise_key)) {
+        enterpriseCategoryTotals.set(enterprise_key, new Map());
+      }
+
+      const categoryMap = enterpriseCategoryTotals.get(enterprise_key)!;
+      categoryMap.set(
+        category_name,
+        (categoryMap.get(category_name) || 0) + usdSales
+      );
     }
 
-    const categoryMap = enterpriseCategoryTotals.get(enterprise_key)!;
-    categoryMap.set(
-      category_name,
-      (categoryMap.get(category_name) || 0) + usdSales
-    );
-  }
-
-  // Step 2: Get all unique category names from all enterprises
-  const allCategories = new Set<string>();
-  for (const categoryMap of enterpriseCategoryTotals.values()) {
-    for (const category of categoryMap.keys()) {
-      allCategories.add(category);
+    // Step 2: Get all unique category names from all enterprises
+    const allCategories = new Set<string>();
+    for (const categoryMap of enterpriseCategoryTotals.values()) {
+      for (const category of categoryMap.keys()) {
+        allCategories.add(category);
+      }
     }
-  }
 
-  const uniqueCategories = Array.from(allCategories);
-  // Step 3: Split into 2 unique sets of 15
-  const categoriesForAWD = uniqueCategories.slice(0, 15);
-  const categoriesForAWW = uniqueCategories.slice(15, 30);
+    const uniqueCategories = Array.from(allCategories);
+    // Step 3: Split into 2 unique sets of 15
+    const categoriesForAWD = uniqueCategories.slice(0, 15);
+    const categoriesForAWW = uniqueCategories.slice(15, 30);
 
-  // Step 4: Build children nodes for each enterprise
-  const buildChildren = (enterprise: string, allowedCategories: string[]) => {
-    const categoryMap = enterpriseCategoryTotals.get(enterprise);
-    if (!categoryMap) return [];
+    // Step 4: Build children nodes for each enterprise
+    const buildChildren = (enterprise: string, allowedCategories: string[]) => {
+      const categoryMap = enterpriseCategoryTotals.get(enterprise);
+      if (!categoryMap) return [];
 
-    return allowedCategories
-      .map((cat) => {
-        const total = categoryMap.get(cat) || 0;
-        return {
-          key: cat,
-          original_order_total_amount: total,
-        };
-      })
-      .filter((item) => item.original_order_total_amount > 0);
+      return allowedCategories
+        .map((cat) => {
+          const total = categoryMap.get(cat) || 0;
+          return {
+            key: cat,
+            original_order_total_amount: total,
+          };
+        })
+        .filter((item) => item.original_order_total_amount > 0);
+    };
+
+    const AWDChildren = buildChildren("AWD", categoriesForAWD);
+    const AWWChildren = buildChildren("AWW", categoriesForAWW);
+
+    // Step 5: Return top-level structure
+    return [
+      {
+        key: "Total Sales",
+        original_order_total_amount:
+          AWDChildren.reduce((sum, c) => sum + c.original_order_total_amount, 0) +
+          AWWChildren.reduce((sum, c) => sum + c.original_order_total_amount, 0),
+        children: [
+          {
+            key: "AWD",
+            original_order_total_amount: AWDChildren.reduce(
+              (sum, c) => sum + c.original_order_total_amount,
+              0
+            ),
+            children: AWDChildren,
+          },
+          {
+            key: "AWW",
+            original_order_total_amount: AWWChildren.reduce(
+              (sum, c) => sum + c.original_order_total_amount,
+              0
+            ),
+            children: AWWChildren,
+          },
+        ],
+      },
+    ];
   };
-
-  const AWDChildren = buildChildren("AWD", categoriesForAWD);
-  const AWWChildren = buildChildren("AWW", categoriesForAWW);
-
-  // Step 5: Return top-level structure
-  return [
-    {
-      key: "Total Sales",
-      original_order_total_amount:
-        AWDChildren.reduce((sum, c) => sum + c.original_order_total_amount, 0) +
-        AWWChildren.reduce((sum, c) => sum + c.original_order_total_amount, 0),
-      children: [
-        {
-          key: "AWD",
-          original_order_total_amount: AWDChildren.reduce(
-            (sum, c) => sum + c.original_order_total_amount,
-            0
-          ),
-          children: AWDChildren,
-        },
-        {
-          key: "AWW",
-          original_order_total_amount: AWWChildren.reduce(
-            (sum, c) => sum + c.original_order_total_amount,
-            0
-          ),
-          children: AWWChildren,
-        },
-      ],
-    },
-  ];
-};
 
 
   const convertAndSetFlowData = (data: any[]) => {
@@ -202,19 +202,32 @@ function SalesFlow() {
           total > 0
             ? `(${((item.original_order_total_amount / total) * 100).toFixed(1)}%)`
             : "";
-        const label = `${item.key}\n${dollar}\n${percent}`;
+        let labelColor = "text-purple-800";
+        if (parentId !== null) {
+          const parent = localNodes.find((n) => n.id === parentId);
+          if (parent && parent.parentId === "1") {
+            labelColor = "text-teal-700";
+          } else {
+            labelColor = "text-gray-700";
+          }
+        }
+
+        const label = (
+          <div className={`whitespace-pre-line text-center text-sm px-2 py-1 font-semibold ${labelColor}`}>
+            {item.key}
+            <br />
+            {dollar}
+            <br />
+            <span className="text-green-600">{percent}</span>
+          </div>
+        );
 
         localNodes.push({
           id: currentId,
           type: "default",
-          data: {
-            label: (
-              <div className="whitespace-pre-line text-center text-sm px-2 py-1">
-                {label}
-              </div>
-            ),
-          },
+          data: { label },
           position: { x: 0, y: 0 },
+          parentId: parentId || undefined,
         });
 
         if (parentId) {
@@ -257,10 +270,14 @@ function SalesFlow() {
             return (
               <li key={index} className="border-l border-purple-500 pl-4 ml-2">
                 <div className="text-white dark:text-white">
-                  <p className="font-semibold text-purple-300">{item.key}</p>
-                  <p className="text-sm">
-                    💰 {dollar} <span className="text-green-400">{percent}</span>
+                  <p className="font-semibold text-purple-800 dark:text-purple-300">
+                    {item.key}
                   </p>
+                  <p className="text-sm">
+                    💰 <span className="text-gray-800 dark:text-gray-300">{dollar}</span>{" "}
+                    <span className="text-green-600 dark:text-green-400">{percent}</span>
+                  </p>
+
                 </div>
                 {item.children && item.children.length > 0 && (
                   <div className="ml-4 mt-2">
