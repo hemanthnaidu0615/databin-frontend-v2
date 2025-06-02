@@ -43,17 +43,28 @@ const formatValue = (value: number): string => {
 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 
+const isMobile = () => window.innerWidth <= 768;
+
 export const SalesByRegion = () => {
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [stateData, setStateData] = useState<StateData[]>([]);
-  const [topStates, setTopStates] = useState<{ state_name: string, state_revenue: number }[]>([]);
+  const [topStates, setTopStates] = useState<{ state_name: string; state_revenue: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
+  const [expandedRows, setExpandedRows] = useState<{ [key: string]: boolean }>({});
+  const [mobileView, setMobileView] = useState(isMobile());
+
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setMobileView(isMobile());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -72,14 +83,14 @@ export const SalesByRegion = () => {
       });
 
       if (enterpriseKey) {
-        params.append('enterpriseKey', enterpriseKey);
+        params.append("enterpriseKey", enterpriseKey);
       }
 
       try {
         const [statesResponse, , topStatesResponse] = await Promise.all([
           axiosInstance.get<StateData[]>(`sales-by-region?${params.toString()}`),
           axiosInstance.get(`sales-by-region/countrywide?${params.toString()}`),
-          axiosInstance.get<{ state_name: string, state_revenue: number }[]>(`sales-by-region/top5?${params.toString()}`),
+          axiosInstance.get<{ state_name: string; state_revenue: number }[]>(`sales-by-region/top5?${params.toString()}`),
         ]);
 
         setStateData(statesResponse.data);
@@ -112,7 +123,7 @@ export const SalesByRegion = () => {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 0,
   });
 
   const convertToTableData = (data: StateData[]): TableData[] => {
@@ -121,14 +132,14 @@ export const SalesByRegion = () => {
       totalDollar: `$ ${formatValue(convertToUSD(state.state_revenue))}`,
       percentage: `${state.revenue_percentage?.toFixed(2) || 0}%`,
       quantity: formatValue(state.state_quantity),
-      avgRevenue: formatterUSD.format(convertToUSD(state.average_revenue_per_unit || 0))
+      avgRevenue: formatterUSD.format(convertToUSD(state.average_revenue_per_unit || 0)),
     }));
   };
 
   const tableData = convertToTableData(stateData);
 
   const colorScale = (stateCode: string) => {
-    const topStateCodes = topStates.map(state => state.state_name);
+    const topStateCodes = topStates.map((state) => state.state_name);
     const colors = ["#58ddf5", "#65f785", "#f5901d", "#f7656c", "#8518b8"];
 
     const index = topStateCodes.indexOf(stateCode);
@@ -138,8 +149,25 @@ export const SalesByRegion = () => {
   const markersList = topStates.slice(0, 5).map((state) => ({
     legend: state.state_name,
     color: colorScale(state.state_name),
-    value: formatValue(convertToUSD(state.state_revenue))
+    value: formatValue(convertToUSD(state.state_revenue)),
   }));
+
+  const rowExpansionTemplate = (data: TableData) => {
+    return (
+      <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-b-md text-sm text-gray-800 dark:text-gray-200 space-y-1">
+        <div>
+          <span className="font-medium">Total $ Value:</span> {data.totalDollar}
+        </div>
+        <div>
+          <span className="font-medium">Percentage:</span> {data.percentage}
+        </div>
+        <div>
+          <span className="font-medium">Quantity:</span> {data.quantity}
+        </div>
+      </div>
+    );
+  };
+
 
   if (!startDate || !endDate) {
     return (
@@ -165,100 +193,130 @@ export const SalesByRegion = () => {
   if (error) {
     return (
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
-        <div className="p-4 text-red-500 dark:text-red-400">
-          {error}
-        </div>
+        <div className="p-4 text-red-500 dark:text-red-400">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
-      <div className="flex justify-between px-3 py-2">
-        <h1 className="text-2xl app-section-title">Sales by Region</h1>
-      </div>
-      <div className="flex flex-col flex-1 shadow-lg rounded-lg border-2 border-slate-200 dark:border-slate-700 divide-y-2 divide-slate-200 dark:divide-slate-700 divide-dashed px-2 bg-white dark:bg-gray-900">
-        <div className="flex justify-between p-2">
-          <h3 className="app-subheading">
-            Countrywide Sales
-          </h3>
-        </div>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          /* Hide all except expander and state columns on mobile */
+          .hide-on-mobile {
+            display: none;
+          }
+          .expander-column {
+            width: 3em;
+          }
+        }
+        @media (min-width: 769px) {
+          /* Hide expander column on desktop */
+          .expander-column {
+            display: none;
+          }
+        }
+      `}</style>
 
-        <div className="flex flex-col lg:flex-row gap-6 py-4 items-center lg:items-start">
-          <div className="w-full lg:w-1/2 flex flex-col lg:flex-row items-center lg:items-start gap-4">
-            {/* Map */}
-            <div className="relative w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[335px] flex-1">
-              <USMap />
+      <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
+        <div className="flex justify-between px-3 py-2">
+          <h1 className="text-2xl app-section-title">Sales by Region</h1>
+        </div>
+        <div className="flex flex-col flex-1 shadow-lg rounded-lg border-2 border-slate-200 dark:border-slate-700 divide-y-2 divide-slate-200 dark:divide-slate-700 divide-dashed px-2 bg-white dark:bg-gray-900">
+          <div className="flex justify-between p-2">
+            <h3 className="app-subheading">Countrywide Sales</h3>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-6 py-4 items-center lg:items-start">
+            <div className="w-full lg:w-1/2 flex flex-col lg:flex-row items-center lg:items-start gap-4">
+              {/* Map */}
+              <div className="w-full max-w-full aspect-[4/3] overflow-hidden">
+                <div className="w-full h-full">
+                  <USMap />
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="flex flex-col p-2 gap-4 max-w-xs w-full lg:w-auto">
+                <div className="text-xs p-2 font-bold rounded-sm text-violet-900 dark:text-violet-100 bg-red-100 dark:bg-red-900">
+                  Top 5 revenues
+                </div>
+                <div className="flex flex-col gap-1">
+                  {markersList.map((item: Marker) => (
+                    <span key={item.color} className="flex items-center gap-2">
+                      <div
+                        className="rounded-full h-[9px] w-[9px]"
+                        style={{ backgroundColor: `${item.color}` }}
+                      ></div>
+                      <p className="text-xs text-violet-900 dark:text-violet-100">
+                        {item.legend} - ${item.value}
+                      </p>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Legend */}
-            <div className="flex flex-col p-2 gap-4 max-w-xs w-full lg:w-auto">
-              <div className="text-xs p-2 font-bold rounded-sm text-violet-900 dark:text-violet-100 bg-red-100 dark:bg-red-900">
-                Top 5 revenues
-              </div>
-              <div className="flex flex-col gap-1">
-                {markersList.map((item: Marker) => (
-                  <span key={item.color} className="flex items-center gap-2">
-                    <div
-                      className="rounded-full h-[9px] w-[9px]"
-                      style={{ backgroundColor: `${item.color}` }}
-                    ></div>
-                    <p className="text-xs text-violet-900 dark:text-violet-100">
-                      {item.legend} - ${item.value}
-                    </p>
-                  </span>
-                ))}
+            <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
+              <h3 className="app-subheading">Revenues by State</h3>
+
+              <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
+                <DataTable
+                  value={tableData}
+                  size="small"
+                  className="app-table-heading"
+                  showGridlines
+                  scrollable
+                  scrollHeight="400px"
+                  expandedRows={mobileView ? expandedRows : undefined}
+                  onRowToggle={mobileView ? (e) => setExpandedRows(
+                    typeof e.data === "object" && !Array.isArray(e.data) ? e.data : {}
+                  ) : undefined}
+                  rowExpansionTemplate={mobileView ? rowExpansionTemplate : undefined}
+                  dataKey="state"
+                  style={{ minWidth: "100%" }}
+                >
+                  {mobileView && (
+                    <Column expander className="expander-column" />
+                  )}
+                  <Column
+                    field="state"
+                    header="State"
+                    pt={{
+                      bodyCell: { className: "app-table-content" },
+                    }}
+                    headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  />
+                  <Column
+                    field="totalDollar"
+                    header="Total $ Value"
+                    bodyClassName="hide-on-mobile"
+                    headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white hide-on-mobile"
+                    pt={{ bodyCell: { className: "app-table-content" } }}
+                  />
+
+                  <Column
+                    field="percentage"
+                    header="Percentage"
+                    bodyClassName="hide-on-mobile"
+                    headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white hide-on-mobile"
+                    pt={{ bodyCell: { className: "app-table-content" } }}
+                  />
+
+                  <Column
+                    field="quantity"
+                    header="Quantity"
+                    bodyClassName="hide-on-mobile"
+                    headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white hide-on-mobile"
+                    pt={{ bodyCell: { className: "app-table-content" } }}
+                  />
+
+                </DataTable>
               </div>
             </div>
           </div>
-
-          <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-            <h3 className="app-subheading">
-              Revenues by State
-            </h3>
-
-            <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
-              <DataTable
-                value={tableData}
-                size="small"
-                className="app-table-heading"
-                showGridlines
-                scrollable
-                scrollHeight="400px"
-                style={{ minWidth: "100%" }}
-              >
-
-                <Column
-                  field="state"
-                  header="State"
-                  pt={{
-                    bodyCell: { className: "app-table-content" },
-                  }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-                <Column
-                  field="totalDollar"
-                  header="Total $ Value"
-                  pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-                <Column
-                  field="percentage"
-                  header="Percentage"
-                  pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-                <Column
-                  field="quantity"
-                  header="Quantity"
-                  pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-              </DataTable>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
