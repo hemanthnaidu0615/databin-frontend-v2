@@ -7,14 +7,12 @@ import ShippingBreakdown from "./ShippingBreakdown";
 const SalesAnalysis = () => {
   return (
     <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
-      <h1 className="app-section-title">Sales Analysis</h1>
+      <h1 className="app-section-title mb-4">Sales Analysis</h1>
 
       <div className="overflow-x-auto">
         <TabView
-          // Removed the default mt-4 margin using Tailwind's important modifier
           className="!mt-0"
           pt={{
-            // Also override the default margin added by PrimeReact
             root: { className: "!mt-0" },
             navContainer: {
               className: "flex gap-8",

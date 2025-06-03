@@ -37,6 +37,7 @@ const ShippingBreakdown = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
@@ -181,6 +182,14 @@ const ShippingBreakdown = () => {
     setRows(event.rows);
   };
 
+  const filteredShipments = useMemo(() => {
+    if (!searchTerm.trim()) return shipments;
+    const lower = searchTerm.toLowerCase();
+    return shipments.filter((shipment) =>
+      Object.values(shipment).join(" ").toLowerCase().includes(lower)
+    );
+  }, [shipments, searchTerm]);
+
   if (!startDate || !endDate) {
     return (
       <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
@@ -212,15 +221,26 @@ const ShippingBreakdown = () => {
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl ">
-      <div className="px-4 pt-4 product-sales-header">
-        <h2 className="app-subheading ">Shipping Breakdown</h2>
+      <div className="px-4 pt-4 product-sales-header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="app-subheading">Shipping Breakdown</h2>
+
+        <input
+          type="text"
+          placeholder="Search shipments..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(0);
+          }}
+          className="app-search-input w-full sm:w-64"
+        />
       </div>
 
       <div className="px-4 pb-6 app-table-heading">
         {/* Desktop Table - Hidden on mobile */}
         <div className="hidden sm:block">
           <DataTable
-            value={shipments}
+            value={filteredShipments.slice(page * rows, page * rows + rows)}
             stripedRows
             responsiveLayout="scroll"
             scrollable
@@ -229,9 +249,8 @@ const ShippingBreakdown = () => {
             emptyMessage="No shipments found for the selected filters"
             paginator
             paginatorClassName="hidden sm:flex"
-            lazy
             loading={loading}
-            totalRecords={totalRecords}
+            totalRecords={filteredShipments.length}
             first={page * rows}
             rows={rows}
             onPage={onPage}
@@ -271,7 +290,7 @@ const ShippingBreakdown = () => {
 
         {/* Mobile-friendly stacked cards */}
         <div className="block sm:hidden space-y-4 mt-4">
-          {shipments
+          {filteredShipments
             .slice(page * rows, page * rows + rows)
             .map((shipment, index) => (
               <div
@@ -338,7 +357,7 @@ const ShippingBreakdown = () => {
               </select>
             </div>
             <div>
-              Page {page + 1} of {Math.ceil(totalRecords / rows)}
+              Page {page + 1} of {Math.ceil(filteredShipments.length / rows)}
             </div>
           </div>
 
@@ -360,17 +379,21 @@ const ShippingBreakdown = () => {
             <button
               onClick={() =>
                 setPage(
-                  page + 1 < Math.ceil(totalRecords / rows) ? page + 1 : page
+                  page + 1 < Math.ceil(filteredShipments.length / rows)
+                    ? page + 1
+                    : page
                 )
               }
-              disabled={(page + 1) * rows >= totalRecords}
+              disabled={(page + 1) * rows >= filteredShipments.length}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Next
             </button>
             <button
-              onClick={() => setPage(Math.ceil(totalRecords / rows) - 1)}
-              disabled={(page + 1) * rows >= totalRecords}
+              onClick={() =>
+                setPage(Math.ceil(filteredShipments.length / rows) - 1)
+              }
+              disabled={(page + 1) * rows >= filteredShipments.length}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               ⏭ Last

@@ -44,9 +44,9 @@ const TopProductsTable = () => {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
 
-  // 🟣 ADDED: Mobile pagination states
   const [rows, setRows] = useState(5);
   const [first, setFirst] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const onPageChange = (event: { first: number; rows: number }) => {
     setFirst(event.first);
@@ -89,83 +89,48 @@ const TopProductsTable = () => {
     fetchProducts();
   }, [startDate, endDate, enterpriseKey]);
 
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return products;
+    return products.filter((p) =>
+      p.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [products, searchTerm]);
+
   const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) =>
+    return [...filteredProducts].sort((a, b) =>
       viewMode === "revenue"
         ? b.total_sales - a.total_sales
         : b.units_sold - a.units_sold
     );
-  }, [viewMode, products]);
+  }, [viewMode, filteredProducts]);
 
-  const topProducts = useMemo(() => {
-    return sortedProducts.slice(0, 10);
-  }, [sortedProducts]);
-
+  const topProducts = useMemo(() => sortedProducts.slice(0, 10), [sortedProducts]);
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
-      chart: {
-        type: "bar",
-        toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
-      },
+      chart: { type: "bar", toolbar: { show: false }, foreColor: theme === "dark" ? "#CBD5E1" : "#334155" },
       xaxis: {
         categories: topProducts.map((p) => p.product_name),
         labels: {
-          style: {
-            fontSize: "12px",
-            colors: theme === "dark" ? "#CBD5E1" : "#334155",
-          },
-          formatter: function (value: string) {
-            return value.length > 20 ? value.substring(0, 20) + "..." : value;
-          },
+          style: { fontSize: "12px", colors: theme === "dark" ? "#CBD5E1" : "#334155" },
+          formatter: (value: string) => (value.length > 20 ? value.substring(0, 20) + "..." : value),
         },
-        title: {
-          text: "Products",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
-        },
+        crosshairs: { show: false },
+        title: { text: "Products", style: { fontSize: "14px", fontWeight: "normal", color: theme === "dark" ? "#CBD5E1" : "#64748B" } },
       },
       yaxis: {
-        title: {
-          text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
-        },
+        title: { text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold", style: { fontSize: "14px", fontWeight: "normal", color: theme === "dark" ? "#CBD5E1" : "#64748B" } },
         labels: {
-          formatter: function (val: number) {
-            return viewMode === "revenue"
-              ? `$${formatValue(val)}`
-              : formatValue(val);
-          },
+          formatter: (val: number) => viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
         },
       },
       dataLabels: { enabled: false },
-      plotOptions: {
-        bar: {
-          borderRadius: 4,
-          columnWidth: "50%",
-        },
-      },
-      grid: {
-        borderColor: theme === "dark" ? "#334155" : "#E5E7EB",
-      },
+      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
+      grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
       colors: ["#2563eb"],
       legend: { show: false },
       tooltip: {
-        y: {
-          formatter: function (val: number) {
-            return viewMode === "revenue"
-              ? `$${val.toFixed(2)}`
-              : `${val} units`;
-          },
-        },
+        y: { formatter: (val: number) => viewMode === "revenue" ? `$${val.toFixed(2)}` : `${val} units` },
       },
     }),
     [theme, viewMode, topProducts]
@@ -174,14 +139,11 @@ const TopProductsTable = () => {
   const chartSeries = [
     {
       name: viewMode === "revenue" ? "Revenue (USD)" : "Units Sold",
-      data:
-        viewMode === "revenue"
-          ? topProducts.map((p) => convertToUSD(p.total_sales))
-          : topProducts.map((p) => p.units_sold),
+      data: viewMode === "revenue" ? topProducts.map((p) => convertToUSD(p.total_sales)) : topProducts.map((p) => p.units_sold),
     },
   ];
 
-    const paginatedProducts = useMemo(() => {
+  const paginatedProducts = useMemo(() => {
     return sortedProducts.slice(first, first + rows);
   }, [sortedProducts, first, rows]);
 
@@ -216,14 +178,26 @@ const TopProductsTable = () => {
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4 product-sales-header">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4">
         <h2 className="app-subheading">Product Sales</h2>
-        <Dropdown
-          value={viewMode}
-          options={viewOptions}
-          onChange={(e) => setViewMode(e.value)}
-          className="w-43"
-        />
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setFirst(0);
+            }}
+            className="app-search-input w-full sm:w-64"
+          />
+          <Dropdown
+            value={viewMode}
+            options={viewOptions}
+            onChange={(e) => setViewMode(e.value)}
+            className="w-43"
+          />
+        </div>
       </div>
 
       {/* Desktop Table */}
@@ -265,7 +239,7 @@ const TopProductsTable = () => {
         </DataTable>
       </div>
 
-            {/* Mobile-friendly stacked cards */}
+      {/* Mobile-friendly stacked cards */}
       <div className="block sm:hidden space-y-4 px-4 pt-2 pb-6">
         {paginatedProducts.map((product, index) => (
           <div
@@ -351,7 +325,8 @@ const TopProductsTable = () => {
           <button
             onClick={() =>
               onPageChange({
-                first: first + rows < sortedProducts.length ? first + rows : first,
+                first:
+                  first + rows < sortedProducts.length ? first + rows : first,
                 rows,
               })
             }

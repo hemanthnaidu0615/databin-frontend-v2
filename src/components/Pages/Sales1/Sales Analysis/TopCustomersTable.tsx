@@ -40,6 +40,7 @@ const TopCustomersTable = () => {
   const [totalRecords, setTotalRecords] = useState(0);
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
@@ -97,15 +98,22 @@ const TopCustomersTable = () => {
     setRows(event.rows);
   };
 
+  const filteredCustomers = useMemo(() => {
+    if (!searchTerm) return customers;
+    return customers.filter((c) =>
+      c.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [customers, searchTerm]);
+
   const topCustomers = useMemo(() => {
-    return [...customers]
+    return [...filteredCustomers]
       .sort((a, b) =>
         viewMode === "revenue"
           ? b.total_spent - a.total_spent
           : b.total_orders - a.total_orders
       )
       .slice(0, 10);
-  }, [viewMode, customers]);
+  }, [viewMode, filteredCustomers]);
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
@@ -124,6 +132,7 @@ const TopCustomersTable = () => {
           formatter: (value: string) =>
             value.length > 20 ? value.substring(0, 20) + "..." : value,
         },
+        crosshairs: { show: false },
         title: {
           text: "Customers",
           style: {
@@ -205,21 +214,34 @@ const TopCustomersTable = () => {
 
   return (
     <Card className="...">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4 product-sales-header">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 pt-4">
         <h2 className="app-subheading">Customer Orders</h2>
-        <Dropdown
-          value={viewMode}
-          options={viewOptions}
-          onChange={(e) => setViewMode(e.value)}
-          className="w-50"
-        />
+
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            placeholder="Search customers..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(0);
+            }}
+            className="app-search-input w-full sm:w-64"
+          />
+          <Dropdown
+            value={viewMode}
+            options={viewOptions}
+            onChange={(e) => setViewMode(e.value)}
+            className="w-43"
+          />
+        </div>
       </div>
 
       <div className="px-4 pt-2 pb-6 app-table-heading">
         {/* 🟣 DataTable - Only on desktop */}
         <div className="hidden sm:block">
           <DataTable
-            value={customers}
+            value={filteredCustomers}
             stripedRows
             responsiveLayout="scroll"
             scrollable
@@ -228,7 +250,6 @@ const TopCustomersTable = () => {
             emptyMessage="No customers found for the selected filters"
             paginator
             paginatorClassName="hidden sm:flex"
-            lazy
             loading={loading}
             totalRecords={totalRecords}
             first={page * rows}
@@ -258,7 +279,7 @@ const TopCustomersTable = () => {
 
         {/* 🟣 Mobile-friendly stacked cards */}
         <div className="block sm:hidden space-y-4 mt-4">
-          {customers
+          {filteredCustomers
             .slice(page * rows, page * rows + rows)
             .map((customer, index) => (
               <div
