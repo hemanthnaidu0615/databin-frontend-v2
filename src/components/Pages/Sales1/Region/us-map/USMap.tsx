@@ -83,12 +83,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}`;
 };
 
 const USMap = () => {
@@ -182,6 +182,18 @@ const USMap = () => {
     if (startDate && endDate) fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerWidth <= 768) {
+        setTooltip(null);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
     <div className="w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900 rounded-xl relative">
       <ComposableMap
@@ -206,23 +218,44 @@ const USMap = () => {
                   fill={isDark ? "#ffffff" : "#e0e0e0"}
                   stroke="#473838"
                   strokeWidth={0.5}
-                  onMouseEnter={(e) =>
-                    setTooltip({
-                      name: stateName,
-                      customers: data.customers,
-                      revenue: data.revenue,
-                      avgRevenue: data.avgRevenue,
-                      x: e.clientX,
-                      y: e.clientY,
-                    })
-                  }
-                  onMouseLeave={() => setTooltip(null)}
+                  onMouseEnter={(e) => {
+                    if (window.innerWidth > 768) {
+                      setTooltip({
+                        name: stateName,
+                        customers: data.customers,
+                        revenue: data.revenue,
+                        avgRevenue: data.avgRevenue,
+                        x: e.clientX,
+                        y: e.clientY,
+                      });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (window.innerWidth > 768) {
+                      setTooltip(null);
+                    }
+                  }}
+                  onClick={(e) => {
+                    if (window.innerWidth <= 768) {
+                      setTooltip((prev) =>
+                        prev?.name === stateName ? null : {
+                          name: stateName,
+                          customers: data.customers,
+                          revenue: data.revenue,
+                          avgRevenue: data.avgRevenue,
+                          x: e.clientX,
+                          y: e.clientY,
+                        }
+                      );
+                    }
+                  }}
                   style={{
                     default: { outline: "none" },
                     hover: { fill: "#4FD1C5", outline: "none" },
                     pressed: { outline: "none" },
                   }}
                 />
+
               );
             })
           }
@@ -256,13 +289,21 @@ const USMap = () => {
         <div
           className="fixed z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
           style={{
+            position: "fixed",
+            zIndex: 50,
+            fontSize: "0.75rem",
+            borderRadius: "0.375rem",
+            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+            padding: "0.5rem 0.75rem",
+            whiteSpace: "pre-line",
             top: tooltip.y + 10,
-            left: tooltip.x + 10,
+            left: Math.min(tooltip.x + 10, window.innerWidth - 160),
             backgroundColor: isDark ? "#2d2d2d" : "#ffffff",
             color: isDark ? "#ffffff" : "#000000",
             border: `1px solid ${isDark ? "#444" : "#ccc"}`,
             pointerEvents: "none",
           }}
+
         >
           <strong>{tooltip.name}</strong>
           {`\nCustomers: ${tooltip.customers}\nRevenue: ${formatValue(
