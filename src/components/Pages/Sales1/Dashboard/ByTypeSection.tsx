@@ -10,13 +10,15 @@ const sections = [
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
 function convertToUSD(rupees: number): number {
@@ -42,19 +44,21 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
     const formattedEnd = formatDate(endDate);
     const formattedCompany = company.toLowerCase();
 
-    const requests: Promise<{ title: string; data: any[] }>[] = sections.map(async ({ title, endpoint }) => {
-      if (!endpoint) return { title, data: [] };
-      try {
-        const response = await axiosInstance.get(
-          `/sales/${endpoint}/${formattedCompany}`,
-          { params: { startDate: formattedStart, endDate: formattedEnd } }
-        );
-        return { title, data: response.data as any[] };
-      } catch (err) {
-        console.error(`Error fetching data for ${title}:`, err);
-        return { title, data: [] };
+    const requests: Promise<{ title: string; data: any[] }>[] = sections.map(
+      async ({ title, endpoint }) => {
+        if (!endpoint) return { title, data: [] };
+        try {
+          const response = await axiosInstance.get(
+            `/sales/${endpoint}/${formattedCompany}`,
+            { params: { startDate: formattedStart, endDate: formattedEnd } }
+          );
+          return { title, data: response.data as any[] };
+        } catch (err) {
+          console.error(`Error fetching data for ${title}:`, err);
+          return { title, data: [] };
+        }
       }
-    });
+    );
 
     const results = await Promise.all(requests);
     const sectionData: Record<string, any[]> = {};
@@ -69,13 +73,16 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
   }, [startDate, endDate, company]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {sections.map(({ title }) => (
         <div
           key={title}
-          className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700 flex flex-col "
+          className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700 flex flex-col"
         >
-          <div className="bg-violet-100 dark:bg-violet-950 px-4 py-2 font-semibold text-sm sm:text-base truncate app-table-heading">
+          <div
+            className="px-4 py-2 font-semibold text-sm sm:text-base truncate app-table-heading"
+            style={{ backgroundColor: "#9614d0", color: "#fff" }} 
+          >
             {title}
           </div>
 
@@ -97,9 +104,9 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
               return (
                 <div
                   key={idx}
-                   className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm flex flex-col mb-2 last:mb-0"
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm flex flex-col mb-2 last:mb-0"
                 >
-                   <div className="flex justify-between text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200">
+                  <div className="flex justify-between text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200">
                     <span className="truncate">{name}</span>
                     <span className="text-gray-500 dark:text-gray-400">
                       ${formatValue(amountInUSD)}

@@ -69,15 +69,19 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
       });
   }, [startDate, endDate, company]);
 
-  const filteredData = data.filter((item) =>
-    item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.productId.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData = data.filter(
+    (item) =>
+      item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.productId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700">
-      <div className="bg-violet-100 dark:bg-violet-900 px-4 py-2 font-semibold text-gray-800 dark:text-gray-100 flex justify-between items-center">
-        <span className="app-table-heading">Sales Data</span>
+      <div
+        className="px-4 py-2 font-semibold flex justify-between items-center"
+        style={{ backgroundColor: "#9614d0", color: "#fff" }}
+      >
+        <span className="font-semibold text-sm sm:text-base truncate  rounded-xl shadow-sm overflow-hidden  flex flex-col">Sales Data</span>
         {/* View toggle only on mobile */}
         <button
           onClick={() => setViewMode(viewMode === "card" ? "grid" : "card")}
@@ -112,23 +116,33 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
                 className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 space-y-1 border border-gray-200 dark:border-gray-700"
               >
                 <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Item ID:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Item ID:
+                  </span>{" "}
                   {row.productId}
                 </p>
                 <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Category:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Category:
+                  </span>{" "}
                   {row.category}
                 </p>
                 <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Brand:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Brand:
+                  </span>{" "}
                   {row.brand}
                 </p>
                 <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Quantity:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Quantity:
+                  </span>{" "}
                   {row.totalQuantity.toLocaleString()}
                 </p>
                 <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Total Amount:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Total Amount:
+                  </span>{" "}
                   ${formatValue(row.totalAmountUSD)}
                 </p>
               </div>
@@ -142,23 +156,33 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
                 className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 border border-gray-200 dark:border-gray-700 text-xs"
               >
                 <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">ID:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    ID:
+                  </span>{" "}
                   {row.productId}
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Cat:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Cat:
+                  </span>{" "}
                   {row.category}
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Brand:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Brand:
+                  </span>{" "}
                   {row.brand}
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Qty:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Qty:
+                  </span>{" "}
                   {row.totalQuantity.toLocaleString()}
                 </div>
                 <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">Amount:</span>{" "}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    Amount:
+                  </span>{" "}
                   ${formatValue(row.totalAmountUSD)}
                 </div>
               </div>
@@ -198,11 +222,19 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
                   key={idx}
                   className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
                 >
-                  <td className="px-4 py-2 app-table-content">{row.productId}</td>
-                  <td className="px-4 py-2 app-table-content">{row.category}</td>
+                  <td className="px-4 py-2 app-table-content">
+                    {row.productId}
+                  </td>
+                  <td className="px-4 py-2 app-table-content">
+                    {row.category}
+                  </td>
                   <td className="px-4 py-2 app-table-content">{row.brand}</td>
-                  <td className="px-4 py-2 app-table-content">{row.totalQuantity.toLocaleString()}</td>
-                  <td className="px-4 py-2 app-table-content">${formatValue(row.totalAmountUSD)}</td>
+                  <td className="px-4 py-2 app-table-content">
+                    {row.totalQuantity.toLocaleString()}
+                  </td>
+                  <td className="px-4 py-2 app-table-content">
+                    ${formatValue(row.totalAmountUSD)}
+                  </td>
                 </tr>
               ))}
             </tbody>
