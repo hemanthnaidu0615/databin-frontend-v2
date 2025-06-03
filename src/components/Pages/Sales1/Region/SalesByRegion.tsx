@@ -187,13 +187,13 @@ export const SalesByRegion = () => {
         <div className="flex flex-col lg:flex-row gap-6 py-4 items-center lg:items-start">
           <div className="w-full lg:w-1/2 flex flex-col lg:flex-row items-center lg:items-start gap-4">
             {/* Map */}
-            <div className="relative w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[335px] flex-1">
+            <div className="relative w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[335px] flex-1 aspect-[4/3] overflow-hidden">
               <USMap />
             </div>
 
             {/* Legend */}
             <div className="flex flex-col p-2 gap-4 max-w-xs w-full lg:w-auto">
-              <div className="text-xs p-2 font-bold rounded-sm text-violet-900 dark:text-violet-100 bg-red-100 dark:bg-red-900">
+              <div className="text-xs p-2 font-bold rounded-sm text-violet-900 dark:text-violet-100 bg-red-100 dark:bg-red-900 ">
                 Top 5 revenues
               </div>
               <div className="flex flex-col gap-1">
@@ -224,35 +224,33 @@ export const SalesByRegion = () => {
                 className="app-table-heading"
                 showGridlines
                 scrollable
-                scrollHeight="400px"
-                style={{ minWidth: "100%" }}
+                scrollHeight="flex"
               >
-
                 <Column
                   field="state"
                   header="State"
                   pt={{
                     bodyCell: { className: "app-table-content" },
                   }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="totalDollar"
                   header="Total $ Value"
                   pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="percentage"
                   header="Percentage"
                   pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
                 <Column
                   field="quantity"
                   header="Quantity"
                   pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="sticky bg-purple-100 dark:bg-gray-800 dark:text-white"
+                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
                 />
               </DataTable>
             </div>
