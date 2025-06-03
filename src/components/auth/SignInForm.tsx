@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../../axios";
 import "primeicons/primeicons.css";
+import { Carousel } from "primereact/carousel";
 import logo from "../../images/logo.png";
 import { ThemeToggleButton } from "../common/ThemeToggleButton";
+import FeatureCard from "./FeatureCard";
 
 const features = [
   { title: "Custom Alerts & Thresholds", icon: "pi pi-bell" },
@@ -75,35 +77,41 @@ function Signin() {
           Power your decisions with advanced alerting, live dashboards, and real-time metrics.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* Desktop & Tablet - grid */}
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-6">
           {features.map((feature, idx) => (
-            <motion.div
+            <FeatureCard
               key={idx}
-              className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-[#2b2b2b] shadow-md border-l-4 border-[#9614d0] select-none"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: 0.1 * idx,
-                type: "spring",
-                stiffness: 100,
-                damping: 12,
-              }}
-            >
-              <motion.i
-                className={`${feature.icon} text-[#9614d0] text-xl`}
-                initial={{ rotate: 0 }}
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{
-                  delay: 0.3 + idx * 0.1,
-                  duration: 2,
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  ease: "easeInOut",
-                }}
-              />
-              <span className="font-medium">{feature.title}</span>
-            </motion.div>
+              index={idx}
+              title={feature.title}
+              icon={feature.icon}
+            />
           ))}
+        </div>
+
+        {/* Mobile - carousel */}
+        <div className="sm:hidden">
+          <Carousel
+            value={features}
+            itemTemplate={(feature: { title: string; icon: string }) => {
+              const idx = features.findIndex(f => f.title === feature.title);
+              return (
+                <FeatureCard
+                  key={idx}
+                  index={idx}
+                  title={feature.title}
+                  icon={feature.icon}
+                />
+              );
+            }}
+            numVisible={1}
+            numScroll={1}
+            circular
+            autoplayInterval={2000}
+            showIndicators
+            showNavigators={false}
+          />
+
         </div>
       </motion.div>
 
@@ -128,20 +136,28 @@ function Signin() {
               <label className="block text-sm mb-1">Email</label>
               <input
                 type="email"
-                className="w-full px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9614d0]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 rounded-lg text-sm bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/10
+    text-white placeholder-white/50 backdrop-blur-md
+    focus:outline-none focus:ring-2 focus:ring-[#9614d0] focus:scale-105 transition-transform duration-200"
               />
+
             </div>
             <div>
               <label className="block text-sm mb-1">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full px-4 py-2 rounded-md bg-gray-100 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#9614d0]"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 rounded-lg text-sm bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/10
+    text-white placeholder-white/50 backdrop-blur-md
+    focus:outline-none focus:ring-2 focus:ring-[#9614d0] focus:scale-105 transition-transform duration-200"
                 />
+
                 <button
                   type="button"
                   className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400"
@@ -155,22 +171,18 @@ function Signin() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-2 bg-[#9614d0] text-white rounded-md transition ${
-                loading ? "opacity-50" : ""
-              }`}
+              className={`
+    w-full py-2 px-4 text-white font-medium rounded-md
+    bg-[#9614d0] transition duration-300 ease-in-out
+    hover:scale-105 hover:shadow-lg active:scale-100 active:shadow-sm
+    disabled:opacity-50 disabled:cursor-not-allowed
+  `}
             >
               {loading ? "Signing in..." : "Login"}
             </button>
-          </form>
 
-          {/* <div className="text-center text-sm">
-            <button
-              className="text-gray-500 dark:text-gray-400 underline"
-              onClick={() => navigate("/change-password")}
-            >
-              Forgot Password?
-            </button>
-          </div> */}
+
+          </form>
         </motion.div>
       </motion.div>
     </div>
