@@ -97,7 +97,6 @@ const USMap = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
-  const [selectedState, setSelectedState] = useState<string | null>(null);
 
   const [tooltip, setTooltip] = useState<{
     name: string;
@@ -111,16 +110,6 @@ const USMap = () => {
   const [stateData, setStateData] = useState<
     Record<string, { customers: number; revenue: number; avgRevenue: number }>
   >({});
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setTooltip(null);
-      setSelectedState(null);
-    };
-
-    window.addEventListener("scroll", handleScroll, true);
-    return () => window.removeEventListener("scroll", handleScroll, true);
-  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -193,6 +182,18 @@ const USMap = () => {
     if (startDate && endDate) fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerWidth <= 768) {
+        setTooltip(null);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
     <div className="w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900 rounded-xl relative">
       <ComposableMap
@@ -217,12 +218,8 @@ const USMap = () => {
                   fill={isDark ? "#ffffff" : "#e0e0e0"}
                   stroke="#473838"
                   strokeWidth={0.5}
-                  onClick={(e) => {
-                    const isSameState = selectedState === stateName;
-                    if (isSameState) {
-                      setTooltip(null);
-                      setSelectedState(null);
-                    } else {
+                  onMouseEnter={(e) => {
+                    if (window.innerWidth > 768) {
                       setTooltip({
                         name: stateName,
                         customers: data.customers,
@@ -231,17 +228,34 @@ const USMap = () => {
                         x: e.clientX,
                         y: e.clientY,
                       });
-                      setSelectedState(stateName);
                     }
                   }}
-
-                  onMouseLeave={() => setTooltip(null)}
+                  onMouseLeave={() => {
+                    if (window.innerWidth > 768) {
+                      setTooltip(null);
+                    }
+                  }}
+                  onClick={(e) => {
+                    if (window.innerWidth <= 768) {
+                      setTooltip((prev) =>
+                        prev?.name === stateName ? null : {
+                          name: stateName,
+                          customers: data.customers,
+                          revenue: data.revenue,
+                          avgRevenue: data.avgRevenue,
+                          x: e.clientX,
+                          y: e.clientY,
+                        }
+                      );
+                    }
+                  }}
                   style={{
                     default: { outline: "none" },
                     hover: { fill: "#4FD1C5", outline: "none" },
                     pressed: { outline: "none" },
                   }}
                 />
+
               );
             })
           }
@@ -275,13 +289,21 @@ const USMap = () => {
         <div
           className="fixed z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
           style={{
-            top: Math.min(tooltip.y + 10, window.innerHeight - 80),
+            position: "fixed",
+            zIndex: 50,
+            fontSize: "0.75rem",
+            borderRadius: "0.375rem",
+            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+            padding: "0.5rem 0.75rem",
+            whiteSpace: "pre-line",
+            top: tooltip.y + 10,
             left: Math.min(tooltip.x + 10, window.innerWidth - 160),
             backgroundColor: isDark ? "#2d2d2d" : "#ffffff",
             color: isDark ? "#ffffff" : "#000000",
             border: `1px solid ${isDark ? "#444" : "#ccc"}`,
             pointerEvents: "none",
           }}
+
         >
           <strong>{tooltip.name}</strong>
           {`\nCustomers: ${tooltip.customers}\nRevenue: ${formatValue(
