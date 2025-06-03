@@ -227,14 +227,22 @@ export const SalesByRegion = () => {
               Revenues by State
             </h3>
             <div className="lg:max-h-[400px] lg:overflow-y-auto">
-              <table className="min-w-full table-fixed border-collapse">
+              <table className="min-w-full border-collapse lg:table lg:border lg:border-slate-300 dark:lg:border-slate-700">
                 <thead className="sticky top-0 z-10 bg-purple-100 dark:bg-gray-800 text-xs">
                   <tr>
-                    <th className="w-8 lg:hidden "></th>
-                    <th className="text-left px-4 py-2 app-table-heading">State</th>
-                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading">Total $ Value</th>
-                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading">Percentage</th>
-                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading">Quantity</th>
+                    <th className="w-8 lg:hidden"></th>
+                    <th className="text-left px-4 py-2 app-table-heading lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                      State
+                    </th>
+                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                      Total $ Value
+                    </th>
+                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                      Percentage
+                    </th>
+                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                      Quantity
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
@@ -251,13 +259,21 @@ export const SalesByRegion = () => {
                             <FaChevronDown className="text-gray-500 dark:text-gray-400" />
                           )}
                         </td>
-                        <td className="py-3 px-4">{row.state}</td>
-                        <td className="hidden lg:table-cell py-3 px-4">{row.totalDollar}</td>
-                        <td className="hidden lg:table-cell py-3 px-4">{row.percentage}</td>
-                        <td className="hidden lg:table-cell py-3 px-4">{row.quantity}</td>
+                        <td className="py-3 px-4 lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                          {row.state}
+                        </td>
+                        <td className="hidden lg:table-cell py-3 px-4 lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                          {row.totalDollar}
+                        </td>
+                        <td className="hidden lg:table-cell py-3 px-4 lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                          {row.percentage}
+                        </td>
+                        <td className="hidden lg:table-cell py-3 px-4 lg:border lg:border-slate-300 dark:lg:border-slate-700">
+                          {row.quantity}
+                        </td>
                       </tr>
 
-                      {/* Expanded row (mobile only) */}
+                      {/* Mobile-only expanded row */}
                       {expandedStates.includes(row.state) && (
                         <tr className="lg:hidden">
                           <td></td>
@@ -279,12 +295,12 @@ export const SalesByRegion = () => {
                           </td>
                         </tr>
                       )}
-
                     </React.Fragment>
                   ))}
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>

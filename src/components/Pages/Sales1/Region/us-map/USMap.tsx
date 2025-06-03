@@ -83,12 +83,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}`;
 };
 
 const USMap = () => {
@@ -97,6 +97,7 @@ const USMap = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange;
+  const [selectedState, setSelectedState] = useState<string | null>(null);
 
   const [tooltip, setTooltip] = useState<{
     name: string;
@@ -110,6 +111,16 @@ const USMap = () => {
   const [stateData, setStateData] = useState<
     Record<string, { customers: number; revenue: number; avgRevenue: number }>
   >({});
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setTooltip(null);
+      setSelectedState(null);
+    };
+
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -206,16 +217,24 @@ const USMap = () => {
                   fill={isDark ? "#ffffff" : "#e0e0e0"}
                   stroke="#473838"
                   strokeWidth={0.5}
-                  onMouseEnter={(e) =>
-                    setTooltip({
-                      name: stateName,
-                      customers: data.customers,
-                      revenue: data.revenue,
-                      avgRevenue: data.avgRevenue,
-                      x: e.clientX,
-                      y: e.clientY,
-                    })
-                  }
+                  onClick={(e) => {
+                    const isSameState = selectedState === stateName;
+                    if (isSameState) {
+                      setTooltip(null);
+                      setSelectedState(null);
+                    } else {
+                      setTooltip({
+                        name: stateName,
+                        customers: data.customers,
+                        revenue: data.revenue,
+                        avgRevenue: data.avgRevenue,
+                        x: e.clientX,
+                        y: e.clientY,
+                      });
+                      setSelectedState(stateName);
+                    }
+                  }}
+
                   onMouseLeave={() => setTooltip(null)}
                   style={{
                     default: { outline: "none" },
@@ -256,8 +275,8 @@ const USMap = () => {
         <div
           className="fixed z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
           style={{
-            top: tooltip.y + 10,
-            left: tooltip.x + 10,
+            top: Math.min(tooltip.y + 10, window.innerHeight - 80),
+            left: Math.min(tooltip.x + 10, window.innerWidth - 160),
             backgroundColor: isDark ? "#2d2d2d" : "#ffffff",
             color: isDark ? "#ffffff" : "#000000",
             border: `1px solid ${isDark ? "#444" : "#ccc"}`,
