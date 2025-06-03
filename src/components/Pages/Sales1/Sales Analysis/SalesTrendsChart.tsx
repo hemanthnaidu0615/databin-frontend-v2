@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
 import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
@@ -20,7 +19,6 @@ const SalesTrendsChart = () => {
   const [chartType, setChartType] = useState<"bar" | "line">("line");
   const [channels, setChannels] = useState<string[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
-  const [drilledMonth, setDrilledMonth] = useState<string | null>(null);
   const [salesData, setSalesData] = useState<
     { period: string; total_amount: number }[]
   >([]);
@@ -120,23 +118,13 @@ const SalesTrendsChart = () => {
       chart: {
         type: chartType,
         toolbar: { show: false },
-        events: {
-          dataPointSelection: (_e, _ctx, config) => {
-            if (!drilledMonth && categories[config.dataPointIndex]) {
-              setDrilledMonth(categories[config.dataPointIndex]);
-            }
-          },
-        },
         foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
         zoom: { enabled: false },
       },
       tooltip: {
         enabled: true,
         theme: theme === "dark" ? "dark" : "light",
-        x: {
-          formatter: (val: number) => String(val),
-        },
-
+        x: { formatter: (val: number) => String(val) },
         y: {
           formatter: (val: number) => `$${val.toLocaleString()}`,
           title: { formatter: () => "Sales" },
@@ -203,7 +191,7 @@ const SalesTrendsChart = () => {
       },
       legend: { show: false },
     }),
-    [chartType, theme, categories, drilledMonth, aggregationLevel]
+    [chartType, theme, categories, aggregationLevel]
   );
 
   if (!startDate || !endDate) {
@@ -254,31 +242,12 @@ const SalesTrendsChart = () => {
               value: ch,
             })),
           ]}
-          onChange={(e) => {
-            setSelectedChannel(e.value);
-            setDrilledMonth(null);
-          }}
+          onChange={(e) => setSelectedChannel(e.value)}
           placeholder="Select Channel"
           className="w-46"
           disabled={channels.length === 0}
         />
       </div>
-
-      {drilledMonth && (
-        <div className="pt-2 pb-2">
-          <div className="flex justify-between items-center text-sm text-blue-600 dark:text-blue-300">
-            <span>
-              Showing detailed view for <strong>{drilledMonth}</strong>
-            </span>
-            <Button
-              label="Back to Year"
-              icon="pi pi-arrow-left"
-              onClick={() => setDrilledMonth(null)}
-              className="p-button-text text-blue-500 dark:text-blue-300"
-            />
-          </div>
-        </div>
-      )}
 
       {categories.length > 0 ? (
         <Chart

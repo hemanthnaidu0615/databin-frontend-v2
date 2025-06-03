@@ -104,42 +104,82 @@ const TopProductsTable = () => {
     );
   }, [viewMode, filteredProducts]);
 
-  const topProducts = useMemo(() => sortedProducts.slice(0, 10), [sortedProducts]);
-
-  const chartOptions: ApexOptions = useMemo(
-    () => ({
-      chart: { type: "bar", toolbar: { show: false }, foreColor: theme === "dark" ? "#CBD5E1" : "#334155" },
-      xaxis: {
-        categories: topProducts.map((p) => p.product_name),
-        labels: {
-          style: { fontSize: "12px", colors: theme === "dark" ? "#CBD5E1" : "#334155" },
-          formatter: (value: string) => (value.length > 20 ? value.substring(0, 20) + "..." : value),
-        },
-        crosshairs: { show: false },
-        title: { text: "Products", style: { fontSize: "14px", fontWeight: "normal", color: theme === "dark" ? "#CBD5E1" : "#64748B" } },
-      },
-      yaxis: {
-        title: { text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold", style: { fontSize: "14px", fontWeight: "normal", color: theme === "dark" ? "#CBD5E1" : "#64748B" } },
-        labels: {
-          formatter: (val: number) => viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
-        },
-      },
-      dataLabels: { enabled: false },
-      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-      grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
-      colors: ["#2563eb"],
-      legend: { show: false },
-      tooltip: {
-        y: { formatter: (val: number) => viewMode === "revenue" ? `$${val.toFixed(2)}` : `${val} units` },
-      },
-    }),
-    [theme, viewMode, topProducts]
+  const topProducts = useMemo(
+    () => sortedProducts.slice(0, 10),
+    [sortedProducts]
   );
+
+const chartOptions: ApexOptions = useMemo(
+  () => ({
+    chart: {
+      type: "bar",
+      toolbar: { show: false },
+      foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
+    },
+    xaxis: {
+      categories: topProducts.map((p) => p.product_name),
+      labels: {
+        style: {
+          fontSize: "12px",
+          colors: theme === "dark" ? "#CBD5E1" : "#334155",
+        },
+        formatter: (value: string) =>
+          value.length > 20 ? value.substring(0, 20) + "..." : value,
+      },
+      crosshairs: { show: false },
+      title: {
+        text: "Products",
+        style: {
+          fontSize: "14px",
+          fontWeight: "normal",
+          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+        },
+      },
+    },
+    yaxis: {
+      title: {
+        text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
+        style: {
+          fontSize: "14px",
+          fontWeight: "normal",
+          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+        },
+      },
+      labels: {
+        formatter: (val: number) =>
+          viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
+      },
+    },
+    dataLabels: { enabled: false },
+    plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
+    grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
+    colors: ["#2563eb"],
+    legend: { show: false },
+    tooltip: {
+      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+        const value = series[seriesIndex][dataPointIndex];
+        const color = w.globals.colors[seriesIndex] || "#2563eb";
+        return `
+          <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Revenue</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
+            <span style="font-weight: 600;">$${value.toFixed(2)}</span>
+          </div>
+        `;
+      },
+    },
+  }),
+  [theme, viewMode, topProducts]
+);
+
 
   const chartSeries = [
     {
-      name: viewMode === "revenue" ? "Revenue (USD)" : "Units Sold",
-      data: viewMode === "revenue" ? topProducts.map((p) => convertToUSD(p.total_sales)) : topProducts.map((p) => p.units_sold),
+      name: viewMode === "revenue" ? "Rev" : "Units Sold",
+      data:
+        viewMode === "revenue"
+          ? topProducts.map((p) => convertToUSD(p.total_sales))
+          : topProducts.map((p) => p.units_sold),
     },
   ];
 
@@ -195,7 +235,7 @@ const TopProductsTable = () => {
             value={viewMode}
             options={viewOptions}
             onChange={(e) => setViewMode(e.value)}
-            className="w-43"
+            className="w-50"
           />
         </div>
       </div>
@@ -352,7 +392,7 @@ const TopProductsTable = () => {
       </div>
 
       {/* Chart */}
-      <div className="px-4 pb-6">
+      <div className="relative px-4 pb-6 overflow-visible">
         <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">
           Top 10 Products Visualization
         </h3>

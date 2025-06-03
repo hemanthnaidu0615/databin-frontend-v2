@@ -162,11 +162,24 @@ const TopCustomersTable = () => {
       colors: ["#2563eb"],
       legend: { show: false },
       tooltip: {
-        y: {
-          formatter: (val: number) =>
+        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+          const value = series[seriesIndex][dataPointIndex];
+          const color = w.globals.colors[seriesIndex] || "#2563eb";
+          const label = viewMode === "revenue" ? "Revenue" : "Orders";
+
+          // Determine the correct value format
+          const formattedValue =
             viewMode === "revenue"
-              ? `$${val.toFixed(2)}`
-              : `${val.toFixed(0)} orders`,
+              ? `$${value.toFixed(2)}`
+              : `${value.toFixed(0)} orders`;
+
+          return `
+          <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">${label}</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
+            <span style="font-weight: 600;">${formattedValue}</span>
+          </div>
+        `;
         },
       },
     }),
