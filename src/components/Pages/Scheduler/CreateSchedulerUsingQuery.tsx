@@ -79,6 +79,7 @@ export const CreateSchedulerUsingQuery = () => {
         startDate: formattedStartDate,
         endDate: formattedEndDate,
         customQuery: query,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       const response = await axiosInstance.post(

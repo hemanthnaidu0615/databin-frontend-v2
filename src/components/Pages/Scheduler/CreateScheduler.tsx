@@ -155,6 +155,7 @@ export const CreateScheduler = () => {
         tableName: tableSelection,
         columns: columnSelection,
         dateRangeType: timeFrame,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       const response = await axiosInstance.post(
