@@ -104,16 +104,16 @@ const FulfillmentCenters = () => {
                         {row.center}
                       </td>
                       {!isMobile && (
-                        <td className="py-3 px-4 text-right md:border-b md:border-gray-200 dark:md:border-gray-700">
+                        <td className="py-3 px-4 md:border-b md:border-gray-200 dark:md:border-gray-700">
                           {row.orders}
                         </td>
                       )}
                       {!isMobile && (
-                        <td className="py-3 px-4 text-right md:border-b md:border-gray-200 dark:md:border-gray-700">
+                        <td className="py-3 px-4 md:border-b md:border-gray-200 dark:md:border-gray-700">
                           {row.avg_time_days} days
                         </td>
                       )}
-                      <td className={`py-3 px-4 text-center ${!isMobile ? "md:border-b md:border-gray-200 dark:md:border-gray-700" : ""}`}>
+                      <td className={`py-3 px-4  ${!isMobile ? "md:border-b md:border-gray-200 dark:md:border-gray-700" : ""}`}>
                         <Tag
                           value={`${row.on_time_rate}%`}
                           severity={getRateSeverity(row.on_time_rate)}
