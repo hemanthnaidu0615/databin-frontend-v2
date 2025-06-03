@@ -36,7 +36,7 @@ const ShippingBreakdown = () => {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
@@ -82,12 +82,11 @@ const ShippingBreakdown = () => {
             shipment_cost_usd: convertToUSD(s.shipment_cost),
           }))
         );
-        setTotalRecords(data.count || 0);
+        
       } catch (err) {
         console.error("Error fetching shipments:", err);
         setError("Failed to load shipment data");
         setShipments([]);
-        setTotalRecords(0);
       } finally {
         setLoading(false);
       }
@@ -161,8 +160,17 @@ const ShippingBreakdown = () => {
       },
       colors: ["#2563eb"],
       tooltip: {
-        y: {
-          formatter: (val: number) => `$${val.toFixed(2)}`,
+        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+          const value = series[seriesIndex][dataPointIndex];
+          const color = w.globals.colors[seriesIndex] || "#2563eb";
+
+          return `
+          <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Total Cost</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
+            <span style="font-weight: 600;">$${value.toFixed(2)}</span>
+          </div>
+        `;
         },
       },
     }),
@@ -180,6 +188,14 @@ const ShippingBreakdown = () => {
     setPage(event.page);
     setRows(event.rows);
   };
+
+  const filteredShipments = useMemo(() => {
+    if (!searchTerm.trim()) return shipments;
+    const lower = searchTerm.toLowerCase();
+    return shipments.filter((shipment) =>
+      Object.values(shipment).join(" ").toLowerCase().includes(lower)
+    );
+  }, [shipments, searchTerm]);
 
   if (!startDate || !endDate) {
     return (
@@ -211,60 +227,117 @@ const ShippingBreakdown = () => {
   }
 
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-      <div className="px-4 pt-4">
-        <h2 className="app-subheading mb-4">Shipping Breakdown</h2>
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl ">
+      <div className="px-4 pt-4 product-sales-header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="app-subheading">Shipping Breakdown</h2>
+
+        <input
+          type="text"
+          placeholder="Search shipments..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(0);
+          }}
+          className="app-search-input w-full sm:w-64"
+        />
       </div>
 
       <div className="px-4 pb-6 app-table-heading">
-        <DataTable
-          value={shipments}
-          stripedRows
-          responsiveLayout="scroll"
-          scrollable
-          scrollHeight="400px"
-          sortMode="multiple"
-          emptyMessage="No shipments found for the selected filters"
-          paginator
-          paginatorClassName="hidden sm:flex" // hides top paginator on mobile
-          lazy
-          loading={loading}
-          totalRecords={totalRecords}
-          first={page * rows}
-          rows={rows}
-          onPage={onPage}
-          rowsPerPageOptions={[5, 10, 20, 50, 100]}
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} shipments"
-          paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-        >
-          <Column
-            field="carrier"
-            header="Carrier"
-            sortable
-            style={{ minWidth: "120px" }}
-          />
-          <Column
-            field="shipping_method"
-            header="Method"
-            sortable
-            style={{ minWidth: "120px" }}
-          />
-          <Column
-            field="shipment_status"
-            header="Status"
-            sortable
-            style={{ minWidth: "120px" }}
-          />
-          <Column
-            field="shipment_cost_usd"
-            header="Cost ($)"
-            sortable
-            body={(rowData) =>
-              `$${formatValue(rowData.shipment_cost_usd ?? 0)}`
-            }
-            style={{ minWidth: "120px" }}
-          />
-        </DataTable>
+        {/* Desktop Table - Hidden on mobile */}
+        <div className="hidden sm:block">
+          <DataTable
+            value={filteredShipments.slice(page * rows, page * rows + rows)}
+            stripedRows
+            responsiveLayout="scroll"
+            scrollable
+            scrollHeight="400px"
+            sortMode="multiple"
+            emptyMessage="No shipments found for the selected filters"
+            paginator
+            paginatorClassName="hidden sm:flex"
+            loading={loading}
+            first={page * rows}
+            rows={rows}
+            onPage={onPage}
+            rowsPerPageOptions={[5, 10, 20, 50, 100]}
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} shipments"
+            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+          >
+            <Column
+              field="carrier"
+              header="Carrier"
+              sortable
+              style={{ minWidth: "120px" }}
+            />
+            <Column
+              field="shipping_method"
+              header="Method"
+              sortable
+              style={{ minWidth: "120px" }}
+            />
+            <Column
+              field="shipment_status"
+              header="Status"
+              sortable
+              style={{ minWidth: "120px" }}
+            />
+            <Column
+              field="shipment_cost_usd"
+              header="Cost ($)"
+              sortable
+              body={(rowData) =>
+                `$${formatValue(rowData.shipment_cost_usd ?? 0)}`
+              }
+              style={{ minWidth: "120px" }}
+            />
+          </DataTable>
+        </div>
+
+        {/* Mobile-friendly stacked cards */}
+        <div className="block sm:hidden space-y-4 mt-4">
+          {filteredShipments
+            .slice(page * rows, page * rows + rows)
+            .map((shipment, index) => (
+              <div
+                key={index}
+                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                    Carrier:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+                    {shipment.carrier}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Method:
+                  </span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {shipment.shipping_method}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Status:
+                  </span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {shipment.shipment_status}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Cost:
+                  </span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    ${formatValue(shipment.shipment_cost_usd ?? 0)}
+                  </span>
+                </div>
+              </div>
+            ))}
+        </div>
 
         {/* Mobile Pagination (only visible on small screens) */}
         <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
@@ -290,7 +363,7 @@ const ShippingBreakdown = () => {
               </select>
             </div>
             <div>
-              Page {page + 1} of {Math.ceil(totalRecords / rows)}
+              Page {page + 1} of {Math.ceil(filteredShipments.length / rows)}
             </div>
           </div>
 
@@ -312,17 +385,21 @@ const ShippingBreakdown = () => {
             <button
               onClick={() =>
                 setPage(
-                  page + 1 < Math.ceil(totalRecords / rows) ? page + 1 : page
+                  page + 1 < Math.ceil(filteredShipments.length / rows)
+                    ? page + 1
+                    : page
                 )
               }
-              disabled={(page + 1) * rows >= totalRecords}
+              disabled={(page + 1) * rows >= filteredShipments.length}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Next
             </button>
             <button
-              onClick={() => setPage(Math.ceil(totalRecords / rows) - 1)}
-              disabled={(page + 1) * rows >= totalRecords}
+              onClick={() =>
+                setPage(Math.ceil(filteredShipments.length / rows) - 1)
+              }
+              disabled={(page + 1) * rows >= filteredShipments.length}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               ⏭ Last
@@ -346,15 +423,6 @@ const ShippingBreakdown = () => {
           </div>
         )}
       </div>
-
-      {/* Extra: forcibly hide PrimeReact paginator on mobile */}
-      <style>{`
-        @media (max-width: 640px) {
-          .p-datatable .p-paginator {
-            display: none !important;
-          }
-        }
-      `}</style>
     </Card>
   );
 };

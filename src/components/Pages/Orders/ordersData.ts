@@ -7,7 +7,7 @@ export interface Product {
   qty: number;
   price: number;
   estimatedDelivery?: string;
-  discount?: number; // 🆕 added!
+  discount?: number; 
 }
 
 export interface Order {
@@ -16,7 +16,7 @@ export interface Order {
   customer: string;
   product: string;
   total: number;
-  discount?: number; // 🆕 added!
+  discount?: number;
   status: "Delivered" | "Delayed" | "In Transit";
   orderType?: string;
   paymentMethod: "Credit Card" | "PayPal" | "Google Pay";
@@ -63,7 +63,7 @@ const mapProduct = (
   qty: safeNumber(p.quantity ?? p.qty),
   price: safeNumber(p.unit_price ?? p.price),
   estimatedDelivery: eta ?? undefined,
-  discount: safeNumber(p.discount ?? 0), // 🟢 Product-level discount
+  discount: safeNumber(p.discount ?? 0), 
 });
 
 
@@ -135,14 +135,13 @@ export const fetchOrders = async (
         summary.status ?? order.shipment_status ?? "Pending";
 
       const eta = summary.eta ?? null;
-
       return {
   id: String(summary.order_id ?? order.order_id),
   date: formatDate(summary.order_date ?? order.order_date),
   customer: safeString(customerInfo.name ?? order.customer_name, "Unknown"),
   product: order.product_name ?? products[0]?.name ?? "N/A",
   total: products[0]?.total ?? order.total ?? 0,
-  discount: safeNumber(summary.discount ?? 0), // 🟢 Order-level discount
+  discount: safeNumber(summary.discount ?? 0), 
   status: statusFinal,
   paymentMethod: summary.payment_method ?? order.payment_method ?? "PayPal",
   orderType: summary.order_type ?? "Online",
