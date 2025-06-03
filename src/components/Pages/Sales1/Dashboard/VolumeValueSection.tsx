@@ -69,7 +69,6 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
       });
   }, [startDate, endDate, company]);
 
-  // Filter data based on search term
   const filteredData = data.filter((item) =>
     item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.productId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -77,7 +76,6 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
 
   return (
     <div className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700">
-      {/* Header */}
       <div className="bg-violet-100 dark:bg-violet-900 px-4 py-2 font-semibold text-gray-800 dark:text-gray-100 flex justify-between items-center">
         <span className="app-table-heading">Sales Data</span>
         {/* View toggle only on mobile */}

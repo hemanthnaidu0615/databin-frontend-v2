@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
 import OrderFilters from "./OrderFilters";
-// import OrderList from "./OrderList";
 import OrderList1 from "./OrdersList1";
 import { fetchOrders } from "./ordersData";
 import { Order } from "./ordersData";
@@ -197,10 +196,6 @@ const OrdersPage: React.FC = () => {
           >
             Export
           </button>
-
-          {/* <button className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10">
-            Print
-          </button> */}
         </div>
       </div>
 
@@ -212,7 +207,6 @@ const OrdersPage: React.FC = () => {
       />
 
       <div className="mt-6">
-        {/* <OrderList orders={filteredOrders} /> */}
         <OrderList1 orders={filteredOrders} />
       </div>
     </div>
