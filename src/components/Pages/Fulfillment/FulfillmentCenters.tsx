@@ -1,10 +1,10 @@
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
 import { ProgressBar } from "primereact/progressbar";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../axios";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import React from "react";
 
 const getRateSeverity = (rate: number) => {
   if (rate >= 95) return "success";
@@ -22,6 +22,7 @@ const FulfillmentCenters = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const [expandedCenter, setExpandedCenter] = useState<string | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -71,69 +72,101 @@ const FulfillmentCenters = () => {
           <p className="text-red-500">Error: {error}</p>
         ) : (
           <div className="max-h-[400px] overflow-y-auto">
-            <DataTable
-              value={centerData}
-              paginator={false}
-              responsiveLayout="scroll"
-              className="p-datatable-sm w-full"
-              scrollable
-              scrollHeight="400px"
-            >
-              <Column
-                field="center"
-                header={<span className="app-table-heading">Center</span>}
-                body={(rowData) => (
-                  <span className="app-table-content">{rowData.center}</span>
-                )}
-                className="whitespace-nowrap"
-              />
-              <Column
-                field="orders"
-                header={<span className="app-table-heading">Orders</span>}
-                body={(rowData) => (
-                  <span className="app-table-content">{rowData.orders}</span>
-                )}
-                className="whitespace-nowrap text-right"
-              />
-              <Column
-                field="avg_time_days"
-                header={<span className="app-table-heading">Avg Time</span>}
-                body={(rowData) => (
-                  <span className="app-table-content">
-                    {rowData.avg_time_days} days
-                  </span>
-                )}
-                className="whitespace-nowrap text-right"
-              />
-              <Column
-                header={<span className="app-table-heading">On-Time Rate</span>}
-                body={(rowData) => {
-                  const rate = rowData.on_time_rate;
-                  return (
-                    <span className="app-table-content">
-                      <Tag
-                        value={`${rate}%`}
-                        severity={getRateSeverity(rate)}
-                      />
-                    </span>
-                  );
-                }}
-                className="whitespace-nowrap text-center"
-              />
-              {!isMobile && (
-                <Column
-                  header={<span className="app-table-heading">Capacity</span>}
-                  body={() => (
-                    <ProgressBar
-                      value={Math.floor(Math.random() * 40 + 60)}
-                      showValue={true}
-                      className="h-2 rounded-md"
-                    />
-                  )}
-                  className="whitespace-nowrap"
-                />
-              )}
-            </DataTable>
+            <table className="min-w-full border-separate border-spacing-0 w-full">
+              <thead className="sticky top-0 z-20 bg-purple-100 dark:bg-gray-800 text-xs">
+                <tr>
+                  {isMobile && <th className="w-8"></th>}
+                  <th className="text-left px-4 py-2 app-table-heading">Center</th>
+                  {!isMobile && <th className="text-left px-4 py-2 app-table-heading">Orders</th>}
+                  {!isMobile && <th className="text-left px-4 py-2 app-table-heading">Avg Time</th>}
+                  <th className="text-left px-4 py-2 app-table-heading">On-Time Rate</th>
+                  {!isMobile && <th className="text-left px-4 py-2 app-table-heading">Capacity</th>}
+                </tr>
+              </thead>
+              <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
+                {centerData.map((row) => (
+                  <React.Fragment key={row.center}>
+                    <tr
+                      onClick={() => isMobile && setExpandedCenter(expandedCenter === row.center ? null : row.center)}
+                      className={`transition-colors ${isMobile ? "hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer" : ""
+                        }`}
+                    >
+                      {isMobile && (
+                        <td className="py-3 px-4">
+                          {expandedCenter === row.center ? (
+                            <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+                          )}
+                        </td>
+                      )}
+                      <td className={`py-3 px-4 ${!isMobile ? "md:border-b md:border-gray-200 dark:md:border-gray-700" : ""}`}>
+                        {row.center}
+                      </td>
+                      {!isMobile && (
+                        <td className="py-3 px-4 text-right md:border-b md:border-gray-200 dark:md:border-gray-700">
+                          {row.orders}
+                        </td>
+                      )}
+                      {!isMobile && (
+                        <td className="py-3 px-4 text-right md:border-b md:border-gray-200 dark:md:border-gray-700">
+                          {row.avg_time_days} days
+                        </td>
+                      )}
+                      <td className={`py-3 px-4 text-center ${!isMobile ? "md:border-b md:border-gray-200 dark:md:border-gray-700" : ""}`}>
+                        <Tag
+                          value={`${row.on_time_rate}%`}
+                          severity={getRateSeverity(row.on_time_rate)}
+                        />
+                      </td>
+                      {!isMobile && (
+                        <td className="py-3 px-4 md:border-b md:border-gray-200 dark:md:border-gray-700">
+                          <ProgressBar
+                            value={Math.floor(Math.random() * 40 + 60)}
+                            showValue
+                            className="h-2 rounded-md"
+                          />
+                        </td>
+                      )}
+                    </tr>
+
+                    {/* Mobile expanded content */}
+                    {isMobile && expandedCenter === row.center && (
+                      <tr className="lg:hidden">
+                        <td></td>
+                        <td colSpan={4} className="px-4 pb-4">
+                          <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-3 text-xs text-gray-600 dark:text-gray-300 space-y-2 shadow-sm">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">Orders</span>
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {row.orders}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">Avg Time</span>
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {row.avg_time_days} days
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500 dark:text-gray-400">Capacity</span>
+                              <span className="font-medium text-gray-900 dark:text-white w-1/2">
+                                <ProgressBar
+                                  value={Math.floor(Math.random() * 40 + 60)}
+                                  showValue
+                                  className="h-2 rounded-md"
+                                />
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+
+              </tbody>
+            </table>
           </div>
         )}
       </div>
