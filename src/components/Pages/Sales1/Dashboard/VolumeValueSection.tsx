@@ -26,6 +26,8 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
   const [startDate, endDate] = dateRange || [];
 
   const [data, setData] = useState<ApiRow[]>([]);
+  const [viewMode, setViewMode] = useState<"card" | "grid">("card");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (!startDate || !endDate) return;
@@ -67,57 +69,147 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
       });
   }, [startDate, endDate, company]);
 
+  // Filter data based on search term
+  const filteredData = data.filter((item) =>
+    item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.productId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700">
-      <div className="bg-violet-100 dark:bg-violet-900 px-4 py-2 font-semibold text-gray-800 dark:text-gray-100">
-        Sales Data
+      {/* Header */}
+      <div className="bg-violet-100 dark:bg-violet-900 px-4 py-2 font-semibold text-gray-800 dark:text-gray-100 flex justify-between items-center">
+        <span className="app-table-heading">Sales Data</span>
+        {/* View toggle only on mobile */}
+        <button
+          onClick={() => setViewMode(viewMode === "card" ? "grid" : "card")}
+          className="sm:hidden bg-violet-500 text-white px-3 py-1 text-xs rounded hover:bg-violet-600"
+        >
+          {viewMode === "card" ? "Grid View" : "Card View"}
+        </button>
       </div>
-      <div className="max-h-[320px] overflow-y-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left bg-white dark:bg-gray-800 ">
-              <th className="px-4 py-2 app-table-heading">
-                Item ID
-              </th>
-              <th className="px-4 py-2 app-table-heading">
-                Web Category
-              </th>
-              <th className="px-4 py-2 app-table-heading">
-                Brand Name
-              </th>
-              <th className="px-4 py-2 app-table-heading">
-                Quantity
-              </th>
-              <th className="px-4 py-2 app-table-heading">
-                Total Amount
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, idx) => (
-              <tr
+
+      {/* Mobile View: Card/Grid layout */}
+      <div className="sm:hidden">
+        {/* Search bar */}
+        <div className="px-4 py-2">
+          <input
+            type="text"
+            placeholder="Search by brand or ID."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-2 py-1 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
+          />
+        </div>
+
+        {filteredData.length === 0 ? (
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 p-4">
+            No data found for the selected dates or search term.
+          </p>
+        ) : viewMode === "card" ? (
+          <div className="max-h-[320px] overflow-y-auto p-2 space-y-2">
+            {filteredData.map((row, idx) => (
+              <div
                 key={idx}
-                className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 space-y-1 border border-gray-200 dark:border-gray-700"
               >
-                <td className="px-4 py-2 app-table-content">
+                <p>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Item ID:</span>{" "}
                   {row.productId}
-                </td>
-                <td className="px-4 py-2 app-table-content">
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Category:</span>{" "}
                   {row.category}
-                </td>
-                <td className="px-4 py-2 app-table-content">
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Brand:</span>{" "}
                   {row.brand}
-                </td>
-                <td className="px-4 py-2 app-table-content">
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Quantity:</span>{" "}
                   {row.totalQuantity.toLocaleString()}
-                </td>
-                <td className="px-4 py-2 app-table-content">
+                </p>
+                <p>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Total Amount:</span>{" "}
                   ${formatValue(row.totalAmountUSD)}
-                </td>
-              </tr>
+                </p>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        ) : (
+          <div className="max-h-[320px] overflow-y-auto p-2 grid grid-cols-2 gap-2">
+            {filteredData.map((row, idx) => (
+              <div
+                key={idx}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 border border-gray-200 dark:border-gray-700 text-xs"
+              >
+                <div>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">ID:</span>{" "}
+                  {row.productId}
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Cat:</span>{" "}
+                  {row.category}
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Brand:</span>{" "}
+                  {row.brand}
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Qty:</span>{" "}
+                  {row.totalQuantity.toLocaleString()}
+                </div>
+                <div>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Amount:</span>{" "}
+                  ${formatValue(row.totalAmountUSD)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tablet/Laptop View */}
+      <div className="hidden sm:block">
+        {/* Search bar */}
+        <div className="p-4">
+          <input
+            type="text"
+            placeholder="Search by brand or ID."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-1/3 px-3 py-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
+          />
+        </div>
+
+        {/* Table */}
+        <div className="max-h-[320px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left bg-white dark:bg-gray-800 sticky top-0">
+                <th className="px-4 py-2 app-table-heading">Item ID</th>
+                <th className="px-4 py-2 app-table-heading">Web Category</th>
+                <th className="px-4 py-2 app-table-heading">Brand Name</th>
+                <th className="px-4 py-2 app-table-heading">Quantity</th>
+                <th className="px-4 py-2 app-table-heading">Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((row, idx) => (
+                <tr
+                  key={idx}
+                  className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
+                >
+                  <td className="px-4 py-2 app-table-content">{row.productId}</td>
+                  <td className="px-4 py-2 app-table-content">{row.category}</td>
+                  <td className="px-4 py-2 app-table-content">{row.brand}</td>
+                  <td className="px-4 py-2 app-table-content">{row.totalQuantity.toLocaleString()}</td>
+                  <td className="px-4 py-2 app-table-content">${formatValue(row.totalAmountUSD)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

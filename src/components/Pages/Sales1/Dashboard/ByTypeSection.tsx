@@ -69,63 +69,50 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
   }, [startDate, endDate, company]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ">
       {sections.map(({ title }) => (
         <div
           key={title}
-          className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700 flex flex-col"
+          className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700 flex flex-col "
         >
-          <div className="bg-violet-100 dark:bg-violet-950 px-4 py-2 font-semibold text-sm sm:text-base truncate">
+          <div className="bg-violet-100 dark:bg-violet-950 px-4 py-2 font-semibold text-sm sm:text-base truncate app-table-heading">
             {title}
           </div>
 
-          {/* Scroll vertically only for By Item */}
-          <div className={`${title === "By Item" ? "max-h-[150px]" : ""} overflow-x-auto overflow-y-auto`}>
-            <table className="min-w-max w-full text-xs sm:text-sm table-auto">
+          {/* Scrollable container for all sections */}
+          <div className="p-2 max-h-[205px] overflow-y-auto space-y-2 app-table-content">
+            {(dataBySection[title] || []).map((row, idx) => {
+              const name =
+                title === "By Item"
+                  ? `Product ${row.product_id}`
+                  : row.channel ||
+                    row.order_type ||
+                    row.name ||
+                    row.fulfilment_channel ||
+                    "N/A";
+              const units = row.total_quantity || row.quantity || 0;
+              const amountInINR = row.total_amount || row.amount || 0;
+              const amountInUSD = convertToUSD(amountInINR);
 
-              <thead className="sticky top-0 bg-white dark:bg-gray-800 z-10">
-                <tr className="text-left">
-                  <th className="px-4 py-2 app-table-heading whitespace-nowrap">Name</th>
-                  <th className="px-4 py-2 app-table-heading whitespace-nowrap">Units</th>
-                  <th className="px-4 py-2 app-table-heading text-center whitespace-nowrap">Total Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(dataBySection[title] || []).map((row, idx) => {
-                  const name =
-                    title === "By Item"
-                      ? `Product ${row.product_id}`
-                      : row.channel ||
-                      row.order_type ||
-                      row.name ||
-                      row.fulfilment_channel ||
-                      "N/A";
-                  const units = row.total_quantity || row.quantity || 0;
-                  const amountInINR = row.total_amount || row.amount || 0;
-                  const amountInUSD = convertToUSD(amountInINR);
-
-                  return (
-                    <tr
-                      key={idx}
-                      className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
-                    >
-                      <td className="px-4 py-2 truncate whitespace-nowrap app-table-content text-gray-800 dark:text-gray-200">
-                        {name}
-                      </td>
-                      <td className="px-4 py-2 app-table-content text-gray-800 dark:text-gray-200">
-                        {units.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-2 app-table-content text-center text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                        ${formatValue(amountInUSD)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              return (
+                <div
+                  key={idx}
+                   className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-sm flex flex-col mb-2 last:mb-0"
+                >
+                   <div className="flex justify-between text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-200">
+                    <span className="truncate">{name}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      ${formatValue(amountInUSD)}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                    Units: {units.toLocaleString()}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-
       ))}
     </div>
   );
