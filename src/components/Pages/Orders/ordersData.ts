@@ -135,7 +135,6 @@ export const fetchOrders = async (
         summary.status ?? order.shipment_status ?? "Pending";
 
       const eta = summary.eta ?? null;
-      const delivered = summary.delivered ?? null;
 
       return {
   id: String(summary.order_id ?? order.order_id),

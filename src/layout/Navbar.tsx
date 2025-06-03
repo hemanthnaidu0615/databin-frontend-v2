@@ -25,8 +25,6 @@ const Navbar: React.FC = () => {
   const location = useLocation();
 
   const {
-    isExpanded,
-    isHovered,
     isMobileOpen,
     toggleSidebar,
     toggleMobileSidebar,
