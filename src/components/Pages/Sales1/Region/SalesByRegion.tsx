@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import USMap from "./us-map/USMap";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import React from "react";
+
 
 interface Marker {
   color: string;
@@ -52,6 +53,8 @@ export const SalesByRegion = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
+  const [expandedStates, setExpandedStates] = useState<string[]>([]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -114,6 +117,13 @@ export const SalesByRegion = () => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   });
+
+  const arrowExpand = (stateName: string) => {
+    setExpandedStates((prev) =>
+      prev[0] === stateName ? [] : [stateName]
+    );
+  };
+
 
   const convertToTableData = (data: StateData[]): TableData[] => {
     return data.map((state) => ({
@@ -216,47 +226,69 @@ export const SalesByRegion = () => {
             <h3 className="app-subheading">
               Revenues by State
             </h3>
+            <div className="lg:max-h-[400px] lg:overflow-y-auto">
+              <table className="min-w-full table-fixed border-collapse">
+                <thead className="sticky top-0 z-10 bg-purple-100 dark:bg-gray-800 text-xs">
+                  <tr>
+                    <th className="w-8 lg:hidden "></th>
+                    <th className="text-left px-4 py-2 app-table-heading">State</th>
+                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading">Total $ Value</th>
+                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading">Percentage</th>
+                    <th className="hidden lg:table-cell text-left px-4 py-2 app-table-heading">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
+                  {tableData.map((row) => (
+                    <React.Fragment key={row.state}>
+                      <tr
+                        className="hover:bg-gray-50 hover:dark:bg-white/[0.05] cursor-pointer transition-colors"
+                        onClick={() => arrowExpand(row.state)}
+                      >
+                        <td className="py-3 px-4 lg:hidden">
+                          {expandedStates.includes(row.state) ? (
+                            <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+                          ) : (
+                            <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+                          )}
+                        </td>
+                        <td className="py-3 px-4">{row.state}</td>
+                        <td className="hidden lg:table-cell py-3 px-4">{row.totalDollar}</td>
+                        <td className="hidden lg:table-cell py-3 px-4">{row.percentage}</td>
+                        <td className="hidden lg:table-cell py-3 px-4">{row.quantity}</td>
+                      </tr>
 
-            <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
-              <DataTable
-                value={tableData}
-                size="small"
-                className="app-table-heading"
-                showGridlines
-                scrollable
-                scrollHeight="flex"
-              >
-                <Column
-                  field="state"
-                  header="State"
-                  pt={{
-                    bodyCell: { className: "app-table-content" },
-                  }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-                <Column
-                  field="totalDollar"
-                  header="Total $ Value"
-                  pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-                <Column
-                  field="percentage"
-                  header="Percentage"
-                  pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-                <Column
-                  field="quantity"
-                  header="Quantity"
-                  pt={{ bodyCell: { className: "app-table-content" } }}
-                  headerClassName="bg-purple-100 dark:bg-gray-800 dark:text-white"
-                />
-              </DataTable>
+                      {/* Expanded row (mobile only) */}
+                      {expandedStates.includes(row.state) && (
+                        <tr className="lg:hidden">
+                          <td></td>
+                          <td colSpan={4} className="px-4 pb-4">
+                            <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-3 text-xs text-gray-600 dark:text-gray-300 space-y-2 shadow-sm">
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500 dark:text-gray-400">Total $ Value</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{row.totalDollar}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500 dark:text-gray-400">Percentage</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{row.percentage}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500 dark:text-gray-400">Quantity</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{row.quantity}</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
+    // </div>
   );
 };
