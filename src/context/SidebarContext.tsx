@@ -61,7 +61,10 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
 
   const toggleMobileRightSidebar = () => {
-    setIsMobileRightOpen((prev) => !prev);
+    setIsMobileRightOpen((prev) => {
+      if (!prev) setIsMobileOpen(false);
+      return !prev;
+    });
   };
 
   const isMobile = useIsMobile();
@@ -107,9 +110,11 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const toggleMobileSidebar = () => {
-    setIsMobileOpen((prev) => !prev);
+    setIsMobileOpen((prev) => {
+      if (!prev) setIsMobileRightOpen(false); 
+      return !prev;
+    });
   };
-
   const toggleSubmenu = (item: string) => {
     setOpenSubmenu((prev) => (prev === item ? null : item));
   };
