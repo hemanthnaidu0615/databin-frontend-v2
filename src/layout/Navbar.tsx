@@ -120,19 +120,15 @@ const Navbar: React.FC = () => {
           <div className="flex items-center gap-3 shrink-0">
             {/* Sidebar toggle button */}
             <button
-              className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:hidden"
               onClick={handleToggle}
               aria-label="Toggle Sidebar"
+              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${!isMobileOpen
+                  ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : ""
+                }`}
             >
               {isMobileOpen ? (
-                <svg width="10" height="24" viewBox="0 0 24 24" fill="none">
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M6.22 7.28a.75.75 0 0 1 1.06-1.06L12 10.94l4.72-4.72a.75.75 0 1 1 1.06 1.06L13.06 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L12 13.06l-4.72 4.72a.75.75 0 0 1-1.06-1.06L10.94 12 6.22 7.28z"
-                    fill="currentColor"
-                  />
-                </svg>
+                <span className="text-xl">✕</span>
               ) : (
                 <svg width="18" height="12" viewBox="0 0 16 12" fill="none">
                   <path
@@ -144,6 +140,8 @@ const Navbar: React.FC = () => {
                 </svg>
               )}
             </button>
+
+
             {/* ✅ Logo + Data-Bin text for desktop */}
             <Link to="/" className="hidden lg:flex items-center gap-2 shrink-0">
               <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
@@ -234,14 +232,14 @@ const Navbar: React.FC = () => {
     lg:hidden overflow-y-auto
   `}
       >
-        <div className="flex justify-end p-4">
+        {/* <div className="flex justify-end p-4">
           <button
             onClick={toggleMobileRightSidebar}
             className="text-gray-600 dark:text-gray-300 text-xl"
           >
             ✕
           </button>
-        </div>
+        </div> */}
 
         <div className="flex flex-col gap-4 px-4 pb-6">
           {!shouldHideCalendar && (
