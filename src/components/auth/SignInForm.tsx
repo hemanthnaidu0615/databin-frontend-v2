@@ -53,7 +53,7 @@ function Signin() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-gradient-to-tr from-[#f6edff] to-[#e9f0ff] dark:from-[#1a1a1a] dark:to-[#2a2a2a] transition-all duration-500 text-gray-800 dark:text-gray-100">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row  dark:to-[#2a2a2a] transition-all duration-500 text-gray-800 dark:text-gray-100">
       {/* Theme toggle button */}
       <div className="absolute top-6 right-6 z-10">
         <ThemeToggleButton />
@@ -61,7 +61,7 @@ function Signin() {
 
       {/* Feature Panel */}
       <motion.div
-        className="w-full lg:w-1/2 p-6 sm:p-10 flex flex-col justify-center space-y-10 bg-white/80 dark:bg-[#1e1e1e]/90 backdrop-blur-md"
+        className="w-full lg:w-1/2 p-6 sm:p-10 flex flex-col justify-center space-y-10 dark:bg-gray-900 backdrop-blur-md"
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
@@ -117,13 +117,15 @@ function Signin() {
 
       {/* Login Panel */}
       <motion.div
-        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-10"
+        className="w-full lg:w-1/2 lg:pl-40 p-6 sm:p-10 flex flex-col justify-center space-y-10 bg-white/80 dark:bg-gray-900 backdrop-blur-md"
         initial={{ x: 50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
         <motion.div
-          className="w-full max-w-md bg-white/90 dark:bg-[#1e1e1e]/90 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 backdrop-blur-xl"
+          className="w-full max-w-md rounded-2xl p-6 sm:p-8 space-y-6 backdrop-blur-xl
+    bg-white/90 dark:bg-gray-900
+    border border-white/20 dark:border-white/10 shadow-xl"
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
         >
