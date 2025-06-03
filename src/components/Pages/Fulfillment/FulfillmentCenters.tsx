@@ -77,6 +77,7 @@ const FulfillmentCenters = () => {
               responsiveLayout="scroll"
               className="p-datatable-sm w-full"
               scrollable
+              scrollHeight="400px"
             >
               <Column
                 field="center"
