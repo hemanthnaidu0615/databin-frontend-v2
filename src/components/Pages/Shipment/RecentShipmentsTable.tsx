@@ -4,7 +4,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { axiosInstance } from "../../../axios";
 
@@ -377,14 +376,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
         className="p-dialog-sm dark:bg-white/[0.03]"
       >
         {selectedShipment ? shipmentDetails(selectedShipment) : <p>No data</p>}
-        <div className="mt-4 text-right">
-          <Button
-            label="Close"
-            icon="pi pi-times"
-            onClick={() => setVisible(false)}
-            className="p-button-text text-purple-500"
-          />
-        </div>
       </Dialog>
     </div>
   );
