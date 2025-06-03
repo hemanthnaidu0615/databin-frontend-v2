@@ -135,7 +135,8 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       grid: {
         borderColor: gridColor,
       },
-      colors: ["#b76fcf", "#f84aad", "#8de2c4"],
+      colors: ["#14b8a6", "#7c3aed", "#db2777"],
+
       tooltip: {
         theme: isDark ? "dark" : "light",
       },
@@ -197,6 +198,23 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       return {
         ...baseOptions,
         labels: ["Online", "Retail Store", "Warehouse"],
+        dataLabels: {
+          enabled: true,
+          style: {
+            fontSize: "14px",
+            fontWeight: "bold",
+            colors: [isDark ? "#FFFFFF" : "#1e293b"],
+          },
+          formatter: (val: number) => {
+            return `${val.toFixed(1)}%`;
+          },
+        },
+        tooltip: {
+          enabled: true,
+          y: {
+            formatter: (value: number) => `$${value.toFixed(2)}`,
+          },
+        },
       };
     }
 
@@ -236,12 +254,16 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       {(selectedChart === "Bar" ||
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
-        <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+        <div
+          className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2"
+          style={{ overflow: "visible" }}
+        >
           <div
             style={{
               width: dynamicChartWidth,
-              height: "400px",
+              height: selectedChart === "Pie" ? "350px" : "370px",
               maxWidth: "100%",
+              overflow: "visible",
             }}
           >
             <Chart
@@ -258,37 +280,62 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       )}
 
       {selectedChart === "Table" && (
-        <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-          <div className="max-h-[220px] overflow-y-auto">
-            <table className="min-w-full text-sm text-left">
-              <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0 z-10">
-                <tr>
-                  <th className="p-2 font-medium">Date</th>
-                  <th className="p-2 font-medium">Online</th>
-                  <th className="p-2 font-medium">Retail Store</th>
-                  <th className="p-2 font-medium">Warehouse</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {categories.map((date, i) => (
-                  <tr key={i} className="border-t dark:border-gray-700">
-                    <td className="p-2">{date}</td>
-                    <td className="p-2">
-                      {series[0]?.data[i]?.toFixed(2) ?? "-"}
-                    </td>
-                    <td className="p-2">
-                      {series[1]?.data[i]?.toFixed(2) ?? "-"}
-                    </td>
-                    <td className="p-2">
-                      {series[2]?.data[i]?.toFixed(2) ?? "-"}
-                    </td>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden sm:block overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="max-h-[220px] overflow-y-auto">
+              <table className="min-w-full text-sm text-left">
+                <thead className="bg-gray-100 dark:bg-gray-800 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-2 font-medium">Date</th>
+                    <th className="p-2 font-medium">Online</th>
+                    <th className="p-2 font-medium">Retail Store</th>
+                    <th className="p-2 font-medium">Warehouse</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {categories.map((date, i) => (
+                    <tr key={i} className="border-t dark:border-gray-700">
+                      <td className="p-2">{date}</td>
+                      <td className="p-2">
+                        {series[0]?.data[i]?.toFixed(2) ?? "-"}
+                      </td>
+                      <td className="p-2">
+                        {series[1]?.data[i]?.toFixed(2) ?? "-"}
+                      </td>
+                      <td className="p-2">
+                        {series[2]?.data[i]?.toFixed(2) ?? "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Card View */}
+          <div className="sm:hidden space-y-2">
+            {categories.map((date, i) => (
+              <div
+                key={i}
+                className="border border-gray-200 dark:border-gray-700 rounded-md p-3 bg-white dark:bg-gray-800"
+              >
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold mb-1">
+                  Date: {date}
+                </p>
+                <p className="text-xs text-gray-700 dark:text-gray-200">
+                  Online: {series[0]?.data[i]?.toFixed(2) ?? "-"}
+                </p>
+                <p className="text-xs text-gray-700 dark:text-gray-200">
+                  Retail Store: {series[1]?.data[i]?.toFixed(2) ?? "-"}
+                </p>
+                <p className="text-xs text-gray-700 dark:text-gray-200">
+                  Warehouse: {series[2]?.data[i]?.toFixed(2) ?? "-"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
