@@ -134,7 +134,7 @@ const TopCustomersTable = () => {
         },
         crosshairs: { show: false },
         title: {
-          text: "Customers",
+          text: "Customer",
           style: {
             fontSize: "14px",
             fontWeight: "normal",

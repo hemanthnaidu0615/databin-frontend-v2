@@ -421,11 +421,11 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             <th className="py-3 px-4"></th>
             <th className="py-3 px-4">Order ID</th>
             <th className="py-3 px-4 hidden md:table-cell">Date</th>
-            <th className="py-3 px-4 hidden md:table-cell">Customer</th>
+            <th className="py-3 px-4 hidden md:table-cell">Customer Name</th>
             <th className="py-3 px-4 hidden md:table-cell">Product</th>
-            <th className="py-3 px-4 hidden md:table-cell">Total</th>
+            <th className="py-3 px-4 hidden md:table-cell">Total Amount</th>
             <th className="py-3 px-4 hidden md:table-cell">Status</th>
-            <th className="py-3 px-4 hidden md:table-cell">Payment</th>
+            <th className="py-3 px-4 hidden md:table-cell">Payment Method</th>
           </tr>
         </thead>
         <tbody className="text-sm text-gray-800 dark:text-gray-200">
@@ -663,7 +663,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                   }
                                   className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-xl"
                                 >
-                                  View Invoice
+                                  Download Invoice
                                 </button>
                               </div>
                             </div>
