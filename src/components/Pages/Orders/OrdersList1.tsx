@@ -140,7 +140,7 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
     const isMobile = window.innerWidth < 640;
     if (!isManualRowsChange) {
       setRows(isMobile ? 10 : 20);
-      setFirst(0); // optional: reset pagination on screen change
+      setFirst(0); 
     }
   };
 
