@@ -188,12 +188,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
     return [10, 20, 50, 100];
   };
 
-  // Get current page data for mobile view
   const mobilePageData = filteredShipments.slice(first, first + rows);
-
-  // =========================
-  // CUSTOM RENDER FUNCTIONS
-  // =========================
 
   const TableHeader = (
     <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
@@ -337,7 +332,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
       {/* Mobile-Only Custom Pagination */}
       {isMobile && (
         <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-          {/* Top: Rows per page dropdown + page info stacked */}
           <div className="flex flex-col gap-2 mb-2 w-full">
             <div className="flex flex-col gap-1">
               <label htmlFor="mobileRows" className="whitespace-nowrap">
