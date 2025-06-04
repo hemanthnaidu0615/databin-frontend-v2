@@ -46,7 +46,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
   const [selectedShipment, setSelectedShipment] = useState<any | null>(null);
   const [visible, setVisible] = useState(false);
   const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(5);
+  const [rows, setRows] = useState(10);
 
   const isMobile = useIsMobile();
 
@@ -188,9 +188,7 @@ const RecentShipmentsTable: React.FC<Props> = ({
     return [10, 20, 50, 100];
   };
 
-  // =========================
-  // CUSTOM RENDER FUNCTIONS
-  // =========================
+  const mobilePageData = filteredShipments.slice(first, first + rows);
 
   const TableHeader = (
     <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
@@ -211,93 +209,129 @@ const RecentShipmentsTable: React.FC<Props> = ({
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
       {TableHeader}
 
-      <DataTable
-        value={
-          isMobile
-            ? filteredShipments.slice(first, first + rows)
-            : filteredShipments
-        }
-        paginator={!isMobile}
-        first={first}
-        rows={rows}
-        onPage={(e) => {
-          setFirst(e.first);
-          setRows(e.rows);
-        }}
-        stripedRows
-        className="p-datatable-sm w-full"
-        responsiveLayout="scroll"
-        paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-        rowsPerPageOptions={getPageOptions()}
-        sortMode="multiple"
-        scrollable
-        scrollHeight="flex"
-      >
-        <Column
-          field="shipment_id"
-          header={<span className="app-table-heading">Shipment ID</span>}
-          body={(rowData) => (
-            <span className="app-table-content">{rowData.shipment_id}</span>
-          )}
-          sortable
-        />
-        <Column
-          field="customer_name"
-          header={<span className="app-table-heading">Customer</span>}
-          body={(rowData) => (
-            <span className="app-table-content">{rowData.customer_name}</span>
-          )}
-          sortable
-        />
-        <Column
-          field="carrier"
-          header={<span className="app-table-heading">Carrier</span>}
-          body={(rowData) => (
-            <span className="app-table-content">{rowData.carrier}</span>
-          )}
-          sortable
-        />
-        <Column
-          field="actual_shipment_date"
-          header={<span className="app-table-heading">Ship Date</span>}
-          body={(rowData) => (
-            <span className="app-table-content">
-              {formatDate(rowData.actual_shipment_date)}
-            </span>
-          )}
-          sortable
-        />
-        <Column
-          field="shipment_status"
-          header={<span className="app-table-heading">Status</span>}
-          body={(rowData) => (
-            <span className="app-table-content">
-              <Tag
-                value={rowData.shipment_status}
-                severity={getStatusSeverity(rowData.shipment_status)}
-              />
-            </span>
-          )}
-          sortable
-        />
-        <Column
-          header={<span className="app-table-heading">Action</span>}
-          body={(rowData) => (
-            <button
-              onClick={() => showDetails(rowData)}
-              className="text-purple-500 hover:underline text-sm font-medium"
-            >
-              View
-            </button>
-          )}
-        />
-      </DataTable>
+      {/* Desktop View - DataTable */}
+      <div className="hidden md:block">
+        <DataTable
+          value={filteredShipments}
+          paginator
+          first={first}
+          rows={rows}
+          onPage={(e) => {
+            setFirst(e.first);
+            setRows(e.rows);
+          }}
+          stripedRows
+          className="p-datatable-sm w-full"
+          responsiveLayout="scroll"
+          paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
+          rowsPerPageOptions={getPageOptions()}
+          sortMode="multiple"
+          scrollable
+          scrollHeight="flex"
+        >
+          <Column
+            field="shipment_id"
+            header={<span className="app-table-heading">Shipment ID</span>}
+            body={(rowData) => (
+              <span className="app-table-content">{rowData.shipment_id}</span>
+            )}
+            sortable
+          />
+          <Column
+            field="customer_name"
+            header={<span className="app-table-heading">Customer</span>}
+            body={(rowData) => (
+              <span className="app-table-content">{rowData.customer_name}</span>
+            )}
+            sortable
+          />
+          <Column
+            field="carrier"
+            header={<span className="app-table-heading">Carrier</span>}
+            body={(rowData) => (
+              <span className="app-table-content">{rowData.carrier}</span>
+            )}
+            sortable
+          />
+          <Column
+            field="actual_shipment_date"
+            header={<span className="app-table-heading">Ship Date</span>}
+            body={(rowData) => (
+              <span className="app-table-content">
+                {formatDate(rowData.actual_shipment_date)}
+              </span>
+            )}
+            sortable
+          />
+          <Column
+            field="shipment_status"
+            header={<span className="app-table-heading">Status</span>}
+            body={(rowData) => (
+              <span className="app-table-content">
+                <Tag
+                  value={rowData.shipment_status}
+                  severity={getStatusSeverity(rowData.shipment_status)}
+                />
+              </span>
+            )}
+            sortable
+          />
+          <Column
+            header={<span className="app-table-heading">Action</span>}
+            body={(rowData) => (
+              <button
+                onClick={() => showDetails(rowData)}
+                className="text-purple-500 hover:underline text-sm font-medium"
+              >
+                View
+              </button>
+            )}
+          />
+        </DataTable>
+      </div>
+
+      {/* Mobile View - Cards */}
+      <div className="block md:hidden space-y-4">
+        {mobilePageData.map((shipment, index) => (
+          <div
+            key={index}
+            className="border rounded-xl p-4 bg-white dark:bg-white/[0.03] shadow-sm"
+            onClick={() => showDetails(shipment)}
+          >
+            <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">
+              {shipment.shipment_id} - {shipment.customer_name}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              <div>
+                <strong>Carrier:</strong> {shipment.carrier}
+              </div>
+              <div>
+                <strong>Ship Date:</strong> {formatDate(shipment.actual_shipment_date)}
+              </div>
+              <div>
+                <strong>Status:</strong>{" "}
+                <Tag
+                  value={shipment.shipment_status}
+                  severity={getStatusSeverity(shipment.shipment_status)}
+                />
+              </div>
+            </div>
+            <div className="mt-2">
+              <button
+                onClick={() => showDetails(shipment)}
+                className="text-purple-500 hover:underline text-sm font-medium"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Mobile-Only Custom Pagination */}
       {isMobile && (
         <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-          {/* Top: Rows per page dropdown + page info stacked */}
           <div className="flex flex-col gap-2 mb-2 w-full">
             <div className="flex flex-col gap-1">
               <label htmlFor="mobileRows" className="whitespace-nowrap">
