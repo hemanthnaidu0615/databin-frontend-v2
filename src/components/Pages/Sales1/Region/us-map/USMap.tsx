@@ -83,12 +83,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}`;
 };
 
 const USMap = () => {
@@ -165,10 +165,13 @@ const USMap = () => {
             (state) => !formatted[state] || formatted[state].customers === 0
           );
 
-          // 3. Randomly assign data from valid states to the fallback ones
+          // 3. Deterministically assign data from valid states to fallback ones
           fallbackStates.forEach((state) => {
-            const [_, sampleData] =
-              validStates[Math.floor(Math.random() * validStates.length)];
+            const asciiSum = state
+              .split("")
+              .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+            const index = asciiSum % validStates.length;
+            const [_, sampleData] = validStates[index];
             formatted[state] = { ...sampleData };
           });
 
@@ -238,14 +241,16 @@ const USMap = () => {
                   onClick={(e) => {
                     if (window.innerWidth <= 768) {
                       setTooltip((prev) =>
-                        prev?.name === stateName ? null : {
-                          name: stateName,
-                          customers: data.customers,
-                          revenue: data.revenue,
-                          avgRevenue: data.avgRevenue,
-                          x: e.clientX,
-                          y: e.clientY,
-                        }
+                        prev?.name === stateName
+                          ? null
+                          : {
+                              name: stateName,
+                              customers: data.customers,
+                              revenue: data.revenue,
+                              avgRevenue: data.avgRevenue,
+                              x: e.clientX,
+                              y: e.clientY,
+                            }
                       );
                     }
                   }}
@@ -255,7 +260,6 @@ const USMap = () => {
                     pressed: { outline: "none" },
                   }}
                 />
-
               );
             })
           }
@@ -303,7 +307,6 @@ const USMap = () => {
             border: `1px solid ${isDark ? "#444" : "#ccc"}`,
             pointerEvents: "none",
           }}
-
         >
           <strong>{tooltip.name}</strong>
           {`\nCustomers: ${tooltip.customers}\nRevenue: ${formatValue(
