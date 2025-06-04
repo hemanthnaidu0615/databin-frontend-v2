@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { axiosInstance } from "../../../axios";
@@ -129,13 +129,30 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     }
   };
   const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(20);
-  const options = [20, 50, 100];
+  const [rows, setRows] = useState(() =>
+  typeof window !== "undefined" && window.innerWidth < 640 ? 10 : 20
+);
+const [isManualRowsChange, setIsManualRowsChange] = useState(false);
+  const options = [10, 20, 50, 100];
+
+  useEffect(() => {
+  const handleResize = () => {
+    const isMobile = window.innerWidth < 640;
+    if (!isManualRowsChange) {
+      setRows(isMobile ? 10 : 20);
+      setFirst(0); // optional: reset pagination on screen change
+    }
+  };
+
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, [isManualRowsChange]);
 
   const onPageChange = (e: { first: number; rows: number }) => {
     setFirst(e.first);
     setRows(e.rows);
     setExpandedOrderIds([]);
+    setIsManualRowsChange(true);
   };
 
   const handleDownloadInvoice = (order: Order, details: any) => {
@@ -768,7 +785,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
               disabled={first + rows >= orders.length}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
-              ⏭ Last
+              Last ⏭
             </button>
           </div>
         </div>

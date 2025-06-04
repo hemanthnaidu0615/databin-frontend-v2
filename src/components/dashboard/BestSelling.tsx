@@ -228,14 +228,14 @@ const ProfitabilityTable: React.FC = () => {
             <>
               <button
                 onClick={moveLeft}
-                className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-[200] bg-black/50 text-white rounded-full w-8 h-8 items-center justify-center hover:bg-black/70 transition"
+                className="flex absolute left-2 top-1/2 -translate-y-1/2 z-[200] bg-black/50 text-white rounded-full w-8 h-8 items-center justify-center hover:bg-black/70 transition"
                 aria-label="Previous"
               >
                 <i className="pi pi-chevron-left text-base" />
               </button>
               <button
                 onClick={moveRight}
-                className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-[200] bg-black/50 text-white rounded-full w-8 h-8 items-center justify-center hover:bg-black/70 transition"
+                className="flex absolute right-2 top-1/2 -translate-y-1/2 z-[200] bg-black/50 text-white rounded-full w-8 h-8 items-center justify-center hover:bg-black/70 transition"
                 aria-label="Next"
               >
                 <i className="pi pi-chevron-right text-base" />
