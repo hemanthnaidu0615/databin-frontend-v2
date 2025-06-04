@@ -142,6 +142,7 @@ const ViewScheduler: React.FC = () => {
       </div>
 
       {/* Mobile View */}
+      <div className="block lg:hidden">
       <table className="min-w-full border-separate border-spacing-0">
         <thead className="sticky top-0 z-20 bg-gray-200 dark:bg-gray-900 text-xs">
           <tr>
@@ -220,6 +221,7 @@ const ViewScheduler: React.FC = () => {
           ))}
         </tbody>
       </table>
+    </div>
     </div>
   );
 };
