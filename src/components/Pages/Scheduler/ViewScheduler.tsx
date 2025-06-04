@@ -7,6 +7,7 @@ import { Dropdown } from "primereact/dropdown";
 import { FilterMatchMode } from "primereact/api";
 import { axiosInstance } from "../../../axios";
 import moment from "moment";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "./style.css";
 
 interface Scheduler {
@@ -30,6 +31,7 @@ const ViewScheduler: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const toast = useRef<Toast>(null);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [expandedStates, setExpandedStates] = useState<string[]>([]);
 
   const [filters, setFilters] = useState<FiltersType>({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -64,6 +66,14 @@ const ViewScheduler: React.FC = () => {
     setGlobalFilterValue(value);
   };
 
+  const arrowExpand = (stateName: string) => {
+    setExpandedStates((prev) =>
+      prev.includes(stateName)
+        ? prev.filter((name) => name !== stateName)
+        : [...prev, stateName]
+    );
+  };
+
   const renderHeader = () => (
     <div className="vw-scheduler-header">
       <div className="vw-scheduler-header-controls">
@@ -87,9 +97,11 @@ const ViewScheduler: React.FC = () => {
 
   return (
     <div className="vw-scheduler-container">
+      <h1 className="app-subheading">Scheduled Reports</h1>
       <Toast ref={toast} />
       <div className="vw-scheduler-content">
-        <div className="vw-scheduler-table-container">
+        {/* Desktop View */}
+        <div className="vw-scheduler-table-container hidden lg:block">
           <DataTable
             value={schedulers}
             header={renderHeader()}
@@ -128,6 +140,86 @@ const ViewScheduler: React.FC = () => {
           </DataTable>
         </div>
       </div>
+
+      {/* Mobile View */}
+      <table className="min-w-full border-separate border-spacing-0">
+        <thead className="sticky top-0 z-20 bg-gray-200 dark:bg-gray-900 text-xs">
+          <tr>
+            <th className=""></th>
+            <th className="text-left px-4 py-2 app-table-heading text-gray-300 dark:text-gray-100">
+              Title
+            </th>
+          </tr>
+        </thead>
+        <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
+          {schedulers.map((row) => (
+            <React.Fragment key={`${row.email}-${row.title}`}>
+              <tr
+                className="hover:bg-gray-50 hover:dark:bg-white/[0.05] cursor-pointer transition-colors"
+                onClick={() => arrowExpand(row.title)}
+              >
+                <td className="py-3 px-4">
+                  {expandedStates.includes(row.title) ? (
+                    <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+                  ) : (
+                    <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+                  )}
+                </td>
+                <td className="py-3 px-4">{row.title}</td>
+              </tr>
+
+              {expandedStates.includes(row.title) && (
+                <tr>
+                  <td colSpan={2} className="px-4 pb-4">
+                    <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-4 text-sm text-gray-800 dark:text-gray-300 shadow-sm space-y-3 w-full">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Description
+                        </span>
+                        <span className="text-right font-medium text-gray-900 dark:text-white break-words max-w-[60%]">
+                          {row.description}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Email
+                        </span>
+                        <span className="text-right font-medium text-gray-900 dark:text-white break-all max-w-[60%]">
+                          {row.email}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Recurrence
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {row.recurrence_pattern}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Start Date
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {moment(row.start_date).format("YYYY-MM-DD HH:mm")}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Time Frame
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {row.date_range_type}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
