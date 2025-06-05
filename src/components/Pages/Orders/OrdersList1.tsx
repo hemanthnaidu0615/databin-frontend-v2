@@ -56,7 +56,6 @@ const OrderStatusBadge: React.FC<{ status: Order["status"] }> = ({
   </span>
 );
 
-// 🟡 Reusable Key-Value Display
 const KeyValueDisplay: React.FC<{
   data: Record<string, any>;
   title: string;
@@ -78,14 +77,12 @@ const KeyValueDisplay: React.FC<{
   </div>
 );
 
-// 🟡 Section Types
 type ExpandedSection =
   | { title: string; data: Record<string, any> }
   | { title: "Products"; products: any[] }
   | { title: "Fulfillment Timeline"; timeline: any[] }
   | { title: "Actions" };
 
-// 🟡 Main Component
 const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = useState<Map<string, any>>(new Map());
@@ -148,7 +145,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     const marginLeft = 14;
     let y = 20;
 
-    // Header
     doc.setFontSize(18);
     doc.text("INVOICE", marginLeft, y);
 
@@ -208,8 +204,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
       marginLeft,
       y
     );
-
-    // Products Table
     y += 10;
     const products = details.products ?? order.products ?? [];
     const productRows = products.map((p: any) => [
@@ -229,7 +223,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
       styles: { fontSize: 10 },
     });
 
-    // Totals
     const subtotal = products.reduce(
       (acc: number, p: any) =>
         acc + (p.quantity ?? p.qty) * (p.unit_price ?? p.price),
@@ -260,8 +253,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     doc.setFont("helvetica", "bold");
     doc.text(`Total: ${formatUSD(total)}`, marginLeft, finalY);
     doc.setFont("helvetica", "normal");
-
-    // Fulfillment Timeline
     finalY += 10;
     doc.setFont("helvetica", "bold");
     doc.text("Fulfillment Timeline", marginLeft, finalY);
@@ -296,21 +287,18 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
       finalY
     );
 
-    // Save file
     doc.save(`invoice_${order.id}.pdf`);
   };
-  // 🟡 Helper: Generate expanded sections
+
   const getExpandedSections = (order: Order): ExpandedSection[] => {
     const details = orderDetails.get(order.id) || {};
     const products = details.products || order.products || [];
 
     const maskPhoneNumber = (phone: string): string => {
-      const cleaned = phone.replace(/\D/g, ""); // Remove non-digit characters
+      const cleaned = phone.replace(/\D/g, ""); 
       const last4 = cleaned.slice(-4);
       return last4 ? `**** **** ${last4}` : "N/A";
     };
-
-    // 🌟 Adjust Delivered to be after ETA only if it's incorrect
     if (
       order.status === "Delayed" &&
       details.order_summary?.eta &&
@@ -320,7 +308,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
       const deliveredDate = new Date(details.order_summary.delivered);
 
       if (deliveredDate < etaDate) {
-        // Adjust delivered to be 5 minutes after ETA
         const adjustedDelivered = new Date(etaDate.getTime() + 5 * 60 * 1000);
         details.order_summary.delivered = adjustedDelivered.toISOString();
       }
