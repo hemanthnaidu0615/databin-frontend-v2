@@ -135,7 +135,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       grid: {
         borderColor: gridColor,
       },
-      colors: ["#14b8a6", "#7c3aed", "#db2777"],
+      colors: ["#14b8a6", "#a855f7", "#db2777"],
 
       tooltip: {
         theme: isDark ? "dark" : "light",

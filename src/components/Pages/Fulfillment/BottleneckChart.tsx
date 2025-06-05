@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
-import { useSelector } from 'react-redux';
-import { axiosInstance } from '../../../axios';
+import { useEffect, useState } from "react";
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
+import { useSelector } from "react-redux";
+import { axiosInstance } from "../../../axios";
 
 const BottleneckChart = () => {
   const [isDark, setIsDark] = useState<boolean>(
@@ -11,22 +11,20 @@ const BottleneckChart = () => {
   );
 
   const [chartOptions, setChartOptions] = useState<ApexOptions>({
-chart: {
-  type: 'bar',
-  height: 320,
-  width: '100%', 
-  toolbar: { show: false },
-  background: 'transparent',
-  foreColor: isDark ? '#d1d5db' : '#333',
-},
-
-
+    chart: {
+      type: "bar",
+      height: 320,
+      width: "100%",
+      toolbar: { show: false },
+      background: "transparent",
+      foreColor: isDark ? "#d1d5db" : "#333", 
+    },
 
     plotOptions: {
       bar: {
         horizontal: true,
         borderRadius: 4,
-        barHeight: "60%", 
+        barHeight: "60%",
       },
     },
     dataLabels: {
@@ -35,29 +33,29 @@ chart: {
         colors: ["#fff"],
       },
     },
-    colors: ["#9614d0"],
+    colors: ["#a855f7"], 
     xaxis: {
       categories: [],
       title: {
         text: "Process Stage",
         style: {
-          color: isDark ? "#d1d5db" : "#333",
+          color: "#a855f7", 
           fontWeight: 600,
         },
       },
       labels: {
         style: {
-          colors: isDark ? "#d1d5db" : "#333",
+          colors: "#a855f7",
         },
       },
     },
     yaxis: {
       title: {
-        text: undefined, 
+        text: undefined,
       },
       labels: {
         style: {
-          colors: isDark ? "#d1d5db" : "#333",
+          colors: "#a855f7", 
           fontSize: "12px",
         },
       },
@@ -162,11 +160,16 @@ chart: {
       }
 
       try {
-        const response = await axiosInstance.get(`/fulfillment/bottleneck-analysis`, {
-          params,
-        });
-        const data = response.data as Array<{ process_stage: string; avg_time: number }>;
-
+        const response = await axiosInstance.get(
+          `/fulfillment/bottleneck-analysis`,
+          {
+            params,
+          }
+        );
+        const data = response.data as Array<{
+          process_stage: string;
+          avg_time: number;
+        }>;
 
         const defaultStagesOrder = [
           "Order Placed",
@@ -218,20 +221,16 @@ chart: {
 
   return (
     <div className="mt-6">
-      <h2 className="app-subheading">
-        Bottleneck Analysis
-      </h2>
+      <h2 className="app-subheading">Bottleneck Analysis</h2>
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 overflow-hidden">
         <div className="w-full overflow-hidden">
-<ReactApexChart
-  options={chartOptions}
-  series={series}
-  type="bar"
-  height={320}
-  width="100%" 
-/>
-
-
+          <ReactApexChart
+            options={chartOptions}
+            series={series}
+            type="bar"
+            height={320}
+            width="100%"
+          />
         </div>
       </div>
     </div>

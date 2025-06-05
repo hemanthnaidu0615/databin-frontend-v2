@@ -81,7 +81,7 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
         >
           <div
             className="px-4 py-2 font-semibold text-sm sm:text-base truncate app-table-heading"
-            style={{ backgroundColor: "#9614d0", color: "#fff" }} 
+            style={{ backgroundColor: "#a855f7", color: "#fff" }}
           >
             {title}
           </div>

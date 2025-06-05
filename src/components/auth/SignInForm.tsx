@@ -68,13 +68,14 @@ function Signin() {
       >
         <div className="flex items-center gap-4 mb-4">
           <img src={logo} alt="logo" className="h-10" />
-          <h1 className="text-xl sm:text-2xl font-bold text-[#9614d0] dark:text-[#9614d0]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#a855f7] dark:text-[#a855f7]">
             Welcome to Databin
           </h1>
         </div>
 
         <p className="text-gray-600 dark:text-gray-300 text-base sm:text-lg max-w-xl">
-          Power your decisions with advanced alerting, live dashboards, and real-time metrics.
+          Power your decisions with advanced alerting, live dashboards, and
+          real-time metrics.
         </p>
 
         {/* Desktop & Tablet - grid */}
@@ -94,7 +95,7 @@ function Signin() {
           <Carousel
             value={features}
             itemTemplate={(feature: { title: string; icon: string }) => {
-              const idx = features.findIndex(f => f.title === feature.title);
+              const idx = features.findIndex((f) => f.title === feature.title);
               return (
                 <FeatureCard
                   key={idx}
@@ -111,7 +112,6 @@ function Signin() {
             showIndicators
             showNavigators={false}
           />
-
         </div>
       </motion.div>
 
@@ -129,7 +129,7 @@ function Signin() {
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
         >
-          <h2 className="text-xl sm:text-2xl font-bold text-center text-[#9614d0] dark:text-[#9614d0]">
+          <h2 className="text-xl sm:text-2xl font-bold text-center text-[#a855f7] dark:text-[#a855f7]">
             Sign In
           </h2>
 
@@ -143,9 +143,8 @@ function Signin() {
                 placeholder="Enter your email"
                 className="w-full px-4 py-3 rounded-lg text-sm bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/10
     text-white placeholder-white/50 backdrop-blur-md
-    focus:outline-none focus:ring-2 focus:ring-[#9614d0] focus:scale-105 transition-transform duration-200"
+    focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:scale-105 transition-transform duration-200"
               />
-
             </div>
             <div>
               <label className="block text-sm mb-1">Password</label>
@@ -157,7 +156,7 @@ function Signin() {
                   placeholder="Enter your password"
                   className="w-full px-4 py-3 rounded-lg text-sm bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/10
     text-white placeholder-white/50 backdrop-blur-md
-    focus:outline-none focus:ring-2 focus:ring-[#9614d0] focus:scale-105 transition-transform duration-200"
+    focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:scale-105 transition-transform duration-200"
                 />
 
                 <button
@@ -165,7 +164,9 @@ function Signin() {
                   className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <i className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"}`} />
+                  <i
+                    className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"}`}
+                  />
                 </button>
               </div>
             </div>
@@ -175,15 +176,13 @@ function Signin() {
               disabled={loading}
               className={`
     w-full py-2 px-4 text-white font-medium rounded-md
-    bg-[#9614d0] transition duration-300 ease-in-out
+    bg-[#a855f7] transition duration-300 ease-in-out
     hover:scale-105 hover:shadow-lg active:scale-100 active:shadow-sm
     disabled:opacity-50 disabled:cursor-not-allowed
   `}
             >
               {loading ? "Signing in..." : "Login"}
             </button>
-
-
           </form>
         </motion.div>
       </motion.div>

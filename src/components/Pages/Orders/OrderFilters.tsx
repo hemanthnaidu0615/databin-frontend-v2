@@ -177,7 +177,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         </button>
         <button
           type="submit" // triggers onSubmit
-          className="px-4 py-2 rounded bg-[#9614d0] text-sm text-white hover:bg-[#660094] transition"
+          className="px-4 py-2 rounded  bg-[#a855f7] text-sm text-white hover:bg-[#9614d0] transition"
         >
           Apply Filters
         </button>
