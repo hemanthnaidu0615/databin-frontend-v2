@@ -16,7 +16,6 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
-
 const Navbar: React.FC = () => {
   const [enterpriseKey, setEnterpriseKey] = useState("All");
   const [enterpriseKeys, setEnterpriseKeys] = useState<string[]>([]);
@@ -32,7 +31,6 @@ const Navbar: React.FC = () => {
     isMobileRightOpen,
     toggleMobileRightSidebar,
   } = useSidebar();
-
 
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
     new Date("2025-05-26"),
@@ -137,10 +135,11 @@ const Navbar: React.FC = () => {
             <button
               onClick={handleToggle}
               aria-label="Toggle Sidebar"
-              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${!isMobileOpen
-                ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
-                : ""
-                }`}
+              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${
+                !isMobileOpen
+                  ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : ""
+              }`}
             >
               {isMobileOpen ? (
                 <span className="text-xl font-bold">✕</span>
@@ -156,19 +155,25 @@ const Navbar: React.FC = () => {
               )}
             </button>
 
-
             {/* ✅ Logo + Data-Bin text for desktop */}
-            <Link to="/" className="hidden lg:flex items-center gap-2 shrink-0">
-              <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
+            <Link
+              to="/"
+              className="hidden lg:flex items-center gap-3 shrink-0 "
+            >
+              {/* Light mode logo */}
+              <img className="dark:hidden w-8 h-8" src={Logo} alt="Logo" />
+
+              {/* Dark mode logo */}
               <img
                 className="hidden dark:block w-6 h-6"
                 src={Logo}
                 alt="Logo"
               />
-              <span className="text-lg font-semibold text-gray-900 dark:text-white leading-none flex items-center">
+              <span className="text-xl font-semibold text-gray-900 dark:text-white leading-none flex items-center">
                 Data-Bin
               </span>
             </Link>
+
             {/* ✅ Logo + Data-Bin text for mobile only - absolutely centered */}
             <div className="absolute inset-0 flex justify-center items-center pointer-events-none lg:hidden">
               <Link
@@ -204,6 +209,7 @@ const Navbar: React.FC = () => {
                   showIcon
                   hideOnDateTimeSelect
                   hideOnRangeSelection
+                  icon={<i className="pi pi-calendar text-white" />} 
                 />
               )}
 
@@ -326,7 +332,7 @@ const Navbar: React.FC = () => {
 
           <div className="border-t border-gray-300 dark:border-gray-700" />
 
-          {/* ✅ Auto-close on theme toggle */}
+          {/*  Auto-close on theme toggle */}
           <div className="flex items-center justify-between gap-4 px-1 pt-2">
             <div
               onClick={() => {

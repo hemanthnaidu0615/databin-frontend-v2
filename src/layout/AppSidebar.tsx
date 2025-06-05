@@ -185,8 +185,8 @@ const AppSidebar: React.FC = () => {
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
                   className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : ""
+ ? "rotate-180 text-gray-800 dark:text-white"
+                      : "text-gray-800 dark:text-white"
                     }`}
                 />
               )}
@@ -266,7 +266,6 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-
       {/* Sidebar inner content */}
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar px-5">
         <nav className="mb-6">

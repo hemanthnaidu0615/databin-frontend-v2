@@ -55,9 +55,12 @@ const InventoryOverview: React.FC<{
       const formattedEnd = formatDate(new Date(endDate));
 
       try {
-        const response = await axiosInstance.get<RegionData[]>("/inventory/region-distribution", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
-        });
+        const response = await axiosInstance.get<RegionData[]>(
+          "/inventory/region-distribution",
+          {
+            params: { startDate: formattedStart, endDate: formattedEnd },
+          }
+        );
         const data = response.data;
 
         const topFour = data
@@ -81,9 +84,12 @@ const InventoryOverview: React.FC<{
       const formattedEnd = formatDate(new Date(endDate));
 
       try {
-        const response = await axiosInstance.get("/inventory/turnover-and-alerts", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
-        });
+        const response = await axiosInstance.get(
+          "/inventory/turnover-and-alerts",
+          {
+            params: { startDate: formattedStart, endDate: formattedEnd },
+          }
+        );
         const data = response.data as {
           turnover_rates: { turnover_rate: number }[];
           low_stock_alerts: any[];
@@ -123,9 +129,9 @@ const InventoryOverview: React.FC<{
               `${date.getFullYear()}-${(date.getMonth() + 1)
                 .toString()
                 .padStart(2, "0")}-${date
-                  .getDate()
-                  .toString()
-                  .padStart(2, "0")}`
+                .getDate()
+                .toString()
+                .padStart(2, "0")}`
             );
             date.setDate(date.getDate() + 1);
           }
@@ -184,7 +190,7 @@ const InventoryOverview: React.FC<{
 
   const warehouseChartOptions = {
     chart: { id: "warehouse-chart", type: "bar", toolbar: { show: false } },
-    colors: ["#9614d0"],
+    colors: ["#a855f7"],
     plotOptions: { bar: { borderRadius: 6, columnWidth: "50%" } },
     dataLabels: { enabled: false },
     xaxis: {
@@ -221,12 +227,12 @@ const InventoryOverview: React.FC<{
 
   const turnoverChartOptions = {
     chart: { id: "turnover-chart", type: "line", toolbar: { show: false } },
-    colors: ["#9614d0"],
+    colors: ["#a855f7"],
     stroke: { curve: "smooth", width: 3 },
     markers: {
       size: 4,
       colors: ["#fff"],
-      strokeColors: "#9614d0",
+      strokeColors: "#a855f7",
       strokeWidth: 2,
     },
     xaxis: {
@@ -237,8 +243,8 @@ const InventoryOverview: React.FC<{
           turnoverCategories.length > 0 && turnoverCategories[0].length === 4
             ? "Year"
             : turnoverCategories[0]?.length <= 7
-              ? "Month"
-              : "Date",
+            ? "Month"
+            : "Date",
         style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
@@ -314,9 +320,7 @@ const InventoryOverview: React.FC<{
               <p className="app-widget-label text-gray-500 dark:text-gray-400">
                 {item.label}
               </p>
-              <p className={`app-widget-value ${item.color}`}>
-                {item.value}
-              </p>
+              <p className={`app-widget-value ${item.color}`}>{item.value}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500">
                 {item.count} products
               </p>

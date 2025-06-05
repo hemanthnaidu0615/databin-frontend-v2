@@ -42,7 +42,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, icon, index }) => {
       }}
     >
       <motion.i
-        className={`${icon} text-[#9614d0] text-xl feature-icon`}
+        className={`${icon} text-[#a855f7] text-xl feature-icon`}
         initial={{ rotate: 0 }}
         animate={{ rotate: [0, 10, -10, 0] }}
         transition={{

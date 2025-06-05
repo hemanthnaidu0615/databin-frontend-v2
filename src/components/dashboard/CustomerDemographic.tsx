@@ -260,7 +260,7 @@ const DemographicCard = () => {
             <FontAwesomeIcon
               icon={faShareFromSquare}
               size="lg"
-              style={{ color: "#9614d0" }}
+              style={{ color: "#a855f7" }}
             />
           </button>
         </div>

@@ -5,8 +5,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -19,12 +19,12 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(3, "0")}`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(3, "0")}`;
 };
 
 interface OrderTrackingProps {
@@ -86,8 +86,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
           ShippedPercentage?: number;
         };
 
-        console.log("API Response:", counts); // ✅ Debug log
-
+        console.log("API Response:", counts);
         setOrderCounts({
           Shipped: counts.Shipped || 0,
           Cancelled: counts.Cancelled || 0,
@@ -108,7 +107,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
   const series = [Number(progressPercentage) || 0];
 
   const options: ApexOptions = {
-    colors: ["#465FFF"],
+    colors: ["#a855f7"], 
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "radialBar",
@@ -120,7 +119,11 @@ export default function OrderTracking(_: OrderTrackingProps) {
         startAngle: -85,
         endAngle: 85,
         hollow: { size: "70%" },
-        track: { background: "#E4E7EC", strokeWidth: "100%", margin: 5 },
+        track: {
+          background: "#E4E7EC",
+          strokeWidth: "100%",
+          margin: 5,
+        },
         dataLabels: {
           name: { show: false },
           value: {
@@ -133,8 +136,13 @@ export default function OrderTracking(_: OrderTrackingProps) {
         },
       },
     },
-    fill: { type: "solid", colors: ["#465FFF"] },
-    stroke: { lineCap: "round" },
+    fill: {
+      type: "solid",
+      colors: ["#7b1fa2"], 
+    },
+    stroke: {
+      lineCap: "round",
+    },
     labels: ["Progress"],
   };
 
@@ -146,7 +154,6 @@ export default function OrderTracking(_: OrderTrackingProps) {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
   }
-
 
   return (
     <div className="rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/[0.03] w-full max-w-full">
@@ -165,23 +172,20 @@ export default function OrderTracking(_: OrderTrackingProps) {
           <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
             <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
               <div className="flex items-start justify-between w-full sm:w-auto">
-                <h2 className="app-subheading flex-1 mr-2">
-                  Order Tracking
-                </h2>
+                <h2 className="app-subheading flex-1 mr-2">Order Tracking</h2>
 
                 {/* Mobile arrow (→) aligned right */}
                 <button
                   onClick={handleViewMore}
                   className="sm:hidden text-purple-600 text-sm font-medium self-start"
                 >
-                  <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+                  <FontAwesomeIcon
+                    icon={faShareFromSquare}
+                    size="lg"
+                    style={{ color: "#a855f7" }}
+                  />
                 </button>
-
               </div>
-              <p className="mt-1 text-gray-500 text-xs dark:text-gray-400">
-                Monitor orders and fulfillment speed
-              </p>
-
 
               {/* Desktop & tablet "View More" */}
               <button
@@ -192,8 +196,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
               </button>
             </div>
 
-
-            <div className="relative mt-4">
+            <div className="flex justify-center mt-13">
               <div className="max-h-[260px]" id="chartDarkStyle">
                 {isVisible && progressPercentage > 0 && (
                   <Chart

@@ -180,12 +180,12 @@ const SalesTrendsChart = () => {
       markers: {
         size: 5,
         colors: ["#ffffff"],
-        strokeColors: "#2563eb",
+        strokeColors: "#a855f7", 
         strokeWidth: 3,
         hover: { size: 7 },
       },
       dataLabels: { enabled: false },
-      colors: ["#2563eb"],
+      colors: ["#a855f7"], 
       grid: {
         borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
       },

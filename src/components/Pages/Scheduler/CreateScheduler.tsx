@@ -463,7 +463,7 @@ export const CreateScheduler = () => {
             label="Save Scheduler"
             onClick={handleSaveScheduler}
             style={{
-              backgroundColor: "#9614d0",
+              backgroundColor: "#a855f7",
               border: "none",
               color: "white",
             }}

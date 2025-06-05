@@ -153,12 +153,12 @@ const chartOptions: ApexOptions = useMemo(
     dataLabels: { enabled: false },
     plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
     grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
-    colors: ["#2563eb"],
+    colors: ["#a855f7"],
     legend: { show: false },
     tooltip: {
       custom: ({ series, seriesIndex, dataPointIndex, w }) => {
         const value = series[seriesIndex][dataPointIndex];
-        const color = w.globals.colors[seriesIndex] || "#2563eb";
+        const color = w.globals.colors[seriesIndex] || "#a855f7";
         return `
           <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Revenue</div>
           <div style="display: flex; align-items: center; gap: 6px;">
@@ -171,7 +171,6 @@ const chartOptions: ApexOptions = useMemo(
   }),
   [theme, viewMode, topProducts]
 );
-
 
   const chartSeries = [
     {
