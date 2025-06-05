@@ -17,9 +17,8 @@ const PipelineRow = ({
 }) => {
   return (
     <div
-      className={`flex flex-col sm:flex-row ${
-        isFinal ? "flex-wrap justify-center" : "md:flex-wrap justify-center"
-      } items-center gap-x-4 gap-y-4 px-2 max-w-screen-xl mx-auto`}
+      className={`flex flex-col sm:flex-row ${isFinal ? "flex-wrap justify-center" : "md:flex-wrap justify-center"
+        } items-center gap-x-4 gap-y-4 px-2 max-w-screen-xl mx-auto`}
     >
       {stages.map((stage, index) => {
         const isCompleted = index < currentStage;
@@ -28,10 +27,10 @@ const PipelineRow = ({
         const bgColor = isFinal
           ? "bg-slate-400 dark:bg-slate-600"
           : isCompleted
-          ? "bg-purple-500"
-          : isCurrent
-          ? "bg-emerald-600"
-          : "bg-yellow-500";
+            ? "bg-purple-500"
+            : isCurrent
+              ? "bg-emerald-600"
+              : "bg-yellow-500";
 
         return (
           <React.Fragment key={index}>
@@ -45,11 +44,11 @@ const PipelineRow = ({
                 {stage.stage_name}
               </div>
               <div className="text-[9px] sm:text-[10px] text-gray-500 dark:text-gray-400">
-                {stage.avg_duration_hours != null
-                  ? stage.avg_duration_hours === 0
-                    ? "0 hrs"
-                    : `${stage.avg_duration_hours.toFixed(1)} hrs`
-                  : "–"}
+                {
+                  stage.avg_duration_hours != null
+                    ? `${Math.round(stage.avg_duration_hours)} ${Math.round(stage.avg_duration_hours) === 1 ? 'hr' : 'hrs'}`
+                    : "–"
+                }
               </div>
             </div>
 

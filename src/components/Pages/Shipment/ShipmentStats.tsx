@@ -82,7 +82,8 @@ const ShipmentStats: React.FC<ShipmentStatsProps> = ({ selectedCarrier, selected
     },
     {
       title: 'Avg Delivery Time',
-      value: avgDeliveryTime ? `${avgDeliveryTime} days` : '--',
+      value: avgDeliveryTime  ? `${Math.ceil(parseFloat(avgDeliveryTime))} day${Math.ceil(parseFloat(avgDeliveryTime)) > 1 ? 's' : ''}`
+    : '--',
       icon: PrimeIcons.SPINNER,
       iconColor: 'text-yellow-500',
       glowColor: '#FACC15',

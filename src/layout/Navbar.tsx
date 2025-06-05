@@ -6,7 +6,7 @@ import { useScrollLock } from "../hooks/useScrollLock";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import UserDropdown from "../components/header/UserDropdown";
 import Logo from "../images/logo.png";
-
+import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setDates } from "../store/dateRangeSlice";
 import { setEnterpriseKey as setEnterpriseKeyRedux } from "../store/enterpriseKeySlice";
@@ -32,10 +32,15 @@ const Navbar: React.FC = () => {
     toggleMobileRightSidebar,
   } = useSidebar();
 
-  const [dateRange, setDateRange] = useState<[Date, Date] | null>([
-    new Date("2025-05-26"),
-    new Date("2025-05-27"),
-  ]);
+
+  const reduxDates = useSelector((state: any) => state.dateRange.dates);
+  const [dateRange, setDateRange] = useState<[Date, Date] | null>(() => {
+    if (Array.isArray(reduxDates) && reduxDates[0] && reduxDates[1]) {
+      return [new Date(reduxDates[0]), new Date(reduxDates[1])];
+    }
+    return null;
+  });
+
 
   useScrollLock(isMobileRightOpen);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -134,12 +139,11 @@ const Navbar: React.FC = () => {
             {/* Sidebar toggle button */}
             <button
               onClick={handleToggle}
-              aria-label="Toggle Sidebar"
-              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${
-                !isMobileOpen
-                  ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  : ""
-              }`}
+              aria-label="Toggle Sidebar"              
+              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${!isMobileOpen
+                ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+                : ""
+                }`}
             >
               {isMobileOpen ? (
                 <span className="text-xl font-bold">✕</span>

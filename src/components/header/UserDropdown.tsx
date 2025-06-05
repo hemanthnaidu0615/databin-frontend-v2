@@ -105,7 +105,7 @@ export default function UserDropdown() {
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
-        <span className="mr-2 flex items-center justify-center bg-purple-700 text-white rounded-full h-8 w-8 text-sm font-medium">
+        <span className="mr-2 flex items-center justify-center bg-purple-500 text-white rounded-full h-8 w-8 text-sm font-medium">
           {userData?.email ? userData.email.charAt(0).toUpperCase() : "U"}
         </span>
 

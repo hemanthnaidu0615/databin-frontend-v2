@@ -167,7 +167,7 @@ const OrdersInProcess = () => {
       order.event.toLowerCase().includes(globalFilter.toLowerCase())
   );
 
-  const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
+  // const etaTemplate = (rowData: Order) => formatETA(rowData.eta);
 
   const handleViewClick = async (order: Order) => {
     setSelectedOrder(order);
@@ -231,7 +231,7 @@ const OrdersInProcess = () => {
                 />
               )}
             />
-            <Column field="eta" header="ETA" body={etaTemplate} sortable />
+            {/* <Column field="eta" header="ETA" body={etaTemplate} sortable /> */}
             <Column header="Action" body={actionTemplate} />
           </DataTable>
         </div>
@@ -255,11 +255,11 @@ const OrdersInProcess = () => {
                   )}`}
                 />
               </div>
-              <p className="text-xs mt-1">Event: {order.event}</p>
-              <p className="text-xs">ETA: {formatETA(order.eta)}</p>
-              <div className="mt-2">
+              {/* <p className="text-xs">ETA: {formatETA(order.eta)}</p> */}
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs">Event: {order.event}</p>
                 <Button
-                  label="View"
+                  // label="View"
                   icon="pi pi-eye"
                   className="p-button-sm p-button-text"
                   onClick={() => handleViewClick(order)}
