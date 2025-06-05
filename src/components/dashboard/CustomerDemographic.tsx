@@ -203,10 +203,15 @@ const DemographicCard = () => {
         const donorPool = donorStates.map(({ name }) => formatted[name]);
 
         missingStates.forEach((missingState) => {
-          const randomDonor =
-            donorPool[Math.floor(Math.random() * donorPool.length)];
-          if (randomDonor) {
-            formatted[missingState] = { ...randomDonor };
+          if (donorPool.length > 0) {
+            // Use deterministic index based on ASCII sum of state name
+            const asciiSum = missingState
+              .split("")
+              .reduce((sum, char) => sum + char.charCodeAt(0), 0);
+            const index = asciiSum % donorPool.length;
+            const donor = donorPool[index];
+
+            formatted[missingState] = { ...donor };
           } else {
             // fallback: assign dummy non-zero
             formatted[missingState] = {

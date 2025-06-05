@@ -38,6 +38,7 @@ const Navbar: React.FC = () => {
   ]);
 
   useScrollLock(isMobileRightOpen);
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const hideCalendarRoutes = ["/scheduler", "/UserManagement"];
   const hideEnterpriseKeyRoutes = [
@@ -69,6 +70,20 @@ const Navbar: React.FC = () => {
 
     fetchEnterpriseKeys();
   }, []);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node) &&
+        isMobileRightOpen
+      ) {
+        toggleMobileRightSidebar(); // close the sidebar
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileRightOpen, toggleMobileRightSidebar]);
 
   useEffect(() => {
     dispatch(
@@ -127,7 +142,7 @@ const Navbar: React.FC = () => {
               }`}
             >
               {isMobileOpen ? (
-                <span className="text-xl">✕</span>
+                <span className="text-xl font-bold">✕</span>
               ) : (
                 <svg width="18" height="12" viewBox="0 0 16 12" fill="none">
                   <path
@@ -219,16 +234,22 @@ const Navbar: React.FC = () => {
             <button
               onClick={toggleMobileRightSidebar}
               className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              aria-label="Open Right Sidebar"
+              aria-label="Toggle Right Sidebar"
             >
-              <i className="pi pi-sliders-h" />
+              {isMobileRightOpen ? (
+                <span className="text-xl font-bold">✕</span>
+              ) : (
+                <i className="pi pi-sliders-h" />
+              )}
             </button>
+
           )}
         </div>
       </header>
 
       {/* ✅ Mobile Right Sidebar Drawer Backdrop */}
       <div
+        ref={sidebarRef}
         className={`
     fixed flex flex-col
     bg-white dark:bg-gray-900 shadow-lg z-[100000] border-l border-gray-200 dark:border-gray-800
