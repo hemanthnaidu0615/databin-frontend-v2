@@ -75,7 +75,8 @@ const OrdersInProcess = () => {
   const [orderTimeline, setOrderTimeline] = useState<TimelineEvent[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [timelineError, setTimelineError] = useState<string | null>(null);
-
+  const firstRecord = page * rows + 1;
+  const lastRecord = Math.min(totalRecords, firstRecord + rows - 1);
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
@@ -215,10 +216,12 @@ const OrdersInProcess = () => {
             loading={loading}
             onPage={onPage}
             header={header}
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
             paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            currentPageReportTemplate={`Showing ${firstRecord} to ${lastRecord} of ${totalRecords} orders`}
             rowsPerPageOptions={[5, 10, 20, 50, 100]}
           >
+
+
             <Column field="order_id" header="Order ID" sortable />
             <Column
               field="status"
