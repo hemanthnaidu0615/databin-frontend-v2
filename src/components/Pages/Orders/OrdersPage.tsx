@@ -66,25 +66,16 @@ const OrdersPage: React.FC = () => {
 
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
-
-      if (filters.status !== "All statuses")
-        params.append("status", filters.status);
-      if (filters.orderType !== "All types")
-        params.append("orderType", filters.orderType);
-      if (filters.paymentMethod !== "All methods")
-        params.append("paymentMethod", filters.paymentMethod);
-      if (filters.carrier !== "All carriers")
-        params.append("carrier", filters.carrier);
+      if (filters.status !== "All statuses") params.append("status", filters.status);
+      if (filters.orderType !== "All types") params.append("orderType", filters.orderType);
+      if (filters.paymentMethod !== "All methods") params.append("paymentMethod", filters.paymentMethod);
+      if (filters.carrier !== "All carriers") params.append("carrier", filters.carrier);
       if (filters.customer) params.append("searchCustomer", filters.customer);
       if (filters.orderId) params.append("searchOrderId", filters.orderId);
-      if (enterpriseKey && enterpriseKey !== "All")
-        params.append("enterpriseKey", enterpriseKey);
+      if (enterpriseKey && enterpriseKey !== "All") params.append("enterpriseKey", enterpriseKey);
 
-      const response = await axiosInstance.get(`/orders/filtered`, {
-        params,
-      });
-
-      let fetchedOrders = response.data;
+      const response = await axiosInstance.get(`/orders/filtered`, { params });
+      const fetchedOrders = response.data;
 
       if (!Array.isArray(fetchedOrders)) {
         console.error("Unexpected data format for fetched orders.");
@@ -92,10 +83,25 @@ const OrdersPage: React.FC = () => {
         return;
       }
 
+      console.log("Raw fetched orders:", fetchedOrders[0]);
+
       const filteredForPrice = fetchedOrders.filter((order: any) =>
         priceRangeMatch(order.total, filters.priceRange)
       );
-      const worksheet = XLSX.utils.json_to_sheet(filteredForPrice);
+
+      const renamedData = filteredForPrice.map((order: any) => ({
+        OrderID: order.order_id,
+        OrderDate: order.order_date,
+        CustomerName: order.customer_name,
+        ProductName: order.product_name,
+        Total: order.total,
+        ShipmentStatus: order.shipment_status,
+        PaymentMethod: order.payment_method,
+      }));
+
+      console.log("Renamed data:", renamedData[0]);
+
+      const worksheet = XLSX.utils.json_to_sheet(renamedData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Orders");
 
@@ -105,6 +111,7 @@ const OrdersPage: React.FC = () => {
       alert("Failed to export orders.");
     }
   };
+
 
   const loadOrders = async () => {
     try {
