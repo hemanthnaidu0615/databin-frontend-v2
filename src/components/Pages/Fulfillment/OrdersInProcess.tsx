@@ -255,9 +255,9 @@ const OrdersInProcess = () => {
                   )}`}
                 />
               </div>
-              <p className="text-xs mt-1">Event: {order.event}</p>
               {/* <p className="text-xs">ETA: {formatETA(order.eta)}</p> */}
-              <div className="mt-2">
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs">Event: {order.event}</p>
                 <Button
                   // label="View"
                   icon="pi pi-eye"
