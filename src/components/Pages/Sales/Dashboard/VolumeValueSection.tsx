@@ -79,9 +79,11 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
     <div className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700">
       <div
         className="px-4 py-2 font-semibold flex justify-between items-center"
-        style={{ backgroundColor: "#9614d0", color: "#fff" }}
+        style={{ backgroundColor: "#a855f7", color: "#fff" }}
       >
-        <span className="font-semibold text-sm sm:text-base truncate  rounded-xl shadow-sm overflow-hidden  flex flex-col">Sales Data</span>
+        <span className="font-semibold text-sm sm:text-base truncate  rounded-xl shadow-sm overflow-hidden  flex flex-col">
+          Sales Data
+        </span>
         {/* View toggle only on mobile */}
         <button
           onClick={() => setViewMode(viewMode === "card" ? "grid" : "card")}

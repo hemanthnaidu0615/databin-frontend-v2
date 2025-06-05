@@ -13,13 +13,11 @@ import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
-import Calendar from "./pages/Calendar";
-import BasicTables from "./pages/Tables/BasicTables";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/DashboardHome";
-import DummyDashboard from "./components/Pages/Sales1/Dashboard/DummyDashboard";
+import DummyDashboard from "./components/Pages/Sales/Dashboard/DummyDashboard";
 import InventoryPage from "./components/Pages/Inventory/InventoryPage";
 import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -27,17 +25,17 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
-import SalesAnalysis from "./components/Pages/Sales1/Sales Analysis/SalesAnalysis";
-import { SalesByRegion } from "./components/Pages/Sales1/Region/SalesByRegion";
-import SalesFlow from "./components/Pages/Sales1/SalesFlow";
+import SalesAnalysis from "./components/Pages/Sales/Sales Analysis/SalesAnalysis";
+import { SalesByRegion } from "./components/Pages/Sales/Region/SalesByRegion";
+import SalesFlow from "./components/Pages/Sales/SalesFlow";
 import Scheduler from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
 import { UserManagement } from "./components/Pages/user Management/UserManagement";
-import { ThemeProvider } from "./context/ThemeContext"; // ✅ IMPORT THIS
+import { ThemeProvider } from "./context/ThemeContext"; 
 
 export default function App() {
   return (
-    <ThemeProvider> {/* ✅ WRAP ENTIRE APP IN THIS */}
+    <ThemeProvider> 
       <Router>
         <ScrollToTop />
         <Routes>
@@ -63,9 +61,7 @@ export default function App() {
             <Route path="profile" element={<UserProfiles />} />
             {/* <Route path="account-settings" element={<AccountSettings />} /> */}
             <Route path="support" element={<Support />} />
-            <Route path="calendar" element={<Calendar />} />
             <Route path="blank" element={<Blank />} />
-            <Route path="basic-tables" element={<BasicTables />} />
             <Route path="alerts" element={<Alerts />} />
             <Route path="avatars" element={<Avatars />} />
             <Route path="badge" element={<Badges />} />

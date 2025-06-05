@@ -6,20 +6,20 @@ import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
-
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}:${d
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}:${d.getSeconds().toString().padStart(2, "0")}.000`;
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
 type RevenuePerCustomerProps = {
@@ -40,7 +40,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
-
 
   const formatValue = (Revenue: number) => {
     if (Revenue >= 1_000_000) return (Revenue / 1_000_000).toFixed(1) + "M";
@@ -70,8 +69,9 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
         `/revenue/top-customers?${params.toString()}`
       );
 
-
-      const result = response.data as { top_customers: { customer_name: string; revenue: number }[] };
+      const result = response.data as {
+        top_customers: { customer_name: string; revenue: number }[];
+      };
 
       const formattedData = result.top_customers.map((item: any) => ({
         customer: item.customer_name,
@@ -102,12 +102,18 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     chart: {
       type: "bar",
       toolbar: { show: false },
+      foreColor: "#a855f7",
     },
+    colors: ["#a855f7"],
     xaxis: {
       categories: data.map((d) => d.customer),
       title: {
         text: "Customer",
-        style: { fontWeight: "normal", fontSize: "14px", color: "#9614d0" },
+        style: {
+          fontWeight: "normal",
+          fontSize: "14px",
+          color: "#a855f7",
+        },
       },
       tooltip: {
         enabled: false,
@@ -115,14 +121,26 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
       crosshairs: {
         show: false,
       },
+      labels: {
+        style: {
+          colors: "#a855f7",
+        },
+      },
     },
     yaxis: {
       title: {
         text: "Revenue",
-        style: { fontWeight: "normal", fontSize: "14px", color: "#9614d0" },
+        style: {
+          fontWeight: "normal",
+          fontSize: "14px",
+          color: "#a855f7",
+        },
       },
       labels: {
         formatter: formatValue,
+        style: {
+          colors: "#a855f7",
+        },
       },
     },
     plotOptions: {
@@ -130,42 +148,45 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
         dataLabels: { position: "top" },
       },
     },
-    dataLabels: { enabled: false },
+    dataLabels: {
+      enabled: false,
+    },
     tooltip: {
       x: { show: false },
       y: {
         formatter: formatValue,
       },
     },
-    series: [{ name: "Revenue", data: data.map((d) => d.revenue) }],
+    series: [
+      {
+        name: "Revenue",
+        data: data.map((d) => d.revenue),
+      },
+    ],
   };
-
 
   const onViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales/dashboard");
   };
 
-
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
         <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
           <div className="flex items-start justify-between w-full sm:w-auto">
-            <h2 className="app-subheading flex-1 mr-2">
-              Revenue Per Customer
-            </h2>
+            <h2 className="app-subheading flex-1 mr-2">Revenue Per Customer</h2>
 
             {/* Mobile arrow (→) */}
             <button
               onClick={onViewMore}
               className="sm:hidden text-purple-600 w-6 shadow text-xl font-medium self-start"
             >
-              {/* &#x2197; */}
-              {/* &#x21aa; */}
-              {/* &#x21f1; */}
-              <FontAwesomeIcon icon={faShareFromSquare} size="sm" style={{ color: "#9614d0", }} />
-
+              <FontAwesomeIcon
+                icon={faShareFromSquare}
+                size="sm"
+                style={{ color: "#a855f7" }}
+              />
             </button>
           </div>
 
@@ -201,7 +222,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
         </>
       )}
     </div>
-
   );
 };
 
