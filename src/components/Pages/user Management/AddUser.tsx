@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
-import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { axiosInstance } from "../../../axios";
 
@@ -179,7 +178,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
 
         <div>
           <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">
-            Email (Username)<span className="text-red-500">*</span>
+            Email<span className="text-red-500">*</span>
           </label>
           <InputText value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} className="w-full text-xs" />
           {errors.username && <p className="text-red-500 text-xs mt-1">Email is required</p>}
@@ -198,7 +197,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
                 className="w-full text-xs pr-10"
               />
               <i
-                className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"} absolute right-2 top-3.5 text-gray-500 cursor-pointer`}
+                className={`pi ${showPassword ? "pi-eye-slash" : "pi-eye"} absolute right-4 top-3.5 text-gray-500 cursor-pointer`}
                 onClick={() => setShowPassword((prev) => !prev)}
               />
             </div>
@@ -236,12 +235,22 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
         )}
 
         <div className="col-span-full mt-2">
-          <Button
-            label={loading ? "Processing..." : editingUser ? "Update" : "Add User"}
-            disabled={loading}
-            className="bg-purple-700 text-white text-xs px-6 py-2 rounded shadow hover:bg-purple-800"
+          <button
             onClick={handleSubmit}
-          />
+            disabled={loading}
+            className={`
+    px-4 py-2 rounded 
+    bg-[#9614d0]  text-sm text-white 
+    hover:bg-[#a855f7] transition
+    border-0 shadow-none outline-none
+    focus:ring-0 focus:outline-none
+    disabled:opacity-50
+  `}
+          >
+            {loading ? "Processing..." : editingUser ? "Update" : "Add User"}
+          </button>
+
+
         </div>
       </div>
     </>

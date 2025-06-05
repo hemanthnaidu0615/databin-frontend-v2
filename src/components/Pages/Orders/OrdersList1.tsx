@@ -24,18 +24,6 @@ export const fetchOrderDetails = async (
   }
 };
 
-function cleanAndFormatPhoneNumber(rawPhone: string): string {
-  const digitsOnly = rawPhone.split(/[xX]|ext/)[0].replace(/[^\d]/g, "");
-  const normalized = digitsOnly.length === 10 ? "1" + digitsOnly : digitsOnly;
-  if (/^1\d{10}$/.test(normalized)) {
-    const country = "+1";
-    const area = normalized.slice(1, 4);
-    const middle = normalized.slice(4, 7);
-    const last = normalized.slice(7, 11);
-    return `${country} (${area}) ${middle}-${last}`;
-  }
-  return rawPhone;
-}
 
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012;
@@ -130,23 +118,23 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
   };
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(() =>
-  typeof window !== "undefined" && window.innerWidth < 640 ? 10 : 20
-);
-const [isManualRowsChange, setIsManualRowsChange] = useState(false);
+    typeof window !== "undefined" && window.innerWidth < 640 ? 10 : 20
+  );
+  const [isManualRowsChange, setIsManualRowsChange] = useState(false);
   const options = [10, 20, 50, 100];
 
   useEffect(() => {
-  const handleResize = () => {
-    const isMobile = window.innerWidth < 640;
-    if (!isManualRowsChange) {
-      setRows(isMobile ? 10 : 20);
-      setFirst(0); 
-    }
-  };
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 640;
+      if (!isManualRowsChange) {
+        setRows(isMobile ? 10 : 20);
+        setFirst(0);
+      }
+    };
 
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, [isManualRowsChange]);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isManualRowsChange]);
 
   const onPageChange = (e: { first: number; rows: number }) => {
     setFirst(e.first);
@@ -204,20 +192,18 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
     );
     y += 6;
     doc.text(
-      `ETA: ${
-        details.order_summary?.eta
-          ? new Date(details.order_summary.eta).toLocaleString()
-          : "N/A"
+      `ETA: ${details.order_summary?.eta
+        ? new Date(details.order_summary.eta).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       y
     );
     y += 6;
     doc.text(
-      `Delivered: ${
-        details.order_summary?.delivered
-          ? new Date(details.order_summary.delivered).toLocaleString()
-          : "N/A"
+      `Delivered: ${details.order_summary?.delivered
+        ? new Date(details.order_summary.delivered).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       y
@@ -284,30 +270,27 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
     const timeline = details.fulfillment_timeline ?? {};
     finalY += 6;
     doc.text(
-      `Order Placed: ${
-        timeline.order_placed
-          ? new Date(timeline.order_placed).toLocaleString()
-          : "N/A"
+      `Order Placed: ${timeline.order_placed
+        ? new Date(timeline.order_placed).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       finalY
     );
     finalY += 6;
     doc.text(
-      `Payment Confirmed: ${
-        timeline.payment_confirmed
-          ? new Date(timeline.payment_confirmed).toLocaleString()
-          : "N/A"
+      `Payment Confirmed: ${timeline.payment_confirmed
+        ? new Date(timeline.payment_confirmed).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       finalY
     );
     finalY += 6;
     doc.text(
-      `Delivered: ${
-        timeline.delivered
-          ? new Date(timeline.delivered).toLocaleString()
-          : "N/A"
+      `Delivered: ${timeline.delivered
+        ? new Date(timeline.delivered).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       finalY
@@ -320,6 +303,12 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
   const getExpandedSections = (order: Order): ExpandedSection[] => {
     const details = orderDetails.get(order.id) || {};
     const products = details.products || order.products || [];
+
+    const maskPhoneNumber = (phone: string): string => {
+      const cleaned = phone.replace(/\D/g, ""); // Remove non-digit characters
+      const last4 = cleaned.slice(-4);
+      return last4 ? `**** **** ${last4}` : "N/A";
+    };
 
     // 🌟 Adjust Delivered to be after ETA only if it's incorrect
     if (
@@ -359,9 +348,7 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
         data: {
           Name: order.customer,
           Email: details.customer_info?.email ?? "N/A",
-          Phone:
-            cleanAndFormatPhoneNumber(details.customer_info?.phone ?? "") ||
-            "N/A",
+          Phone: maskPhoneNumber(details.customer_info?.phone ?? "") || "N/A",
           Address: details.customer_info?.address ?? "N/A",
         },
       },
@@ -384,8 +371,8 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
             label: "Order Placed",
             date: details.fulfillment_timeline?.order_placed
               ? new Date(
-                  details.fulfillment_timeline.order_placed
-                ).toLocaleString()
+                details.fulfillment_timeline.order_placed
+              ).toLocaleString()
               : "N/A",
             complete: true,
           },
@@ -393,21 +380,21 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
             label: "Payment Confirmed",
             date: details.fulfillment_timeline?.payment_confirmed
               ? new Date(
-                  details.fulfillment_timeline.payment_confirmed
-                ).toLocaleString()
+                details.fulfillment_timeline.payment_confirmed
+              ).toLocaleString()
               : "N/A",
             complete: true,
           },
           order.status === "Delivered"
             ? {
-                label: "Delivered",
-                date: details.order_summary?.delivered
-                  ? new Date(details.order_summary.delivered).toLocaleString()
-                  : "N/A",
-                complete: true,
-              }
+              label: "Delivered",
+              date: details.order_summary?.delivered
+                ? new Date(details.order_summary.delivered).toLocaleString()
+                : "N/A",
+              complete: true,
+            }
             : order.status === "Delayed"
-            ? {
+              ? {
                 label: "Delayed",
                 date: details.order_summary?.eta
                   ? new Date(details.order_summary.eta).toLocaleString()
@@ -415,7 +402,7 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
                 complete: false,
                 Delayed: true,
               }
-            : {
+              : {
                 label: "Delivered",
                 date: details.order_summary?.eta
                   ? new Date(details.order_summary.eta).toLocaleString()
@@ -634,21 +621,19 @@ const [isManualRowsChange, setIsManualRowsChange] = useState(false);
                                       <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                                     )}
                                     <span
-                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
-                                        step.Delayed
+                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
                                           ? "bg-red-500 border-red-500"
                                           : step.complete
-                                          ? "bg-green-500 border-green-500"
-                                          : "bg-gray-400 border-gray-400"
-                                      }`}
+                                            ? "bg-green-500 border-green-500"
+                                            : "bg-gray-400 border-gray-400"
+                                        }`}
                                     />
                                     <div className="ml-4">
                                       <p
-                                        className={`text-sm font-medium ${
-                                          step.Delayed
+                                        className={`text-sm font-medium ${step.Delayed
                                             ? "text-red-600 dark:text-red-400"
                                             : "text-gray-800 dark:text-white"
-                                        }`}
+                                          }`}
                                       >
                                         {step.label}
                                       </p>
