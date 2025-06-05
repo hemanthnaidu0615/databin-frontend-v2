@@ -191,23 +191,23 @@ layer(base);
 }
 
 @utility menu-item {
-  @apply relative flex items-center w-full gap-3 px-3 py-2 font-medium rounded-lg text-theme-sm;
+  @apply relative flex items-center w-full gap-3 px-3 py-2 font-medium rounded-lg text-sm;
 }
 
 @utility menu-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-[#F3E8FD] text-[#a855f7] dark:bg-[#461068] dark:text-[#F3E8FD]; /* Adjusted active state for both light and dark themes */
 }
 
 @utility menu-item-inactive {
-  @apply text-gray-700 hover:bg-gray-100 group-hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300;
+  @apply text-gray-600 hover:bg-[#F3E8FD] group-hover:text-gray-600 dark:text-gray-300 dark:hover:bg-[#5A2E91] dark:hover:text-gray-300; /* Lighter purple hover effect in dark theme */
 }
 
 @utility menu-item-icon {
-  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400;
+  @apply text-gray-500 group-hover:text-gray-600 dark:text-gray-400;
 }
 
 @utility menu-item-icon-active {
-  @apply text-brand-500 dark:text-brand-400;
+  @apply text-[#a855f7] dark:text-[#F3E8FD]; /* Updated icon color for active state */
 }
 
 @utility menu-item-icon-size {
@@ -217,7 +217,7 @@ layer(base);
 }
 
 @utility menu-item-icon-inactive {
-  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+  @apply text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300;
 }
 
 @utility menu-item-arrow {
@@ -225,11 +225,11 @@ layer(base);
 }
 
 @utility menu-item-arrow-active {
-  @apply rotate-180 text-brand-500 dark:text-brand-400;
+  @apply rotate-180 text-[#a855f7] dark:text-[#F3E8FD]; /* Changed arrow to match purple theme */
 }
 
 @utility menu-item-arrow-inactive {
-  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+  @apply text-gray-500 group-hover:text-[#a855f7] dark:text-gray-400 dark:group-hover:text-[#F3E8FD]; /* Adjusted arrow hover to match purple theme */
 }
 
 @utility menu-dropdown-item {
@@ -237,24 +237,25 @@ layer(base);
 }
 
 @utility menu-dropdown-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-[#F3E8FD] text-[#a855f7] dark:bg-[#461068] dark:text-[#F3E8FD]; /* Adjusted dropdown active state to purple */
 }
 
 @utility menu-dropdown-item-inactive {
-  @apply text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5;
+  @apply text-gray-700 hover:bg-[#F3E8FD] dark:text-gray-300 dark:hover:bg-[#5A2E91]; /* Lighter purple hover effect for dropdown items in dark theme */
 }
 
 @utility menu-dropdown-badge {
-  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-brand-500 dark:text-brand-400;
+  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-[#a855f7] dark:text-[#F3E8FD]; /* Adjusted badge text color */
 }
 
 @utility menu-dropdown-badge-active {
-  @apply bg-brand-100 dark:bg-brand-500/20;
+  @apply bg-[#F3E8FD] dark:bg-[#461068]; /* Adjusted badge active state to match purple theme */
 }
 
 @utility menu-dropdown-badge-inactive {
-  @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/20;
+  @apply bg-[#F3E8FD] group-hover:bg-[#F3E8FD] dark:bg-[#3A0C5F] dark:group-hover:bg-[#461068]; /* Adjusted badge hover state to purple */
 }
+
 @utility no-scrollbar {
   /* Chrome, Safari and Opera */
   &::-webkit-scrollbar {
@@ -291,12 +292,7 @@ layer(base);
   }
 }
 
-.tableCheckbox:checked ~ span span {
-  @apply opacity-100;
-}
-.tableCheckbox:checked ~ span {
-  @apply border-brand-500 bg-brand-500;
-}
+
 
 /* third-party libraries CSS */
 .apexcharts-legend-text {
@@ -352,8 +348,6 @@ layer(base);
 #chartSixteen .apexcharts-legend {
   @apply p-0! pl-6!;
 }
-
-
 
 .stocks-slider-outer .swiper-button-next:after,
 .stocks-slider-outer .swiper-button-prev:after {
@@ -719,15 +713,7 @@ span.flatpickr-weekday,
   @apply border-[6px] border-brand-500 bg-brand-500 dark:border-brand-500;
 }
 
-.taskCheckbox:checked ~ .box span {
-  @apply opacity-100 bg-brand-500;
-}
-.taskCheckbox:checked ~ p {
-  @apply text-gray-400 line-through;
-}
-.taskCheckbox:checked ~ .box {
-  @apply border-brand-500 bg-brand-500 dark:border-brand-500;
-}
+
 
 .task {
   transition: all 0.2s ease; /* Smooth transition for visual effects */
@@ -766,41 +752,41 @@ span.flatpickr-weekday,
 /* Use these only for dashboard KPI/stat cards, data tables, and search input */
 
 .app-widget-value {
-  font-size: 1.5rem;              
+  font-size: 1.5rem;
   font-weight: 700;
-  line-height: 2rem;              
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  line-height: 2rem;
+  font-family: var(--font-outfit, "Outfit", sans-serif);
 }
-@media screen and (max-width:640px){
+@media screen and (max-width: 640px) {
   .app-widget-value {
-  font-size: 1.2rem;              
-  font-weight: 700;
-  line-height: 2rem;              
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
-}
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 2rem;
+    font-family: var(--font-outfit, "Outfit", sans-serif);
+  }
 }
 
 .app-widget-label {
-  font-size: 0.95rem;             
+  font-size: 0.95rem;
   font-weight: 500;
-  line-height: 1.4rem;             
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  line-height: 1.4rem;
+  font-family: var(--font-outfit, "Outfit", sans-serif);
 }
 
-@media screen and (max-width:640px){
-.app-widget-label {
-  font-size: 0.8rem;             
-  font-weight: 500;
-  line-height: 1.4rem;             
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
-}
+@media screen and (max-width: 640px) {
+  .app-widget-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.4rem;
+    font-family: var(--font-outfit, "Outfit", sans-serif);
+  }
 }
 
 .app-table-heading {
-  font-size: 1.1rem;                 
+  font-size: 1.1rem;
   font-weight: 600;
-  line-height: 1.5rem;             
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  line-height: 1.5rem;
+  font-family: var(--font-outfit, "Outfit", sans-serif);
   color: #0b0c0f;
 }
 
@@ -809,10 +795,10 @@ span.flatpickr-weekday,
 }
 
 .app-table-content {
-  font-size: var(--text-theme-md);                
+  font-size: var(--text-theme-md);
   font-weight: 500;
   line-height: var(--text-theme-sm--line-height, 20px);
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-family: var(--font-outfit, "Outfit", sans-serif);
   color: #323a4b;
 }
 
@@ -822,37 +808,35 @@ span.flatpickr-weekday,
 
 /* ✅ Subheading for context titles or section labels */
 .app-subheading {
-  font-size: 1.3rem;              
-  font-weight: 600;            
-  line-height: 1.625rem;        
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.625rem;
+  font-family: var(--font-outfit, "Outfit", sans-serif);
   color: #1e293b;
-  margin-bottom: 0.75rem;      
+  margin-bottom: 0.75rem;
 }
 
 .dark .app-subheading {
-  color: #f1f5f9;             
+  color: #f1f5f9;
 }
-
-
 
 /* Use for major section headers like 'Inventory List', 'Warehouse Inventory', etc. */
 
 .app-section-title {
-  font-size: 1.5rem;        
+  font-size: 1.5rem;
   font-weight: 600;
-  line-height: 1.75rem;       
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
-  color: #1e293b;            
+  line-height: 1.75rem;
+  font-family: var(--font-outfit, "Outfit", sans-serif);
+  color: #1e293b;
 }
 
 .dark .app-section-title {
-  color: #f1f5f9;             
+  color: #f1f5f9;
 }
 
 /* ===================== KPI SEARCH BAR ===================== */
 .app-search-input {
-  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-family: var(--font-outfit, "Outfit", sans-serif);
   font-size: 1rem;
   font-weight: 500;
   color: #1f2937; /* light theme text color */
@@ -888,11 +872,10 @@ span.flatpickr-weekday,
     text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 
      font-medium;
 
-  padding: 0.625rem 0.875rem; 
-  min-height: 42px; 
+  padding: 0.625rem 0.875rem;
+  min-height: 42px;
   line-height: 1.5;
 }
-
 
 /* Dropdown label */
 .app-dropdown-label {
@@ -913,4 +896,35 @@ html:not(.dark) .apexcharts-tooltip-title {
 
 html:not(.dark) .apexcharts-tooltip-series-group .apexcharts-tooltip-text {
   color: #000000 !important;
+}
+
+/* {Calender PrimeReact Overriding the style} */
+
+.p-calendar .p-inputtext ~ button.p-datepicker-trigger {
+  background-color: #a855f7;
+  border: 2px solid #a855f7;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.p-calendar .p-datepicker-trigger:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 2px #a855f7 !important;
+  border: 2px solid #a855f7 !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+}
+
+.p-calendar .p-inputtext {
+  border-radius: 0.5rem 0 0 0.5rem !important;
+}
+
+/* Custom scrollbar styling */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #9614d0;
+  border-radius: 6px;
 }

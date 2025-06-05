@@ -43,7 +43,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
       fontWeight: 500,
       labels: { colors: [labelColor] },
     },
-    colors: ["#22c55e", "#8b5cf6", "#facc15", "#ef4444"],
+    colors: ["#22c55e", "#a855f7", "#facc15", "#ef4444"],
     stroke: { show: false },
     dataLabels: {
       enabled: true,
@@ -67,15 +67,18 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
       const formattedEnd = formatDate(new Date(endDate));
 
       try {
-        const response = await axiosInstance.get("shipment-status/distribution", {
-          params: {
-            startDate: formattedStart,
-            endDate: formattedEnd,
-            ...(enterpriseKey && { enterpriseKey }),
-            ...(selectedCarrier && { carrier: selectedCarrier }),
-            ...(selectedMethod && { shippingMethod: selectedMethod }),
-          },
-        });
+        const response = await axiosInstance.get(
+          "shipment-status/distribution",
+          {
+            params: {
+              startDate: formattedStart,
+              endDate: formattedEnd,
+              ...(enterpriseKey && { enterpriseKey }),
+              ...(selectedCarrier && { carrier: selectedCarrier }),
+              ...(selectedMethod && { shippingMethod: selectedMethod }),
+            },
+          }
+        );
         const data = response.data as {
           delivered?: string;
           in_transit?: string;
@@ -134,11 +137,12 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
     },
     grid: { borderColor: "#374151", strokeDashArray: 4 },
     plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
-    colors: ["#8b5cf6"],
+    colors: ["#a855f7"],
     dataLabels: { enabled: false },
     tooltip: {
-      // Dynamically choose theme based on dark mode
-      theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
+      theme: document.documentElement.classList.contains("dark")
+        ? "dark"
+        : "light",
       x: { show: true },
       y: {
         formatter: (val) => `${val} shipments`,
@@ -166,7 +170,10 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
             ...(selectedMethod && { shippingMethod: selectedMethod }),
           },
         });
-        const data = response.data as Array<{ carrier: string; shipment_count: number }>;
+        const data = response.data as Array<{
+          carrier: string;
+          shipment_count: number;
+        }>;
 
         console.log("Carrier performance data:", data);
 

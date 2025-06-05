@@ -5,8 +5,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -19,12 +19,12 @@ const formatDateTime = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}.000`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
 const ShipmentPerformance: React.FC<{
@@ -84,10 +84,9 @@ const ShipmentPerformance: React.FC<{
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const res = await axiosInstance.get(
-          "/shipment-performance",
-          { params }
-        );
+        const res = await axiosInstance.get("/shipment-performance", {
+          params,
+        });
 
         const dataResponse = res.data as { shipment_performance: any[] };
         const responseData = dataResponse.shipment_performance;
@@ -111,9 +110,18 @@ const ShipmentPerformance: React.FC<{
   }, [startDate, endDate, enterpriseKey]);
 
   const barOptions: ApexOptions = {
-    chart: { type: "bar", stacked: true, toolbar: { show: false } },
-    colors: ["#4CAF50", "#FF9800", "#2196F3"],
-    plotOptions: { bar: { columnWidth: "70%" } },
+    chart: {
+      type: "bar",
+      stacked: true,
+      toolbar: { show: false },
+      foreColor: "#a855f7",
+    },
+    colors: ["#4CAF50", "#FF9800", "#a855f7"],
+    plotOptions: {
+      bar: {
+        columnWidth: "70%",
+      },
+    },
     dataLabels: {
       enabled: true,
       formatter: function (val: number) {
@@ -131,11 +139,13 @@ const ShipmentPerformance: React.FC<{
         style: {
           fontWeight: "400",
           fontSize: "14px",
+          color: "#a855f7",
         },
       },
       labels: {
         style: {
           fontSize: "12px",
+          colors: "#a855f7",
         },
       },
       crosshairs: { show: false },
@@ -146,12 +156,14 @@ const ShipmentPerformance: React.FC<{
         style: {
           fontWeight: "400",
           fontSize: "14px",
+          color: "#a855f7",
         },
       },
       labels: {
         formatter: (val: number) => formatValue(val),
         style: {
           fontSize: "12px",
+          colors: "#a855f7",
         },
       },
     },
@@ -160,9 +172,13 @@ const ShipmentPerformance: React.FC<{
         formatter: (val: number) => formatValue(val),
       },
     },
-    legend: { position: "bottom" },
+    legend: {
+      position: "bottom",
+      labels: {
+        colors: "#a855f7",
+      },
+    },
   };
-
 
   const barSeries = [
     { name: "Standard", data: data.standard },
@@ -190,7 +206,7 @@ const ShipmentPerformance: React.FC<{
 
       {isVisible && (
         <>
-          <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+          <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-17">
             <div className="flex items-start justify-between w-full sm:w-auto">
               <h2 className="app-subheading flex-1 mr-2">
                 Shipment Performance
@@ -201,7 +217,11 @@ const ShipmentPerformance: React.FC<{
                 onClick={handleViewMore}
                 className="sm:hidden text-purple-600 text-sm font-medium self-start"
               >
-                <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+                <FontAwesomeIcon
+                  icon={faShareFromSquare}
+                  size="lg"
+                  style={{ color: "#a855f7" }}
+                />
               </button>
             </div>
 
@@ -213,7 +233,6 @@ const ShipmentPerformance: React.FC<{
               View More
             </button>
           </div>
-
 
           {isLoading ? (
             <p className="text-gray-600 dark:text-gray-300">Loading data...</p>

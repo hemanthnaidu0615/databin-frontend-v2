@@ -4,20 +4,20 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(3, "0")}`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -64,7 +64,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,30 +131,37 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       type: "line",
       zoom: { enabled: false },
       toolbar: { show: false },
+      foreColor: "#a855f7",
     },
     xaxis: {
       categories: chartData.categories,
       title: {
         text: "Month",
         style: {
-          color: "#9CA3AF",
-          fontSize: "14px",
-          fontWeight: 400,
-        },
-      },
-      labels: { style: { colors: "#6B7280" } },
-    },
-    yaxis: {
-      title: {
-        text: "Order Amount", // Y Axis Label
-        style: {
-          color: "#9CA3AF",
+          color: "#a855f7",
           fontSize: "14px",
           fontWeight: 400,
         },
       },
       labels: {
-        style: { colors: "#6B7280" },
+        style: {
+          colors: "#a855f7",
+        },
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Order Amount",
+        style: {
+          color: "#a855f7",
+          fontSize: "14px",
+          fontWeight: 400,
+        },
+      },
+      labels: {
+        style: {
+          colors: "#a855f7",
+        },
         formatter: formatValue,
       },
     },
@@ -166,17 +172,43 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         formatter: formatValue,
       },
     },
-    stroke: { curve: "smooth", width: 2 },
-    markers: { size: 4 },
-    colors: ["#6366F1", "#22C55E", "#EAB308"],
-    legend: { position: "bottom" },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+    },
+    markers: {
+      size: 4,
+    },
+    colors: ["#a855f7", "#22C55E", "#EAB308"],
+    legend: {
+      position: "bottom",
+      labels: {
+        colors: "#a855f7",
+      },
+    },
     responsive: [
       {
         breakpoint: 768,
         options: {
-          plotOptions: { bar: { columnWidth: "35%" } },
-          xaxis: { labels: { style: { fontSize: "10px" } } },
-          yaxis: { labels: { style: { fontSize: "10px" } } },
+          plotOptions: {
+            bar: {
+              columnWidth: "35%",
+            },
+          },
+          xaxis: {
+            labels: {
+              style: {
+                fontSize: "10px",
+              },
+            },
+          },
+          yaxis: {
+            labels: {
+              style: {
+                fontSize: "10px",
+              },
+            },
+          },
         },
       },
     ],
@@ -187,11 +219,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     navigate("/orders");
   };
 
-
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
       {size === "full" && (
-        <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+        <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-8">
           <div className="flex items-start justify-between w-full sm:w-auto">
             <h2 className="app-subheading flex-1 mr-2">
               Order Trends By Product Category
@@ -202,19 +233,22 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
               onClick={handleViewMore}
               className="sm:hidden text-purple-600 text-sm font-medium self-start"
             >
-              <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+              <FontAwesomeIcon
+                icon={faShareFromSquare}
+                size="lg"
+                style={{ color: "#a855f7" }}
+              />
             </button>
           </div>
 
           {/* Desktop & tablet "View More" */}
           <button
             onClick={handleViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
+            className="hidden sm:block text-xs font-medium text-purple-500 hover:underline"
           >
             View More
           </button>
         </div>
-
       )}
 
       <div className="h-[420px] sm:h-[490px]">

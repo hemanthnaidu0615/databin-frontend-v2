@@ -4,8 +4,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShareFromSquare } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 
 interface StatisticsChartProps {
   onRemove?: () => void;
@@ -17,15 +17,15 @@ const formatDate = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}.000`;
+    .getHours()
+    .toString()
+    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}.000`;
 };
 
-export default function StatisticsChart({ }: StatisticsChartProps) {
+export default function StatisticsChart({}: StatisticsChartProps) {
   const navigate = useNavigate();
 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
@@ -86,7 +86,6 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     fetchChartData();
   }, [startDate, endDate, enterpriseKey]);
 
-
   useEffect(() => {
     const scrollY = sessionStorage.getItem("scrollPosition");
     if (scrollY) {
@@ -94,7 +93,6 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
-
 
   const formatValue = (value: number) => {
     if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -104,7 +102,7 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
 
   const options: ApexOptions = {
     legend: { show: true, position: "bottom" },
-    colors: ["#9614d0", "#d5baff"],
+    colors: ["#a855f7", "#d5baff"],
     chart: {
       type: "area",
       toolbar: { show: false },
@@ -131,8 +129,18 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     xaxis: {
       type: "category",
       categories: [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
       ],
       axisBorder: { show: false },
       axisTicks: { show: false },
@@ -141,13 +149,12 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
         style: {
           fontWeight: "normal",
           fontSize: "14px",
-          color: "#9614d0",
+          color: "#a855f7",
         },
       },
       labels: {
         style: {
           fontSize: "12px",
-
         },
       },
       crosshairs: { show: false },
@@ -158,25 +165,22 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
         style: {
           fontWeight: "normal",
           fontSize: "14px",
-          color: "#9614d0",
+          color: "#a855f7",
         },
       },
       labels: {
         formatter: formatValue,
         style: {
           fontSize: "12px",
-
         },
       },
     },
   };
 
-
   const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales/dashboard");
   };
-
 
   const series = [
     { name: "Sales", data: salesByMonth },
@@ -187,16 +191,18 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     <div className="min-h-[400px] flex flex-col flex-1 h-full overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
         <div className="flex items-start justify-between w-full sm:w-auto">
-          <h2 className="app-subheading flex-1 mr-2">
-            Sales & Revenue
-          </h2>
+          <h2 className="app-subheading flex-1 mr-2">Sales & Revenue</h2>
 
           {/* Mobile arrow (→) aligned right */}
           <button
             onClick={handleViewMore}
             className="sm:hidden text-purple-600 text-sm font-medium self-start"
           >
-            <FontAwesomeIcon icon={faShareFromSquare} size="lg" style={{ color: "#9614d0", }} />
+            <FontAwesomeIcon
+              icon={faShareFromSquare}
+              size="lg"
+              style={{ color: "#a855f7" }}
+            />
           </button>
         </div>
 
@@ -208,7 +214,6 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
           View More
         </button>
       </div>
-
 
       <div className="flex-1 w-full mt-3">
         <Chart options={options} series={series} type="area" height="100%" />

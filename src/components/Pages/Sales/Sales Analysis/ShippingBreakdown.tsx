@@ -82,7 +82,6 @@ const ShippingBreakdown = () => {
             shipment_cost_usd: convertToUSD(s.shipment_cost),
           }))
         );
-        
       } catch (err) {
         console.error("Error fetching shipments:", err);
         setError("Failed to load shipment data");
@@ -158,19 +157,19 @@ const ShippingBreakdown = () => {
       grid: {
         borderColor: theme === "dark" ? "#334155" : "#E5E7EB",
       },
-      colors: ["#2563eb"],
+      colors: ["#a855f7"],
       tooltip: {
         custom: ({ series, seriesIndex, dataPointIndex, w }) => {
           const value = series[seriesIndex][dataPointIndex];
-          const color = w.globals.colors[seriesIndex] || "#2563eb";
+          const color = w.globals.colors[seriesIndex] || "#a855f7";
 
           return `
-          <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Total Cost</div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
-            <span style="font-weight: 600;">$${value.toFixed(2)}</span>
-          </div>
-        `;
+        <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Total Cost</div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
+          <span style="font-weight: 600;">$${value.toFixed(2)}</span>
+        </div>
+      `;
         },
       },
     }),

@@ -330,10 +330,10 @@ export const CreateSchedulerUsingQuery = () => {
               width: "auto",
               height: "30px",
               marginTop: "1rem",
-              background: "#9614d0",
+              background: "#a855f7",
               border: "none",
               color: "white",
-              transition: "none"
+              transition: "none",
             }}
           />
         </div>
@@ -344,7 +344,7 @@ export const CreateSchedulerUsingQuery = () => {
             label="Save Scheduler"
             onClick={handleSaveScheduler}
             style={{
-              backgroundColor: "#9614d0",
+              backgroundColor: "#a855f7",
               border: "none",
               color: "white",
             }}
