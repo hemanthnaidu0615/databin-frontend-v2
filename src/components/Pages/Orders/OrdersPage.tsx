@@ -90,14 +90,15 @@ const OrdersPage: React.FC = () => {
       );
 
       const renamedData = filteredForPrice.map((order: any) => ({
-        OrderID: order.order_id,
-        OrderDate: order.order_date,
-        CustomerName: order.customer_name,
-        ProductName: order.product_name,
-        Total: order.total,
-        ShipmentStatus: order.shipment_status,
-        PaymentMethod: order.payment_method,
+        "Order ID": order.order_id,
+        "Order Date": order.order_date,
+        "Customer Name": order.customer_name,
+        "Product Name": order.product_name,
+        "Total": order.total,
+        "Shipment Status": order.shipment_status,
+        "Payment Method": order.payment_method,
       }));
+
 
       console.log("Renamed data:", renamedData[0]);
 
