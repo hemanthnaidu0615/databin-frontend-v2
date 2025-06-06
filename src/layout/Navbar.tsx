@@ -15,6 +15,7 @@ import { axiosInstance } from "../axios";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
+import { useTheme } from "../context/ThemeContext"; // ✅ Added
 
 const Navbar: React.FC = () => {
   const [enterpriseKey, setEnterpriseKey] = useState("All");
@@ -32,13 +33,14 @@ const Navbar: React.FC = () => {
     toggleMobileRightSidebar,
   } = useSidebar();
 
+  const { theme } = useTheme(); // ✅ Added
+
   const [dateRange, setDateRange] = useState<[Date, Date] | null>([
     new Date("2025-05-26"),
     new Date("2025-05-27"),
   ]);
 
   useScrollLock(isMobileRightOpen);
-  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
   const hideCalendarRoutes = ["/scheduler", "/UserManagement"];
   const hideEnterpriseKeyRoutes = [
@@ -70,20 +72,6 @@ const Navbar: React.FC = () => {
 
     fetchEnterpriseKeys();
   }, []);
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node) &&
-        isMobileRightOpen
-      ) {
-        toggleMobileRightSidebar(); // close the sidebar
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMobileRightOpen, toggleMobileRightSidebar]);
 
   useEffect(() => {
     dispatch(
@@ -120,29 +108,23 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <header
-        className={`
-    sticky top-0 z-[40] w-full
-    bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur
-    supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90
-    transition-all duration-300 ease-in-out
-    $
-  `}
-      >
-        <div className="flex items-center justify-between w-full gap-3 px-3 py-3 overflow-x-auto lg:overflow-visible lg:px-6 lg:py-4">
+      <header className="sticky top-0 z-[40] w-full bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur supports-backdrop-blur:bg-white/95 dark:supports-backdrop-blur:bg-gray-900/90">
+        <div className="flex items-center justify-between w-full gap-3 px-3 py-3 overflow-x-auto lg:px-6 lg:py-4">
           <div className="flex items-center gap-3 shrink-0">
-            {/* Sidebar toggle button */}
             <button
+              className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11"
               onClick={handleToggle}
               aria-label="Toggle Sidebar"
-              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${
-                !isMobileOpen
-                  ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  : ""
-              }`}
             >
               {isMobileOpen ? (
-                <span className="text-xl font-bold">✕</span>
+                <svg width="10" height="24" viewBox="0 0 24 24" fill="none">
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M6.22 7.28a.75.75 0 0 1 1.06-1.06L12 10.94l4.72-4.72a.75.75 0 1 1 1.06 1.06L13.06 12l4.72 4.72a.75.75 0 0 1-1.06 1.06L12 13.06l-4.72 4.72a.75.75 0 0 1-1.06-1.06L10.94 12 6.22 7.28z"
+                    fill="currentColor"
+                  />
+                </svg>
               ) : (
                 <svg width="18" height="12" viewBox="0 0 16 12" fill="none">
                   <path
@@ -155,45 +137,23 @@ const Navbar: React.FC = () => {
               )}
             </button>
 
-            {/* ✅ Logo + Data-Bin text for desktop */}
             <Link
               to="/"
-              className="hidden lg:flex items-center gap-3 shrink-0 "
+              className="flex items-center gap-2 shrink-0 lg:hidden md:hidden"
             >
-              {/* Light mode logo */}
-              <img className="dark:hidden w-8 h-8" src={Logo} alt="Logo" />
-
-              {/* Dark mode logo */}
+              <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
               <img
                 className="hidden dark:block w-6 h-6"
                 src={Logo}
                 alt="Logo"
               />
-              <span className="text-xl font-semibold text-gray-900 dark:text-white leading-none flex items-center">
+              <span className="text-lg font-semibold text-gray-900 dark:text-white">
                 Data-Bin
               </span>
             </Link>
-
-            {/* ✅ Logo + Data-Bin text for mobile only - absolutely centered */}
-            <div className="absolute inset-0 flex justify-center items-center pointer-events-none lg:hidden">
-              <Link
-                to="/"
-                className="flex items-center gap-2 pointer-events-auto"
-              >
-                <img className="dark:hidden w-6 h-6" src={Logo} alt="Logo" />
-                <img
-                  className="hidden dark:block w-6 h-6"
-                  src={Logo}
-                  alt="Logo"
-                />
-                <span className="text-lg font-semibold text-gray-900 dark:text-white leading-none flex items-center">
-                  Data-Bin
-                </span>
-              </Link>
-            </div>
           </div>
 
-          {screenSize == "desktop" ? (
+          {screenSize !== "mobile" ? (
             <div className="flex items-center flex-nowrap gap-3 w-auto min-w-0 shrink-0">
               {!shouldHideCalendar && (
                 <Calendar
@@ -209,7 +169,6 @@ const Navbar: React.FC = () => {
                   showIcon
                   hideOnDateTimeSelect
                   hideOnRangeSelection
-                  icon={<i className="pi pi-calendar text-white" />} 
                 />
               )}
 
@@ -234,39 +193,39 @@ const Navbar: React.FC = () => {
             <button
               onClick={toggleMobileRightSidebar}
               className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              aria-label="Toggle Right Sidebar"
+              aria-label="Open Right Sidebar"
             >
-              {isMobileRightOpen ? (
-                <span className="text-xl font-bold">✕</span>
-              ) : (
-                <i className="pi pi-sliders-h" />
-              )}
+              <i className="pi pi-sliders-h" />
             </button>
-
           )}
         </div>
       </header>
 
       {/* ✅ Mobile Right Sidebar Drawer Backdrop */}
+      {isMobileRightOpen && (
+        <div
+          className={`fixed inset-0 z-[99999] transition-opacity duration-300 md:hidden ${
+            theme === "dark" ? "bg-gray-900" : "bg-gray-300"
+          } bg-opacity-50`}
+          onClick={toggleMobileRightSidebar}
+          role="presentation"
+          aria-hidden="true"
+        />
+      )}
+      {/* ✅ Mobile Right Sidebar Drawer */}
       <div
-        ref={sidebarRef}
-        className={`
-    fixed flex flex-col
-    bg-white dark:bg-gray-900 shadow-lg z-[100000] border-l border-gray-200 dark:border-gray-800
-    transition-transform duration-500 ease-[cubic-bezier(0.4, 0, 0.2, 1)]
-    ${isMobileRightOpen ? "translate-y-0" : "-translate-y-full"}
-    ${isMobileRightOpen ? "top-16 right-0 w-72 h-[calc(100vh-64px)]" : "hidden"}
-    lg:hidden overflow-y-auto
-  `}
+        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-gray-900 shadow-lg z-[100000] transform transition-transform duration-300 ease-in-out ${
+          isMobileRightOpen ? "translate-x-0" : "translate-x-full"
+        } md:hidden overflow-y-auto`}
       >
-        {/* <div className="flex justify-end p-4">
+        <div className="flex justify-end p-4">
           <button
             onClick={toggleMobileRightSidebar}
             className="text-gray-600 dark:text-gray-300 text-xl"
           >
             ✕
           </button>
-        </div> */}
+        </div>
 
         <div className="flex flex-col gap-4 px-4 pb-6">
           {!shouldHideCalendar && (
@@ -287,13 +246,16 @@ const Navbar: React.FC = () => {
                     newDates[0] instanceof Date &&
                     newDates[1] instanceof Date
                   ) {
+                    // Both dates selected, fully valid
                     setDateRange([newDates[0], newDates[1]]);
                     dispatch(setDates([newDates[0], newDates[1]]));
                     calendarRef.current?.hide?.();
                     toggleMobileRightSidebar();
                   } else if (Array.isArray(newDates)) {
-                    setDateRange(newDates as [Date, Date]);
+                    // Partial range (e.g., only "from" selected)
+                    setDateRange(newDates as [Date, Date]); // allow setting partially
                   } else {
+                    // reset or undefined
                     setDateRange(null);
                   }
                 }}
@@ -317,7 +279,7 @@ const Navbar: React.FC = () => {
                 value={enterpriseKey}
                 onChange={(e) => {
                   setEnterpriseKey(e.target.value);
-                  toggleMobileRightSidebar();
+                  toggleMobileRightSidebar(); // ✅ auto-close after selection
                 }}
                 className="w-full h-10 px-3 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white text-sm"
               >
@@ -329,20 +291,18 @@ const Navbar: React.FC = () => {
               </select>
             </div>
           )}
-
           <div className="border-t border-gray-300 dark:border-gray-700" />
-
-          {/*  Auto-close on theme toggle */}
+            {/* ✅ Auto-close on theme toggle */}
           <div className="flex items-center justify-between gap-4 px-1 pt-2">
             <div
               onClick={() => {
-                toggleMobileRightSidebar();
+                toggleMobileRightSidebar(); 
               }}
             >
               <ThemeToggleButton />
             </div>
-
-            <UserDropdown />
+              {/* ✅ Auto-close on user dropdown interaction */}
+              <UserDropdown />
           </div>
         </div>
       </div>
