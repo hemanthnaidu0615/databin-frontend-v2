@@ -1,76 +1,33 @@
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import { axiosInstance } from "../../axios";
-import "primeicons/primeicons.css";
+import KPIWidget from "../modularity/kpis/KPIWidget";
+import { formatDateTime, formatValue } from "../utils/kpiutils";
+import { useDateRangeEnterprise } from "../utils/useDateRangeEnterprise";
 
-const formatValue = (value: number) => {
-  return new Intl.NumberFormat("en-IN").format(value);
+type Metric = {
+  label: string;
+  value: string;
+  icon: string;
+  iconColor: string;
+  glowColor: string;
 };
 
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}`;
-};
-
-export default function OrdersFulfillmentMetrics() {
-  const [metrics, setMetrics] = useState([
-    {
-      icon: PrimeIcons.BOX,
-      label: "Total Orders",
-      value: "-",
-      iconColor: "text-purple-500",
-      glowColor: "#8B5CF6",
-    },
-    {
-      icon: PrimeIcons.CHECK_CIRCLE,
-      label: "Fulfillment Rate",
-      value: "-",
-      iconColor: "text-green-500",
-      glowColor: "#22C55E",
-    },
-    {
-      icon: PrimeIcons.SEND,
-      label: "Orders in Transit",
-      value: "-",
-      iconColor: "text-yellow-500",
-      glowColor: "#FACC15",
-    },
-    {
-      icon: PrimeIcons.EXCLAMATION_TRIANGLE,
-      label: "Delayed Orders",
-      value: "-",
-      iconColor: "text-red-500",
-      glowColor: "#F87171",
-    },
-  ]);
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+const DashboardKPIs = () => {
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
+  const [metrics, setMetrics] = useState<Metric[]>([]);
   const [startDate, endDate] = dateRange;
 
   useEffect(() => {
-    async function fetchMetrics() {
+    if (!startDate || !endDate) return;
+
+    const fetchData = async () => {
       try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
-
-        const params: Record<string, string> = {
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
+        const params = {
+          startDate: formatDateTime(startDate),
+          endDate: formatDateTime(endDate),
+          ...(enterpriseKey ? { enterpriseKey } : {}),
         };
-
-        if (enterpriseKey) {
-          params.enterpriseKey = enterpriseKey;
-        }
 
         const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
           axiosInstance.get("/dashboard-kpi/total-orders", { params }),
@@ -78,81 +35,51 @@ export default function OrdersFulfillmentMetrics() {
           axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
         ]);
 
-        // Type assertion for totalOrdersRes.data
-        const totalOrdersData = totalOrdersRes.data as { total_orders: number };
-        // Type assertion for shipmentStatusRes.data
-        const shipmentStatusData = shipmentStatusRes.data as {
-          in_transit_orders: number;
-          delayed_percentage: number;
-        };
-
-        // Type assertion for fulfillmentRateRes.data
-        const fulfillmentRateData = fulfillmentRateRes.data as { fulfillment_rate: number };
-
         setMetrics([
           {
-            icon: PrimeIcons.BOX,
             label: "Total Orders",
-            value: formatValue(totalOrdersData.total_orders),
+            value: formatValue(totalOrdersRes.data.total_orders),
+            icon: PrimeIcons.BOX,
             iconColor: "text-purple-500",
             glowColor: "#8B5CF6",
           },
           {
-            icon: PrimeIcons.CHECK_CIRCLE,
             label: "Fulfillment Rate",
-            value: `${fulfillmentRateData.fulfillment_rate}`,
+            value: `${fulfillmentRateRes.data.fulfillment_rate}`,
+            icon: PrimeIcons.CHECK_CIRCLE,
             iconColor: "text-green-500",
             glowColor: "#22C55E",
           },
           {
-            icon: PrimeIcons.SEND,
             label: "Orders in Transit",
-            value: formatValue(shipmentStatusData.in_transit_orders),
+            value: formatValue(shipmentStatusRes.data.in_transit_orders),
+            icon: PrimeIcons.SEND,
             iconColor: "text-yellow-500",
             glowColor: "#FACC15",
           },
           {
-            icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             label: "Delayed Orders",
-            value: `${shipmentStatusData.delayed_percentage}`,
+            value: `${shipmentStatusRes.data.delayed_percentage}`,
+            icon: PrimeIcons.EXCLAMATION_TRIANGLE,
             iconColor: "text-red-500",
             glowColor: "#F87171",
           },
         ]);
-      } catch (error) {
-        console.error("Error fetching metrics:", error);
+      } catch (err) {
+        console.error("Failed to fetch metrics:", err);
       }
-    }
+    };
 
-    if (startDate && endDate) {
-      fetchMetrics();
-    }
+    fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
-      {metrics.map((item, index) => (
-        <div
-          key={index}
-          className="group relative flex flex-col gap-2 px-5 py-4 rounded-2xl bg-white dark:bg-[#1C2333] text-black dark:text-white shadow-sm border-l-[6px] transition-transform transform hover:scale-[1.015]"
-          style={{ borderColor: item.glowColor }}
-        >
-          <div
-            className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none"
-            style={{
-              borderColor: item.glowColor,
-              boxShadow: `0 0 15px ${item.glowColor}`,
-            }}
-          ></div>
-
-          <div className="flex items-center gap-3 relative z-10 text-black/60 dark:text-white/80">
-            <i className={`pi ${item.icon} ${item.iconColor} text-lg`} />
-            <span className="app-widget-label">{item.label}</span>
-          </div>
-
-          <div className="app-widget-value relative z-10">{item.value}</div>
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {metrics.map((item, i) => (
+        <KPIWidget key={i} {...item} />
       ))}
     </div>
   );
-}
+};
+
+export default DashboardKPIs;
