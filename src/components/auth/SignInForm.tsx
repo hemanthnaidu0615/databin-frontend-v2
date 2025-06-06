@@ -46,7 +46,7 @@ function Signin() {
 
       navigate("/", { state: { user: data, showUserManagement: isAdmin } });
     } catch {
-      setError("Invalid credentials or invalid user.");
+      setError("Invalid credentials or invalid userr.");
     } finally {
       setLoading(false);
     }
