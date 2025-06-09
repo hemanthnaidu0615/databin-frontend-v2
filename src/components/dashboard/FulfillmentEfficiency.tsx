@@ -213,7 +213,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
         <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
           <div className="flex items-start justify-between w-full sm:w-auto">
             <h2 className="app-subheading flex-1 mr-2">
-              Fulfillment Efficeincy Summary
+              Fulfillment Efficiency Summary
             </h2>
             <button
               onClick={handleViewMore}
