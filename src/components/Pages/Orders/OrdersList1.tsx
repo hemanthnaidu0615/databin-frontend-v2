@@ -24,7 +24,6 @@ export const fetchOrderDetails = async (
   }
 };
 
-
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
@@ -188,22 +187,25 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     );
     y += 6;
     doc.text(
-      `ETA: ${details.order_summary?.eta
-        ? new Date(details.order_summary.eta).toLocaleString()
-        : "N/A"
+      `ETA: ${
+        details.order_summary?.eta
+          ? new Date(details.order_summary.eta).toLocaleString()
+          : "N/A"
       }`,
       marginLeft,
       y
     );
     y += 6;
     doc.text(
-      `Delivered: ${details.order_summary?.delivered
-        ? new Date(details.order_summary.delivered).toLocaleString()
-        : "N/A"
+      `Delivered: ${
+        details.order_summary?.delivered
+          ? new Date(details.order_summary.delivered).toLocaleString()
+          : "N/A"
       }`,
       marginLeft,
       y
     );
+
     y += 10;
     const products = details.products ?? order.products ?? [];
     const productRows = products.map((p: any) => [
@@ -252,40 +254,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     finalY += 8;
     doc.setFont("helvetica", "bold");
     doc.text(`Total: ${formatUSD(total)}`, marginLeft, finalY);
-    doc.setFont("helvetica", "normal");
-    finalY += 10;
-    doc.setFont("helvetica", "bold");
-    doc.text("Fulfillment Timeline", marginLeft, finalY);
-    doc.setFont("helvetica", "normal");
-
-    const timeline = details.fulfillment_timeline ?? {};
-    finalY += 6;
-    doc.text(
-      `Order Placed: ${timeline.order_placed
-        ? new Date(timeline.order_placed).toLocaleString()
-        : "N/A"
-      }`,
-      marginLeft,
-      finalY
-    );
-    finalY += 6;
-    doc.text(
-      `Payment Confirmed: ${timeline.payment_confirmed
-        ? new Date(timeline.payment_confirmed).toLocaleString()
-        : "N/A"
-      }`,
-      marginLeft,
-      finalY
-    );
-    finalY += 6;
-    doc.text(
-      `Delivered: ${timeline.delivered
-        ? new Date(timeline.delivered).toLocaleString()
-        : "N/A"
-      }`,
-      marginLeft,
-      finalY
-    );
 
     doc.save(`invoice_${order.id}.pdf`);
   };
@@ -295,7 +263,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     const products = details.products || order.products || [];
 
     const maskPhoneNumber = (phone: string): string => {
-      const cleaned = phone.replace(/\D/g, ""); 
+      const cleaned = phone.replace(/\D/g, "");
       const last4 = cleaned.slice(-4);
       return last4 ? `**** **** ${last4}` : "N/A";
     };
@@ -358,8 +326,8 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             label: "Order Placed",
             date: details.fulfillment_timeline?.order_placed
               ? new Date(
-                details.fulfillment_timeline.order_placed
-              ).toLocaleString()
+                  details.fulfillment_timeline.order_placed
+                ).toLocaleString()
               : "N/A",
             complete: true,
           },
@@ -367,21 +335,21 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             label: "Payment Confirmed",
             date: details.fulfillment_timeline?.payment_confirmed
               ? new Date(
-                details.fulfillment_timeline.payment_confirmed
-              ).toLocaleString()
+                  details.fulfillment_timeline.payment_confirmed
+                ).toLocaleString()
               : "N/A",
             complete: true,
           },
           order.status === "Delivered"
             ? {
-              label: "Delivered",
-              date: details.order_summary?.delivered
-                ? new Date(details.order_summary.delivered).toLocaleString()
-                : "N/A",
-              complete: true,
-            }
+                label: "Delivered",
+                date: details.order_summary?.delivered
+                  ? new Date(details.order_summary.delivered).toLocaleString()
+                  : "N/A",
+                complete: true,
+              }
             : order.status === "Delayed"
-              ? {
+            ? {
                 label: "Delayed",
                 date: details.order_summary?.eta
                   ? new Date(details.order_summary.eta).toLocaleString()
@@ -389,7 +357,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                 complete: false,
                 Delayed: true,
               }
-              : {
+            : {
                 label: "Delivered",
                 date: details.order_summary?.eta
                   ? new Date(details.order_summary.eta).toLocaleString()
@@ -608,19 +576,21 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                       <span className="absolute left-2.5 top-0 h-full w-px bg-gray-300 dark:bg-white/10" />
                                     )}
                                     <span
-                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
+                                      className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${
+                                        step.Delayed
                                           ? "bg-red-500 border-red-500"
                                           : step.complete
-                                            ? "bg-green-500 border-green-500"
-                                            : "bg-gray-400 border-gray-400"
-                                        }`}
+                                          ? "bg-green-500 border-green-500"
+                                          : "bg-gray-400 border-gray-400"
+                                      }`}
                                     />
                                     <div className="ml-4">
                                       <p
-                                        className={`text-sm font-medium ${step.Delayed
+                                        className={`text-sm font-medium ${
+                                          step.Delayed
                                             ? "text-red-600 dark:text-red-400"
                                             : "text-gray-800 dark:text-white"
-                                          }`}
+                                        }`}
                                       >
                                         {step.label}
                                       </p>
