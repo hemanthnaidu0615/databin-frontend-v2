@@ -41,7 +41,6 @@ function Signin() {
         { email, password },
         { withCredentials: true }
       );
-      // Type assertion for data
       const userData = data as { role: { identifier: string } };
       const role = userData.role.identifier || "";
       const isAdmin = role.includes("admin") || role.includes("manager");
