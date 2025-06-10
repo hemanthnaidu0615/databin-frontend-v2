@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ShipmentStats from "./ShipmentStats";
+import ShipmentStats from "./ShipmentKPI";
 import ShipmentCharts from "./ShipmentCharts";
 import RecentShipmentsTable from "./RecentShipmentsTable";
 import { axiosInstance } from "../../../axios";
