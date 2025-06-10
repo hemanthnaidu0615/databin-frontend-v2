@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
-import { formatDate, formatValue } from "../../utils/kpiutils";
+import { formatDate, formatValue } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import KPIWidget from "../../modularity/kpis/KPIWidget";
 
@@ -45,16 +45,21 @@ const ShipmentKPI: React.FC<ShipmentStatsProps> = ({
 
     const fetchStats = async () => {
       try {
+        type TotalRes = { total_shipments: number | null };
+        type OnTimeRes = { on_time_shipments: number | null };
+        type DelayedRes = { delayed_shipments: number | null };
+        type AvgTimeRes = { average_delivery_time: number | null };
+
         const [
           totalRes,
           onTimeRes,
           delayedRes,
           avgTimeRes,
         ] = await Promise.all([
-          axiosInstance.get(`shipment-dashboard-kpi/total-shipments?${params}`),
-          axiosInstance.get(`shipment-dashboard-kpi/on-time-shipments?${params}`),
-          axiosInstance.get(`shipment-dashboard-kpi/delayed-shipments?${params}`),
-          axiosInstance.get(`shipment-dashboard-kpi/average-delivery-time?${params}`),
+          axiosInstance.get<TotalRes>(`shipment-dashboard-kpi/total-shipments?${params}`),
+          axiosInstance.get<OnTimeRes>(`shipment-dashboard-kpi/on-time-shipments?${params}`),
+          axiosInstance.get<DelayedRes>(`shipment-dashboard-kpi/delayed-shipments?${params}`),
+          axiosInstance.get<AvgTimeRes>(`shipment-dashboard-kpi/average-delivery-time?${params}`),
         ]);
 
         const total = totalRes.data.total_shipments;
@@ -64,8 +69,7 @@ const ShipmentKPI: React.FC<ShipmentStatsProps> = ({
 
         const deliveryTimeFormatted =
           avgTime !== null && !isNaN(avgTime)
-            ? `${Math.ceil(parseFloat(avgTime))} day${Math.ceil(parseFloat(avgTime)) > 1 ? "s" : ""
-            }`
+            ? `${Math.ceil(avgTime)} day${Math.ceil(avgTime) > 1 ? "s" : ""}`
             : "--";
 
         const onTimePercentage =
