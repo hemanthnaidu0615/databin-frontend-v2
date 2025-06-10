@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
-import { useSelector } from "react-redux";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
 import KPIWidget from "../../modularity/kpis/KPIWidget";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 
 interface KPIData {
   label: string;
@@ -13,9 +13,8 @@ interface KPIData {
   glowColor: string;
 }
 
-const FulfillmentStats = () => {
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+const FulfillmentKPI = () => {
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [stats, setStats] = useState<KPIData[]>([]);
 
   useEffect(() => {
@@ -107,4 +106,4 @@ const FulfillmentStats = () => {
   );
 };
 
-export default FulfillmentStats;
+export default FulfillmentKPI;

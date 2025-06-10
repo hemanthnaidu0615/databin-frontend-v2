@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import FulfillmentStats from "./FulfillmentStats";
+import FulfillmentKPI from "./FulfillmentKpi";
 import FulfillmentPipeline from "./FulfillmentPipeline";
 import FulfillmentCenters from "./FulfillmentCenters";
 import BottleneckChart from "./BottleneckChart";
@@ -19,7 +19,7 @@ const FulfillmentPage = () => {
 
         {/* Section 1: Stats Cards */}
         <div className="w-full">
-          <FulfillmentStats />
+          <FulfillmentKPI />
         </div>
 
         {/* Section 2: Fulfillment Pipeline */}

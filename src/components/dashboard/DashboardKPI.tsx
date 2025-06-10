@@ -3,7 +3,7 @@ import { PrimeIcons } from "primereact/api";
 import { axiosInstance } from "../../axios";
 import KPIWidget from "../modularity/kpis/KPIWidget";
 import { formatDateTime, formatValue } from "../utils/kpiutils";
-import { useDateRangeEnterprise } from "../utils/useDateRangeEnterprise";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 type Metric = {
   label: string;
