@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import { axiosInstance } from "../../axios";
 import KPIWidget from "../modularity/kpis/KPIWidget";
-import { formatDateTime, formatValue } from "../utils/kpiutils";
+import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 type Metric = {
@@ -29,10 +29,14 @@ const DashboardKPIs = () => {
           ...(enterpriseKey ? { enterpriseKey } : {}),
         };
 
+        type TotalOrdersResponse = { total_orders: number };
+        type FulfillmentRateResponse = { fulfillment_rate: number };
+        type ShipmentStatusResponse = { in_transit_orders: number; delayed_percentage: number };
+
         const [totalOrdersRes, fulfillmentRateRes, shipmentStatusRes] = await Promise.all([
-          axiosInstance.get("/dashboard-kpi/total-orders", { params }),
-          axiosInstance.get("/dashboard-kpi/fulfillment-rate", { params }),
-          axiosInstance.get("/dashboard-kpi/shipment-status-percentage", { params }),
+          axiosInstance.get<TotalOrdersResponse>("/dashboard-kpi/total-orders", { params }),
+          axiosInstance.get<FulfillmentRateResponse>("/dashboard-kpi/fulfillment-rate", { params }),
+          axiosInstance.get<ShipmentStatusResponse>("/dashboard-kpi/shipment-status-percentage", { params }),
         ]);
 
         setMetrics([

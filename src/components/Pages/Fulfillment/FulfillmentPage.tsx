@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import FulfillmentKPI from "./FulfillmentKpi";
+import FulfillmentKPI from "./FulfillmentKPI";
 import FulfillmentPipeline from "./FulfillmentPipeline";
 import FulfillmentCenters from "./FulfillmentCenters";
 import BottleneckChart from "./BottleneckChart";

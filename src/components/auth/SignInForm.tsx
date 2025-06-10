@@ -41,10 +41,11 @@ function Signin() {
         { email, password },
         { withCredentials: true }
       );
-      const role = data.role.identifier || "";
+      const userData = data as { role: { identifier: string } };
+      const role = userData.role.identifier || "";
       const isAdmin = role.includes("admin") || role.includes("manager");
 
-      navigate("/", { state: { user: data, showUserManagement: isAdmin } });
+      navigate("/", { state: { user: userData, showUserManagement: isAdmin } });
     } catch {
       setError("Invalid credentials or invalid user.");
     } finally {
