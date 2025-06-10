@@ -41,10 +41,18 @@ function Signin() {
         { email, password },
         { withCredentials: true }
       );
-      const role = data.role.identifier || "";
+      // Define the expected data type
+      type LoginResponse = {
+        role: {
+          identifier: string;
+        };
+        [key: string]: any;
+      };
+      const typedData = data as LoginResponse;
+      const role = typedData.role.identifier || "";
       const isAdmin = role.includes("admin") || role.includes("manager");
 
-      navigate("/", { state: { user: data, showUserManagement: isAdmin } });
+      navigate("/", { state: { user: typedData, showUserManagement: isAdmin } });
     } catch {
       setError("Invalid credentials or invalid user.");
     } finally {
