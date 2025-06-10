@@ -101,12 +101,18 @@ export default function StatisticsChart({}: StatisticsChartProps) {
   };
 
   const options: ApexOptions = {
-    legend: { show: true, position: "bottom" },
-    colors: ["#a855f7", "#d5baff"],
     chart: {
       type: "area",
-      toolbar: { show: false },
+      toolbar: {
+        show: false, 
+      },
+      zoom: {
+        enabled: false, 
+      },
     },
+
+    legend: { show: true, position: "bottom" },
+    colors: ["#a855f7", "#d5baff"],
     stroke: { curve: "smooth", width: [2, 2] },
     fill: { type: "gradient", gradient: { opacityFrom: 0.65, opacityTo: 0 } },
     markers: {
