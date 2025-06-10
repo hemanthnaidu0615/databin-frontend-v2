@@ -3,7 +3,7 @@ import { PrimeIcons } from "primereact/api";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
-import { formatDate, formatValue } from "../../utils/kpiutils";
+import { formatDate, formatValue } from "../../utils/kpiUtils";
 import KPIWidget from "../../modularity/kpis/KPIWidget";
 
 interface KPIData {
