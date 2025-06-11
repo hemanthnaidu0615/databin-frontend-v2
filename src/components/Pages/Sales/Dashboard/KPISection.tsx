@@ -3,7 +3,7 @@ import { PrimeIcons } from "primereact/api";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../../axios";
 import KPIWidget from "../../../modularity/kpis/KPIWidget";
-import { formatDate,formatValue } from "../../../utils/kpiUtils"; 
+import { formatDateTime ,formatValue } from "../../../utils/kpiUtils"; 
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
 interface KPIData {
@@ -24,8 +24,8 @@ const SalesRegionStats = () => {
     const [startDate, endDate] = dateRange;
     if (!startDate || !endDate) return;
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
 
     const convertToUSD = (rupees: number): number => {
       const exchangeRate = 0.012;

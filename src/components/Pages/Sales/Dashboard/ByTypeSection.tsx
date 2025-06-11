@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime } from "../../../utils/kpiUtils";
+import { formatValue } from "../../../utils/chartUtils";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
 const sections = [
   { title: "By Channel", endpoint: "by-channel" },
@@ -8,40 +10,21 @@ const sections = [
   { title: "By Item", endpoint: "by-item" },
 ];
 
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
-};
-
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
 }
 
-const formatValue = (value: number) => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
 const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
   const [dataBySection, setDataBySection] = useState<Record<string, any[]>>({});
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const fetchData = async () => {
     if (!startDate || !endDate) return;
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
     const formattedCompany = company.toLowerCase();
 
     const requests: Promise<{ title: string; data: any[] }>[] = sections.map(
@@ -93,10 +76,10 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
                 title === "By Item"
                   ? `Product ${row.product_id}`
                   : row.channel ||
-                    row.order_type ||
-                    row.name ||
-                    row.fulfilment_channel ||
-                    "N/A";
+                  row.order_type ||
+                  row.name ||
+                  row.fulfilment_channel ||
+                  "N/A";
               const units = row.total_quantity || row.quantity || 0;
               const amountInINR = row.total_amount || row.amount || 0;
               const amountInUSD = convertToUSD(amountInINR);

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Chart from "react-apexcharts";
-import { useSelector } from "react-redux";
 import { useTheme } from "next-themes";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime } from "../../../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import {chartTypeOptions,fulfillmentChannels,getCommonChartOptions,  getXAxisTitle} from "../../../utils/chartUtils";
 
 interface Props {
   company: "AWW" | "AWD";
@@ -17,40 +19,8 @@ interface OrderData {
 
 const usdRate = 83;
 
-const formatDate = (date: string | Date): string => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}T00:00:00`;
-};
-function getXAxisTitle(categories: string[]): string {
-  if (categories.length === 0) return "Date";
 
-  const first = new Date(categories[0]);
-  const last = new Date(categories[categories.length - 1]);
 
-  console.log("First date:", first);
-  console.log("Last date:", last);
-
-  const diffMs = last.getTime() - first.getTime();
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-  console.log("Difference in days:", diffDays);
-
-  if (diffDays <= 1) {
-    return "Date";
-  }
-  if (diffDays <= 7) {
-    return "Dates";
-  }
-  if (diffDays <= 30) {
-    return "Weeks";
-  }
-  if (diffDays <= 365) {
-    return "Months";
-  }
-  return "Years";
-}
 
 const ChartSection: React.FC<Props> = ({ company }) => {
   const [selectedChart, setSelectedChart] = useState("Bar");
@@ -59,7 +29,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   const [pieSeries, setPieSeries] = useState<number[]>([]);
   const { theme } = useTheme();
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const isDark = theme === "dark";
@@ -77,14 +47,14 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           data: OrderData[];
         }>(url, {
           params: {
-            startDate: formatDate(startDate),
-            endDate: formatDate(endDate),
+            startDate: formatDateTime(startDate),
+            endDate: formatDateTime(endDate),
           },
         });
 
         const rawData = response.data.data;
 
-        const channels = ["Online", "Retail Store", "Warehouse"];
+const channels = fulfillmentChannels;
         const dateMap = new Map<string, Record<string, number>>();
 
         rawData.forEach((item) => {
@@ -116,110 +86,16 @@ const ChartSection: React.FC<Props> = ({ company }) => {
 
     fetchData();
   }, [company, startDate, endDate]);
+const getChartOptions = (type: "bar" | "line" | "pie"): ApexOptions =>
+  getCommonChartOptions({
+    type,
+    isDark,
+    labelColor,
+    gridColor,
+    categories,
+    xAxisTitle: getXAxisTitle(categories),
+  });
 
-  const getChartOptions = (type: "bar" | "line" | "pie"): ApexOptions => {
-    const baseOptions: ApexOptions = {
-      chart: {
-        type,
-        background: "transparent",
-        foreColor: labelColor,
-        toolbar: { show: false },
-      },
-      theme: {
-        mode: isDark ? "dark" : "light",
-      },
-      legend: {
-        labels: { colors: labelColor },
-        position: "top",
-      },
-      grid: {
-        borderColor: gridColor,
-      },
-      colors: ["#14b8a6", "#a855f7", "#db2777"],
-
-      tooltip: {
-        theme: isDark ? "dark" : "light",
-      },
-      markers: {
-        size: 4,
-        hover: {
-          size: 6,
-        },
-      },
-    };
-
-    if (type === "bar" || type === "line") {
-      return {
-        ...baseOptions,
-        xaxis: {
-          categories,
-          labels: {
-            style: {
-              colors: Array(categories.length).fill(labelColor),
-            },
-            rotate: -45,
-            rotateAlways: true,
-          },
-          title: {
-            text: getXAxisTitle(categories),
-            style: { color: labelColor },
-          },
-          crosshairs: {
-            show: false,
-          },
-        },
-        yaxis: {
-          labels: {
-            style: { colors: labelColor },
-            formatter: (value: number) =>
-              value === 0 ? "$0M" : `$${(value / 1_000_000).toFixed(1)}M`,
-          },
-          title: {
-            text: "Order Amount ($)",
-            style: { color: labelColor },
-          },
-        },
-        plotOptions: {
-          bar: {
-            horizontal: false,
-            columnWidth: "60%",
-          },
-        },
-        stroke: {
-          show: true,
-          width: 3,
-          curve: "smooth",
-        },
-        dataLabels: { enabled: false },
-      };
-    }
-
-    if (type === "pie") {
-      return {
-        ...baseOptions,
-        labels: ["Online", "Retail Store", "Warehouse"],
-        dataLabels: {
-          enabled: true,
-          style: {
-            fontSize: "14px",
-            fontWeight: "bold",
-            colors: [isDark ? "#FFFFFF" : "#1e293b"],
-          },
-          formatter: (val: number) => {
-            return `${val.toFixed(1)}%`;
-          },
-        },
-        tooltip: {
-          enabled: true,
-          y: {
-            formatter: (value: number) => `$${value.toFixed(2)}`,
-          },
-        },
-      };
-    }
-
-    return baseOptions;
-  };
 
   const dynamicChartWidth = useMemo(() => {
     const baseWidthPerCategory = 40;
@@ -230,7 +106,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
     return `clamp(${minWidth}px, ${calculatedWidth}px, ${maxWidth}px)`;
   }, [categories.length, selectedChart]);
 
-  const chartOptions = ["Bar", "Line", "Pie", "Table"];
+const chartOptions = chartTypeOptions;
 
   return (
     <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-5 shadow-sm">
@@ -254,30 +130,30 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       {(selectedChart === "Bar" ||
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
-        <div
-          className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2"
-          style={{ overflow: "visible" }}
-        >
           <div
-            style={{
-              width: dynamicChartWidth,
-              height: selectedChart === "Pie" ? "350px" : "370px",
-              maxWidth: "100%",
-              overflow: "visible",
-            }}
+            className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2"
+            style={{ overflow: "visible" }}
           >
-            <Chart
-              options={getChartOptions(
-                selectedChart.toLowerCase() as "bar" | "line" | "pie"
-              )}
-              series={selectedChart === "Pie" ? pieSeries : series}
-              type={selectedChart.toLowerCase() as any}
-              height="100%"
-              width="100%"
-            />
+            <div
+              style={{
+                width: dynamicChartWidth,
+                height: selectedChart === "Pie" ? "350px" : "370px",
+                maxWidth: "100%",
+                overflow: "visible",
+              }}
+            >
+              <Chart
+                options={getChartOptions(
+                  selectedChart.toLowerCase() as "bar" | "line" | "pie"
+                )}
+                series={selectedChart === "Pie" ? pieSeries : series}
+                type={selectedChart.toLowerCase() as any}
+                height="100%"
+                width="100%"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {selectedChart === "Table" && (
         <>
