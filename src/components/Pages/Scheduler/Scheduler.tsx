@@ -11,6 +11,10 @@ const Scheduler = () => {
 
   return (
     <div className="schedulerContainer">
+      {/* 🔹 Section Heading */}
+      <h1 className="app-section-title mb-4">
+        Reports and Scheduler
+      </h1>
       <div className="w-full px-4 py-4 flex flex-col md:flex-row items-center gap-4 rounded-xl">
         <Button
           label="Create Scheduler"

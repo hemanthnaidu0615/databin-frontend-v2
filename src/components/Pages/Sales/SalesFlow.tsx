@@ -276,7 +276,7 @@ function SalesFlow() {
   };
 
   return (
-    <div className="bg-white rounded-xl dark:bg-gray-900 min-h-screen w-full text-gray-900 dark:text-white p-4">
+    <div className="bg-white rounded-xl dark:bg-gray-900 min-h-screen w-full text-gray-900 dark:text-white ">
       <div className="max-w-full w-full mx-auto">
         <div className="mb-4">
           <h1 className="app-section-title mb-2">

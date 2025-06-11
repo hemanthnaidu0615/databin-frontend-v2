@@ -928,3 +928,16 @@ html:not(.dark) .apexcharts-tooltip-series-group .apexcharts-tooltip-text {
   background-color: #9614d0;
   border-radius: 6px;
 }
+
+
+  .page-container {
+            padding: 2%;
+            padding-top: 0% !important;
+  }
+
+  @media screen and (max-width: 640px) {
+  .page-container {
+            padding: 4%;
+            padding-top: 0% !important;
+  }
+}
