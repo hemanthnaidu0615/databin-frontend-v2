@@ -12,7 +12,7 @@ const FulfillmentPage = () => {
 
   return (
     <div className="w-full bg-gray-50 dark:bg-black overflow-x-hidden">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
+      <div className="  space-y-10">
 
         {/* ✅ Fulfillment Page Title */}
         <h1 className="app-section-title mb-4">Fulfillment</h1>

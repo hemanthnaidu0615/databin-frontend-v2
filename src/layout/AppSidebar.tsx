@@ -22,21 +22,21 @@ type NavItem = {
 
 const baseNavItems: NavItem[] = [
   { icon: <GridIcon />, name: "Dashboard", path: "/" },
-  { icon: <BoxCubeIcon />, name: "Orders", path: "/orders" },
-  { icon: <CalenderIcon />, name: "Fulfillment", path: "/fulfillment" },
+  { icon: <BoxCubeIcon />, name: "Orders", path: "orders" },
+  { icon: <CalenderIcon />, name: "Fulfillment", path: "fulfillment" },
   {
     icon: <CopyIcon />,
     name: "Sales",
     subItems: [
-      { name: "Dashboard", path: "/sales/dashboard" },
-      { name: "Region", path: "/sales/region" },
-      { name: "Analysis", path: "/sales/analysis" },
-      { name: "Flow", path: "/sales/flow" },
+      { name: "Dashboard", path: "sales-dashboard" },
+      { name: "Region", path: "sales-region" },
+      { name: "Analysis", path: "sales-analysis" },
+      { name: "Flow", path: "sales-flow" },
     ],
   },
-  { icon: <BoxCubeIcon />, name: "Inventory", path: "/inventory" },
-  { icon: <PieChartIcon />, name: "Shipments", path: "/shipment" },
-  { icon: <TableIcon />, name: "Reports & Scheduler", path: "/scheduler" },
+  { icon: <BoxCubeIcon />, name: "Inventory", path: "inventory" },
+  { icon: <PieChartIcon />, name: "Shipments", path: "shipment" },
+  { icon: <TableIcon />, name: "Reports & Scheduler", path: "scheduler" },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -76,12 +76,12 @@ const AppSidebar: React.FC = () => {
     ...baseNavItems,
     ...(roleLevel === "admin" || roleLevel === "manager"
       ? [
-        {
-          icon: <UserManagementIcon />,
-          name: "User Management",
-          path: "/UserManagement",
-        },
-      ]
+          {
+            icon: <UserManagementIcon />,
+            name: "User Management",
+            path: "/usermanagement",
+          },
+        ]
       : []),
   ];
 
@@ -94,7 +94,7 @@ const AppSidebar: React.FC = () => {
     {}
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -102,7 +102,7 @@ const AppSidebar: React.FC = () => {
         !sidebarRef.current.contains(event.target as Node) &&
         isMobileOpen
       ) {
-        toggleMobileSidebar(); 
+        toggleMobileSidebar();
       }
     };
 
@@ -163,19 +163,22 @@ const AppSidebar: React.FC = () => {
           {nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index)}
-              className={`menu-item group ${openSubmenu?.index === index
+              className={`menu-item group ${
+                openSubmenu?.index === index
                   ? "menu-item-active"
                   : "menu-item-inactive"
-                } cursor-pointer ${!isExpanded && !isHovered
+              } cursor-pointer ${
+                !isExpanded && !isHovered
                   ? "lg:justify-center"
                   : "lg:justify-start"
-                }`}
+              }`}
             >
               <span
-                className={`menu-item-icon-size ${openSubmenu?.index === index
+                className={`menu-item-icon-size ${
+                  openSubmenu?.index === index
                     ? "menu-item-icon-active"
                     : "menu-item-icon-inactive"
-                  }`}
+                }`}
               >
                 {nav.icon}
               </span>
@@ -184,10 +187,11 @@ const AppSidebar: React.FC = () => {
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.index === index
- ? "rotate-180 text-gray-800 dark:text-white"
+                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
+                    openSubmenu?.index === index
+                      ? "rotate-180 text-gray-800 dark:text-white"
                       : "text-gray-800 dark:text-white"
-                    }`}
+                  }`}
                 />
               )}
             </button>
@@ -196,14 +200,16 @@ const AppSidebar: React.FC = () => {
               <Link
                 to={nav.path}
                 onClick={handleLinkClick}
-                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
-                  }`}
+                className={`menu-item group ${
+                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                }`}
               >
                 <span
-                  className={`menu-item-icon-size ${isActive(nav.path)
+                  className={`menu-item-icon-size ${
+                    isActive(nav.path)
                       ? "menu-item-icon-active"
                       : "menu-item-icon-inactive"
-                    }`}
+                  }`}
                 >
                   {nav.icon}
                 </span>
@@ -233,10 +239,11 @@ const AppSidebar: React.FC = () => {
                     <Link
                       to={subItem.path}
                       onClick={handleLinkClick}
-                      className={`menu-dropdown-item ${isActive(subItem.path)
+                      className={`menu-dropdown-item ${
+                        isActive(subItem.path)
                           ? "menu-dropdown-item-active"
                           : "menu-dropdown-item-inactive"
-                        }`}
+                      }`}
                     >
                       {subItem.name}
                     </Link>
@@ -251,33 +258,34 @@ const AppSidebar: React.FC = () => {
   );
 
   return (
-    <aside
-      ref={sidebarRef}
-      className={`
-        flex flex-col fixed
-        bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-        transition-all duration-300 ease-in-out
-        ${isExpanded || isHovered ? "lg:w-[290px]" : "lg:w-[90px]"}
-        ${isMobileOpen
+<aside
+  ref={sidebarRef}
+  className={`
+    flex 
+    bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
+    transition-all duration-300 ease-in-out
+    fixed left-0 top-[var(--navbar-height)] h-[calc(100vh-var(--navbar-height))] z-40
+    ${isMobileOpen || isExpanded || isHovered ? "w-[290px]" : "w-[90px]"}
+            ${isMobileOpen
           ? "fixed top-16 left-0 w-[290px] h-[calc(100vh-64px)] z-50"
           : "hidden lg:flex"
         }
-      `}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+  `}
+  onMouseEnter={() => !isExpanded && setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+>
       {/* Sidebar inner content */}
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar px-5">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded && !isHovered
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
-                  }`}
-              >
-              </h2>
+                }`}
+              ></h2>
               {renderMenuItems(navItems)}
             </div>
           </div>
