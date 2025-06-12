@@ -1,35 +1,23 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { tooltipFormatter, getYAxis, monthXAxis, } from "../utils/chartUtils";
+import { formatDateTime } from "../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 interface StatisticsChartProps {
   onRemove?: () => void;
   onViewMore?: () => void;
 }
 
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
-};
-
-export default function StatisticsChart({}: StatisticsChartProps) {
+export default function StatisticsChart({ }: StatisticsChartProps) {
   const navigate = useNavigate();
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
 
   const [startDate, endDate] = dateRange;
 
@@ -40,9 +28,9 @@ export default function StatisticsChart({}: StatisticsChartProps) {
 
   const fetchChartData = async () => {
     if (!startDate || !endDate) return;
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
 
     const apiParams = enterpriseKey
       ? { startDate: formattedStart, endDate: formattedEnd, enterpriseKey }
@@ -94,11 +82,6 @@ export default function StatisticsChart({}: StatisticsChartProps) {
     }
   }, []);
 
-  const formatValue = (value: number) => {
-    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-    if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-    return value.toFixed(0);
-  };
 
   const options: ApexOptions = {
     legend: { show: true, position: "bottom" },
@@ -120,61 +103,9 @@ export default function StatisticsChart({}: StatisticsChartProps) {
       yaxis: { lines: { show: true } },
     },
     dataLabels: { enabled: false },
-    tooltip: {
-      enabled: true,
-      y: {
-        formatter: formatValue,
-      },
-    },
-    xaxis: {
-      type: "category",
-      categories: [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ],
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-      title: {
-        text: "Month",
-        style: {
-          fontWeight: "normal",
-          fontSize: "14px",
-          color: "#a855f7",
-        },
-      },
-      labels: {
-        style: {
-          fontSize: "12px",
-        },
-      },
-      crosshairs: { show: false },
-    },
-    yaxis: {
-      title: {
-        text: "Value",
-        style: {
-          fontWeight: "normal",
-          fontSize: "14px",
-          color: "#a855f7",
-        },
-      },
-      labels: {
-        formatter: formatValue,
-        style: {
-          fontSize: "12px",
-        },
-      },
-    },
+    tooltip: tooltipFormatter,
+    xaxis: monthXAxis,
+    yaxis: getYAxis("Value"),
   };
 
   const handleViewMore = () => {
@@ -197,6 +128,7 @@ export default function StatisticsChart({}: StatisticsChartProps) {
           <button
             onClick={handleViewMore}
             className="sm:hidden text-purple-600 text-sm font-medium self-start"
+            type="button"
           >
             <FontAwesomeIcon
               icon={faShareFromSquare}

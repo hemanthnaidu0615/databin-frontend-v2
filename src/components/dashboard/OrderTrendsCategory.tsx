@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { usdTooltipFormatter, getYAxis } from "../utils/chartUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(3, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -32,15 +33,6 @@ type ApiResponse = {
   };
 };
 
-const INR_TO_USD = 1 / 83.3;
-
-const formatValue = (value: number) => {
-  const usd = value * INR_TO_USD;
-  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}M`;
-  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}K`;
-  return `$${usd.toFixed(0)}`;
-};
-
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
 }) => {
@@ -52,9 +44,8 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     series: [],
   });
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -149,29 +140,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         },
       },
     },
-    yaxis: {
-      title: {
-        text: "Order Amount",
-        style: {
-          color: "#a855f7",
-          fontSize: "14px",
-          fontWeight: 400,
-        },
-      },
-      labels: {
-        style: {
-          colors: "#a855f7",
-        },
-        formatter: formatValue,
-      },
-    },
-    tooltip: {
-      theme: "light",
-      x: { show: true },
-      y: {
-        formatter: formatValue,
-      },
-    },
+    yaxis: getYAxis("Order Amount"),
+    tooltip: usdTooltipFormatter,
+
     stroke: {
       curve: "smooth",
       width: 2,

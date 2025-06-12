@@ -6,6 +6,7 @@ import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
 import { axiosInstance } from "../../../../axios";
+import { formatValue, tooltipFormatter } from "../../../utils/chartUtils";
 
 const chartTypes = [
   { label: "Bar", value: "bar" },
@@ -121,15 +122,11 @@ const SalesTrendsChart = () => {
         foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
         zoom: { enabled: false },
       },
+
       tooltip: {
+        ...tooltipFormatter,
         enabled: true,
         theme: theme === "dark" ? "dark" : "light",
-        x: { formatter: (val: number) => String(val) },
-        y: {
-          formatter: (val: number) => `$${val.toLocaleString()}`,
-          title: { formatter: () => "Sales" },
-        },
-        marker: { show: true },
       },
       xaxis: {
         type: "category",
@@ -145,10 +142,10 @@ const SalesTrendsChart = () => {
             aggregationLevel === "day"
               ? "Date"
               : aggregationLevel === "week"
-              ? "Week"
-              : aggregationLevel === "month"
-              ? "Month"
-              : "Year",
+                ? "Week"
+                : aggregationLevel === "month"
+                  ? "Month"
+                  : "Year",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -165,13 +162,11 @@ const SalesTrendsChart = () => {
             color: theme === "dark" ? "#CBD5E1" : "#64748B",
           },
         },
+
         labels: {
-          formatter: (val: number) => {
-            if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
-            if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
-            return `$${val}`;
-          },
+          formatter: (val: number) => `$${formatValue(val)}`,
         },
+
       },
       stroke: {
         curve: "smooth",
@@ -180,12 +175,12 @@ const SalesTrendsChart = () => {
       markers: {
         size: 5,
         colors: ["#ffffff"],
-        strokeColors: "#a855f7", 
+        strokeColors: "#a855f7",
         strokeWidth: 3,
         hover: { size: 7 },
       },
       dataLabels: { enabled: false },
-      colors: ["#a855f7"], 
+      colors: ["#a855f7"],
       grid: {
         borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
       },

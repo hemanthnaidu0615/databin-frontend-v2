@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { PrimeIcons } from "primereact/api";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
-import { formatDate, formatValue } from "../../utils/kpiUtils";
+import { formatDateTime , formatValue } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import KPIWidget from "../../modularity/kpis/KPIWidget";
 
@@ -31,8 +31,8 @@ const ShipmentKPI: React.FC<ShipmentStatsProps> = ({
   useEffect(() => {
     if (!startDate || !endDate) return;
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
 
     const params = new URLSearchParams({
       startDate: formattedStart,

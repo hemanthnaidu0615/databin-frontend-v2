@@ -4,6 +4,7 @@ import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
 import KPIWidget from "../../modularity/kpis/KPIWidget";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import { formatDateTime } from "../../utils/kpiUtils";
 
 interface KPIData {
   label: string;
@@ -23,15 +24,8 @@ const FulfillmentKPI = () => {
     const [startDate, endDate] = dateRange;
     if (!startDate || !endDate) return;
 
-    const formatDate = (date: string | Date): string => {
-      const d = new Date(date);
-      return `${d.getFullYear()}-${(d.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
-    };
-
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
 
     const fetchStats = async () => {
       try {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
@@ -7,24 +6,14 @@ import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { tooltipFormatter, getYAxis } from "../utils/chartUtils";
+import { formatDateTime } from "../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
-};
-
-const formatDateTime = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
 };
 
 const ShipmentPerformance: React.FC<{
@@ -50,8 +39,7 @@ const ShipmentPerformance: React.FC<{
     return localStorage.getItem("shipmentPerformanceVisible") !== "false";
   });
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
@@ -150,28 +138,11 @@ const ShipmentPerformance: React.FC<{
       },
       crosshairs: { show: false },
     },
-    yaxis: {
-      title: {
-        text: "Number of Shipments",
-        style: {
-          fontWeight: "400",
-          fontSize: "14px",
-          color: "#a855f7",
-        },
-      },
-      labels: {
-        formatter: (val: number) => formatValue(val),
-        style: {
-          fontSize: "12px",
-          colors: "#a855f7",
-        },
-      },
-    },
-    tooltip: {
-      y: {
-        formatter: (val: number) => formatValue(val),
-      },
-    },
+
+    yaxis: getYAxis("Number of Shipments"),
+
+    tooltip: tooltipFormatter,
+
     legend: {
       position: "bottom",
       labels: {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import ReactApexChart from "react-apexcharts";
 import { axiosInstance } from "../../../axios";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import { formatDateTime } from "../../utils/kpiUtils";
 
 interface Filters {
   selectedRegion: string;
@@ -39,26 +40,21 @@ const InventoryOverview: React.FC<{
   const [turnoverCategories, setTurnoverCategories] = useState<string[]>([]);
   const [restockSchedule, setRestockSchedule] = useState<any[]>([]);
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+    const { dateRange} = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
-
-  const formatDate = (date: Date): string =>
-    `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
   useEffect(() => {
     const fetchRegionData = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+   const formattedStartDate = formatDateTime(startDate);
+      const formattedEndDate = formatDateTime(endDate);
 
       try {
         const response = await axiosInstance.get<RegionData[]>(
           "/inventory/region-distribution",
           {
-            params: { startDate: formattedStart, endDate: formattedEnd },
+            params: { startDate: formattedStartDate, endDate: formattedEndDate },
           }
         );
         const data = response.data;
@@ -80,14 +76,14 @@ const InventoryOverview: React.FC<{
     const fetchTurnoverAndAlerts = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+   const formattedStartDate = formatDateTime(startDate);
+      const formattedEndDate = formatDateTime(endDate);
 
       try {
         const response = await axiosInstance.get(
           "/inventory/turnover-and-alerts",
           {
-            params: { startDate: formattedStart, endDate: formattedEnd },
+            params: { startDate: formattedStartDate, endDate: formattedEndDate },
           }
         );
         const data = response.data as {
@@ -151,12 +147,12 @@ const InventoryOverview: React.FC<{
     const fetchAlerts = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStartDate = formatDateTime(startDate);
+      const formattedEndDate = formatDateTime(endDate);
 
       try {
         const res = await axiosInstance.get("/inventory/turnover-alerts", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
+          params: { startDate: formattedStartDate, endDate: formattedEndDate },
         });
         const data = res.data as AlertAPIResponse;
 

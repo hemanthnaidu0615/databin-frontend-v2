@@ -3,7 +3,7 @@ import { PrimeIcons } from "primereact/api";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
-import { formatDate, formatValue } from "../../utils/kpiUtils";
+import { formatDateTime, formatValue } from "../../utils/kpiUtils";
 import KPIWidget from "../../modularity/kpis/KPIWidget";
 
 interface KPIData {
@@ -26,8 +26,8 @@ const InventoryKPI = () => {
       try {
         if (!startDate || !endDate) return;
 
-        const formattedStart = formatDate(startDate);
-        const formattedEnd = formatDate(endDate);
+        const formattedStart = formatDateTime(startDate);
+        const formattedEnd = formatDateTime(endDate);
 
         const response = await axiosInstance.get("/inventory/stock-summary", {
           params: {

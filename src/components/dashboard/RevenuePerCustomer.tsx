@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import ApexCharts from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
@@ -8,19 +7,9 @@ import { Column } from "primereact/column";
 import { axiosInstance } from "../../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
-
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
-};
+import { tooltipFormatter, getYAxis } from "../utils/chartUtils";
+import { formatDateTime } from "../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 type RevenuePerCustomerProps = {
   size?: "small" | "full";
@@ -35,23 +24,16 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
 
-  const formatValue = (Revenue: number) => {
-    if (Revenue >= 1_000_000) return (Revenue / 1_000_000).toFixed(1) + "M";
-    if (Revenue >= 1_000) return (Revenue / 1_000).toFixed(1) + "K";
-    return Revenue.toFixed(0);
-  };
-
   const fetchData = async () => {
     if (!startDate || !endDate) return;
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
 
     const params = new URLSearchParams({
       startDate: formattedStart,
@@ -127,22 +109,9 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
         },
       },
     },
-    yaxis: {
-      title: {
-        text: "Revenue",
-        style: {
-          fontWeight: "normal",
-          fontSize: "14px",
-          color: "#a855f7",
-        },
-      },
-      labels: {
-        formatter: formatValue,
-        style: {
-          colors: "#a855f7",
-        },
-      },
-    },
+
+    yaxis: getYAxis("Revenue"),
+
     plotOptions: {
       bar: {
         dataLabels: { position: "top" },
@@ -151,12 +120,9 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     dataLabels: {
       enabled: false,
     },
-    tooltip: {
-      x: { show: false },
-      y: {
-        formatter: formatValue,
-      },
-    },
+
+    tooltip: tooltipFormatter,
+
     series: [
       {
         name: "Revenue",
