@@ -7,6 +7,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { axiosInstance } from "../../../axios";
 
+
 type Props = {
   selectedCarrier: string | null;
   selectedMethod: string | null;
@@ -408,6 +409,8 @@ const RecentShipmentsTable: React.FC<Props> = ({
         style={{ width: "90vw", maxWidth: "600px" }}
         breakpoints={{ "960px": "95vw" }}
         className="p-dialog-sm dark:bg-white/[0.03]"
+        draggable={false}
+        dismissableMask={true}
       >
         {selectedShipment ? shipmentDetails(selectedShipment) : <p>No data</p>}
       </Dialog>

@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "next-themes";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import ResponsiveViewMoreButton from "../modularity/buttons/Button";
 
 interface ProductData {
   id: number;
@@ -190,25 +189,11 @@ const ProfitabilityTable: React.FC = () => {
           <h2 className="app-subheading flex-1 mr-2">Top Selling products</h2>
 
           {/* Mobile arrow (→) aligned right */}
-          <button
-            onClick={handleViewMore}
-            className="sm:hidden text-purple-600 text-sm font-medium self-start"
-          >
-            <FontAwesomeIcon
-              icon={faShareFromSquare}
-              size="lg"
-              style={{ color: "#a855f7" }}
-            />
-          </button>
+          <ResponsiveViewMoreButton onClick={handleViewMore} showDesktop={false} />
         </div>
 
         {/* Desktop & tablet "View More" */}
-        <button
-          onClick={handleViewMore}
-          className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-        >
-          View More
-        </button>
+         <ResponsiveViewMoreButton onClick={handleViewMore} showMobile={false} />
       </div>
 
       {/* Carousel Container */}
