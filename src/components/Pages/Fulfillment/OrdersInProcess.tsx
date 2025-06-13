@@ -9,6 +9,7 @@ import { Dialog } from "primereact/dialog";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../../../axios";
 
+
 interface Order {
   order_id: number;
   customer?: string;
@@ -200,6 +201,7 @@ const OrdersInProcess = () => {
       className="p-button-sm p-button-text"
       onClick={() => handleViewClick(rowData)}
     />
+    
   );
 
   return (
@@ -268,6 +270,7 @@ const OrdersInProcess = () => {
                   onClick={() => handleViewClick(order)}
                 />
               </div>
+
             </div>
           ))}
 
@@ -344,6 +347,8 @@ const OrdersInProcess = () => {
         onHide={() => setVisible(false)}
         style={{ width: "40rem" }}
         modal
+        draggable={false}
+        dismissableMask={true}
       >
         <motion.div
           initial={{ opacity: 0, y: 30 }}

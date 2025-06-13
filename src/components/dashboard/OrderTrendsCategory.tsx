@@ -4,20 +4,19 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import ResponsiveViewMoreButton from "../modularity/buttons/Button";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(3, "0")}`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(3, "0")}`;
 };
 
 type OrderTrendsCategoryProps = {
@@ -229,25 +228,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </h2>
 
             {/* Mobile arrow (→) aligned right */}
-            <button
-              onClick={handleViewMore}
-              className="sm:hidden text-purple-600 text-sm font-medium self-start"
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="lg"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
+          <ResponsiveViewMoreButton onClick={handleViewMore} showDesktop={false} />
           </div>
 
           {/* Desktop & tablet "View More" */}
-          <button
-            onClick={handleViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-500 hover:underline"
-          >
-            View More
-          </button>
+          <ResponsiveViewMoreButton onClick={handleViewMore} showMobile={false} />
         </div>
       )}
 

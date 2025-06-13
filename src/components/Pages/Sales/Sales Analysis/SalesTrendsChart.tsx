@@ -6,11 +6,8 @@ import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
 import { axiosInstance } from "../../../../axios";
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
-const chartTypes = [
-  { label: "Bar", value: "bar" },
-  { label: "Line", value: "line" },
-];
 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 
@@ -145,10 +142,10 @@ const SalesTrendsChart = () => {
             aggregationLevel === "day"
               ? "Date"
               : aggregationLevel === "week"
-              ? "Week"
-              : aggregationLevel === "month"
-              ? "Month"
-              : "Year",
+                ? "Week"
+                : aggregationLevel === "month"
+                  ? "Month"
+                  : "Year",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -180,12 +177,12 @@ const SalesTrendsChart = () => {
       markers: {
         size: 5,
         colors: ["#ffffff"],
-        strokeColors: "#a855f7", 
+        strokeColors: "#a855f7",
         strokeWidth: 3,
         hover: { size: 7 },
       },
       dataLabels: { enabled: false },
-      colors: ["#a855f7"], 
+      colors: ["#a855f7"],
       grid: {
         borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
       },
@@ -227,10 +224,13 @@ const SalesTrendsChart = () => {
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       <div className="flex gap-2 flex-wrap mb-4">
-        <Dropdown
+        <PrimeSelectFilter<"line" | "bar">
           value={chartType}
-          options={chartTypes}
-          onChange={(e) => setChartType(e.value)}
+          options={[
+            { label: "Line", value: "line" as "line" },
+            { label: "Bar", value: "bar" as "bar" },
+          ]}
+          onChange={setChartType}
           className="w-46"
         />
         <Dropdown

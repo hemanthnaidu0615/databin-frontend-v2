@@ -3,19 +3,18 @@ import { useSelector } from "react-redux";
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dropdown } from "primereact/dropdown";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
 import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
 const viewOptions = [
-  { label: "By Revenue", value: "revenue" },
-  { label: "By Units", value: "units" },
+  { label: "By Revenue", value: "revenue" as "revenue" },
+  { label: "By Units", value: "units" as "units" },
 ];
-
 interface Product {
   product_name: string;
   total_sales: number;
@@ -109,68 +108,68 @@ const TopProductsTable = () => {
     [sortedProducts]
   );
 
-const chartOptions: ApexOptions = useMemo(
-  () => ({
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
-    },
-    xaxis: {
-      categories: topProducts.map((p) => p.product_name),
-      labels: {
-        style: {
-          fontSize: "12px",
-          colors: theme === "dark" ? "#CBD5E1" : "#334155",
-        },
-        formatter: (value: string) =>
-          value.length > 20 ? value.substring(0, 20) + "..." : value,
+  const chartOptions: ApexOptions = useMemo(
+    () => ({
+      chart: {
+        type: "bar",
+        toolbar: { show: false },
+        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
       },
-      crosshairs: { show: false },
-      title: {
-        text: "Products",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+      xaxis: {
+        categories: topProducts.map((p) => p.product_name),
+        labels: {
+          style: {
+            fontSize: "12px",
+            colors: theme === "dark" ? "#CBD5E1" : "#334155",
+          },
+          formatter: (value: string) =>
+            value.length > 20 ? value.substring(0, 20) + "..." : value,
         },
-      },
-    },
-    yaxis: {
-      title: {
-        text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+        crosshairs: { show: false },
+        title: {
+          text: "Products",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
         },
       },
-      labels: {
-        formatter: (val: number) =>
-          viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
+      yaxis: {
+        title: {
+          text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
+        },
+        labels: {
+          formatter: (val: number) =>
+            viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
+        },
       },
-    },
-    dataLabels: { enabled: false },
-    plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-    grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
-    colors: ["#a855f7"],
-    legend: { show: false },
-    tooltip: {
-      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-        const value = series[seriesIndex][dataPointIndex];
-        const color = w.globals.colors[seriesIndex] || "#a855f7";
-        return `
+      dataLabels: { enabled: false },
+      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
+      grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
+      colors: ["#a855f7"],
+      legend: { show: false },
+      tooltip: {
+        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+          const value = series[seriesIndex][dataPointIndex];
+          const color = w.globals.colors[seriesIndex] || "#a855f7";
+          return `
           <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Revenue</div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
             <span style="font-weight: 600;">$${value.toFixed(2)}</span>
           </div>
         `;
+        },
       },
-    },
-  }),
-  [theme, viewMode, topProducts]
-);
+    }),
+    [theme, viewMode, topProducts]
+  );
 
   const chartSeries = [
     {
@@ -230,11 +229,12 @@ const chartOptions: ApexOptions = useMemo(
             }}
             className="app-search-input w-full sm:w-64"
           />
-          <Dropdown
+          <PrimeSelectFilter<"revenue" | "units">
             value={viewMode}
             options={viewOptions}
-            onChange={(e) => setViewMode(e.value)}
+            onChange={setViewMode}
             className="w-50"
+            placeholder="Select View Mode"
           />
         </div>
       </div>

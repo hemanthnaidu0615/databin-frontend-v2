@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../../../axios";
+import { CommonButton } from "../../modularity/buttons/Button";
+import SelectFilter from "../../modularity/dropdowns/Dropdown";
 
 interface OrderFiltersProps {
   filters: {
@@ -75,78 +77,53 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start text-sm text-white"
     >
       {/* Status */}
-      <select
-        className={inputStyle}
+      <SelectFilter
+        label="All statuses"
         value={filters.status}
-        onChange={(e) => onFilterChange("status", e.target.value)}
+        options={filterOptions.statuses}
+        onChange={(val) => onFilterChange("status", val)}
         onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All statuses</option>
-        {filterOptions.statuses.map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
+        className={inputStyle}
+      />
 
       {/* Order Type */}
-      <select
-        className={inputStyle}
+      <SelectFilter
+        label="All types"
         value={filters.orderType}
-        onChange={(e) => onFilterChange("orderType", e.target.value)}
+        options={filterOptions.types}
+        onChange={(val) => onFilterChange("orderType", val)}
         onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All types</option>
-        {filterOptions.types.map((type) => (
-          <option key={type} value={type}>
-            {type}
-          </option>
-        ))}
-      </select>
+        className={inputStyle}
+      />
 
       {/* Payment Method */}
-      <select
-        className={inputStyle}
+      <SelectFilter
+        label="All methods"
         value={filters.paymentMethod}
-        onChange={(e) => onFilterChange("paymentMethod", e.target.value)}
+        options={filterOptions.methods}
+        onChange={(val) => onFilterChange("paymentMethod", val)}
         onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All methods</option>
-        {filterOptions.methods.map((method) => (
-          <option key={method} value={method}>
-            {method}
-          </option>
-        ))}
-      </select>
+        className={inputStyle}
+      />
 
       {/* Price Range */}
-      <select
-        className={inputStyle}
+      <SelectFilter
+        label="All prices"
         value={filters.priceRange}
-        onChange={(e) => onFilterChange("priceRange", e.target.value)}
+        options={["Under $50", "$50 - $200", "$200 - $500", "Over $500"]}
+        onChange={(val) => onFilterChange("priceRange", val)}
         onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All prices</option>
-        <option value="Under $50">Under $50</option>
-        <option value="$50 - $200">$50 - $200</option>
-        <option value="$200 - $500">$200 - $500</option>
-        <option value="Over $500">Over $500</option>
-      </select>
-
-      {/* Carrier */}
-      <select
         className={inputStyle}
+      />
+      {/* Carrier */}
+      <SelectFilter
+        label="All carriers"
         value={filters.carrier}
-        onChange={(e) => onFilterChange("carrier", e.target.value)}
+        options={filterOptions.carriers}
+        onChange={(val) => onFilterChange("carrier", val)}
         onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All carriers</option>
-        {filterOptions.carriers.map((carrier) => (
-          <option key={carrier} value={carrier}>
-            {carrier}
-          </option>
-        ))}
-      </select>
+        className={inputStyle}
+      />
 
       {/* Customer */}
       <input
@@ -175,12 +152,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         >
           Reset Filters
         </button>
-        <button
-          type="submit" // triggers onSubmit
-          className="px-4 py-2 rounded  bg-[#a855f7] text-sm text-white hover:bg-[#9614d0] transition"
-        >
-          Apply Filters
-        </button>
+        <CommonButton type="submit" text="Apply Filters" variant="secondary" />
       </div>
     </form>
   );

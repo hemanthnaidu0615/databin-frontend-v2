@@ -7,8 +7,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import ResponsiveViewMoreButton from "../modularity/buttons/Button";
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -25,7 +24,6 @@ type FulfillmentEfficiencyProps = {
 
 const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   size = "full",
-  onViewMore,
 }) => {
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -112,73 +110,73 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   }, [startDate, endDate, enterpriseKey]);
 
   const apexOptions: ApexOptions = {
-  chart: {
-    type: "bar",
-    stacked: true,
-    toolbar: { show: false },
-    foreColor: "#a855f7",
-  },
-  colors: ["#a855f7"], 
-  plotOptions: {
-    bar: {
-      columnWidth: "70%",
+    chart: {
+      type: "bar",
+      stacked: true,
+      toolbar: { show: false },
+      foreColor: "#a855f7",
     },
-  },
-  dataLabels: {
-    enabled: true,
-    formatter: (val: number) => formatValue(val),
-    style: {
-      colors: ["#fff"],
-      fontSize: "12px",
-    },
-  },
-  xaxis: {
-    categories: chartData.categories,
-    title: {
-      text: "Stage",
-      style: {
-        fontWeight: "400",
-        fontSize: "14px",
-        color: "#a855f7",
+    colors: ["#a855f7"],
+    plotOptions: {
+      bar: {
+        columnWidth: "70%",
       },
     },
-    labels: {
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => formatValue(val),
       style: {
+        colors: ["#fff"],
         fontSize: "12px",
+      },
+    },
+    xaxis: {
+      categories: chartData.categories,
+      title: {
+        text: "Stage",
+        style: {
+          fontWeight: "400",
+          fontSize: "14px",
+          color: "#a855f7",
+        },
+      },
+      labels: {
+        style: {
+          fontSize: "12px",
+          colors: "#a855f7",
+        },
+      },
+      crosshairs: { show: false },
+    },
+    yaxis: {
+      title: {
+        text: "Orders",
+        style: {
+          fontWeight: "400",
+          fontSize: "14px",
+          color: "#a855f7",
+        },
+      },
+      labels: {
+        formatter: (val: number) => formatValue(val),
+        style: {
+          fontSize: "12px",
+          colors: "#a855f7",
+        },
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number) => formatValue(val),
+      },
+    },
+    legend: {
+      position: "bottom",
+      labels: {
         colors: "#a855f7",
       },
     },
-    crosshairs: { show: false },
-  },
-  yaxis: {
-    title: {
-      text: "Orders",
-      style: {
-        fontWeight: "400",
-        fontSize: "14px",
-        color: "#a855f7",
-      },
-    },
-    labels: {
-      formatter: (val: number) => formatValue(val),
-      style: {
-        fontSize: "12px",
-        colors: "#a855f7",
-      },
-    },
-  },
-  tooltip: {
-    y: {
-      formatter: (val: number) => formatValue(val),
-    },
-  },
-  legend: {
-    position: "bottom",
-    labels: {
-      colors: "#a855f7",
-    },
-  },
-};
+  };
 
   const series = [
     {
@@ -187,26 +185,17 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     },
   ];
 
-  function handleViewMore(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): void {
-    event.preventDefault();
+  const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-
-    if (onViewMore) {
-      onViewMore();
-    } else {
-      navigate("/fulfillment");
-    }
-  }
+    navigate("/fulfillment");
+  };
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl shadow-md border ${
-        theme === "dark"
+      className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark"
           ? "border-gray-700 bg-gray-900 dark:border-gray-800"
           : "border-gray-200 bg-white"
-      }`}
+        }`}
       style={{ padding: "1rem" }}
     >
       {size === "full" && (
@@ -215,23 +204,12 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
             <h2 className="app-subheading flex-1 mr-2">
               Fulfillment Efficeincy Summary
             </h2>
-            <button
-              onClick={handleViewMore}
-              className="sm:hidden text-purple-600 text-sm font-medium self-start"
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="lg"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
+            {/* Mobile arrow (→) aligned right */}
+            <ResponsiveViewMoreButton onClick={handleViewMore} showDesktop={false} />
           </div>
-          <button
-            onClick={handleViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-          >
-            View More
-          </button>
+
+          {/* Desktop & tablet "View More" */}
+          <ResponsiveViewMoreButton onClick={handleViewMore} showMobile={false} />
         </div>
       )}
       <div
