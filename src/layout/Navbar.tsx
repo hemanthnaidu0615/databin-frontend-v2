@@ -190,7 +190,7 @@ const Navbar: React.FC = () => {
                 alt="Logo"
               />
               <span className="text-xl font-semibold text-gray-900 dark:text-white leading-none flex items-center">
-                Data-Bin
+                DataBin
               </span>
             </Link>
 
@@ -207,7 +207,7 @@ const Navbar: React.FC = () => {
                   alt="Logo"
                 />
                 <span className="text-lg font-semibold text-gray-900 dark:text-white leading-none flex items-center">
-                  Data-Bin
+                  DataBin
                 </span>
               </Link>
             </div>
