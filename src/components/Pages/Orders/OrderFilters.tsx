@@ -25,7 +25,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   onApply,
 }) => {
   const inputStyle =
-    "px-3 py-2 rounded border text-sm bg-white text-black border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500";
+    "px-3 py-2 rounded border text-sm bg-white text-black border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 h-11";
 
   const [filterOptions, setFilterOptions] = useState<{
     types: string[];
