@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
@@ -7,31 +7,16 @@ import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
-
-const formatValue = (value: number) => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
-const formatDateTime = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
-};
+import { formatDateTime, formatValue } from "../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 
 const ShipmentPerformance: React.FC<{
   size?: "small" | "full";
   onRemove?: () => void;
   onViewMore?: () => void;
 }> = ({ size = "full" }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [data, setData] = useState<{
     carriers: string[];
     standard: number[];
@@ -50,8 +35,7 @@ const ShipmentPerformance: React.FC<{
     return localStorage.getItem("shipmentPerformanceVisible") !== "false";
   });
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const navigate = useNavigate();
@@ -114,9 +98,10 @@ const ShipmentPerformance: React.FC<{
       type: "bar",
       stacked: true,
       toolbar: { show: false },
-      foreColor: "#a855f7",
+      foreColor: isDark ? "#d1d5db" : "#a855f7",
+      background: isDark ? "#1f2937" : "transparent",
     },
-    colors: ["#4CAF50", "#FF9800", "#a855f7"],
+    colors: ["#4CAF50", "#FF9800", isDark ? "#c084fc" : "#a855f7"],
     plotOptions: {
       bar: {
         columnWidth: "70%",
@@ -139,13 +124,13 @@ const ShipmentPerformance: React.FC<{
         style: {
           fontWeight: "400",
           fontSize: "14px",
-          color: "#a855f7",
+          color: isDark ? "#c084fc" : "#a855f7",
         },
       },
       labels: {
         style: {
           fontSize: "12px",
-          colors: "#a855f7",
+          colors: isDark ? "#c084fc" : "#a855f7",
         },
       },
       crosshairs: { show: false },
@@ -156,18 +141,19 @@ const ShipmentPerformance: React.FC<{
         style: {
           fontWeight: "400",
           fontSize: "14px",
-          color: "#a855f7",
+          color: isDark ? "#c084fc" : "#a855f7",
         },
       },
       labels: {
         formatter: (val: number) => formatValue(val),
         style: {
           fontSize: "12px",
-          colors: "#a855f7",
+          colors: isDark ? "#c084fc" : "#a855f7",
         },
       },
     },
     tooltip: {
+      theme: isDark ? "dark" : "light",
       y: {
         formatter: (val: number) => formatValue(val),
       },
@@ -175,7 +161,7 @@ const ShipmentPerformance: React.FC<{
     legend: {
       position: "bottom",
       labels: {
-        colors: "#a855f7",
+        colors: isDark ? "#c084fc" : "#a855f7",
       },
     },
   };

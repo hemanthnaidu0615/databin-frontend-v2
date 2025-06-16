@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
@@ -9,13 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
-
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
-};
+import { formatDateTime, formatValue } from "../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
+import { getBaseTooltip, ordersTooltip } from "../modularity/graphs/graphWidget";
 
 type FulfillmentEfficiencyProps = {
   size?: "small" | "full";
@@ -28,25 +23,26 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   onViewMore,
 }) => {
   const { theme } = useTheme();
+  const isDark = theme === "dark";
   const navigate = useNavigate();
 
   const [chartData, setChartData] = useState({
     categories: ["Picked", "Packed", "Shipped", "Delivered"],
     totals: [0, 0, 0, 0],
   });
+  const baseTooltip = getBaseTooltip(isDark, ordersTooltip);
 
+  const tooltipWithoutDollar = {
+    ...baseTooltip,
+    y: {
+      ...baseTooltip.y,
+      formatter: (val: number) => val.toLocaleString(),
+    },
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
-
-  const formatValue = (Orders: number) => {
-    if (Orders >= 1_000_000) return (Orders / 1_000_000).toFixed(1) + "M";
-    if (Orders >= 1_000) return (Orders / 1_000).toFixed(1) + "K";
-    return Orders.toFixed(0);
-  };
 
   useEffect(() => {
     const savedScroll = sessionStorage.getItem("scrollPosition");
@@ -64,8 +60,8 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       setError(null);
 
       try {
-        const formattedStart = `${formatDate(startDate)} 00:00:00.000`;
-        const formattedEnd = `${formatDate(endDate)} 23:59:59.999`;
+        const formattedStart = formatDateTime(startDate);
+        const formattedEnd = formatDateTime(endDate);
 
         const params = new URLSearchParams({
           startDate: formattedStart,
@@ -112,73 +108,70 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   }, [startDate, endDate, enterpriseKey]);
 
   const apexOptions: ApexOptions = {
-  chart: {
-    type: "bar",
-    stacked: true,
-    toolbar: { show: false },
-    foreColor: "#a855f7",
-  },
-  colors: ["#a855f7"], 
-  plotOptions: {
-    bar: {
-      columnWidth: "70%",
+    chart: {
+      type: "bar",
+      stacked: true,
+      toolbar: { show: false },
+      foreColor: "#a855f7",
     },
-  },
-  dataLabels: {
-    enabled: true,
-    formatter: (val: number) => formatValue(val),
-    style: {
-      colors: ["#fff"],
-      fontSize: "12px",
-    },
-  },
-  xaxis: {
-    categories: chartData.categories,
-    title: {
-      text: "Stage",
-      style: {
-        fontWeight: "400",
-        fontSize: "14px",
-        color: "#a855f7",
+    colors: ["#a855f7"],
+    plotOptions: {
+      bar: {
+        columnWidth: "70%",
       },
     },
-    labels: {
+    dataLabels: {
+      enabled: true,
+      formatter: (val: number) => formatValue(val),
       style: {
+        colors: ["#fff"],
         fontSize: "12px",
+      },
+    },
+    xaxis: {
+      categories: chartData.categories,
+      title: {
+        text: "Stage",
+        style: {
+          fontWeight: "400",
+          fontSize: "14px",
+          color: "#a855f7",
+        },
+      },
+      labels: {
+        style: {
+          fontSize: "12px",
+          colors: "#a855f7",
+        },
+      },
+      crosshairs: { show: false },
+    },
+    yaxis: {
+      title: {
+        text: "Orders",
+        style: {
+          fontWeight: "400",
+          fontSize: "14px",
+          color: "#a855f7",
+        },
+      },
+      labels: {
+        formatter: (val: number) => formatValue(val),
+        style: {
+          fontSize: "12px",
+          colors: "#a855f7",
+        },
+      },
+    },
+    tooltip: tooltipWithoutDollar,
+
+    legend: {
+      position: "bottom",
+      labels: {
         colors: "#a855f7",
       },
     },
-    crosshairs: { show: false },
-  },
-  yaxis: {
-    title: {
-      text: "Orders",
-      style: {
-        fontWeight: "400",
-        fontSize: "14px",
-        color: "#a855f7",
-      },
-    },
-    labels: {
-      formatter: (val: number) => formatValue(val),
-      style: {
-        fontSize: "12px",
-        colors: "#a855f7",
-      },
-    },
-  },
-  tooltip: {
-    y: {
-      formatter: (val: number) => formatValue(val),
-    },
-  },
-  legend: {
-    position: "bottom",
-    labels: {
-      colors: "#a855f7",
-    },
-  },
-};
+  };
 
   const series = [
     {
@@ -202,11 +195,10 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl shadow-md border ${
-        theme === "dark"
-          ? "border-gray-700 bg-gray-900 dark:border-gray-800"
-          : "border-gray-200 bg-white"
-      }`}
+      className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark"
+        ? "border-gray-700 bg-gray-900 dark:border-gray-800"
+        : "border-gray-200 bg-white"
+        }`}
       style={{ padding: "1rem" }}
     >
       {size === "full" && (

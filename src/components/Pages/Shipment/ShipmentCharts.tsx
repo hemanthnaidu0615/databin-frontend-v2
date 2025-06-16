@@ -1,16 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useTheme } from "next-themes";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../axios";
-
-const formatValue = (value: number) => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
-const formatDate = (date: Date): string => date.toISOString().split("T")[0];
+import { formatDateTime, formatValue } from "../../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import { getBaseTooltip, shipmentsTooltip } from "../../modularity/graphs/graphWidget";
 
 interface ShipmentChartsProps {
   selectedCarrier: string | null;
@@ -24,11 +19,20 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
   const [carrierSeries, setCarrierSeries] = useState<any[]>([]);
   const [carrierCategories, setCarrierCategories] = useState<string[]>([]);
   const [statusSeries, setStatusSeries] = useState<number[]>([]);
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
+  const labelColor = isDark ? "#d4d4d8" : "#52525b";
+  const baseTooltip = getBaseTooltip(isDark, shipmentsTooltip);
 
-  const labelColor = "#a1a1aa";
+  const tooltipWithoutDollar = {
+    ...baseTooltip,
+    y: {
+      ...baseTooltip.y,
+      formatter: (val: number) => val.toLocaleString(),
+    },
+  };
 
   const statusOptions: ApexOptions = {
     chart: {
@@ -63,8 +67,8 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
     const fetchStatusDistribution = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       try {
         const response = await axiosInstance.get(
@@ -135,19 +139,11 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
         style: { color: labelColor, fontSize: "13px", fontWeight: 500 },
       },
     },
-    grid: { borderColor: "#374151", strokeDashArray: 4 },
+    grid: { borderColor: isDark ? "#4b5563" : "#e5e7eb", strokeDashArray: 4 },
     plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
     colors: ["#a855f7"],
     dataLabels: { enabled: false },
-    tooltip: {
-      theme: document.documentElement.classList.contains("dark")
-        ? "dark"
-        : "light",
-      x: { show: true },
-      y: {
-        formatter: (val) => `${val} shipments`,
-      },
-    },
+    tooltip: tooltipWithoutDollar,
   };
 
   useEffect(() => {
@@ -157,8 +153,8 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({
         return;
       }
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       try {
         const response = await axiosInstance.get("carrier-performance", {

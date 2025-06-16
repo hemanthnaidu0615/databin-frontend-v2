@@ -1,21 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { Dropdown } from "primereact/dropdown";
 import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
 import { axiosInstance } from "../../../../axios";
+import { formatDate } from "../../../utils/kpiUtils";
+import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
 const chartTypes = [
   { label: "Bar", value: "bar" },
   { label: "Line", value: "line" },
 ];
 
-const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
-
 const SalesTrendsChart = () => {
   const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [chartType, setChartType] = useState<"bar" | "line">("line");
   const [channels, setChannels] = useState<string[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
@@ -26,8 +28,8 @@ const SalesTrendsChart = () => {
   const [error, setError] = useState<string | null>(null);
   const [aggregationLevel, setAggregationLevel] = useState<string>("day");
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
+
   const [startDate, endDate] = dateRange || [];
 
   useEffect(() => {
@@ -37,8 +39,9 @@ const SalesTrendsChart = () => {
       setLoading(true);
       setError(null);
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDate(startDate);
+      const formattedEnd = formatDate(endDate);
+
 
       const params = new URLSearchParams({
         startDate: formattedStart,
@@ -121,16 +124,9 @@ const SalesTrendsChart = () => {
         foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
         zoom: { enabled: false },
       },
-      tooltip: {
-        enabled: true,
-        theme: theme === "dark" ? "dark" : "light",
-        x: { formatter: (val: number) => String(val) },
-        y: {
-          formatter: (val: number) => `$${val.toLocaleString()}`,
-          title: { formatter: () => "Sales" },
-        },
-        marker: { show: true },
-      },
+
+      tooltip: getBaseTooltip(isDark, salesTooltip),
+
       xaxis: {
         type: "category",
         categories: categories,
@@ -145,10 +141,10 @@ const SalesTrendsChart = () => {
             aggregationLevel === "day"
               ? "Date"
               : aggregationLevel === "week"
-              ? "Week"
-              : aggregationLevel === "month"
-              ? "Month"
-              : "Year",
+                ? "Week"
+                : aggregationLevel === "month"
+                  ? "Month"
+                  : "Year",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -180,12 +176,12 @@ const SalesTrendsChart = () => {
       markers: {
         size: 5,
         colors: ["#ffffff"],
-        strokeColors: "#a855f7", 
+        strokeColors: "#a855f7",
         strokeWidth: 3,
         hover: { size: 7 },
       },
       dataLabels: { enabled: false },
-      colors: ["#a855f7"], 
+      colors: ["#a855f7"],
       grid: {
         borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
       },
