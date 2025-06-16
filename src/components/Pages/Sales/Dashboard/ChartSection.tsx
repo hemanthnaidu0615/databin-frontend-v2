@@ -247,16 +247,14 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
           <div
-            className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2"
-            style={{ overflow: "visible" }}
+            className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2 overflow-visible"
           >
             <div
               style={{
                 width: dynamicChartWidth,
                 height: selectedChart === "Pie" ? "350px" : "370px",
-                maxWidth: "100%",
-                overflow: "visible",
               }}
+              className="max-w-full overflow-visible"
             >
               <Chart
                 options={getChartOptions(
