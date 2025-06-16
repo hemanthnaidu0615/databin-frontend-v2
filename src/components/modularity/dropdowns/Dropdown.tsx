@@ -1,16 +1,6 @@
 import { Dropdown } from "primereact/dropdown";
 import React from "react";
 
-type SelectFilterProps = {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-  onKeyDown?: React.KeyboardEventHandler<HTMLSelectElement>;
-  className?: string;
-  disabled?: boolean;
-  
-};
 
 type PrimeSelectFilterProps<T = any> = {
   value: T;
@@ -19,24 +9,7 @@ type PrimeSelectFilterProps<T = any> = {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-};
-const SelectFilter: React.FC<SelectFilterProps> = ({ label, value, options,disabled = false, onChange, onKeyDown, className }) => {
-  return (
-    <select
-      className={className}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={onKeyDown}
-      disabled={disabled}
-    >
-      <option value="">{label}</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
-      ))}
-    </select>
-  );
+  style?: React.CSSProperties;
 };
 
 export const PrimeSelectFilter = <T,>({
@@ -46,6 +19,7 @@ export const PrimeSelectFilter = <T,>({
   placeholder,
   className,
   disabled = false,
+  style,
 }: PrimeSelectFilterProps<T>) => {
   return (
     <Dropdown
@@ -55,8 +29,8 @@ export const PrimeSelectFilter = <T,>({
       placeholder={placeholder}
       className={className}
       disabled={disabled}
+      style={style}
     />
   );
 };
 
-export default SelectFilter;

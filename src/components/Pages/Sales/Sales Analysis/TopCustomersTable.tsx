@@ -243,8 +243,11 @@ const TopCustomersTable = () => {
               { label: "By Orders", value: "orders" as "orders" },
             ]}
             onChange={setViewMode}
-            className="w-43"
+            className="w-43 h-10"
             placeholder="Select View Mode"
+            style={{
+              lineHeight: '0.9rem',
+            }}
           />
         </div>
       </div>

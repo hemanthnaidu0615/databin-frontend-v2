@@ -233,8 +233,11 @@ const TopProductsTable = () => {
             value={viewMode}
             options={viewOptions}
             onChange={setViewMode}
-            className="w-50"
+            className="w-50 h-10"
             placeholder="Select View Mode"
+            style={{
+              lineHeight: '0.9rem',
+            }}
           />
         </div>
       </div>

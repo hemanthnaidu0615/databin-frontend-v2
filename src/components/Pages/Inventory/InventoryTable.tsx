@@ -4,7 +4,7 @@ import { Paginator } from "primereact/paginator";
 import "primereact/resources/themes/lara-dark-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import { axiosInstance } from "../../../axios";
-import SelectFilter from "../../modularity/dropdowns/Dropdown";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 interface Filters {
   selectedRegion: string;
@@ -171,26 +171,40 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               setFirst(0);
             }}
           />
-          <SelectFilter
-            label="Status"
+          <PrimeSelectFilter<string>
+            placeholder="All statuses"
             value={selectedStatus}
-            options={["Available", "Out of Stock", "Low Stock"]}
+            options={["Available", "Out of Stock", "Low Stock"].map((status) => ({
+              label: status,
+              value: status,
+            }))}
             onChange={(val) => {
               setSelectedStatus(val);
               setFirst(0);
             }}
-            className="px-3 py-1 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30"
+            className="px-2 py-0 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
+            style={{
+              lineHeight: '0.9rem',
+            }}
           />
-          <SelectFilter
-            label="Category"
+
+          <PrimeSelectFilter<string>
+            placeholder="All categories"
             value={selectedCategory}
-            options={allCategories}
+            options={allCategories.map((cat) => ({
+              label: cat,
+              value: cat,
+            }))}
             onChange={(val) => {
               setSelectedCategory(val);
               setFirst(0);
             }}
-            className="px-3 py-1 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30"
+            className="px-2 py-0 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
+            style={{
+              lineHeight: '0.9rem',
+            }}
           />
+
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import ShipmentStats from "./ShipmentKPI";
 import ShipmentCharts from "./ShipmentCharts";
 import RecentShipmentsTable from "./RecentShipmentsTable";
 import { axiosInstance } from "../../../axios";
-import SelectFilter from "../../modularity/dropdowns/Dropdown";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 const ShipmentPage = () => {
   const [selectedCarrier, setSelectedCarrier] = useState("");
@@ -48,26 +48,38 @@ const ShipmentPage = () => {
         {/* Carrier Dropdown */}
         <div>
           <label className="app-dropdown-label">Carrier</label>
-          <SelectFilter
-            label="All carriers"
+          <PrimeSelectFilter<string>
+            placeholder="All carriers"
             value={selectedCarrier}
-            options={carriers}
+            options={carriers.map((c) => ({ label: c, value: c }))}
             onChange={setSelectedCarrier}
             className="app-dropdown"
             disabled={loadingFilters}
-          />
+            style={{
+              padding: '4px 8px',     
+              fontSize: '0.85rem',    
+              lineHeight: '0.7rem',   
+              height: '32px',         
+            }}
+            />
         </div>
 
         {/* Method Dropdown */}
         <div>
           <label className="app-dropdown-label">Shipping Method</label>
-          <SelectFilter
-            label="All methods"
+          <PrimeSelectFilter<string>
+            placeholder="All methods"
             value={selectedMethod}
-            options={shippingMethods}
+            options={shippingMethods.map((m) => ({ label: m, value: m }))}
             onChange={setSelectedMethod}
-            className="app-dropdown"
+            className="app-dropdown "
             disabled={loadingFilters}
+            style={{
+              padding: '4px 8px',     
+              fontSize: '0.85rem',    
+              lineHeight: '0.7rem',   
+              height: '32px',         
+            }}
           />
         </div>
 

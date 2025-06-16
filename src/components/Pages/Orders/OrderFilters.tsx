@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../../../axios";
 import { CommonButton } from "../../modularity/buttons/Button";
-import SelectFilter from "../../modularity/dropdowns/Dropdown";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 interface OrderFiltersProps {
   filters: {
@@ -64,12 +64,12 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   };
 
   // Handle Enter key on selects to prevent dropdown reopen and trigger apply
-  const handleSelectKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); // Prevent dropdown toggle
-      onApply(); // Trigger apply filters
-    }
-  };
+  // const handleSelectKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
+  //   if (e.key === "Enter") {
+  //     e.preventDefault(); // Prevent dropdown toggle
+  //     onApply(); // Trigger apply filters
+  //   }
+  // };
 
   return (
     <form
@@ -77,53 +77,52 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start text-sm text-white"
     >
       {/* Status */}
-      <SelectFilter
-        label="All statuses"
+      <PrimeSelectFilter<string>
+        placeholder="All statuses"
         value={filters.status}
-        options={filterOptions.statuses}
+        options={filterOptions.statuses.map((s) => ({ label: s, value: s }))}
         onChange={(val) => onFilterChange("status", val)}
-        onKeyDown={handleSelectKeyDown}
-        className={inputStyle}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
       />
 
-      {/* Order Type */}
-      <SelectFilter
-        label="All types"
+      <PrimeSelectFilter<string>
+        placeholder="All types"
         value={filters.orderType}
-        options={filterOptions.types}
+        options={filterOptions.types.map((t) => ({ label: t, value: t }))}
         onChange={(val) => onFilterChange("orderType", val)}
-        onKeyDown={handleSelectKeyDown}
-        className={inputStyle}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
       />
 
-      {/* Payment Method */}
-      <SelectFilter
-        label="All methods"
+      <PrimeSelectFilter<string>
+        placeholder="All methods"
         value={filters.paymentMethod}
-        options={filterOptions.methods}
+        options={filterOptions.methods.map((m) => ({ label: m, value: m }))}
         onChange={(val) => onFilterChange("paymentMethod", val)}
-        onKeyDown={handleSelectKeyDown}
-        className={inputStyle}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
       />
 
-      {/* Price Range */}
-      <SelectFilter
-        label="All prices"
+      <PrimeSelectFilter<string>
+        placeholder="All prices"
         value={filters.priceRange}
-        options={["Under $50", "$50 - $200", "$200 - $500", "Over $500"]}
+        options={[
+          "Under $50",
+          "$50 - $200",
+          "$200 - $500",
+          "Over $500",
+        ].map((p) => ({ label: p, value: p }))}
         onChange={(val) => onFilterChange("priceRange", val)}
-        onKeyDown={handleSelectKeyDown}
-        className={inputStyle}
+       className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
+        
       />
-      {/* Carrier */}
-      <SelectFilter
-        label="All carriers"
+
+      <PrimeSelectFilter<string>
+        placeholder="All carriers"
         value={filters.carrier}
-        options={filterOptions.carriers}
+        options={filterOptions.carriers.map((c) => ({ label: c, value: c }))}
         onChange={(val) => onFilterChange("carrier", val)}
-        onKeyDown={handleSelectKeyDown}
-        className={inputStyle}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
       />
+
 
       {/* Customer */}
       <input

@@ -8,7 +8,7 @@ type Props = {
   showDesktop?: boolean;
   text?: string;
   className?: string;
-};
+};                     
 type ButtonProps = {
   onClick?: () => void;
   type?: "button" | "submit" | "reset";
@@ -64,7 +64,7 @@ const ResponsiveViewMoreButton = ({
       </button>
     )}
   </>
-);
+);                                    
 export const CommonButton = ({
   onClick,
   type = "button",
@@ -100,7 +100,7 @@ export const CommonButton = ({
         hover:scale-105 hover:shadow-lg active:scale-100 active:shadow-sm
       `;
       break;
-  }
+  }                                              
   return (
     <button
       type={type}
@@ -150,7 +150,7 @@ export const ActionButton = ({
     backgroundColor: "#a855f7",
     border: "none",
     color: "white",
-    transition: "none", // mimic PrimeReact default
+    transition: "none", 
     ...style,
   };
 
