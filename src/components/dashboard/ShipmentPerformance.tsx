@@ -5,8 +5,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import CommonButton from "../modularity/buttons/Button";
+
 
 const formatValue = (value: number) => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
@@ -19,12 +19,12 @@ const formatDateTime = (date: string) => {
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}.000`;
 };
 
 const ShipmentPerformance: React.FC<{
@@ -213,25 +213,11 @@ const ShipmentPerformance: React.FC<{
               </h2>
 
               {/* Mobile arrow (→) aligned right */}
-              <button
-                onClick={handleViewMore}
-                className="sm:hidden text-purple-600 text-sm font-medium self-start"
-              >
-                <FontAwesomeIcon
-                  icon={faShareFromSquare}
-                  size="lg"
-                  style={{ color: "#a855f7" }}
-                />
-              </button>
+              <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
             </div>
 
             {/* Desktop & tablet "View More" */}
-            <button
-              onClick={handleViewMore}
-              className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-            >
-              View More
-            </button>
+            <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
           </div>
 
           {isLoading ? (

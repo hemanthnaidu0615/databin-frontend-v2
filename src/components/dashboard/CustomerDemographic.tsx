@@ -10,8 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import allStates from "./allStates.json";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import CommonButton from "../modularity/buttons/Button";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
@@ -253,28 +252,11 @@ const DemographicCard = () => {
           <h2 className="app-subheading flex-1 mr-2">Customer Demographic</h2>
 
           {/* Mobile arrow (→) aligned right */}
-          <button
-            onClick={handleViewMore}
-            className="sm:hidden text-purple-600 text-sm font-medium self-start"
-          >
-            <FontAwesomeIcon
-              icon={faShareFromSquare}
-              size="lg"
-              style={{ color: "#a855f7" }}
-            />
-          </button>
-        </div>
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          Customers and revenue per state
+          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
         </div>
 
         {/* Desktop & tablet "View More" */}
-        <button
-          onClick={handleViewMore}
-          className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-        >
-          View More
-        </button>
+        <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
       </div>
 
       <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">

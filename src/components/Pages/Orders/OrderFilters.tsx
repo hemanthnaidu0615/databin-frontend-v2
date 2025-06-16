@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../../../axios";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
+import CommonButton from "../../modularity/buttons/Button";
 
 interface OrderFiltersProps {
   filters: {
@@ -23,7 +25,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
   onApply,
 }) => {
   const inputStyle =
-    "px-3 py-2 rounded border text-sm bg-white text-black border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500";
+    "px-3 py-2 rounded border text-sm bg-white text-black border-gray-300 dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 h-11";
 
   const [filterOptions, setFilterOptions] = useState<{
     types: string[];
@@ -55,18 +57,9 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
     fetchFilterOptions();
   }, []);
 
-  // Handle form submit (called on Enter or button click)
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent page reload
+    e.preventDefault();
     onApply();
-  };
-
-  // Handle Enter key on selects to prevent dropdown reopen and trigger apply
-  const handleSelectKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault(); // Prevent dropdown toggle
-      onApply(); // Trigger apply filters
-    }
   };
 
   return (
@@ -75,78 +68,52 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start text-sm text-white"
     >
       {/* Status */}
-      <select
-        className={inputStyle}
+      <PrimeSelectFilter<string>
+        placeholder="All statuses"
         value={filters.status}
-        onChange={(e) => onFilterChange("status", e.target.value)}
-        onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All statuses</option>
-        {filterOptions.statuses.map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
+        options={filterOptions.statuses.map((s) => ({ label: s, value: s }))}
+        onChange={(val) => onFilterChange("status", val)}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
+      />
 
-      {/* Order Type */}
-      <select
-        className={inputStyle}
+      <PrimeSelectFilter<string>
+        placeholder="All types"
         value={filters.orderType}
-        onChange={(e) => onFilterChange("orderType", e.target.value)}
-        onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All types</option>
-        {filterOptions.types.map((type) => (
-          <option key={type} value={type}>
-            {type}
-          </option>
-        ))}
-      </select>
+        options={filterOptions.types.map((t) => ({ label: t, value: t }))}
+        onChange={(val) => onFilterChange("orderType", val)}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
+      />
 
-      {/* Payment Method */}
-      <select
-        className={inputStyle}
+      <PrimeSelectFilter<string>
+        placeholder="All methods"
         value={filters.paymentMethod}
-        onChange={(e) => onFilterChange("paymentMethod", e.target.value)}
-        onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All methods</option>
-        {filterOptions.methods.map((method) => (
-          <option key={method} value={method}>
-            {method}
-          </option>
-        ))}
-      </select>
+        options={filterOptions.methods.map((m) => ({ label: m, value: m }))}
+        onChange={(val) => onFilterChange("paymentMethod", val)}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
+      />
 
-      {/* Price Range */}
-      <select
-        className={inputStyle}
+      <PrimeSelectFilter<string>
+        placeholder="All prices"
         value={filters.priceRange}
-        onChange={(e) => onFilterChange("priceRange", e.target.value)}
-        onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All prices</option>
-        <option value="Under $50">Under $50</option>
-        <option value="$50 - $200">$50 - $200</option>
-        <option value="$200 - $500">$200 - $500</option>
-        <option value="Over $500">Over $500</option>
-      </select>
+        options={[
+          "Under $50",
+          "$50 - $200",
+          "$200 - $500",
+          "Over $500",
+        ].map((p) => ({ label: p, value: p }))}
+        onChange={(val) => onFilterChange("priceRange", val)}
+       className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
+        
+      />
 
-      {/* Carrier */}
-      <select
-        className={inputStyle}
+      <PrimeSelectFilter<string>
+        placeholder="All carriers"
         value={filters.carrier}
-        onChange={(e) => onFilterChange("carrier", e.target.value)}
-        onKeyDown={handleSelectKeyDown}
-      >
-        <option value="">All carriers</option>
-        {filterOptions.carriers.map((carrier) => (
-          <option key={carrier} value={carrier}>
-            {carrier}
-          </option>
-        ))}
-      </select>
+        options={filterOptions.carriers.map((c) => ({ label: c, value: c }))}
+        onChange={(val) => onFilterChange("carrier", val)}
+        className="text-sm px-2 py-0 rounded-md bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-11"
+      />
+
 
       {/* Customer */}
       <input
@@ -175,12 +142,7 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
         >
           Reset Filters
         </button>
-        <button
-          type="submit" // triggers onSubmit
-          className="px-4 py-2 rounded  bg-[#a855f7] text-sm text-white hover:bg-[#9614d0] transition"
-        >
-          Apply Filters
-        </button>
+        <CommonButton type="submit" text="Apply Filters" variant="secondary" />
       </div>
     </form>
   );

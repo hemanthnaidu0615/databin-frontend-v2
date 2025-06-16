@@ -3,6 +3,7 @@ import ShipmentStats from "./ShipmentKPI";
 import ShipmentCharts from "./ShipmentCharts";
 import RecentShipmentsTable from "./RecentShipmentsTable";
 import { axiosInstance } from "../../../axios";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 const ShipmentPage = () => {
   const [selectedCarrier, setSelectedCarrier] = useState("");
@@ -47,37 +48,27 @@ const ShipmentPage = () => {
         {/* Carrier Dropdown */}
         <div>
           <label className="app-dropdown-label">Carrier</label>
-          <select
-            className="app-dropdown"
+          <PrimeSelectFilter<string>
+            placeholder="All carriers"
             value={selectedCarrier}
-            onChange={(e) => setSelectedCarrier(e.target.value)}
+            options={carriers.map((c) => ({ label: c, value: c }))}
+            onChange={setSelectedCarrier}
+            className="app-dropdown px-2 py-1 text-[0.85rem] leading-[0.95rem] h-8 flex items-center"
             disabled={loadingFilters}
-          >
-            <option value="">All carriers</option>
-            {carriers.map((carrier) => (
-              <option key={carrier} value={carrier}>
-                {carrier}
-              </option>
-            ))}
-          </select>
+            />
         </div>
 
         {/* Method Dropdown */}
         <div>
           <label className="app-dropdown-label">Shipping Method</label>
-          <select
-            className="app-dropdown"
+          <PrimeSelectFilter<string>
+            placeholder="All methods"
             value={selectedMethod}
-            onChange={(e) => setSelectedMethod(e.target.value)}
+            options={shippingMethods.map((m) => ({ label: m, value: m }))}
+            onChange={setSelectedMethod}
+            className="app-dropdown px-2 py-1 text-[0.85rem] leading-[0.95rem] h-8 flex items-center"
             disabled={loadingFilters}
-          >
-            <option value="">All methods</option>
-            {shippingMethods.map((method) => (
-              <option key={method} value={method}>
-                {method}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
 

@@ -6,20 +6,20 @@ import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import CommonButton from "../modularity/buttons/Button";
+
 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
+        .getSeconds()
+        .toString()
+        .padStart(2, "0")}.000`;
 };
 
 type RevenuePerCustomerProps = {
@@ -165,7 +165,7 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     ],
   };
 
-  const onViewMore = () => {
+  const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales/dashboard");
   };
@@ -177,26 +177,12 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
           <div className="flex items-start justify-between w-full sm:w-auto">
             <h2 className="app-subheading flex-1 mr-2">Revenue Per Customer</h2>
 
-            {/* Mobile arrow (→) */}
-            <button
-              onClick={onViewMore}
-              className="sm:hidden text-purple-600 w-6 shadow text-xl font-medium self-start"
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="sm"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
+            {/* Mobile arrow (→) aligned right */}
+            <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
           </div>
 
           {/* Desktop & tablet "View More" */}
-          <button
-            onClick={onViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-          >
-            View More
-          </button>
+           <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
         </div>
       )}
 
