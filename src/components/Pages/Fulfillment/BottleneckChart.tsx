@@ -1,14 +1,24 @@
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../axios";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import { formatDateTime } from "../../utils/kpiUtils";
+import { getBaseTooltip, avgTimeTooltip } from "../../modularity/graphs/graphWidget";
 
 const BottleneckChart = () => {
-  const [isDark, setIsDark] = useState<boolean>(
-    typeof window !== "undefined" &&
-      document.documentElement.classList.contains("dark")
-  );
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const baseTooltip = getBaseTooltip(isDark, avgTimeTooltip);
+
+  const tooltipWithoutDollar = {
+    ...baseTooltip,
+    y: {
+      ...baseTooltip.y,
+      formatter: (val: number) => val.toLocaleString(),
+    },
+  };
 
   const [chartOptions, setChartOptions] = useState<ApexOptions>({
     chart: {
@@ -17,9 +27,9 @@ const BottleneckChart = () => {
       width: "100%",
       toolbar: { show: false },
       background: "transparent",
-      foreColor: isDark ? "#d1d5db" : "#333", 
+      foreColor: isDark ? "#d1d5db" : "#333",
     },
-
+    tooltip: tooltipWithoutDollar,
     plotOptions: {
       bar: {
         horizontal: true,
@@ -33,13 +43,13 @@ const BottleneckChart = () => {
         colors: ["#fff"],
       },
     },
-    colors: ["#a855f7"], 
+    colors: ["#a855f7"],
     xaxis: {
       categories: [],
       title: {
         text: "Process Stage",
         style: {
-          color: "#a855f7", 
+          color: "#a855f7",
           fontWeight: 600,
         },
       },
@@ -55,13 +65,10 @@ const BottleneckChart = () => {
       },
       labels: {
         style: {
-          colors: "#a855f7", 
+          colors: "#a855f7",
           fontSize: "12px",
         },
       },
-    },
-    tooltip: {
-      theme: "dark",
     },
     grid: {
       show: true,
@@ -82,73 +89,15 @@ const BottleneckChart = () => {
     },
   ]);
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
-
-  const formatDate = (date: Date) =>
-    `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-
-  useEffect(() => {
-    const dark = document.documentElement.classList.contains("dark");
-    setIsDark(dark);
-
-    setChartOptions((prev) => ({
-      ...prev,
-      chart: {
-        ...prev.chart,
-        background: "transparent",
-        foreColor: dark ? "#d1d5db" : "#333",
-        offsetX: -10,
-      },
-      xaxis: {
-        ...prev.xaxis,
-        title: {
-          text: "Process Stage",
-          style: {
-            color: dark ? "#d1d5db" : "#333",
-            fontWeight: 600,
-          },
-        },
-        labels: {
-          style: {
-            colors: dark ? "#d1d5db" : "#333",
-          },
-        },
-      },
-      yaxis: {
-        ...prev.yaxis,
-        title: {
-          text: undefined,
-        },
-        labels: {
-          style: {
-            colors: dark ? "#d1d5db" : "#333",
-            fontSize: "12px",
-          },
-        },
-      },
-      grid: {
-        show: true,
-        borderColor: dark ? "#3f3f46" : "#e5e7eb",
-        row: {
-          colors: ["transparent"],
-        },
-      },
-      theme: {
-        mode: dark ? "dark" : "light",
-      },
-    }));
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       const params = new URLSearchParams({
         startDate: formattedStart,
@@ -222,8 +171,8 @@ const BottleneckChart = () => {
   return (
     <div className="mt-6">
       <h2 className="app-subheading">Bottleneck Analysis</h2>
-      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 overflow-hidden">
-        <div className="w-full overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 pt-6 overflow-hidden">
+        <div className="relative z-10 overflow-visible">
           <ReactApexChart
             options={chartOptions}
             series={series}

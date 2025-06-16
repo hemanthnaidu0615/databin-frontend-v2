@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -7,8 +6,11 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
-import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
+
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
 const viewOptions = [
@@ -21,26 +23,19 @@ interface Product {
   units_sold: number;
 }
 
-const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 const convertToUSD = (rupees: number): number => {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
 const TopProductsTable = () => {
   const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [viewMode, setViewMode] = useState<"revenue" | "units">("revenue");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
   const [rows, setRows] = useState(5);
@@ -59,8 +54,8 @@ const TopProductsTable = () => {
       setLoading(true);
       setError(null);
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       const params = new URLSearchParams({
         startDate: formattedStart,
@@ -154,19 +149,7 @@ const TopProductsTable = () => {
       grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
       colors: ["#a855f7"],
       legend: { show: false },
-      tooltip: {
-        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-          const value = series[seriesIndex][dataPointIndex];
-          const color = w.globals.colors[seriesIndex] || "#a855f7";
-          return `
-          <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Revenue</div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
-            <span style="font-weight: 600;">$${value.toFixed(2)}</span>
-          </div>
-        `;
-        },
-      },
+      tooltip: getBaseTooltip(isDark, revenueTooltip),
     }),
     [theme, viewMode, topProducts]
   );

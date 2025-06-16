@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useTheme } from "next-themes";
 import ReactApexChart from "react-apexcharts";
 import { axiosInstance } from "../../../axios";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import { formatDateTime } from "../../utils/kpiUtils";
+import { getBaseTooltip, percentageTooltip, turnoverRateTooltip } from "../../modularity/graphs/graphWidget";
 
 interface Filters {
   selectedRegion: string;
@@ -24,11 +27,10 @@ interface AlertAPIResponse {
   available: number;
 }
 
-const InventoryOverview: React.FC<{
-  filters: Filters;
-  isSidebarOpen?: boolean;
-  isDarkTheme?: boolean;
-}> = ({ isDarkTheme = false }) => {
+const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }> = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const [warehouseData, setWarehouseData] = useState<RegionData[]>([]);
   const [alertsData, setAlertsData] = useState([
     { label: "Available", value: "0%", count: 0, color: "text-green-500" },
@@ -39,20 +41,31 @@ const InventoryOverview: React.FC<{
   const [turnoverCategories, setTurnoverCategories] = useState<string[]>([]);
   const [restockSchedule, setRestockSchedule] = useState<any[]>([]);
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
-  const formatDate = (date: Date): string =>
-    `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+  const warehouseTooltip = {
+    ...getBaseTooltip(isDark, percentageTooltip),
+    y: {
+      ...getBaseTooltip(isDark, percentageTooltip).y,
+      formatter: (val: number) => val.toLocaleString(),
+    },
+  };
+
+  const turnoverTooltip = {
+    ...getBaseTooltip(isDark, turnoverRateTooltip),
+    y: {
+      ...getBaseTooltip(isDark, turnoverRateTooltip).y,
+      formatter: (val: number) => val.toLocaleString(),
+    },
+  };
 
   useEffect(() => {
     const fetchRegionData = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       try {
         const response = await axiosInstance.get<RegionData[]>(
@@ -80,8 +93,8 @@ const InventoryOverview: React.FC<{
     const fetchTurnoverAndAlerts = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       try {
         const response = await axiosInstance.get(
@@ -129,9 +142,9 @@ const InventoryOverview: React.FC<{
               `${date.getFullYear()}-${(date.getMonth() + 1)
                 .toString()
                 .padStart(2, "0")}-${date
-                .getDate()
-                .toString()
-                .padStart(2, "0")}`
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}`
             );
             date.setDate(date.getDate() + 1);
           }
@@ -151,8 +164,8 @@ const InventoryOverview: React.FC<{
     const fetchAlerts = async () => {
       if (!startDate || !endDate) return;
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       try {
         const res = await axiosInstance.get("/inventory/turnover-alerts", {
@@ -195,10 +208,10 @@ const InventoryOverview: React.FC<{
     dataLabels: { enabled: false },
     xaxis: {
       categories: warehouseData.map((d) => d.region),
-      labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
       title: {
         text: "Region",
-        style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
+        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
         show: false,
@@ -206,16 +219,16 @@ const InventoryOverview: React.FC<{
     },
 
     yaxis: {
-      labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
       title: {
         text: "Inventory %",
-        style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
+        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
         show: false,
       },
     },
-    tooltip: { theme: isDarkTheme ? "dark" : "light" },
+    tooltip: warehouseTooltip,
   };
 
   const warehouseChartSeries = [
@@ -237,28 +250,28 @@ const InventoryOverview: React.FC<{
     },
     xaxis: {
       categories: turnoverCategories,
-      labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
       title: {
         text:
           turnoverCategories.length > 0 && turnoverCategories[0].length === 4
             ? "Year"
             : turnoverCategories[0]?.length <= 7
-            ? "Month"
-            : "Date",
-        style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
+              ? "Month"
+              : "Date",
+        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
       },
       crosshairs: {
         show: false,
       },
     },
     yaxis: {
-      labels: { style: { colors: isDarkTheme ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
       title: {
         text: "Turnover Rate",
-        style: { color: isDarkTheme ? "#ccc" : "#333", fontWeight: 600 },
+        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
       },
     },
-    tooltip: { theme: isDarkTheme ? "dark" : "light" },
+    tooltip: turnoverTooltip,
     crosshairs: {
       show: false,
     },
