@@ -10,7 +10,8 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import { axiosInstance } from "../../axios";
-import ResponsiveViewMoreButton from "../modularity/buttons/Button";
+import CommonButton from "../modularity/buttons/Button";
+
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -124,11 +125,11 @@ export default function RecentOrders() {
           </h2>
 
           {/* Mobile arrow (→) aligned right */}
-          <ResponsiveViewMoreButton onClick={handleViewMore} showDesktop={false} />
+          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
         </div>
 
         {/* Desktop & tablet "View More" */}
-        <ResponsiveViewMoreButton onClick={handleViewMore} showMobile={false} />
+         <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
       </div>
 
 

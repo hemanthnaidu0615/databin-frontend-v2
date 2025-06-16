@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { axiosInstance } from "../../../axios";
-import { CommonButton } from "../../modularity/buttons/Button";
 import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
+import CommonButton from "../../modularity/buttons/Button";
 
 const roleMappings: any[] = [
   { id: 1, role_level: "admin", department_id: null, identifier: "admin" },
@@ -237,7 +237,7 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
         )}
 
         <div className="col-span-full mt-2">
-          <CommonButton onClick={handleSubmit} text={editingUser ? "Update" : "Add User"} loading={loading} variant="primary" />
+         <CommonButton onClick={handleSubmit} text={editingUser ? "Update" : "Add User"} loading={loading} variant="primary" />
 
         </div>
       </div>

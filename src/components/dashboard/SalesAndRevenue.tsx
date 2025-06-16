@@ -4,7 +4,8 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import ResponsiveViewMoreButton from "../modularity/buttons/Button";
+import CommonButton from "../modularity/buttons/Button";
+
 
 interface StatisticsChartProps {
   onRemove?: () => void;
@@ -193,11 +194,11 @@ export default function StatisticsChart({}: StatisticsChartProps) {
           <h2 className="app-subheading flex-1 mr-2">Sales & Revenue</h2>
 
           {/* Mobile arrow (→) aligned right */}
-          <ResponsiveViewMoreButton onClick={handleViewMore} showDesktop={false} />
+          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
         </div>
 
         {/* Desktop & tablet "View More" */}
-        <ResponsiveViewMoreButton onClick={handleViewMore} showMobile={false} />
+        <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
       </div>
 
       <div className="flex-1 w-full mt-3">

@@ -6,7 +6,7 @@ import { axiosInstance } from "../../../axios";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
 import { InputTextarea } from "primereact/inputtextarea";
-import { ActionButton } from "../../modularity/buttons/Button";
+import CommonButton from "../../modularity/buttons/Button";
 import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 interface SchedulerData {
@@ -343,10 +343,7 @@ export const CreateSchedulerUsingQuery = () => {
 
         {/* Save Scheduler Button */}
         <div className="flex justify-end">
-          <ActionButton
-            text="Save Scheduler"
-            onClick={handleSaveScheduler}
-          />
+          <CommonButton variant="action" text="Save Scheduler" onClick={handleSaveScheduler} />
         </div>
       </div>
     </div>

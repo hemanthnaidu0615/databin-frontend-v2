@@ -53,14 +53,8 @@ const ShipmentPage = () => {
             value={selectedCarrier}
             options={carriers.map((c) => ({ label: c, value: c }))}
             onChange={setSelectedCarrier}
-            className="app-dropdown"
+            className="app-dropdown px-2 py-1 text-[0.85rem] leading-[0.95rem] h-8 flex items-center"
             disabled={loadingFilters}
-            style={{
-              padding: '4px 8px',     
-              fontSize: '0.85rem',    
-              lineHeight: '0.7rem',   
-              height: '32px',         
-            }}
             />
         </div>
 
@@ -72,14 +66,8 @@ const ShipmentPage = () => {
             value={selectedMethod}
             options={shippingMethods.map((m) => ({ label: m, value: m }))}
             onChange={setSelectedMethod}
-            className="app-dropdown "
+            className="app-dropdown px-2 py-1 text-[0.85rem] leading-[0.95rem] h-8 flex items-center"
             disabled={loadingFilters}
-            style={{
-              padding: '4px 8px',     
-              fontSize: '0.85rem',    
-              lineHeight: '0.7rem',   
-              height: '32px',         
-            }}
           />
         </div>
 

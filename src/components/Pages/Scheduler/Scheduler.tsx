@@ -4,7 +4,8 @@ import CreateSchedulerUsingQuery from "./CreateSchedulerUsingQuery";
 import ViewScheduler from "./ViewScheduler";
 import { Card } from "primereact/card";
 import "./style.css";
-import { TabSwitchButton } from "../../modularity/buttons/Button";
+import CommonButton from "../../modularity/buttons/Button";
+
 
 const Scheduler = () => {
   const [activePage, setActivePage] = useState<"create" | "view">("create");
@@ -12,18 +13,22 @@ const Scheduler = () => {
   return (
     <div className="schedulerContainer">
       <div className="w-full px-4 py-4 flex flex-col md:flex-row items-center gap-4 rounded-xl">
-        <TabSwitchButton
-          label="Create Scheduler"
+        <CommonButton
+          variant="tab"
+          text="Create Scheduler"
           icon={<i className="pi pi-calendar-plus" />}
           active={activePage === "create"}
           onClick={() => setActivePage("create")}
         />
-        <TabSwitchButton
-          label="View Scheduler"
+
+        <CommonButton
+          variant="tab"
+          text="View Scheduler"
           icon={<i className="pi pi-calendar" />}
           active={activePage === "view"}
           onClick={() => setActivePage("view")}
         />
+
       </div>
 
       {/* Main Content */}

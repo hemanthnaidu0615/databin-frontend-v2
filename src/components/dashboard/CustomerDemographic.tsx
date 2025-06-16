@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import allStates from "./allStates.json";
 import { axiosInstance } from "../../axios";
-import ResponsiveViewMoreButton from "../modularity/buttons/Button";
+import CommonButton from "../modularity/buttons/Button";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
@@ -252,11 +252,11 @@ const DemographicCard = () => {
           <h2 className="app-subheading flex-1 mr-2">Customer Demographic</h2>
 
           {/* Mobile arrow (→) aligned right */}
-          <ResponsiveViewMoreButton onClick={handleViewMore} showDesktop={false} />
+          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
         </div>
 
         {/* Desktop & tablet "View More" */}
-        <ResponsiveViewMoreButton onClick={handleViewMore} showMobile={false} />
+        <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
       </div>
 
       <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">

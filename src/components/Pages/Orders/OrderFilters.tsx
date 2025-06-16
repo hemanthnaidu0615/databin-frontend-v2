@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../../../axios";
-import { CommonButton } from "../../modularity/buttons/Button";
 import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
+import CommonButton from "../../modularity/buttons/Button";
 
 interface OrderFiltersProps {
   filters: {
@@ -61,14 +61,6 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
     e.preventDefault();
     onApply();
   };
-
-  // Handle Enter key on selects to prevent dropdown reopen and trigger apply
-  // const handleSelectKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
-  //   if (e.key === "Enter") {
-  //     e.preventDefault(); // Prevent dropdown toggle
-  //     onApply(); // Trigger apply filters
-  //   }
-  // };
 
   return (
     <form

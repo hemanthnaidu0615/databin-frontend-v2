@@ -2,169 +2,115 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { JSX } from "react";
 
-type Props = {
-  onClick: () => void;
-  showMobile?: boolean;
-  showDesktop?: boolean;
-  text?: string;
-  className?: string;
-};                     
-type ButtonProps = {
+type ButtonVariant = "primary" | "secondary" | "auth" | "tab" | "action" | "responsive";     // Add user || apply filters || Login || create and view schedular || save schedular || view more
+type CommonButtonProps = {
   onClick?: () => void;
   type?: "button" | "submit" | "reset";
-  text: string;
+  text?: string;
   loading?: boolean;
   disabled?: boolean;
   className?: string;
-  variant?: "primary" | "secondary" | "auth";
-};
-type TabButtonProps = {
-  label: string;
+  variant?: ButtonVariant;
   icon?: JSX.Element;
   active?: boolean;
-  onClick: () => void;
-  className?: string;
-};
-type ActionButtonProps = {
-  text: string;
-  onClick: () => void;
-  className?: string;
+  showMobile?: boolean;
+  showDesktop?: boolean;
   style?: React.CSSProperties;
-  icon?: JSX.Element;
 };
 
-
-const ResponsiveViewMoreButton = ({
-  onClick,
-  showMobile = true,
-  showDesktop = true,
-  text = "View more",
-  className = "",
-}: Props) => (
-  <>
-    {showMobile && (
-      <button
-        onClick={onClick}
-        className={`sm:hidden text-purple-600 text-sm font-medium self-start ${className}`}
-      >
-        <FontAwesomeIcon
-          icon={faShareFromSquare}
-          size="lg"
-          style={{ color: "#a855f7" }}
-        />
-      </button>
-    )}
-
-    {showDesktop && (
-      <button
-        onClick={onClick}
-        className={`hidden sm:block text-xs font-medium text-purple-600 hover:underline ${className}`}
-      >
-        {text}
-      </button>
-    )}
-  </>
-);                                    
-export const CommonButton = ({
+const CommonButton = ({
   onClick,
   type = "button",
-  text,
+  text = "Click me",
   loading = false,
   disabled = false,
   className = "",
   variant = "primary",
-}: ButtonProps) => {
+  icon,
+  active = false,
+  showMobile = true,
+  showDesktop = true,
+  style = {},
+}: CommonButtonProps) => {
   const isDisabled = disabled || loading;
 
-  const baseStyles = `
-    px-4 py-2 rounded text-sm text-white transition
-    border-0 shadow-none outline-none
-    focus:ring-0 focus:outline-none
+  // Default base styles
+  let baseStyle = `
+    flex items-center justify-center gap-2
+    font-semibold rounded transition-all
     ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
     ${className}
   `;
 
-    let variantStyles = "";
+  // Variant-specific styles
+  let variantStyle = "";
 
   switch (variant) {
     case "primary":
-      variantStyles = "px-4 py-2 rounded bg-[#9614d0] hover:bg-[#a855f7]";
+      variantStyle = "bg-[#a855f7] hover:bg-[#9614d0] px-4 py-2 text-white text-sm";
       break;
     case "secondary":
-      variantStyles = "px-4 py-2 rounded bg-[#a855f7] hover:bg-[#9614d0]";
+      variantStyle = "bg-[#a855f7] hover:bg-[#9614d0] px-4 py-2 text-white text-sm";
       break;
     case "auth":
-      variantStyles = `
-        w-full py-2 px-4 rounded-md bg-[#a855f7]
-        transition duration-300 ease-in-out
-        hover:scale-105 hover:shadow-lg active:scale-100 active:shadow-sm
-      `;
+      variantStyle = "w-full bg-[#a855f7] py-2 px-4 hover:scale-105 hover:shadow-lg active:scale-100 active:shadow-sm text-white";
       break;
-  }                                              
+    case "tab":
+      baseStyle += " w-full md:w-auto px-5 py-3 rounded-lg font-semibold shadow transition-all duration-200 flex items-center justify-center gap-2";
+
+      variantStyle = active
+        ? "bg-[#a855f7] text-white border border-[#a855f7]"
+        : "bg-[#a855f7] text-white border border-[#a855f7]";
+      break;
+    case "action":
+      variantStyle = "bg-[#a855f7] hover:brightness-90 text-white py-3 px-6 w-full shadow-md hover:shadow-lg";
+      break;
+    case "responsive":
+      return (
+        <>
+          {showMobile && (
+            <button
+              onClick={onClick}
+              className={`sm:hidden text-purple-600 text-sm font-medium self-start ${className}`}
+              style={style}
+            >
+              <FontAwesomeIcon
+                icon={faShareFromSquare}
+                size="lg"
+                style={{ color: "#a855f7" }}
+              />
+            </button>
+          )}
+          {showDesktop && (
+            <button
+              onClick={onClick}
+              className={`hidden sm:block text-xs font-medium text-purple-600 hover:underline ${className}`}
+              style={style}
+            >
+              {text || "View more"}
+            </button>
+          )}
+        </>
+      );
+
+  }
+
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`${variantStyles} ${baseStyles}`}
+      style={style}
+      className={`${variantStyle} ${baseStyle}`}
     >
-      {loading ? "Processing..." : text}
+      {loading ? "Processing..." : (
+        <>
+          {icon && <span>{icon}</span>}
+          <span>{text}</span>
+        </>
+      )}
     </button>
   );
 };
 
-export const TabSwitchButton = ({
-  label,
-  icon,
-  active = false,
-  onClick,
-  className = "",
-}: TabButtonProps) => {
-  const activeStyles = active
-    ? "bg-[#8b9eff] text-black"
-    : "bg-transparent text-gray-300 border border-[#8b9eff] hover:bg-[#2a2e45]";
-
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "#a855f7",
-        border: "none",
-        color: "white",
-        transition: "none",
-      }}
-      className={`w-full md:w-auto px-5 py-3 rounded-lg font-semibold shadow transition-all duration-200 flex items-center justify-center gap-2 ${activeStyles} ${className}`}
-    >
-      {icon && <span className="text-base">{icon}</span>}
-      <span>{label}</span>
-    </button>
-  );
-};
-export const ActionButton = ({
-  text,
-  onClick,
-  style = {},
-  icon,
-}: ActionButtonProps) => {
-  const mergedStyle: React.CSSProperties = {
-    backgroundColor: "#a855f7",
-    border: "none",
-    color: "white",
-    transition: "none", 
-    ...style,
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      style={mergedStyle}
-      className="bg-[#9C27B0] hover:brightness-90 text-white font-semibold py-3 px-6 rounded-lg w-full shadow-md hover:shadow-lg transition duration-200"
-    >
-      {icon && <span>{icon}</span>}
-      {text}
-    </button>
-  );
-};
-
-
-export default ResponsiveViewMoreButton;
+export default CommonButton;

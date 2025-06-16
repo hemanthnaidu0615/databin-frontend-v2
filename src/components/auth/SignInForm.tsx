@@ -7,7 +7,8 @@ import { Carousel } from "primereact/carousel";
 import logo from "../../images/logo.png";
 import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import FeatureCard from "./FeatureCard";
-import { CommonButton } from "../modularity/buttons/Button";
+import CommonButton from "../modularity/buttons/Button";
+
 
 const features = [
   { title: "Custom Alerts & Thresholds", icon: "pi pi-bell" },
@@ -206,7 +207,8 @@ function Signin() {
               </div>
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <CommonButton text="Login" loading={loading} type="submit" variant="auth" />
+           <CommonButton text="Login" loading={loading} type="submit" variant="auth" />
+
           </form>
         </motion.div>
       </motion.div>
