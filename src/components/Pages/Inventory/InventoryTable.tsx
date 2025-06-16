@@ -182,10 +182,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               setSelectedStatus(val);
               setFirst(0);
             }}
-            className="px-2 py-0 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
-            style={{
-              lineHeight: '0.9rem',
-            }}
+            className="px-2 py-0 rounded-md text-sm bg-white leading-[0.9rem] text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
           />
 
           <PrimeSelectFilter<string>
@@ -199,12 +196,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               setSelectedCategory(val);
               setFirst(0);
             }}
-            className="px-2 py-0 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
-            style={{
-              lineHeight: '0.9rem',
-            }}
+            className="px-2 py-0 rounded-md text-sm bg-white leading-[0.9rem] text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
           />
-
         </div>
       </div>
 

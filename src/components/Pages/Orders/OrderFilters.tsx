@@ -57,9 +57,8 @@ const OrderFilters: React.FC<OrderFiltersProps> = ({
     fetchFilterOptions();
   }, []);
 
-  // Handle form submit (called on Enter or button click)
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent page reload
+    e.preventDefault();
     onApply();
   };
 

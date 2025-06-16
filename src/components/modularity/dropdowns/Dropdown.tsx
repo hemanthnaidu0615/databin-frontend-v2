@@ -19,7 +19,6 @@ export const PrimeSelectFilter = <T,>({
   placeholder,
   className,
   disabled = false,
-  style,
 }: PrimeSelectFilterProps<T>) => {
   return (
     <Dropdown
@@ -29,7 +28,6 @@ export const PrimeSelectFilter = <T,>({
       placeholder={placeholder}
       className={className}
       disabled={disabled}
-      style={style}
     />
   );
 };
