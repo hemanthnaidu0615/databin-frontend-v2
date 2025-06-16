@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
 import { Toast } from "primereact/toast";
 import { axiosInstance } from "../../../axios";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
+import CommonButton from "../../modularity/buttons/Button";
 
 const roleMappings: any[] = [
   { id: 1, role_level: "admin", department_id: null, identifier: "admin" },
@@ -163,7 +164,6 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
       : currentUser?.department
         ? [currentUser.department.charAt(0).toUpperCase() + currentUser.department.slice(1)]
         : [];
-
   return (
     <>
       <Toast ref={toast} />
@@ -209,13 +209,14 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
           <label className="block text-s font-medium text-gray-700 dark:text-white dark:bg-gray-800 mb-1">
             Role Level<span className="text-red-500">*</span>
           </label>
-          <Dropdown
-            value={roleLevel}
-            onChange={(e) => setRoleLevel(e.value)}
-            options={filteredRoleLevels}
+          <PrimeSelectFilter<string>
+            value={roleLevel ?? ""}
+            onChange={setRoleLevel}
+            options={filteredRoleLevels.map((r) => ({ label: r, value: r }))}
             placeholder="Select Role Level"
             className="w-full text-xs"
           />
+
         </div>
 
         {roleLevel?.toLowerCase() !== "admin" && roleLevel !== null && (
@@ -224,32 +225,19 @@ export const AddUser = ({ setUsers, editingUser, onClose }: any) => {
               Department<span className="text-red-500">*</span>
             </label>
 
-            <Dropdown
-              value={department}
-              onChange={(e) => setDepartment(e.value)}
-              options={filteredDepartments}
+            <PrimeSelectFilter<string>
+              value={department ?? ""}
+              onChange={setDepartment}
+              options={filteredDepartments.map((d) => ({ label: d, value: d }))}
               placeholder="Select Department"
               className="w-full text-xs"
             />
+
           </div>
         )}
 
         <div className="col-span-full mt-2">
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className={`
-    px-4 py-2 rounded 
-    bg-[#9614d0]  text-sm text-white 
-    hover:bg-[#a855f7] transition
-    border-0 shadow-none outline-none
-    focus:ring-0 focus:outline-none
-    disabled:opacity-50
-  `}
-          >
-            {loading ? "Processing..." : editingUser ? "Update" : "Add User"}
-          </button>
-
+         <CommonButton onClick={handleSubmit} text={editingUser ? "Update" : "Add User"} loading={loading} variant="primary" />
 
         </div>
       </div>

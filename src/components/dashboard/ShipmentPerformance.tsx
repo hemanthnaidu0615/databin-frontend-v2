@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
+import CommonButton from "../modularity/buttons/Button";
 
 const ShipmentPerformance: React.FC<{
   size?: "small" | "full";
@@ -199,25 +200,11 @@ const ShipmentPerformance: React.FC<{
               </h2>
 
               {/* Mobile arrow (→) aligned right */}
-              <button
-                onClick={handleViewMore}
-                className="sm:hidden text-purple-600 text-sm font-medium self-start"
-              >
-                <FontAwesomeIcon
-                  icon={faShareFromSquare}
-                  size="lg"
-                  style={{ color: "#a855f7" }}
-                />
-              </button>
+              <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
             </div>
 
             {/* Desktop & tablet "View More" */}
-            <button
-              onClick={handleViewMore}
-              className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-            >
-              View More
-            </button>
+            <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
           </div>
 
           {isLoading ? (

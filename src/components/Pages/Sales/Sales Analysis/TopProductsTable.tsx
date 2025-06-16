@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from "react";
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dropdown } from "primereact/dropdown";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
@@ -12,11 +11,12 @@ import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
 
-const viewOptions = [
-  { label: "By Revenue", value: "revenue" },
-  { label: "By Units", value: "units" },
-];
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
+const viewOptions = [
+  { label: "By Revenue", value: "revenue" as "revenue" },
+  { label: "By Units", value: "units" as "units" },
+];
 interface Product {
   product_name: string;
   total_sales: number;
@@ -212,11 +212,12 @@ const TopProductsTable = () => {
             }}
             className="app-search-input w-full sm:w-64"
           />
-          <Dropdown
+          <PrimeSelectFilter<"revenue" | "units">
             value={viewMode}
             options={viewOptions}
-            onChange={(e) => setViewMode(e.value)}
-            className="w-50"
+            onChange={setViewMode}
+            className="w-50 h-10 leading-[0.9rem]"
+            placeholder="Select View Mode "
           />
         </div>
       </div>

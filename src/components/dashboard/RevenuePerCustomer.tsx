@@ -11,6 +11,7 @@ import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import { getBaseTooltip, revenueTooltip } from "../modularity/graphs/graphWidget";
+import CommonButton from "../modularity/buttons/Button";
 
 type RevenuePerCustomerProps = {
   size?: "small" | "full";
@@ -142,7 +143,7 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     ],
   };
 
-  const onViewMore = () => {
+  const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales/dashboard");
   };
@@ -154,26 +155,12 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
           <div className="flex items-start justify-between w-full sm:w-auto">
             <h2 className="app-subheading flex-1 mr-2">Revenue Per Customer</h2>
 
-            {/* Mobile arrow (→) */}
-            <button
-              onClick={onViewMore}
-              className="sm:hidden text-purple-600 w-6 shadow text-xl font-medium self-start"
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="sm"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
+            {/* Mobile arrow (→) aligned right */}
+            <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
           </div>
 
           {/* Desktop & tablet "View More" */}
-          <button
-            onClick={onViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-          >
-            View More
-          </button>
+           <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
         </div>
       )}
 

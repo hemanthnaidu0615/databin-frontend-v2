@@ -9,10 +9,9 @@ import { formatDate } from "../../../utils/kpiUtils";
 import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
-const chartTypes = [
-  { label: "Bar", value: "bar" },
-  { label: "Line", value: "line" },
-];
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
+
+
 
 const SalesTrendsChart = () => {
   const { theme } = useTheme();
@@ -223,10 +222,13 @@ const SalesTrendsChart = () => {
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       <div className="flex gap-2 flex-wrap mb-4">
-        <Dropdown
+        <PrimeSelectFilter<"line" | "bar">
           value={chartType}
-          options={chartTypes}
-          onChange={(e) => setChartType(e.value)}
+          options={[
+            { label: "Line", value: "line" as "line" },
+            { label: "Bar", value: "bar" as "bar" },
+          ]}
+          onChange={setChartType}
           className="w-46"
         />
         <Dropdown

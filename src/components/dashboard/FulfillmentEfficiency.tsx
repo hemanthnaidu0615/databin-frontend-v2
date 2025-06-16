@@ -11,7 +11,8 @@ import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import { getBaseTooltip, ordersTooltip } from "../modularity/graphs/graphWidget";
-
+import CommonButton from "../modularity/buttons/Button";
+        
 type FulfillmentEfficiencyProps = {
   size?: "small" | "full";
   onRemove?: () => void;
@@ -20,7 +21,6 @@ type FulfillmentEfficiencyProps = {
 
 const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   size = "full",
-  onViewMore,
 }) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -164,7 +164,6 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       },
     },
     tooltip: tooltipWithoutDollar,
-
     legend: {
       position: "bottom",
       labels: {
@@ -180,18 +179,10 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
     },
   ];
 
-  function handleViewMore(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): void {
-    event.preventDefault();
+  const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-
-    if (onViewMore) {
-      onViewMore();
-    } else {
-      navigate("/fulfillment");
-    }
-  }
+    navigate("/fulfillment");
+  };
 
   return (
     <div
@@ -207,23 +198,12 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
             <h2 className="app-subheading flex-1 mr-2">
               Fulfillment Efficeincy Summary
             </h2>
-            <button
-              onClick={handleViewMore}
-              className="sm:hidden text-purple-600 text-sm font-medium self-start"
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="lg"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
+            {/* Mobile arrow (→) aligned right */}
+            <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
           </div>
-          <button
-            onClick={handleViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-          >
-            View More
-          </button>
+
+          {/* Desktop & tablet "View More" */}
+          <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
         </div>
       )}
       <div

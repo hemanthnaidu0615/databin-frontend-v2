@@ -4,6 +4,7 @@ import { Paginator } from "primereact/paginator";
 import "primereact/resources/themes/lara-dark-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import { axiosInstance } from "../../../axios";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 interface Filters {
   selectedRegion: string;
@@ -170,34 +171,33 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
               setFirst(0);
             }}
           />
-          <select
+          <PrimeSelectFilter<string>
+            placeholder="All statuses"
             value={selectedStatus}
-            onChange={(e) => {
-              setSelectedStatus(e.target.value);
+            options={["Available", "Out of Stock", "Low Stock"].map((status) => ({
+              label: status,
+              value: status,
+            }))}
+            onChange={(val) => {
+              setSelectedStatus(val);
               setFirst(0);
             }}
-            className="px-3 py-1 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30"
-          >
-            <option value="">Status</option>
-            <option value="Available">Available</option>
-            <option value="Out of Stock">Out of Stock</option>
-            <option value="Low Stock">Low Stock</option>
-          </select>
-          <select
+            className="px-2 py-0 rounded-md text-sm bg-white leading-[0.9rem] text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
+          />
+
+          <PrimeSelectFilter<string>
+            placeholder="All categories"
             value={selectedCategory}
-            onChange={(e) => {
-              setSelectedCategory(e.target.value);
+            options={allCategories.map((cat) => ({
+              label: cat,
+              value: cat,
+            }))}
+            onChange={(val) => {
+              setSelectedCategory(val);
               setFirst(0);
             }}
-            className="px-3 py-1 rounded-md text-sm bg-white text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30"
-          >
-            <option value="">Category</option>
-            {allCategories.map((cat, i) => (
-              <option key={i} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+            className="px-2 py-0 rounded-md text-sm bg-white leading-[0.9rem] text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
+          />
         </div>
       </div>
 
