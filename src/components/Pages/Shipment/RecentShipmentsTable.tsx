@@ -1,29 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
 import { axiosInstance } from "../../../axios";
-
+import { formatDateTime, formatValue } from "../../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import { TableView, usePagination, TableColumn } from "../../modularity/tables/Table";
+import { motion } from "framer-motion";
 
 type Props = {
   selectedCarrier: string | null;
   selectedMethod: string | null;
-};
-
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  return isMobile;
 };
 
 const convertToUSD = (rupees: number): number => {
@@ -31,75 +17,21 @@ const convertToUSD = (rupees: number): number => {
   return rupees * exchangeRate;
 };
 
-const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
 const RecentShipmentsTable: React.FC<Props> = ({
   selectedCarrier,
   selectedMethod,
 }) => {
+  const { page, rows, onPageChange } = usePagination();
   const [shipments, setShipments] = useState<any[]>([]);
-  const [filteredShipments, setFilteredShipments] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [globalFilter, setGlobalFilter] = useState("");
   const [selectedShipment, setSelectedShipment] = useState<any | null>(null);
   const [visible, setVisible] = useState(false);
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const isMobile = useIsMobile();
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!startDate || !endDate) return;
-
-      const formattedStart = new Date(startDate).toISOString();
-      const formattedEnd = new Date(endDate).toISOString();
-
-      try {
-        const response = await axiosInstance.get(`recent-shipments`, {
-          params: {
-            startDate: formattedStart,
-            endDate: formattedEnd,
-            ...(enterpriseKey && { enterpriseKey }),
-            ...(selectedCarrier && { carrier: selectedCarrier }),
-            ...(selectedMethod && { shippingMethod: selectedMethod }),
-          },
-        });
-        const data = response.data;
-
-        if (Array.isArray(data)) {
-          setShipments(data);
-          setFilteredShipments(data);
-        } else {
-          setShipments([]);
-          setFilteredShipments([]);
-        }
-      } catch (error) {
-        console.error("Error fetching shipments:", error);
-      }
-    };
-
-    fetchData();
-  }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
-
-  useEffect(() => {
-    if (!searchQuery) {
-      setFilteredShipments(shipments);
-    } else {
-      const lowerSearchQuery = searchQuery.toLowerCase();
-      const filtered = shipments.filter((shipment) =>
-        shipment.shipment_id.toString().includes(lowerSearchQuery)
-      );
-      setFilteredShipments(filtered);
-    }
-  }, [searchQuery, shipments]);
 
   const getStatusSeverity = (status: string) => {
     switch (status) {
@@ -113,6 +45,103 @@ const RecentShipmentsTable: React.FC<Props> = ({
         return null;
     }
   };
+
+  const statusColors = {
+    "Delivered": "bg-green-600",
+    "In Transit": "bg-blue-500",
+    "Delayed": "bg-red-500",
+    "Unknown": "bg-gray-400",
+  };
+
+  const columns: TableColumn[] = [
+    { 
+      field: "shipment_id", 
+      header: "Shipment ID", 
+      mobilePriority: true 
+    },
+    { 
+      field: "customer_name", 
+      header: "Customer", 
+      mobilePriority: true 
+    },
+    { 
+      field: "carrier", 
+      header: "Carrier" 
+    },
+    { 
+      field: "actual_shipment_date", 
+      header: "Ship Date",
+      customBody: (rowData: any) => formatDateTime(rowData.actual_shipment_date)
+    },
+    { 
+      field: "shipment_status", 
+      header: "Status",
+      customBody: (rowData) => (
+        <Tag
+          value={rowData.shipment_status}
+          severity={getStatusSeverity(rowData.shipment_status)}
+        />
+      )
+    },
+    {
+      field: "action",
+      header: "Action",
+      customBody: (rowData) => (
+        <button
+          onClick={() => showDetails(rowData)}
+          className="text-purple-500 hover:underline text-sm font-medium"
+        >
+          View
+        </button>
+      )
+    },
+  ];
+
+  const config = {
+    columns,
+    statusColors,
+    mobileCardFields: ["shipment_id", "customer_name", "carrier", "shipment_status"],
+  };
+
+  const fetchShipments = async () => {
+    if (!startDate || !endDate) return;
+    setLoading(true);
+
+    try {
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
+
+      const params: any = {
+        startDate: formattedStart,
+        endDate: formattedEnd,
+        page: Math.floor(page / rows),
+        size: rows,
+      };
+      if (enterpriseKey) params.enterpriseKey = enterpriseKey;
+      if (selectedCarrier) params.carrier = selectedCarrier;
+      if (selectedMethod) params.shippingMethod = selectedMethod;
+
+      const response = await axiosInstance.get(`recent-shipments`, { params });
+      const data = response.data as { data?: any[]; count?: number };
+
+      if (data && Array.isArray(data.data)) {
+        setShipments(data.data);
+        setTotalRecords(data.count || 0);
+      } else {
+        setShipments([]);
+        setTotalRecords(0);
+      }
+    } catch (err) {
+      console.error("Error fetching shipments:", err);
+      setError("Failed to load shipments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchShipments();
+  }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod, page, rows]);
 
   const showDetails = async (shipment: any) => {
     try {
@@ -131,10 +160,6 @@ const RecentShipmentsTable: React.FC<Props> = ({
       setSelectedShipment(null);
       setVisible(true);
     }
-  };
-
-  const formatDate = (isoDate: string) => {
-    return isoDate?.split("T")[0] || "";
   };
 
   const shipmentDetails = (shipment: any) => {
@@ -160,11 +185,11 @@ const RecentShipmentsTable: React.FC<Props> = ({
           />
         </div>
         <div>
-          <strong>Ship Date:</strong> {formatDate(shipment.ship_date)}
+          <strong>Ship Date:</strong> {formatDateTime(shipment.ship_date)}
         </div>
         <div>
           <strong>Estimated Delivery:</strong>{" "}
-          {formatDate(shipment.estimated_delivery)}
+          {formatDateTime(shipment.estimated_delivery)}
         </div>
         <div>
           <strong>Origin:</strong> {shipment.origin}
@@ -180,227 +205,30 @@ const RecentShipmentsTable: React.FC<Props> = ({
     );
   };
 
-  const getPageOptions = () => {
-    const total = filteredShipments.length;
-    if (total <= 5) return [5];
-    if (total <= 10) return [5, 10];
-    if (total <= 20) return [5, 10, 15, 20];
-    if (total <= 50) return [10, 20, 30, 50];
-    return [10, 20, 50, 100];
-  };
-
-  const mobilePageData = filteredShipments.slice(first, first + rows);
-
-  const TableHeader = (
-    <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
-      <h2 className="app-subheading">Recent Shipments</h2>
-      <span className="p-input-icon-left w-full md:w-auto">
-        <InputText
-          type="search"
-          placeholder="Search Shipment ID"
-          className="app-search-input w-full"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </span>
-    </div>
+  const filteredShipments = shipments.filter(
+    (shipment) =>
+      globalFilter === "" ||
+      shipment.shipment_id.toString().includes(globalFilter.toLowerCase())
   );
 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      {TableHeader}
-
-      {/* Desktop View - DataTable */}
-      <div className="hidden md:block">
-        <DataTable
-          value={filteredShipments}
-          paginator
-          first={first}
-          rows={rows}
-          onPage={(e) => {
-            setFirst(e.first);
-            setRows(e.rows);
-          }}
-          stripedRows
-          className="p-datatable-sm w-full"
-          responsiveLayout="scroll"
-          paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-          rowsPerPageOptions={getPageOptions()}
-          sortMode="multiple"
-          scrollable
-          scrollHeight="flex"
-        >
-          <Column
-            field="shipment_id"
-            header={<span className="app-table-heading">Shipment ID</span>}
-            body={(rowData) => (
-              <span className="app-table-content">{rowData.shipment_id}</span>
-            )}
-            sortable
-          />
-          <Column
-            field="customer_name"
-            header={<span className="app-table-heading">Customer</span>}
-            body={(rowData) => (
-              <span className="app-table-content">{rowData.customer_name}</span>
-            )}
-            sortable
-          />
-          <Column
-            field="carrier"
-            header={<span className="app-table-heading">Carrier</span>}
-            body={(rowData) => (
-              <span className="app-table-content">{rowData.carrier}</span>
-            )}
-            sortable
-          />
-          <Column
-            field="actual_shipment_date"
-            header={<span className="app-table-heading">Ship Date</span>}
-            body={(rowData) => (
-              <span className="app-table-content">
-                {formatDate(rowData.actual_shipment_date)}
-              </span>
-            )}
-            sortable
-          />
-          <Column
-            field="shipment_status"
-            header={<span className="app-table-heading">Status</span>}
-            body={(rowData) => (
-              <span className="app-table-content">
-                <Tag
-                  value={rowData.shipment_status}
-                  severity={getStatusSeverity(rowData.shipment_status)}
-                />
-              </span>
-            )}
-            sortable
-          />
-          <Column
-            header={<span className="app-table-heading">Action</span>}
-            body={(rowData) => (
-              <button
-                onClick={() => showDetails(rowData)}
-                className="text-purple-500 hover:underline text-sm font-medium"
-              >
-                View
-              </button>
-            )}
-          />
-        </DataTable>
-      </div>
-
-      {/* Mobile View - Cards */}
-      <div className="block md:hidden space-y-4">
-        {mobilePageData.map((shipment, index) => (
-          <div
-            key={index}
-            className="border rounded-xl p-4 bg-white dark:bg-white/[0.03] shadow-sm"
-            onClick={() => showDetails(shipment)}
-          >
-            <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">
-              {shipment.shipment_id} - {shipment.customer_name}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              <div>
-                <strong>Carrier:</strong> {shipment.carrier}
-              </div>
-              <div>
-                <strong>Ship Date:</strong> {formatDate(shipment.actual_shipment_date)}
-              </div>
-              <div>
-                <strong>Status:</strong>{" "}
-                <Tag
-                  value={shipment.shipment_status}
-                  severity={getStatusSeverity(shipment.shipment_status)}
-                />
-              </div>
-            </div>
-            <div className="mt-2">
-              <button
-                onClick={() => showDetails(shipment)}
-                className="text-purple-500 hover:underline text-sm font-medium"
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Mobile-Only Custom Pagination */}
-      {isMobile && (
-        <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-          <div className="flex flex-col gap-2 mb-2 w-full">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="mobileRows" className="whitespace-nowrap">
-                Rows per page:
-              </label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setFirst(0);
-                }}
-                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
-              >
-                {getPageOptions().map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="text-black dark:text-white font-medium">
-              Page {Math.floor(first / rows) + 1} of{" "}
-              {Math.ceil(filteredShipments.length / rows)}
-            </div>
-          </div>
-
-          {/* Bottom: Pagination buttons with wrap */}
-          <div className="flex flex-wrap justify-between gap-2 text-sm w-full px-2">
-            <button
-              onClick={() => setFirst(0)}
-              disabled={first === 0}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              ⏮ First
-            </button>
-            <button
-              onClick={() => setFirst(Math.max(0, first - rows))}
-              disabled={first === 0}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() =>
-                setFirst(
-                  first + rows < filteredShipments.length ? first + rows : first
-                )
-              }
-              disabled={first + rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              Next
-            </button>
-            <button
-              onClick={() =>
-                setFirst(
-                  (Math.ceil(filteredShipments.length / rows) - 1) * rows
-                )
-              }
-              disabled={first + rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              ⏭ Last
-            </button>
-          </div>
-        </div>
-      )}
+      <TableView
+        data={filteredShipments}
+        config={config}
+        pagination={{
+          page,
+          rows,
+          totalRecords,
+          onPageChange,
+        }}
+        loading={loading}
+        error={error}
+        globalFilter={globalFilter}
+        onGlobalFilterChange={setGlobalFilter}
+        searchPlaceholder="Search Shipment ID"
+        title="Recent Shipments"
+      />
 
       <Dialog
         header="Shipment Details"
@@ -412,7 +240,13 @@ const RecentShipmentsTable: React.FC<Props> = ({
         draggable={false}
         dismissableMask={true}
       >
-        {selectedShipment ? shipmentDetails(selectedShipment) : <p>No data</p>}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          {selectedShipment ? shipmentDetails(selectedShipment) : <p>No data</p>}
+        </motion.div>
       </Dialog>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 
 const sections = [
   { title: "By Channel", endpoint: "by-channel" },
@@ -8,29 +9,10 @@ const sections = [
   { title: "By Item", endpoint: "by-item" },
 ];
 
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
-};
-
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
 }
-
-const formatValue = (value: number) => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
 
 const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
   const [dataBySection, setDataBySection] = useState<Record<string, any[]>>({});
@@ -40,8 +22,8 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
   const fetchData = async () => {
     if (!startDate || !endDate) return;
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
     const formattedCompany = company.toLowerCase();
 
     const requests: Promise<{ title: string; data: any[] }>[] = sections.map(

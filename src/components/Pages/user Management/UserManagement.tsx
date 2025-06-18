@@ -4,6 +4,7 @@ import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
 import { AddUser } from "./AddUser";
 import { axiosInstance } from "../../../axios";
+import Table from "./Table";
 
 
 export const UserManagement = () => {
@@ -141,6 +142,8 @@ export const UserManagement = () => {
               setEditUser(null);
             }}
           />
+
+         
         </Dialog>
       </div>
     </div>
