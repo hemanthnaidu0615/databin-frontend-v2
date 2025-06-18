@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { TableView, usePagination, TableColumn } from "../../../modularity/tables/Table";
 
 type ApiRow = {
   productId: string;
@@ -15,43 +17,73 @@ function convertToUSD(rupees: number): number {
   return rupees * exchangeRate;
 }
 
-const formatValue = (value: number) => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
 const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange || [];
 
   const [data, setData] = useState<ApiRow[]>([]);
-  const [viewMode, setViewMode] = useState<"card" | "grid">("card");
   const [searchTerm, setSearchTerm] = useState("");
+  const { page, rows, onPageChange } = usePagination();
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Define table columns
+  const columns: TableColumn[] = [
+    { field: "productId", header: "Item ID", mobilePriority: true },
+    { field: "category", header: "Web Category", mobilePriority: true },
+    { field: "brand", header: "Brand Name", mobilePriority: true },
+    { 
+      field: "totalQuantity", 
+      header: "Quantity",
+      customBody: (row: ApiRow) => row.totalQuantity.toLocaleString()
+    },
+    { 
+      field: "totalAmountUSD", 
+      header: "Total Amount",
+      customBody: (row: ApiRow) => `$${formatValue(row.totalAmountUSD)}`
+    },
+  ];
+
+  // Table configuration
+  const config = {
+    columns,
+    mobileCardFields: ["productId", "category", "brand", "totalQuantity", "totalAmountUSD"],
+    expandable: true
+  };
 
   useEffect(() => {
     if (!startDate || !endDate) return;
 
-    const formattedStartDate = new Date(startDate).toISOString();
-    const formattedEndDate = new Date(endDate).toISOString();
+    const fetchData = async () => {
+      setLoading(true);
+      const formattedStartDate = formatDateTime(startDate);
+      const formattedEndDate = formatDateTime(endDate);
+      const companyKey = company.toLowerCase();
 
-    const companyKey = company.toLowerCase();
+      try {
+        const response = await axiosInstance.get(`sales/volume-value/${companyKey}`, {
+          params: {
+            startDate: formattedStartDate,
+            endDate: formattedEndDate,
+            page: page / rows,
+            size: rows,
+            search: searchTerm
+          },
+        });
 
-    axiosInstance
-      .get(`sales/volume-value/${companyKey}`, {
-        params: {
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        },
-      })
-      .then((res) => {
-        const apiData = res.data as {
-          product_id: number;
-          product_name: string;
-          category: string;
-          total_amount: number;
-          total_quantity: number;
-        }[];
+        const resp = response.data as {
+          data: {
+            product_id: number;
+            product_name: string;
+            category: string;
+            total_amount: number;
+            total_quantity: number;
+          }[];
+          count?: number;
+        };
+
+        const apiData = resp.data;
 
         const formattedData: ApiRow[] = apiData.map((item) => ({
           productId: item.product_id.toString(),
@@ -62,187 +94,49 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
         }));
 
         setData(formattedData);
-      })
-      .catch((err) => {
+        const respData = response.data as { count?: number };
+        setTotalRecords(respData.count || 0);
+        setError(null);
+      } catch (err) {
         console.error("Error fetching data:", err);
+        setError("Failed to load sales data");
         setData([]);
-      });
-  }, [startDate, endDate, company]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredData = data.filter(
-    (item) =>
-      item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.productId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    fetchData();
+  }, [startDate, endDate, company, page, rows, searchTerm]);
 
   return (
     <div className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700">
       <div
-        className="px-4 py-2 font-semibold flex justify-between items-center"
+        className="px-4 py-2 font-semibold"
         style={{ backgroundColor: "#a855f7", color: "#fff" }}
       >
-        <span className="font-semibold text-sm sm:text-base truncate  rounded-xl shadow-sm overflow-hidden  flex flex-col">
+        <span className="font-semibold text-sm sm:text-base truncate rounded-xl shadow-sm overflow-hidden flex flex-col">
           Sales Data
         </span>
-        {/* View toggle only on mobile */}
-        <button
-          onClick={() => setViewMode(viewMode === "card" ? "grid" : "card")}
-          className="sm:hidden bg-violet-500 text-white px-3 py-1 text-xs rounded hover:bg-violet-600"
-        >
-          {viewMode === "card" ? "Grid View" : "Card View"}
-        </button>
       </div>
 
-      {/* Mobile View: Card/Grid layout */}
-      <div className="sm:hidden">
-        {/* Search bar */}
-        <div className="px-4 py-2">
-          <input
-            type="text"
-            placeholder="Search by brand or ID."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-2 py-1 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-          />
-        </div>
-
-        {filteredData.length === 0 ? (
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 p-4">
-            No data found for the selected dates or search term.
-          </p>
-        ) : viewMode === "card" ? (
-          <div className="max-h-[320px] overflow-y-auto p-2 space-y-2">
-            {filteredData.map((row, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 space-y-1 border border-gray-200 dark:border-gray-700"
-              >
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Item ID:
-                  </span>{" "}
-                  {row.productId}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Category:
-                  </span>{" "}
-                  {row.category}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Brand:
-                  </span>{" "}
-                  {row.brand}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Quantity:
-                  </span>{" "}
-                  {row.totalQuantity.toLocaleString()}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Total Amount:
-                  </span>{" "}
-                  ${formatValue(row.totalAmountUSD)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="max-h-[320px] overflow-y-auto p-2 grid grid-cols-2 gap-2">
-            {filteredData.map((row, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 border border-gray-200 dark:border-gray-700 text-xs"
-              >
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    ID:
-                  </span>{" "}
-                  {row.productId}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Cat:
-                  </span>{" "}
-                  {row.category}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Brand:
-                  </span>{" "}
-                  {row.brand}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Qty:
-                  </span>{" "}
-                  {row.totalQuantity.toLocaleString()}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Amount:
-                  </span>{" "}
-                  ${formatValue(row.totalAmountUSD)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Tablet/Laptop View */}
-      <div className="hidden sm:block">
-        {/* Search bar */}
-        <div className="p-4">
-          <input
-            type="text"
-            placeholder="Search by brand or ID."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-1/3 px-3 py-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-          />
-        </div>
-
-        {/* Table */}
-        <div className="max-h-[320px] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left bg-white dark:bg-gray-800 sticky top-0">
-                <th className="px-4 py-2 app-table-heading">Item ID</th>
-                <th className="px-4 py-2 app-table-heading">Web Category</th>
-                <th className="px-4 py-2 app-table-heading">Brand Name</th>
-                <th className="px-4 py-2 app-table-heading">Quantity</th>
-                <th className="px-4 py-2 app-table-heading">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((row, idx) => (
-                <tr
-                  key={idx}
-                  className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
-                >
-                  <td className="px-4 py-2 app-table-content">
-                    {row.productId}
-                  </td>
-                  <td className="px-4 py-2 app-table-content">
-                    {row.category}
-                  </td>
-                  <td className="px-4 py-2 app-table-content">{row.brand}</td>
-                  <td className="px-4 py-2 app-table-content">
-                    {row.totalQuantity.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 app-table-content">
-                    ${formatValue(row.totalAmountUSD)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <TableView
+        data={data}
+        config={config}
+        pagination={{
+          page,
+          rows,
+          totalRecords,
+          onPageChange,
+          rowsPerPageOptions: [5, 10, 20, 50]
+        }}
+        loading={loading}
+        error={error}
+        globalFilter={searchTerm}
+        onGlobalFilterChange={setSearchTerm}
+        searchPlaceholder="Search by brand or ID"
+        className="p-4"
+      />
     </div>
   );
 };
