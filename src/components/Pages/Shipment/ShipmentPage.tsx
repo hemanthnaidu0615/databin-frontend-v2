@@ -4,6 +4,7 @@ import ShipmentCharts from "./ShipmentCharts";
 import RecentShipmentsTable from "./RecentShipmentsTable";
 import { axiosInstance } from "../../../axios";
 import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
+import NewTable from "../../modularity/tables/newtable";
 
 const ShipmentPage = () => {
   const [selectedCarrier, setSelectedCarrier] = useState("");
@@ -98,6 +99,9 @@ const ShipmentPage = () => {
           selectedCarrier={selectedCarrier || null}
           selectedMethod={selectedMethod || null}
         />
+      </div>
+      <div>
+        <NewTable></NewTable>
       </div>
     </div>
   );
