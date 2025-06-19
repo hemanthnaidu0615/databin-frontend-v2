@@ -2,16 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import ApexCharts from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { useNavigate } from "react-router-dom";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import { getBaseTooltip, revenueTooltip } from "../modularity/graphs/graphWidget";
-import CommonButton from "../modularity/buttons/Button";
 
 type RevenuePerCustomerProps = {
   size?: "small" | "full";
@@ -30,8 +26,6 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
-
-  const navigate = useNavigate();
 
   const fetchData = async () => {
     if (!startDate || !endDate) return;
@@ -143,24 +137,13 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
     ],
   };
 
-  const handleViewMore = () => {
-    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-    navigate("/sales/dashboard");
-  };
-
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       {size === "full" && (
         <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
           <div className="flex items-start justify-between w-full sm:w-auto">
             <h2 className="app-subheading flex-1 mr-2">Revenue Per Customer</h2>
-
-            {/* Mobile arrow (→) aligned right */}
-            <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
           </div>
-
-          {/* Desktop & tablet "View More" */}
-           <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
         </div>
       )}
 

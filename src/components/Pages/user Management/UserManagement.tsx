@@ -69,8 +69,8 @@ export const UserManagement = () => {
   // );
 
   return (
-    <div className="p-6 bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-900 dark:text-gray-100">
-      <div className="max-w-6xl mx-auto">
+    <div className="bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 w-full h-full overflow-hidden">
+      <div className="w-full">
         <h2 className="app-section-title mb-4">
           User Management
         </h2>

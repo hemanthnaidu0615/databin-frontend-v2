@@ -208,7 +208,7 @@ const ShippingBreakdown = () => {
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl ">
-      <div className="px-4 pt-4 product-sales-header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="px-4 pt-4 product-sales-header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h2 className="app-subheading">Shipping Breakdown</h2>
 
         <input
@@ -388,7 +388,7 @@ const ShippingBreakdown = () => {
         </div>
       </div>
 
-      <div className="px-4 pb-6">
+      <div className="px-4 pb-6 mt-8">
         <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
         {Object.keys(carrierTotals).length > 0 ? (
           <Chart
