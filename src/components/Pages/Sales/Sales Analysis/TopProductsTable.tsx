@@ -246,7 +246,7 @@ const TopProductsTable = () => {
             sortable
             className="app-table-content"
             body={(rowData) => formatValue(rowData.units_sold)}
-            style={{ minWidth: "100px" }}
+            style={{ minWidth: "100px"}}
           />
           <Column
             field="total_sales"
@@ -374,7 +374,7 @@ const TopProductsTable = () => {
       </div>
 
       {/* Chart */}
-      <div className="relative px-4 pb-6 overflow-visible">
+      <div className="relative px-4 pb-6 mt-8 overflow-visible">
         <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">
           Top 10 Products Visualization
         </h3>
