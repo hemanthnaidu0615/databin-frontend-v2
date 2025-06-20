@@ -22,7 +22,7 @@ interface FulfillmentDetail {
   event_type: string;
   event_description: string;
   event_time: string;
-  fulfillment_channel: string;
+  fulfilment_channel: string;
   fulfillment_city: string;
   fulfillment_state: string;
   fulfillment_country: string;
@@ -41,7 +41,7 @@ const NewTable: React.FC = () => {
     event_type: { value: null, matchMode: "contains" },
     event_description: { value: null, matchMode: "contains" },
     event_time: { value: null, matchMode: "contains" },
-    fulfillment_channel: { value: null, matchMode: "contains" },
+    fulfilment_channel: { value: null, matchMode: "contains" },
     fulfillment_city: { value: null, matchMode: "contains" },
     fulfillment_state: { value: null, matchMode: "contains" },
     fulfillment_country: { value: null, matchMode: "contains" },
