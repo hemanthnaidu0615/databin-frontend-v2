@@ -121,7 +121,7 @@ export const fetchOrders = async (
       },
     });
 
-    const rawOrders = response.data;
+    const { data: rawOrders } = response.data; 
     if (!Array.isArray(rawOrders)) return [];
 
     return rawOrders.map((order: any): Order => {

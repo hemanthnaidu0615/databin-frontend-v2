@@ -3,7 +3,7 @@ import Chart from "react-apexcharts";
 import { useTheme } from "next-themes";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "./../../../utils/kpiUtils";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";

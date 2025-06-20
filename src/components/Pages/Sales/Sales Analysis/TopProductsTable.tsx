@@ -216,7 +216,7 @@ const TopProductsTable = () => {
             value={viewMode}
             options={viewOptions}
             onChange={setViewMode}
-            className="w-50 h-10 leading-[0.9rem]"
+            className="w-full sm:w-64 h-10 leading-[0.9rem]"
             placeholder="Select View Mode "
           />
         </div>
@@ -229,7 +229,7 @@ const TopProductsTable = () => {
           stripedRows
           responsiveLayout="scroll"
           scrollable
-          scrollHeight="400px"
+          scrollHeight="428px"
           sortMode="multiple"
           emptyMessage="No products found for the selected filters"
         >
