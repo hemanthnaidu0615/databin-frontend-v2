@@ -124,7 +124,7 @@ const TopCustomersTable = () => {
         },
         crosshairs: { show: false },
         title: {
-          text: "Customer",
+          text: "Customers",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -357,7 +357,7 @@ const TopCustomersTable = () => {
         </div>
       </div>
 
-      <div className="px-4 pb-6">
+      <div className="px-4">
         <h3 className="app-subheading mb-4">Top 10 Customers Visualization</h3>
         {topCustomers.length > 0 ? (
           <Chart

@@ -270,7 +270,7 @@ const TopProductsTable = () => {
           >
             <div className="flex flex-col">
               <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                Product:
+                Products:
               </span>
               <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
                 {product.product_name}
@@ -374,8 +374,8 @@ const TopProductsTable = () => {
       </div>
 
       {/* Chart */}
-      <div className="relative px-4 pb-6 overflow-visible">
-        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">
+      <div className="relative px-4 overflow-visible">
+        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
           Top 10 Products Visualization
         </h3>
         {topProducts.length > 0 ? (
@@ -383,7 +383,7 @@ const TopProductsTable = () => {
             options={chartOptions}
             series={chartSeries}
             type="bar"
-            height={350}
+            height={topProducts.length * 30 + 100} 
           />
         ) : (
           <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">

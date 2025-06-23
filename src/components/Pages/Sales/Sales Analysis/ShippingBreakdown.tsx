@@ -388,7 +388,7 @@ const ShippingBreakdown = () => {
         </div>
       </div>
 
-      <div className="px-4 pb-6">
+      <div className="px-4">
         <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
         {Object.keys(carrierTotals).length > 0 ? (
           <Chart
