@@ -1,15 +1,27 @@
-import { useState, useMemo, useEffect } from "react";
-import { Card } from "primereact/card";
-import { DataTable } from "primereact/datatable";
+"use client";
+
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  DataTable,
+  DataTablePageEvent,
+  DataTableSortEvent,
+  DataTableFilterEvent,
+} from "primereact/datatable";
 import { Column } from "primereact/column";
+import { InputText } from "primereact/inputtext";
+import { ProgressSpinner } from "primereact/progressspinner";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
-import { Skeleton } from "primereact/skeleton";
-import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { axiosInstance } from "../../../../axios";
 import { getBaseTooltip, costTooltip } from "../../../modularity/graphs/graphWidget";
+
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 
 interface Shipment {
   carrier: string;
@@ -19,142 +31,189 @@ interface Shipment {
   shipment_cost_usd?: number;
 }
 
-function convertToUSD(rupees: number): number {
-  const exchangeRate = 0.012;
-  return rupees * exchangeRate;
-}
+const convertToUSD = (rupees: number) => rupees * 0.012;
 
-const ShippingBreakdown = () => {
+const ShippingBreakdown: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [shipments, setShipments] = useState<Shipment[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
-  const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(10);
+  const [data, setData] = useState<Shipment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [globalFilter, setGlobalFilter] = useState<string>("");
+
+  const [filters, setFilters] = useState<any>({
+    global: { value: null, matchMode: "contains" },
+    carrier: { value: null, matchMode: "contains" },
+    shipping_method: { value: null, matchMode: "contains" },
+    shipment_status: { value: null, matchMode: "contains" },
+  });
+
+  const [page, setPage] = useState<number>(0);
+  const [rows, setRows] = useState<number>(10);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [sortField, setSortField] = useState<string>("shipment_cost_usd");
+  const [sortOrder, setSortOrder] = useState<1 | -1>(-1);
 
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
-  const [startDate, endDate] = dateRange || [];
+  const isReady = dateRange && dateRange[0] && dateRange[1];
+
+  // Detect mobile via window width
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const updateMobile = () => setIsMobile(window.innerWidth < 768);
+    updateMobile();
+    window.addEventListener("resize", updateMobile);
+    return () => window.removeEventListener("resize", updateMobile);
+  }, []);
+
+  // Fetch data from API
+  const fetchData = () => {
+    if (!isReady) return;
+
+    const [startDate, endDate] = dateRange;
+    const queryParams = new URLSearchParams({
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      page: page.toString(),
+      size: rows.toString(),
+    });
+
+    if (enterpriseKey?.trim()) {
+      queryParams.append("enterpriseKey", enterpriseKey);
+    }
+
+    if (sortField) {
+      queryParams.append("sortField", sortField);
+      queryParams.append("sortOrder", sortOrder === 1 ? "asc" : "desc");
+    }
+
+    // Append filters except global
+    for (const key in filters) {
+      if (key === "global") continue;
+      const value = filters[key]?.value;
+      const matchMode = filters[key]?.matchMode;
+      if (value != null && value !== "") {
+        queryParams.append(`${key}.value`, value);
+        queryParams.append(`${key}.matchMode`, matchMode);
+      }
+    }
+
+    // Append global filter
+    if (filters.global?.value) {
+      queryParams.append("global.value", filters.global.value);
+      queryParams.append("global.matchMode", filters.global.matchMode);
+    }
+
+    setLoading(true);
+
+    axiosInstance
+      .get(`/analysis/shipment-summary?${queryParams.toString()}`)
+      .then((res) => {
+        const shipments = res.data.shipments || [];
+        const shipmentsWithUSD = shipments.map((s: Shipment) => ({
+          ...s,
+          shipment_cost_usd: convertToUSD(s.shipment_cost),
+        }));
+
+        setData(shipmentsWithUSD);
+        setTotalRecords(res.data.count || 0);
+      })
+      .catch((err) => {
+        console.error("❌ Fetch error:", err);
+        setData([]);
+        setTotalRecords(0);
+      })
+      .finally(() => setLoading(false));
+  };
 
   useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, enterpriseKey, page, rows, sortField, sortOrder, filters]);
+
+  // Handlers
+  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilters({ ...filters, global: { value, matchMode: "contains" } });
+    setGlobalFilter(value);
     setPage(0);
-  }, [startDate, endDate, enterpriseKey]);
+  };
 
-  useEffect(() => {
-    const fetchShipments = async () => {
-      if (!startDate || !endDate) return;
+  const onPageChange = (e: DataTablePageEvent) => {
+    setPage(e.page ?? 0);
+    setRows(e.rows ?? 10);
+  };
 
-      setLoading(true);
-      setError(null);
+  const onSort = (e: DataTableSortEvent) => {
+    const newSortField = e.sortField ?? "";
+    const isSame = newSortField === sortField;
+    const newSortOrder = isSame ? sortOrder * -1 : 1;
+    setSortField(newSortField);
+    setSortOrder(newSortOrder as 1 | -1);
+  };
 
-      const formattedStart = formatDateTime(startDate);
-      const formattedEnd = formatDateTime(endDate);
+  const onFilter = (e: DataTableFilterEvent) => {
+    setFilters(e.filters);
+    setPage(0);
+  };
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-        page: page.toString(),
-        size: rows.toString(),
-      });
+  const renderFilterInput = (placeholder: string = "Search") => (options: any) => (
+    <InputText
+      value={options.value || ""}
+      onChange={(e) => options.filterCallback(e.target.value)}
+      placeholder={placeholder}
+      className="p-column-filter"
+    />
+  );
 
-      if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
-      }
-
-      try {
-        const response = await axiosInstance.get(
-          `/analysis/shipment-summary?${params.toString()}`
-        );
-        const data = response.data as { shipments: Shipment[]; count: number };
-
-        setShipments(
-          (data.shipments || []).map((s) => ({
-            ...s,
-            shipment_cost_usd: convertToUSD(s.shipment_cost),
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching shipments:", err);
-        setError("Failed to load shipment data");
-        setShipments([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchShipments();
-  }, [startDate, endDate, enterpriseKey, page, rows]);
-
+  // Top 10 carriers totals for chart
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
-    shipments.forEach((shipment) => {
-      totals[shipment.carrier] =
-        (totals[shipment.carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
+    data.forEach((shipment) => {
+      const carrier = shipment.carrier || "Unknown";
+      totals[carrier] = (totals[carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
     });
     return Object.entries(totals)
-      .sort((a, b) => b[1] - a[1])
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .reduce((acc, [carrier, total]) => {
         acc[carrier] = total;
         return acc;
       }, {} as Record<string, number>);
-  }, [shipments]);
+  }, [data]);
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
       chart: {
         type: "bar",
         toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
+        foreColor: isDark ? "#CBD5E1" : "#334155",
       },
       xaxis: {
         categories: Object.keys(carrierTotals),
         labels: {
-          style: {
-            fontSize: "12px",
-            colors: theme === "dark" ? "#CBD5E1" : "#334155",
-          },
+          style: { fontSize: "12px", colors: isDark ? "#CBD5E1" : "#334155" },
         },
         crosshairs: { show: false },
         title: {
           text: "Carriers",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
+          style: { fontSize: "14px", fontWeight: "normal", color: isDark ? "#CBD5E1" : "#64748B" },
         },
       },
       yaxis: {
         title: {
           text: "Total Cost ($)",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
+          style: { fontSize: "14px", fontWeight: "normal", color: isDark ? "#CBD5E1" : "#64748B" },
         },
-        labels: {
-          formatter: (val: number) => `$${formatValue(val)}`,
-        },
+        labels: { formatter: (val: number) => `$${formatValue(val)}` },
       },
       dataLabels: { enabled: false },
-      plotOptions: {
-        bar: {
-          borderRadius: 4,
-          columnWidth: "50%",
-        },
-      },
-      grid: {
-        borderColor: theme === "dark" ? "#334155" : "#E5E7EB",
-      },
+      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
+      grid: { borderColor: isDark ? "#334155" : "#E5E7EB" },
       colors: ["#a855f7"],
-
       tooltip: getBaseTooltip(isDark, costTooltip),
     }),
-    [carrierTotals, theme]
+    [carrierTotals, isDark]
   );
 
   const chartSeries = [
@@ -164,246 +223,149 @@ const ShippingBreakdown = () => {
     },
   ];
 
-  const onPage = (event: any) => {
-    setPage(event.page);
-    setRows(event.rows);
+  // Mobile pagination controls
+  const mobileTotalPages = Math.ceil(totalRecords / rows);
+  const onMobilePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < mobileTotalPages) setPage(newPage);
   };
 
-  const filteredShipments = useMemo(() => {
-    if (!searchTerm.trim()) return shipments;
-    const lower = searchTerm.toLowerCase();
-    return shipments.filter((shipment) =>
-      Object.values(shipment).join(" ").toLowerCase().includes(lower)
-    );
-  }, [shipments, searchTerm]);
-
-  if (!startDate || !endDate) {
-    return (
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="text-center text-gray-500 dark:text-gray-400 p-4">
-          Please select a date range to view shipping breakdown
-        </div>
-      </Card>
-    );
-  }
-
-  if (loading) {
-    return (
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="p-4">
-          <Skeleton width="150px" height="30px" className="mb-4" />
-          <Skeleton width="100%" height="300px" />
-        </div>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="p-4 text-red-500 dark:text-red-400">{error}</div>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl ">
-      <div className="px-4 pt-4 product-sales-header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="app-subheading">Shipping Breakdown</h2>
+    <div className="card p-4">
+      <h2 className="text-xl mb-3">Shipping Breakdown</h2>
 
-        <input
-          type="text"
-          placeholder="Search shipments..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(0);
-          }}
-          className="app-search-input w-full sm:w-64"
-        />
-      </div>
+      {loading ? (
+        <div className="flex justify-center mt-5">
+          <ProgressSpinner />
+        </div>
+      ) : isMobile ? (
+        // MOBILE VIEW: Cards + pagination
+        <>
+          {data.length === 0 && <p className="text-center text-gray-500">No shipments found</p>}
 
-      <div className="px-4 pb-6 app-table-heading">
-        {/* Desktop Table - Hidden on mobile */}
-        <div className="hidden sm:block">
+          <div className="space-y-3">
+            {data.map((shipment, idx) => (
+              <div
+                key={idx}
+                className={`p-4 rounded-md border ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
+                  }`}
+              >
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold">{shipment.carrier || "Unknown Carrier"}</span>
+                  <span className="text-sm text-gray-400">{shipment.shipment_status}</span>
+                </div>
+                <div className="text-sm mb-1">Method: {shipment.shipping_method || "N/A"}</div>
+                <div className="text-right font-semibold text-purple-600">
+                  ${shipment.shipment_cost_usd ? formatValue(shipment.shipment_cost_usd) : "0"}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile pagination */}
+          {/* Mobile pagination */}
+          <div className="flex justify-center items-center gap-2 mt-6 text-xs">
+            <button
+              onClick={() => onMobilePageChange(0)}
+              disabled={page === 0}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            >
+              ⏮ First
+            </button>
+            <button
+              onClick={() => onMobilePageChange(page - 1)}
+              disabled={page === 0}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            >
+              ◀ Prev
+            </button>
+
+            <span>
+              Page {page + 1} of {mobileTotalPages}
+            </span>
+
+            <button
+              onClick={() => onMobilePageChange(page + 1)}
+              disabled={page + 1 >= mobileTotalPages}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            >
+              Next ▶
+            </button>
+            <button
+              onClick={() => onMobilePageChange(mobileTotalPages - 1)}
+              disabled={page + 1 >= mobileTotalPages}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            >
+              Last ⏭
+            </button>
+          </div>
+
+        </>
+      ) : (
+        // DESKTOP VIEW: Full DataTable
+        <>
           <DataTable
-            value={filteredShipments.slice(page * rows, page * rows + rows)}
-            stripedRows
-            responsiveLayout="scroll"
-            scrollable
-            scrollHeight="400px"
-            sortMode="multiple"
-            emptyMessage="No shipments found for the selected filters"
+            value={data}
             paginator
-            paginatorClassName="hidden sm:flex"
-            loading={loading}
-            first={page * rows}
             rows={rows}
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 20, 50, 100]}
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} shipments"
-            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+            first={page * rows}
+            totalRecords={totalRecords}
+            onPage={onPageChange}
+            rowsPerPageOptions={[10, 20, 50, 100]}
+            sortMode="single"
+            sortField={sortField}
+            sortOrder={sortOrder}
+            onSort={onSort}
+            onFilter={onFilter}
+            lazy
+            filters={filters}
+            globalFilterFields={["carrier", "shipping_method", "shipment_status"]}
+            responsiveLayout="scroll"
+            emptyMessage="No shipments found"
           >
             <Column
               field="carrier"
               header="Carrier"
               sortable
-              style={{ minWidth: "120px" }}
+              filter
+              filterField="carrier"
+              filterElement={renderFilterInput()}
             />
             <Column
               field="shipping_method"
-              header="Method"
+              header="Shipping Method"
               sortable
-              style={{ minWidth: "120px" }}
+              filter
+              filterField="shipping_method"
+              filterElement={renderFilterInput()}
             />
             <Column
               field="shipment_status"
               header="Status"
               sortable
-              style={{ minWidth: "120px" }}
+              filter
+              filterField="shipment_status"
+              filterElement={renderFilterInput()}
             />
             <Column
               field="shipment_cost_usd"
-              header="Cost ($)"
+              header="Cost (USD)"
               sortable
-              body={(rowData) =>
-                `$${formatValue(rowData.shipment_cost_usd ?? 0)}`
+              style={{ textAlign: "left" }}
+              body={(rowData: Shipment) =>
+                `$${rowData.shipment_cost_usd ? formatValue(rowData.shipment_cost_usd) : "0"}`
               }
-              style={{ minWidth: "120px" }}
             />
           </DataTable>
-        </div>
+        </>
+      )}
 
-        {/* Mobile-friendly stacked cards */}
-        <div className="block sm:hidden space-y-4 mt-4">
-          {filteredShipments
-            .slice(page * rows, page * rows + rows)
-            .map((shipment, index) => (
-              <div
-                key={index}
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    Carrier:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-                    {shipment.carrier}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Method:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {shipment.shipping_method}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Status:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {shipment.shipment_status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Cost:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    ${formatValue(shipment.shipment_cost_usd ?? 0)}
-                  </span>
-                </div>
-              </div>
-            ))}
-        </div>
-
-        {/* Mobile Pagination (only visible on small screens) */}
-        <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
-          <div className="flex flex-col gap-2 mb-2">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="mobileRows" className="whitespace-nowrap">
-                Rows per page:
-              </label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setPage(0);
-                }}
-                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
-              >
-                {[5, 10, 20, 50, 100].map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              Page {page + 1} of {Math.ceil(filteredShipments.length / rows)}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-between gap-2">
-            <button
-              onClick={() => setPage(0)}
-              disabled={page === 0}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              ⏮ First
-            </button>
-            <button
-              onClick={() => setPage(Math.max(0, page - 1))}
-              disabled={page === 0}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() =>
-                setPage(
-                  page + 1 < Math.ceil(filteredShipments.length / rows)
-                    ? page + 1
-                    : page
-                )
-              }
-              disabled={(page + 1) * rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              Next
-            </button>
-            <button
-              onClick={() =>
-                setPage(Math.ceil(filteredShipments.length / rows) - 1)
-              }
-              disabled={(page + 1) * rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              ⏭ Last
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 pb-6">
-        <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
-        {Object.keys(carrierTotals).length > 0 ? (
-          <Chart
-            options={chartOptions}
-            series={chartSeries}
-            type="bar"
-            height={350}
-          />
-        ) : (
-          <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">
-            No shipment data available for visualization
-          </div>
-        )}
-      </div>
-    </Card>
+      <h3 className="mt-6 mb-4">Top 10 Carriers by Total Cost</h3>
+      {Object.keys(carrierTotals).length > 0 ? (
+        <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
+      ) : (
+        <p className="text-center text-gray-500">No shipment data available for visualization.</p>
+      )}
+    </div>
   );
 };
 

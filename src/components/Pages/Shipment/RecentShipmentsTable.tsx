@@ -1,105 +1,135 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { DataTable } from "primereact/datatable";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import {
+  DataTable,
+  DataTableFilterEvent,
+  DataTablePageEvent,
+  DataTableSortEvent,
+} from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { ProgressSpinner } from "primereact/progressspinner";
 import { axiosInstance } from "../../../axios";
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 
-
-type Props = {
-  selectedCarrier: string | null;
-  selectedMethod: string | null;
-};
-
-const useIsMobile = () => {
+// ✅ Mobile detection hook
+const useIsMobile = (breakpoint = 768) => {
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
+    const check = () => setIsMobile(window.innerWidth < breakpoint);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
   return isMobile;
 };
 
-const convertToUSD = (rupees: number): number => {
-  const exchangeRate = 0.012;
-  return rupees * exchangeRate;
-};
+interface Shipment {
+  shipment_id: string;
+  customer_name: string;
+  carrier: string;
+  actual_shipment_date: string;
+  shipment_status: string;
+}
 
-const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
+const RecentShipmentsTable: React.FC = () => {
+  const [data, setData] = useState<Shipment[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<any>({
+    global: { value: null, matchMode: "contains" },
+    shipment_id: { value: null, matchMode: "contains" },
+    customer_name: { value: null, matchMode: "contains" },
+    carrier: { value: null, matchMode: "contains" },
+    actual_shipment_date: { value: null, matchMode: "contains" },
+    shipment_status: { value: null, matchMode: "contains" },
+  });
 
-const RecentShipmentsTable: React.FC<Props> = ({
-  selectedCarrier,
-  selectedMethod,
-}) => {
-  const [shipments, setShipments] = useState<any[]>([]);
-  const [filteredShipments, setFilteredShipments] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedShipment, setSelectedShipment] = useState<any | null>(null);
-  const [visible, setVisible] = useState(false);
-  const [first, setFirst] = useState(0);
+  const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
+  const [sortField, setSortField] = useState("shipment_id");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  const [visible, setVisible] = useState(false);
+  const [selectedShipment, setSelectedShipment] = useState<any>(null);
+
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
+  const [startDate, endDate] = dateRange || [];
 
   const isMobile = useIsMobile();
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
-  const [startDate, endDate] = dateRange || [];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!startDate || !endDate) return;
-
-      const formattedStart = new Date(startDate).toISOString();
-      const formattedEnd = new Date(endDate).toISOString();
-
-      try {
-        const response = await axiosInstance.get(`recent-shipments`, {
-          params: {
-            startDate: formattedStart,
-            endDate: formattedEnd,
-            ...(enterpriseKey && { enterpriseKey }),
-            ...(selectedCarrier && { carrier: selectedCarrier }),
-            ...(selectedMethod && { shippingMethod: selectedMethod }),
-          },
-        });
-        const data = response.data;
-
-        if (Array.isArray(data)) {
-          setShipments(data);
-          setFilteredShipments(data);
-        } else {
-          setShipments([]);
-          setFilteredShipments([]);
-        }
-      } catch (error) {
-        console.error("Error fetching shipments:", error);
-      }
+  const fetchData = async () => {
+    // Removed isReady check since it's not available
+    const params: any = {
+      startDate,
+      endDate,
+      page,
+      size: rows,
+      sortField,
+      sortOrder,
     };
 
-    fetchData();
-  }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
+    if (enterpriseKey?.trim()) {
+      params.enterpriseKey = enterpriseKey;
+    }
+
+    for (const key in filters) {
+      const value = filters[key]?.value;
+      const matchMode = filters[key]?.matchMode;
+      if (value && matchMode && key !== "global") {
+        params[`${key}.value`] = value;
+        params[`${key}.matchMode`] = matchMode;
+      }
+    }
+
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get("/recent-shipments", { params });
+      const { data: shipmentData, count } = response.data;
+      setData(shipmentData || []);
+      setTotalRecords(count || 0);
+    } catch (err) {
+      console.error("Error fetching recent shipments:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!searchQuery) {
-      setFilteredShipments(shipments);
-    } else {
-      const lowerSearchQuery = searchQuery.toLowerCase();
-      const filtered = shipments.filter((shipment) =>
-        shipment.shipment_id.toString().includes(lowerSearchQuery)
-      );
-      setFilteredShipments(filtered);
-    }
-  }, [searchQuery, shipments]);
+    fetchData();
+  }, [startDate, endDate, enterpriseKey, page, rows, sortField, sortOrder, filters]);
+
+  const onPageChange = (e: DataTablePageEvent) => {
+    setPage(e.page ?? 0);
+    setRows(e.rows ?? 10);
+  };
+
+  const onSort = (e: DataTableSortEvent) => {
+    const newSortField = e.sortField ?? "";
+    const isSameField = newSortField === sortField;
+    const newSortOrder = isSameField ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
+  };
+
+  const onFilter = (e: DataTableFilterEvent) => {
+    setFilters(e.filters);
+  };
+
+
+  const renderFilterInput = (placeholder = "Search") => {
+    return (options: any) => (
+      <InputText
+        value={options.value || ""}
+        onChange={(e) => options.filterCallback(e.target.value)}
+        placeholder={placeholder}
+        className="p-column-filter"
+      />
+    );
+  };
 
   const getStatusSeverity = (status: string) => {
     switch (status) {
@@ -114,227 +144,73 @@ const RecentShipmentsTable: React.FC<Props> = ({
     }
   };
 
+  const formatDate = (iso: string) => iso?.split("T")[0] ?? "";
+
   const showDetails = async (shipment: any) => {
     try {
-      const response = await axiosInstance.get("recent-shipments/details", {
+      const response = await axiosInstance.get("/recent-shipments/details", {
         params: { shipmentId: shipment.shipment_id },
       });
-      const detailedData = response.data as any;
-
-      if (detailedData.cost) {
-        detailedData.cost = convertToUSD(detailedData.cost);
-      }
-      setSelectedShipment(detailedData);
-      setVisible(true);
-    } catch (error) {
-      console.error("Error fetching shipment details:", error);
+      setSelectedShipment(response.data);
+    } catch (err) {
+      console.error("Error loading details:", err);
       setSelectedShipment(null);
+    } finally {
       setVisible(true);
     }
   };
 
-  const formatDate = (isoDate: string) => {
-    return isoDate?.split("T")[0] || "";
-  };
-
-  const shipmentDetails = (shipment: any) => {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
-        <div>
-          <strong>Order ID:</strong> {shipment.order_id}
-        </div>
-        <div>
-          <strong>Customer:</strong> {shipment.customer}
-        </div>
-        <div>
-          <strong>Carrier:</strong> {shipment.carrier}
-        </div>
-        <div>
-          <strong>Shipping Method:</strong> {shipment.shipping_method}
-        </div>
-        <div>
-          <strong>Status:</strong>{" "}
-          <Tag
-            value={shipment.status}
-            severity={getStatusSeverity(shipment.status)}
-          />
-        </div>
-        <div>
-          <strong>Ship Date:</strong> {formatDate(shipment.ship_date)}
-        </div>
-        <div>
-          <strong>Estimated Delivery:</strong>{" "}
-          {formatDate(shipment.estimated_delivery)}
-        </div>
-        <div>
-          <strong>Origin:</strong> {shipment.origin}
-        </div>
-        <div>
-          <strong>Destination:</strong> {shipment.destination}
-        </div>
-        <div>
-          <strong>Cost:</strong> $
-          {shipment.cost ? formatValue(shipment.cost) : "0"}
-        </div>
-      </div>
-    );
-  };
-
-  const getPageOptions = () => {
-    const total = filteredShipments.length;
-    if (total <= 5) return [5];
-    if (total <= 10) return [5, 10];
-    if (total <= 20) return [5, 10, 15, 20];
-    if (total <= 50) return [10, 20, 30, 50];
-    return [10, 20, 50, 100];
-  };
-
-  const mobilePageData = filteredShipments.slice(first, first + rows);
-
-  const TableHeader = (
-    <div className="flex justify-between items-center gap-2 flex-wrap mb-4">
-      <h2 className="app-subheading">Recent Shipments</h2>
-      <span className="p-input-icon-left w-full md:w-auto">
-        <InputText
-          type="search"
-          placeholder="Search Shipment ID"
-          className="app-search-input w-full"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </span>
-    </div>
-  );
+  const totalPages = Math.ceil(totalRecords / rows);
 
   return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-6 pb-6 pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      {TableHeader}
+    <div className="card p-4">
+      <h2 className="text-xl mb-3">Recent Shipments</h2>
 
-      {/* Desktop View - DataTable */}
-      <div className="hidden md:block">
-        <DataTable
-          value={filteredShipments}
-          paginator
-          first={first}
-          rows={rows}
-          onPage={(e) => {
-            setFirst(e.first);
-            setRows(e.rows);
-          }}
-          stripedRows
-          className="p-datatable-sm w-full"
-          responsiveLayout="scroll"
-          paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} orders"
-          rowsPerPageOptions={getPageOptions()}
-          sortMode="multiple"
-          scrollable
-          scrollHeight="flex"
-        >
-          <Column
-            field="shipment_id"
-            header={<span className="app-table-heading">Shipment ID</span>}
-            body={(rowData) => (
-              <span className="app-table-content">{rowData.shipment_id}</span>
-            )}
-            sortable
-          />
-          <Column
-            field="customer_name"
-            header={<span className="app-table-heading">Customer</span>}
-            body={(rowData) => (
-              <span className="app-table-content">{rowData.customer_name}</span>
-            )}
-            sortable
-          />
-          <Column
-            field="carrier"
-            header={<span className="app-table-heading">Carrier</span>}
-            body={(rowData) => (
-              <span className="app-table-content">{rowData.carrier}</span>
-            )}
-            sortable
-          />
-          <Column
-            field="actual_shipment_date"
-            header={<span className="app-table-heading">Ship Date</span>}
-            body={(rowData) => (
-              <span className="app-table-content">
-                {formatDate(rowData.actual_shipment_date)}
-              </span>
-            )}
-            sortable
-          />
-          <Column
-            field="shipment_status"
-            header={<span className="app-table-heading">Status</span>}
-            body={(rowData) => (
-              <span className="app-table-content">
-                <Tag
-                  value={rowData.shipment_status}
-                  severity={getStatusSeverity(rowData.shipment_status)}
-                />
-              </span>
-            )}
-            sortable
-          />
-          <Column
-            header={<span className="app-table-heading">Action</span>}
-            body={(rowData) => (
-              <button
-                onClick={() => showDetails(rowData)}
-                className="text-purple-500 hover:underline text-sm font-medium"
+      {loading ? (
+        <div className="flex justify-center mt-5">
+          <ProgressSpinner />
+        </div>
+      ) : isMobile ? (
+        <>
+          <div className="space-y-4">
+            {data.map((shipment) => (
+              <div
+                key={shipment.shipment_id}
+                className="border rounded-lg p-4 shadow-sm bg-white dark:bg-gray-900"
               >
-                View
-              </button>
-            )}
-          />
-        </DataTable>
-      </div>
-
-      {/* Mobile View - Cards */}
-      <div className="block md:hidden space-y-4">
-        {mobilePageData.map((shipment, index) => (
-          <div
-            key={index}
-            className="border rounded-xl p-4 bg-white dark:bg-white/[0.03] shadow-sm"
-            onClick={() => showDetails(shipment)}
-          >
-            <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">
-              {shipment.shipment_id} - {shipment.customer_name}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              <div>
-                <strong>Carrier:</strong> {shipment.carrier}
+                <div className="text-sm mb-1">
+                  <strong>Shipment ID:</strong> {shipment.shipment_id}
+                </div>
+                <div className="text-sm mb-1">
+                  <strong>Customer:</strong> {shipment.customer_name}
+                </div>
+                <div className="text-sm mb-1">
+                  <strong>Carrier:</strong> {shipment.carrier}
+                </div>
+                <div className="text-sm mb-1">
+                  <strong>Ship Date:</strong> {formatDate(shipment.actual_shipment_date)}
+                </div>
+                <div className="text-sm mb-2 flex items-center gap-2">
+                  <strong>Status:</strong>
+                  <Tag
+                    value={shipment.shipment_status}
+                    severity={getStatusSeverity(shipment.shipment_status)}
+                  />
+                </div>
+                <button
+                  className="text-purple-600 dark:text-purple-400 text-sm font-medium underline"
+                  onClick={() => showDetails(shipment)}
+                >
+                  View Details
+                </button>
               </div>
-              <div>
-                <strong>Ship Date:</strong> {formatDate(shipment.actual_shipment_date)}
-              </div>
-              <div>
-                <strong>Status:</strong>{" "}
-                <Tag
-                  value={shipment.shipment_status}
-                  severity={getStatusSeverity(shipment.shipment_status)}
-                />
-              </div>
-            </div>
-            <div className="mt-2">
-              <button
-                onClick={() => showDetails(shipment)}
-                className="text-purple-500 hover:underline text-sm font-medium"
-              >
-                View Details
-              </button>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Mobile-Only Custom Pagination */}
-      {isMobile && (
-        <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-          <div className="flex flex-col gap-2 mb-2 w-full">
-            <div className="flex flex-col gap-1">
+          {/* MOBILE PAGINATION UI */}
+          <div className="flex flex-col text-sm text-gray-700 dark:text-gray-100 mt-4">
+            {/* Rows per page selector */}
+            <div className="flex flex-col gap-2 mb-2 w-full">
               <label htmlFor="mobileRows" className="whitespace-nowrap">
                 Rows per page:
               </label>
@@ -343,63 +219,141 @@ const RecentShipmentsTable: React.FC<Props> = ({
                 value={rows}
                 onChange={(e) => {
                   setRows(Number(e.target.value));
-                  setFirst(0);
+                  setPage(0);
                 }}
                 className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
               >
-                {getPageOptions().map((option) => (
+                {[5, 10, 20, 50].map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
                 ))}
               </select>
             </div>
+
+            {/* Page info */}
             <div className="text-black dark:text-white font-medium">
-              Page {Math.floor(first / rows) + 1} of{" "}
-              {Math.ceil(filteredShipments.length / rows)}
+              Page {page + 1} of {totalPages}
+            </div>
+
+            {/* Pagination buttons */}
+            <div className="flex flex-wrap justify-between gap-2 w-full mt-2">
+              <button
+                onClick={() => setPage(0)}
+                disabled={page === 0}
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+              >
+                ⏮ First
+              </button>
+              <button
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() => setPage(Math.min(page + 1, totalPages - 1))}
+                disabled={page + 1 >= totalPages}
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setPage(totalPages - 1)}
+                disabled={page + 1 >= totalPages}
+                className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+              >
+                Last
+              </button>
             </div>
           </div>
-
-          {/* Bottom: Pagination buttons with wrap */}
-          <div className="flex flex-wrap justify-between gap-2 text-sm w-full px-2">
-            <button
-              onClick={() => setFirst(0)}
-              disabled={first === 0}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              ⏮ First
-            </button>
-            <button
-              onClick={() => setFirst(Math.max(0, first - rows))}
-              disabled={first === 0}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() =>
-                setFirst(
-                  first + rows < filteredShipments.length ? first + rows : first
-                )
-              }
-              disabled={first + rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              Next
-            </button>
-            <button
-              onClick={() =>
-                setFirst(
-                  (Math.ceil(filteredShipments.length / rows) - 1) * rows
-                )
-              }
-              disabled={first + rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              ⏭ Last
-            </button>
-          </div>
-        </div>
+        </>
+      ) : (
+        <DataTable
+          value={data}
+          paginator
+          lazy
+          rows={rows}
+          first={page * rows}
+          totalRecords={totalRecords}
+          onPage={onPageChange}
+          rowsPerPageOptions={[10, 20, 50, 100]}
+          sortMode="single"
+          sortField={sortField}
+          sortOrder={sortOrder === "asc" ? 1 : -1}
+          onSort={onSort}
+          onFilter={onFilter}
+          filters={filters}
+          globalFilterFields={[
+            "shipment_id",
+            "customer_name",
+            "carrier",
+            "actual_shipment_date",
+            "shipment_status",
+          ]}
+          responsiveLayout="scroll"
+          emptyMessage="No shipments found"
+        >
+          <Column
+            field="shipment_id"
+            header="Shipment ID"
+            sortable
+            filter
+            filterField="shipment_id"
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="customer_name"
+            header="Customer"
+            sortable
+            filter
+            filterField="customer_name"
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="carrier"
+            header="Carrier"
+            sortable
+            filter
+            filterField="carrier"
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="actual_shipment_date"
+            header="Ship Date"
+            sortable
+            filter
+            filterField="actual_shipment_date"
+            body={(rowData: Shipment) => formatDate(rowData.actual_shipment_date)}
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="shipment_status"
+            header="Status"
+            sortable
+            filter
+            filterField="shipment_status"
+            body={(rowData: Shipment) => (
+              <Tag
+                value={rowData.shipment_status}
+                severity={getStatusSeverity(rowData.shipment_status)}
+              />
+            )}
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            header="Action"
+            body={(rowData: Shipment) => (
+              <button
+                className="text-purple-500 text-sm"
+                onClick={() => showDetails(rowData)}
+              >
+                View
+              </button>
+            )}
+          />
+        </DataTable>
       )}
 
       <Dialog
@@ -407,12 +361,42 @@ const RecentShipmentsTable: React.FC<Props> = ({
         visible={visible}
         onHide={() => setVisible(false)}
         style={{ width: "90vw", maxWidth: "600px" }}
-        breakpoints={{ "960px": "95vw" }}
-        className="p-dialog-sm dark:bg-white/[0.03]"
+        dismissableMask
         draggable={false}
-        dismissableMask={true}
       >
-        {selectedShipment ? shipmentDetails(selectedShipment) : <p>No data</p>}
+        {selectedShipment ? (
+          <div className="text-sm space-y-2">
+            <div>
+              <strong>Order ID:</strong> {selectedShipment.order_id}
+            </div>
+            <div>
+              <strong>Customer:</strong> {selectedShipment.customer}
+            </div>
+            <div>
+              <strong>Carrier:</strong> {selectedShipment.carrier}
+            </div>
+            <div>
+              <strong>Status:</strong> {selectedShipment.status}
+            </div>
+            <div>
+              <strong>Ship Date:</strong> {formatDate(selectedShipment.ship_date)}
+            </div>
+            <div>
+              <strong>Estimated Delivery:</strong> {formatDate(selectedShipment.estimated_delivery)}
+            </div>
+            <div>
+              <strong>Origin:</strong> {selectedShipment.origin}
+            </div>
+            <div>
+              <strong>Destination:</strong> {selectedShipment.destination}
+            </div>
+            <div>
+              <strong>Cost:</strong> ${selectedShipment.cost}
+            </div>
+          </div>
+        ) : (
+          <p>No data found</p>
+        )}
       </Dialog>
     </div>
   );

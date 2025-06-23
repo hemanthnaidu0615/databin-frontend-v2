@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
@@ -8,18 +8,18 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { ProgressSpinner } from "primereact/progressspinner";
-
+ 
 import "primereact/resources/themes/lara-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
-
+ 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
     .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
 };
-
+ 
 const convertToUSD = (rupees: number) => rupees * 0.012;
 const formatUSD = (amount: number) =>
   new Intl.NumberFormat("en-US", {
@@ -28,7 +28,7 @@ const formatUSD = (amount: number) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(convertToUSD(amount));
-
+ 
 export default function RecentOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,13 +42,13 @@ export default function RecentOrders() {
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [sortField, setSortField] = useState("order_date");
+  const [sortField, setSortField] = useState("order_id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-
+ 
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     const scrollY = sessionStorage.getItem("scrollPosition");
     if (scrollY) {
@@ -56,11 +56,11 @@ export default function RecentOrders() {
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
-
+ 
   useEffect(() => {
+    if (!dateRange?.[0] || !dateRange?.[1]) return;
+ 
     const fetchData = async () => {
-      if (!dateRange?.[0] || !dateRange?.[1]) return;
-
       const [start, end] = [formatDate(dateRange[0]), formatDate(dateRange[1])];
       const params = new URLSearchParams({
         startDate: start,
@@ -70,18 +70,18 @@ export default function RecentOrders() {
         sortField,
         sortOrder,
       });
-
+ 
       if (enterpriseKey && enterpriseKey !== "All") {
         params.append("enterpriseKey", enterpriseKey);
       }
-
+ 
       for (const key in filters) {
         if (key !== "global" && filters[key]?.value) {
           params.append(`${key}.value`, filters[key].value);
           params.append(`${key}.matchMode`, filters[key].matchMode);
         }
       }
-
+ 
       setLoading(true);
       try {
         const response = await axiosInstance.get(
@@ -96,10 +96,19 @@ export default function RecentOrders() {
         setLoading(false);
       }
     };
-
+ 
     fetchData();
-  }, [dateRange, enterpriseKey, page, rows, sortField, sortOrder, filters]);
-
+  }, [
+    JSON.stringify(filters),
+    page,
+    rows,
+    sortField,
+    sortOrder,
+    dateRange?.[0],
+    dateRange?.[1],
+    enterpriseKey,
+  ]);
+ 
   const renderFilterInput = (field: string) => {
     return (options: any) => (
       <InputText
@@ -110,12 +119,12 @@ export default function RecentOrders() {
       />
     );
   };
-
+ 
   const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
   };
-
+ 
   const shipmentStatusBody = (rowData: any) => (
     <Badge
       color={
@@ -129,7 +138,7 @@ export default function RecentOrders() {
       {rowData.shipment_status}
     </Badge>
   );
-
+ 
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
@@ -148,7 +157,7 @@ export default function RecentOrders() {
           text="View more"
         />
       </div>
-
+ 
       {loading ? (
         <div className="w-full flex justify-center items-center py-8">
           <ProgressSpinner />
@@ -166,7 +175,7 @@ export default function RecentOrders() {
               setRows(e.rows ?? 10);
             }}
             onSort={(e) => {
-              setSortField(e.sortField || "order_date");
+              setSortField(e.sortField || "order_id");
               setSortOrder(e.sortOrder === 1 ? "asc" : "desc");
             }}
             onFilter={(e) => setFilters(e.filters)}

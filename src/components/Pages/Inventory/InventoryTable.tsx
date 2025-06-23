@@ -1,10 +1,21 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
+import {
+  DataTable,
+  DataTablePageEvent,
+  DataTableSortEvent,
+  DataTableFilterEvent,
+} from "primereact/datatable";
+import { Column } from "primereact/column";
+import { InputText } from "primereact/inputtext";
+import { ProgressSpinner } from "primereact/progressspinner";
 import { useSelector } from "react-redux";
-import { Paginator } from "primereact/paginator";
+import { axiosInstance } from "../../../axios";
+
 import "primereact/resources/themes/lara-dark-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
-import { axiosInstance } from "../../../axios";
-import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
+import "primeicons/primeicons.css";
 
 interface Filters {
   selectedRegion: string;
@@ -25,344 +36,299 @@ interface InventoryTableProps {
   filters: Filters;
 }
 
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  return isMobile;
-};
-
-const formatDate = (date: Date): string => {
-  return `${date.getFullYear()}-${(date.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+const statusColors: Record<string, string> = {
+  Available: "text-green-500",
+  "Out of Stock": "text-red-500",
+  "Low Stock": "text-yellow-500",
 };
 
 const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
-  const [productSearch, setProductSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
-  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  const isMobile = useIsMobile();
+  const [filtersState, setFiltersState] = useState<any>({
+    global: { value: null, matchMode: "contains" },
+    name: { value: null, matchMode: "contains" },
+    category: { value: null, matchMode: "contains" },
+    warehouse: { value: null, matchMode: "contains" },
+    source: { value: null, matchMode: "contains" },
+    states: { value: null, matchMode: "contains" },
+    status: { value: null, matchMode: "contains" },
+  });
+
+  const [page, setPage] = useState<number>(0);
+  const [rows, setRows] = useState<number>(10);
+  const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [sortField, setSortField] = useState<string>("name");
+  const [sortOrder, setSortOrder] = useState<1 | -1>(1);
+
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange || [];
 
-  const statusColors = {
-    Available: "text-green-500",
-    "Out of Stock": "text-red-500",
-    "Low Stock": "text-yellow-500",
-  };
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const formatDate = (date: Date): string =>
+    `${date.getFullYear()}-${(date.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
 
   const fetchData = async () => {
     if (!startDate || !endDate) return;
-
-    const formattedStart = formatDate(new Date(startDate));
-    const formattedEnd = formatDate(new Date(endDate));
-    const page = first / rows;
-
-    const params = {
-      startDate: formattedStart,
-      endDate: formattedEnd,
-      page: page.toString(),
-      size: rows.toString(),
-      ...(productSearch && { searchProduct: productSearch }),
-      ...(selectedStatus && { statusFilter: selectedStatus }),
-      ...(selectedCategory && { categoryFilter: selectedCategory }),
-    };
+    setLoading(true);
 
     try {
-      const response = await axiosInstance.get("/inventory/widget-data", {
-        params,
-      });
+      const params = new URLSearchParams();
 
-      const data = response.data as { count?: number; data?: any[] };
-      setTotalCount(data.count || 0);
+      params.append("startDate", formatDate(new Date(startDate)));
+      params.append("endDate", formatDate(new Date(endDate)));
+      params.append("page", page.toString());
+      params.append("size", rows.toString());
 
-      const mappedData: InventoryItem[] = (data.data || []).map(
-        (item: any) => ({
+      if (sortField) {
+        params.append("sortField", sortField);
+        params.append("sortOrder", sortOrder === 1 ? "asc" : "desc");
+      }
+
+      if (filters.selectedRegion) params.append("regionFilter", filters.selectedRegion);
+      if (filters.selectedSource) params.append("sourceFilter", filters.selectedSource);
+      if (filters.selectedLocation) params.append("locationFilter", filters.selectedLocation);
+
+      for (const key in filtersState) {
+        const value = filtersState[key]?.value;
+        if (value && key !== "global") {
+          params.append(`${key}Filter`, value);
+        }
+      }
+
+      const response = await axiosInstance.get(`/inventory/widget-data?${params}`);
+      const resData = response.data;
+
+      setInventoryItems(
+        (resData.data || []).map((item: any) => ({
           name: item.product_name,
           category: item.category_name,
           warehouse: item.warehouse_name,
           source: item.warehouse_function,
           states: item.warehouse_state,
           status: item.inventory_status,
-        })
+        }))
       );
-
-      let filtered = mappedData;
-      if (filters.selectedRegion) {
-        filtered = filtered.filter(
-          (item) =>
-            item.warehouse.toLowerCase() ===
-            filters.selectedRegion.toLowerCase()
-        );
-      }
-      if (filters.selectedSource) {
-        filtered = filtered.filter(
-          (item) =>
-            item.source.toLowerCase() === filters.selectedSource.toLowerCase()
-        );
-      }
-      if (filters.selectedLocation) {
-        filtered = filtered.filter((item) =>
-          item.states
-            .toLowerCase()
-            .includes(filters.selectedLocation.toLowerCase())
-        );
-      }
-
-      setInventoryItems(filtered);
+      setTotalRecords(resData.count || 0);
     } catch (error) {
-      console.error("Failed to fetch inventory data:", error);
+      console.error("Error fetching inventory data", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, [
-    startDate,
-    endDate,
-    first,
-    rows,
-    productSearch,
-    selectedStatus,
-    selectedCategory,
-    filters,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDate, endDate, page, rows, sortField, sortOrder, filters, filtersState]);
 
-  useEffect(() => {
-    const fetchAllCategories = async () => {
-      try {
-        const response = await axiosInstance.get("/inventory/category-names");
-        setAllCategories(
-          Array.isArray(response.data)
-            ? response.data.map((cat: any) => cat.name)
-            : []
-        );
-      } catch (error) {
-        console.error("Failed to fetch all categories:", error);
-      }
-    };
+  const onPageChange = (e: DataTablePageEvent) => {
+    setPage(e.page ?? 0);
+    setRows(e.rows ?? 10);
+  };
 
-    fetchAllCategories();
-  }, []);
+  const onSort = (e: DataTableSortEvent) => {
+    setSortField(e.sortField ?? "name");
+    setSortOrder(e.sortOrder === -1 ? -1 : 1);
+  };
+
+  const onFilter = (e: DataTableFilterEvent) => {
+    setFiltersState(e.filters);
+    setPage(0);
+  };
+
+  const renderStatus = (status: string) => (
+    <span className={statusColors[status] ?? ""}>{status}</span>
+  );
+
+  const renderFilterInput = (placeholder = "Search") => {
+    return (options: any) => (
+      <InputText
+        value={options.value || ""}
+        onChange={(e) => options.filterCallback(e.target.value)}
+        placeholder={placeholder}
+        className="p-column-filter"
+      />
+    );
+  };
+
+  const renderMobileCard = (item: InventoryItem, index: number) => (
+    <div
+      key={index}
+      className="bg-white dark:bg-gray-900 border rounded-lg shadow p-4 mb-3"
+    >
+      <div className="font-semibold text-lg mb-2">{item.name}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-300">
+        <p>
+          <strong>Category:</strong> {item.category}
+        </p>
+        <p>
+          <strong>Warehouse:</strong> {item.warehouse}
+        </p>
+        <p>
+          <strong>Source:</strong> {item.source}
+        </p>
+        <p>
+          <strong>State:</strong> {item.states}
+        </p>
+        <p>
+          <strong>Status:</strong> {renderStatus(item.status)}
+        </p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-      <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-        <h3 className="app-section-title">Inventory List</h3>
-        <div className="flex gap-2 flex-wrap items-center">
-          <input
-            type="text"
-            placeholder="Search Product"
-            className="app-search-input"
-            value={productSearch}
-            onChange={(e) => {
-              setProductSearch(e.target.value);
-              setFirst(0);
-            }}
-          />
-          <PrimeSelectFilter<string>
-            placeholder="All statuses"
-            value={selectedStatus}
-            options={["Available", "Out of Stock", "Low Stock"].map((status) => ({
-              label: status,
-              value: status,
-            }))}
-            onChange={(val) => {
-              setSelectedStatus(val);
-              setFirst(0);
-            }}
-            className="px-2 py-0 rounded-md text-sm bg-white leading-[0.9rem] text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
-          />
+    <div className="card p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+      <h3 className="app-section-title mb-4">Inventory List</h3>
 
-          <PrimeSelectFilter<string>
-            placeholder="All categories"
-            value={selectedCategory}
-            options={allCategories.map((cat) => ({
-              label: cat,
-              value: cat,
-            }))}
-            onChange={(val) => {
-              setSelectedCategory(val);
-              setFirst(0);
-            }}
-            className="px-2 py-0 rounded-md text-sm bg-white leading-[0.9rem] text-black border border-gray-300 dark:bg-gray-800 dark:text-white dark:border-white/30 h-10"
-          />
+      {loading ? (
+        <div className="flex justify-center mt-5">
+          <ProgressSpinner />
         </div>
-      </div>
+      ) : isMobile ? (
+        <>
+          <div>{inventoryItems.map(renderMobileCard)}</div>
 
-      {/* Desktop Table */}
-      <div className="overflow-hidden">
-        <table className="hidden md:table min-w-full text-sm text-left">
-          <thead className="border-b dark:border-gray-700">
-            <tr>
-              <th className="py-2 px-1 app-table-heading">Product Name</th>
-              <th className="py-2 px-1 app-table-heading">Category</th>
-              <th className="py-2 px-1 app-table-heading">Warehouse</th>
-              <th className="py-2 px-1 app-table-heading">Source</th>
-              <th className="py-2 px-1 app-table-heading">State</th>
-              <th className="py-2 px-1 app-table-heading">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventoryItems.map((item, idx) => (
-              <tr key={idx} className="border-t dark:border-gray-700">
-                <td className="py-2 px-1 app-table-content">{item.name}</td>
-                <td className="py-2 px-1 app-table-content">{item.category}</td>
-                <td className="py-2 px-1 app-table-content">
-                  {item.warehouse}
-                </td>
-                <td className="py-2 px-1 app-table-content">{item.source}</td>
-                <td className="py-2 px-1 app-table-content">{item.states}</td>
-                <td className="py-2 px-1 app-table-content font-medium">
-                  <span
-                    className={
-                      statusColors[item.status as keyof typeof statusColors]
-                    }
-                  >
-                    {item.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-4 mt-4">
-        {inventoryItems.map((item, idx) => (
-          <div
-            key={idx}
-            className="border rounded-lg p-6 dark:border-gray-700 bg-white dark:bg-gray-800"
-          >
-            <div className="text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">
-              {item.name}
-            </div>
-            <div className="grid grid-cols-2 text-xs gap-y-2 text-gray-700 dark:text-gray-300">
-              <div>
-                <strong>Category:</strong> {item.category}
-              </div>
-              <div>
-                <strong>Warehouse:</strong> {item.warehouse}
-              </div>
-              <div>
-                <strong>Source:</strong> {item.source}
-              </div>
-              <div>
-                <strong>State:</strong> {item.states}
-              </div>
-              <div>
-                <strong>Status:</strong>{" "}
-                <span
-                  className={
-                    statusColors[item.status as keyof typeof statusColors]
-                  }
-                >
-                  {item.status}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination Section */}
-      <div className="p-4 bg-white dark:bg-gray-900 rounded-b-lg">
-        {!isMobile && (
-          <div className="flex justify-center dark:text-gray-100">
-            <Paginator
-              first={first}
-              rows={rows}
-              totalRecords={totalCount}
-              onPageChange={(e) => {
-                setFirst(e.first);
-                setRows(e.rows);
-              }}
-              template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
-              rowsPerPageOptions={[5, 10, 20, 50]}
-              className="w-full text-sm dark:text-white"
-            />
-          </div>
-        )}
-
-        {isMobile && (
-          <div className="flex flex-col sm:hidden text-sm text-gray-700 dark:text-gray-100 mt-4">
-            {/* Top: Rows per page + Page info (stacked vertically) */}
+          {/* MOBILE PAGINATION UI */}
+          <div className="flex flex-col text-sm text-gray-700 dark:text-gray-100 mt-4">
+            {/* Rows per page selector */}
             <div className="flex flex-col gap-2 mb-2 w-full">
-              <div className="flex flex-col gap-1">
-                <label htmlFor="mobileRows" className="whitespace-nowrap">
-                  Rows per page:
-                </label>
-                <select
-                  id="mobileRows"
-                  value={rows}
-                  onChange={(e) => {
-                    setRows(Number(e.target.value));
-                    setFirst(0);
-                  }}
-                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
-                >
-                  {[5, 10, 20, 50].map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="text-black dark:text-white font-medium">
-                Page {Math.floor(first / rows) + 1} of{" "}
-                {Math.ceil(totalCount / rows)}
-              </div>
+              <label htmlFor="mobileRows" className="whitespace-nowrap">
+                Rows per page:
+              </label>
+              <select
+                id="mobileRows"
+                value={rows}
+                onChange={(e) => {
+                  setRows(Number(e.target.value));
+                  setPage(0);
+                }}
+                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
+              >
+                {[5, 10, 20, 50].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Bottom: Pagination buttons (wraps if needed) */}
-            <div className="flex flex-wrap justify-between gap-2 w-full">
+            {/* Page info */}
+            <div className="text-black dark:text-white font-medium">
+              Page {page + 1} of {Math.ceil(totalRecords / rows)}
+            </div>
+
+            {/* Pagination buttons */}
+            <div className="flex flex-wrap justify-between gap-2 w-full mt-2">
               <button
-                onClick={() => setFirst(0)}
-                disabled={first === 0}
+                onClick={() => setPage(0)}
+                disabled={page === 0}
                 className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏮ First
               </button>
               <button
-                onClick={() => setFirst(Math.max(0, first - rows))}
-                disabled={first === 0}
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
                 className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Prev
               </button>
               <button
-                onClick={() => setFirst(first + rows)}
-                disabled={first + rows >= totalCount}
+                onClick={() =>
+                  setPage(Math.min(page + 1, Math.ceil(totalRecords / rows) - 1))
+                }
+                disabled={page + 1 >= Math.ceil(totalRecords / rows)}
                 className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 Next
               </button>
               <button
-                onClick={() =>
-                  setFirst((Math.ceil(totalCount / rows) - 1) * rows)
-                }
-                disabled={first + rows >= totalCount}
+                onClick={() => setPage(Math.ceil(totalRecords / rows) - 1)}
+                disabled={page + 1 >= Math.ceil(totalRecords / rows)}
                 className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
               >
                 ⏭ Last
               </button>
             </div>
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <DataTable
+          value={inventoryItems}
+          lazy
+          paginator
+          first={page * rows}
+          rows={rows}
+          totalRecords={totalRecords}
+          onPage={onPageChange}
+          rowsPerPageOptions={[10, 20, 50]}
+          sortMode="single"
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={onSort}
+          onFilter={onFilter}
+          filters={filtersState}
+          globalFilterFields={["name", "category", "warehouse", "source", "states", "status"]}
+          emptyMessage="No inventory items found"
+          responsiveLayout="scroll"
+        >
+          <Column
+            field="name"
+            header="Product Name"
+            sortable
+            filter
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="category"
+            header="Category"
+            sortable
+            filter
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="warehouse"
+            header="Warehouse"
+            sortable
+            filter
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="source"
+            header="Source"
+            sortable
+            filter
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="states"
+            header="State"
+            sortable
+            filter
+            filterElement={renderFilterInput()}
+          />
+          <Column
+            field="status"
+            header="Status"
+            sortable
+            filter
+            body={(rowData) => renderStatus(rowData.status)}
+            filterElement={renderFilterInput()}
+          />
+        </DataTable>
+      )}
     </div>
   );
 };
