@@ -1,14 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
-import { DataTable } from "primereact/datatable";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
+import {
+  DataTable,
+  DataTablePageEvent,
+  DataTableSortEvent,
+  DataTableFilterEvent,
+} from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
-import { FilterMatchMode } from "primereact/api";
+import { ProgressSpinner } from "primereact/progressspinner";
 import { axiosInstance } from "../../../axios";
 import moment from "moment";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import "./style.css";
 
 interface Scheduler {
   title: string;
@@ -19,211 +23,229 @@ interface Scheduler {
   date_range_type: string | null;
 }
 
-type FiltersType = {
-  [key: string]: {
-    value: string | null;
-    matchMode: FilterMatchMode;
-  };
-};
-
 const ViewScheduler: React.FC = () => {
-  const [schedulers, setSchedulers] = useState<Scheduler[]>([]);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
-  const toast = useRef<Toast>(null);
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [data, setData] = useState<Scheduler[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [page, setPage] = useState(0);
+  const [rows, setRows] = useState(15);
+  const [loading, setLoading] = useState(true);
+  const [sortField, setSortField] = useState("start_date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [globalFilter] = useState("");
   const [expandedStates, setExpandedStates] = useState<string[]>([]);
 
-  const [filters, setFilters] = useState<FiltersType>({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    description: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  const [filters, setFilters] = useState<any>({
+    global: { value: null, matchMode: "contains" },
+    title: { value: null, matchMode: "contains" },
+    description: { value: null, matchMode: "contains" },
+    email: { value: null, matchMode: "contains" },
+    recurrence_pattern: { value: null, matchMode: "contains" },
+    date_range_type: { value: null, matchMode: "contains" },
+    start_date: { value: null, matchMode: "contains" },
   });
+  const arrowExpand = (title: string) => {
+    setExpandedStates((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+    );
+  };
+  const fetchData = async () => {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: rows.toString(),
+      sortField,
+      sortOrder,
+    });
 
-  useEffect(() => {
-    fetchSchedulers();
-  }, []);
+    if (globalFilter.trim()) {
+      queryParams.append("title.value", globalFilter);
+      queryParams.append("title.matchMode", "contains");
+    }
 
-  const fetchSchedulers = async () => {
+    for (const key in filters) {
+      const value = filters[key]?.value;
+      const matchMode = filters[key]?.matchMode;
+      if (value && key !== "global") {
+        queryParams.append(`${key}.value`, value);
+        queryParams.append(`${key}.matchMode`, matchMode);
+      }
+    }
+
+    const url = `/schedulers/view?${queryParams.toString()}`;
+    setLoading(true);
+
     try {
-      const response = await axiosInstance.get("/schedulers/view");
-      setSchedulers(response.data as Scheduler[]);
+      const response = await axiosInstance.get(url);
+      const resp = response.data as { data: Scheduler[]; count: number };
+      setData(resp.data);
+      setTotalRecords(resp.count);
     } catch (error) {
       console.error("Error fetching schedulers:", error);
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Error fetching scheduler data",
-        life: 3000,
-      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
+  useEffect(() => {
+    fetchData();
+  }, [page, rows, sortField, sortOrder, filters, globalFilter]);
+
+  const onPageChange = (e: DataTablePageEvent) => {
+    setPage(e.page ?? 0);
+    setRows(e.rows ?? 15);
   };
 
-  const arrowExpand = (stateName: string) => {
-    setExpandedStates((prev) =>
-      prev.includes(stateName)
-        ? prev.filter((name) => name !== stateName)
-        : [...prev, stateName]
+  const onSort = (e: DataTableSortEvent) => {
+    const newSortField = e.sortField ?? "";
+    const isSameField = newSortField === sortField;
+    const newSortOrder = isSameField
+      ? sortOrder === "asc"
+        ? "desc"
+        : "asc"
+      : "asc";
+
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
+  };
+
+  const onFilter = (e: DataTableFilterEvent) => {
+    setFilters(e.filters);
+  };
+
+  const renderFilterInput = (placeholder: string = "Search") => {
+    return (options: any) => (
+      <InputText
+        value={options.value || ""}
+        onChange={(e) => options.filterCallback(e.target.value)}
+        placeholder={placeholder}
+        className="p-column-filter"
+      />
     );
   };
 
-  const renderHeader = () => (
-    <div className="vw-scheduler-header">
-      <div className="vw-scheduler-header-controls">
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Search by title or description"
-          className="vw-scheduler-search-input"
-        />
-        <Dropdown
-          value={rowsPerPage}
-          options={[5, 10, 15, 20, 50]}
-          onChange={(e) => setRowsPerPage(e.value)}
-          placeholder="Rows per page"
-          className="vw-scheduler-rows-dropdown"
-        />
-      </div>
-      <h1 className="vw-scheduler-title">View and Manage Schedulers</h1>
-    </div>
-  );
-
   return (
-    <div className="vw-scheduler-container">
-      <h1 className="app-subheading">Scheduled Reports</h1>
-      <Toast ref={toast} />
-      <div className="vw-scheduler-content">
-        {/* Desktop View */}
-        <div className="vw-scheduler-table-container hidden lg:block">
+    <div className="card p-4">
+      <h2 className="text-xl mb-3">View Scheduled Reports</h2>
+
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        {loading ? (
+          <div className="flex justify-center mt-5">
+            <ProgressSpinner />
+          </div>
+        ) : (
           <DataTable
-            value={schedulers}
-            header={renderHeader()}
+            value={data}
             paginator
-            rows={rowsPerPage}
+            lazy
+            rows={rows}
+            first={page * rows}
+            totalRecords={totalRecords}
+            onPage={onPageChange}
+            rowsPerPageOptions={[10, 15, 20, 50]}
+            sortMode="single"
+            sortField={sortField}
+            sortOrder={sortOrder === "asc" ? 1 : -1}
+            onSort={onSort}
+            onFilter={onFilter}
             filters={filters}
-            filterDisplay="row"
-            globalFilterFields={["title", "description"]}
-            className="vw-scheduler-table"
+            globalFilterFields={[
+              "title",
+              "description",
+              "email",
+              "recurrence_pattern",
+              "start_date",
+              "date_range_type",
+            ]}
+            responsiveLayout="scroll"
+            emptyMessage="No scheduled reports found"
           >
-            <Column field="title" header="Title" style={{ width: "200px" }} />
-            <Column
-              field="description"
-              header="Description"
-              style={{ width: "300px" }}
-            />
-            <Column field="email" header="Email" style={{ width: "200px" }} />
-            <Column
-              field="recurrence_pattern"
-              header="Recurrence"
-              style={{ width: "200px" }}
-            />
+            <Column field="title" header="Title" sortable filter filterElement={renderFilterInput()} />
+            <Column field="description" header="Description" sortable filter filterElement={renderFilterInput()} />
+            <Column field="email" header="Email" sortable filter filterElement={renderFilterInput()} />
+            <Column field="recurrence_pattern" header="Recurrence" sortable filter filterElement={renderFilterInput()} />
             <Column
               field="start_date"
               header="Start Date"
-              body={(rowData) =>
-                moment(rowData.start_date).format("YYYY-MM-DD HH:mm")
-              }
-              style={{ width: "200px" }}
+              sortable
+              body={(rowData: Scheduler) => moment(rowData.start_date).format("YYYY-MM-DD HH:mm")}
+              filterElement={renderFilterInput()}
             />
-            <Column
-              field="date_range_type"
-              header="Time Frame"
-              style={{ width: "150px" }}
-            />
+            <Column field="date_range_type" header="Time Frame" sortable filter filterElement={renderFilterInput()} />
           </DataTable>
-        </div>
+        )}
       </div>
 
       {/* Mobile View */}
+      {/* Mobile View */}
       <div className="block lg:hidden">
-      <table className="min-w-full border-separate border-spacing-0">
-        <thead className="sticky top-0 z-20 bg-gray-200 dark:bg-gray-900 text-xs">
-          <tr>
-            <th className=""></th>
-            <th className="text-left px-4 py-2 app-table-heading text-gray-300 dark:text-gray-100">
-              Title
-            </th>
-          </tr>
-        </thead>
-        <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
-          {schedulers.map((row) => (
-            <React.Fragment key={`${row.email}-${row.title}`}>
-              <tr
-                className="hover:bg-gray-50 hover:dark:bg-white/[0.05] cursor-pointer transition-colors"
-                onClick={() => arrowExpand(row.title)}
-              >
-                <td className="py-3 px-4">
-                  {expandedStates.includes(row.title) ? (
-                    <FaChevronUp className="text-gray-500 dark:text-gray-400" />
-                  ) : (
-                    <FaChevronDown className="text-gray-500 dark:text-gray-400" />
-                  )}
-                </td>
-                <td className="py-3 px-4">{row.title}</td>
-              </tr>
-
-              {expandedStates.includes(row.title) && (
-                <tr>
-                  <td colSpan={2} className="px-4 pb-4">
-                    <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-4 text-sm text-gray-800 dark:text-gray-300 shadow-sm space-y-3 w-full">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Description
-                        </span>
-                        <span className="text-right font-medium text-gray-900 dark:text-white break-words max-w-[60%]">
-                          {row.description}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Email
-                        </span>
-                        <span className="text-right font-medium text-gray-900 dark:text-white break-all max-w-[60%]">
-                          {row.email}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Recurrence
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {row.recurrence_pattern}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Start Date
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {moment(row.start_date).format("YYYY-MM-DD HH:mm")}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Time Frame
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {row.date_range_type}
-                        </span>
-                      </div>
-                    </div>
+        <table className="min-w-full border-separate border-spacing-0">
+          <thead className="sticky top-0 z-20 bg-gray-200 dark:bg-gray-900 text-xs">
+            <tr>
+              <th className=""></th>
+              <th className="text-left px-4 py-2 app-table-heading text-gray-300 dark:text-gray-100">
+                Title
+              </th>
+            </tr>
+          </thead>
+          <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
+            {data.map((row) => (
+              <React.Fragment key={`${row.email}-${row.title}`}>
+                <tr
+                  className="hover:bg-gray-50 hover:dark:bg-white/[0.05] cursor-pointer transition-colors"
+                  onClick={() => arrowExpand(row.title)}
+                >
+                  <td className="py-3 px-4">
+                    {expandedStates.includes(row.title) ? (
+                      <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+                    ) : (
+                      <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+                    )}
                   </td>
+                  <td className="py-3 px-4">{row.title}</td>
                 </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+
+                {expandedStates.includes(row.title) && (
+                  <tr>
+                    <td colSpan={2} className="px-4 pb-4">
+                      <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-4 text-sm text-gray-800 dark:text-gray-300 shadow-sm space-y-3 w-full">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Description</span>
+                          <span className="text-right font-medium text-gray-900 dark:text-white break-words max-w-[60%]">
+                            {row.description}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Email</span>
+                          <span className="text-right font-medium text-gray-900 dark:text-white break-all max-w-[60%]">
+                            {row.email}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Recurrence</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{row.recurrence_pattern}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Start Date</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {moment(row.start_date).format("YYYY-MM-DD HH:mm")}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">Time Frame</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{row.date_range_type}</span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
+
 };
 
 export default ViewScheduler;
