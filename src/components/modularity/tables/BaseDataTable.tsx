@@ -210,38 +210,46 @@ export function BaseDataTable<T extends DataTableValue>({
           {renderMobilePagination()}
         </>
       ) : (
-        <DataTable
-          value={data}
-          lazy
-          paginator
-          first={page * rows}
-          rows={rows}
-          totalRecords={totalRecords}
-          onPage={onPageChange}
-          rowsPerPageOptions={rowsPerPageOptions}
-          sortMode="single"
-          sortField={sortField}
-          sortOrder={sortOrder}
-          onSort={onSort}
-          onFilter={onFilter}
-          filters={filters}
-          globalFilterFields={globalFilterFields}
-          emptyMessage={emptyMessage}
-          responsiveLayout="scroll"
-        >
-          {columns.map((column) => (
-            <Column
-              key={column.field as string}
-              field={column.field as string}
-              header={column.header}
-              sortable={column.sortable}
-              filter={column.filter}
-              filterElement={renderFilterInput(column.filterPlaceholder)}
-              body={column.body}
-              className={column.className}
-            />
-          ))}
-        </DataTable>
+        (() => {
+          const firstRecord = totalRecords === 0 ? 0 : page * rows + 1;
+          const lastRecord = Math.min(totalRecords, (page + 1) * rows);
+          return (
+            <DataTable
+              value={data}
+              lazy
+              paginator
+              first={page * rows}
+              paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+              currentPageReportTemplate={`Showing ${firstRecord} to ${lastRecord} of ${totalRecords} orders`}
+              rows={rows}
+              totalRecords={totalRecords}
+              onPage={onPageChange}
+              rowsPerPageOptions={rowsPerPageOptions}
+              sortMode="single"
+              sortField={sortField}
+              sortOrder={sortOrder}
+              onSort={onSort}
+              onFilter={onFilter}
+              filters={filters}
+              globalFilterFields={globalFilterFields}
+              emptyMessage={emptyMessage}
+              responsiveLayout="scroll"
+            >
+              {columns.map((column) => (
+                <Column
+                  key={column.field as string}
+                  field={column.field as string}
+                  header={column.header}
+                  sortable={column.sortable}
+                  filter={column.filter}
+                  filterElement={renderFilterInput(column.filterPlaceholder)}
+                  body={column.body}
+                  className={column.className}
+                />
+              ))}
+            </DataTable>
+          );
+        })()
       )}
     </div>
   );
