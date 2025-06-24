@@ -226,8 +226,8 @@ export const SalesByRegion = () => {
             <h3 className="app-subheading">
               Revenues by State
             </h3>
-            <div className="lg:max-h-[400px] lg:overflow-y-auto">
-              <table className="min-w-full border-separate border-spacing-0 lg:table lg:border lg:border-slate-300 dark:lg:border-slate-700">
+            <div className="w-full overflow-x-auto max-w-full lg:max-h-[400px] lg:overflow-y-auto">
+              <table className="table-auto lg:table-fixed min-w-full w-full border-separate border-spacing-0 lg:table lg:border lg:border-slate-300 dark:lg:border-slate-700">
                 <thead className="sticky top-0 z-20 bg-purple-100 dark:bg-gray-800 text-xs">
                   <tr>
                     <th className="w-8 lg:hidden"></th>

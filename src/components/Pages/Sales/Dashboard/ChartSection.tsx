@@ -45,7 +45,7 @@ function getXAxisTitle(categories: string[]): string {
   if (diffDays <= 365) {
     return "Months";
   }
-  return "Years";
+  return "Year";
 }
 
 const ChartSection: React.FC<Props> = ({ company }) => {
@@ -124,7 +124,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       },
       legend: {
         labels: { colors: labelColor },
-        position: "top",
+        position: "bottom",
       },
       grid: {
         borderColor: gridColor,

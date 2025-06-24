@@ -213,13 +213,13 @@ const ShippingBreakdown = () => {
 
         <input
           type="text"
-          placeholder="Search shipments..."
+          placeholder="Search Shipments..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setPage(0);
           }}
-          className="app-search-input w-full sm:w-64"
+          className="app-search-input w-full sm:w-64 mb-2"
         />
       </div>
 
@@ -388,7 +388,7 @@ const ShippingBreakdown = () => {
         </div>
       </div>
 
-      <div className="px-4 pb-6">
+      <div className="px-4">
         <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
         {Object.keys(carrierTotals).length > 0 ? (
           <Chart
