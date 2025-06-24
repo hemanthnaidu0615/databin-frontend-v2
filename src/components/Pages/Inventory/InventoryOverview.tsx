@@ -4,7 +4,7 @@ import ReactApexChart from "react-apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { formatDateTime } from "../../utils/kpiUtils";
-import { getBaseTooltip, getBaseToolTip, percentageTooltip, turnoverRateTooltip } from "../../modularity/graphs/graphWidget";
+import { getBaseTooltip, percentageTooltip, turnoverRateTooltip } from "../../modularity/graphs/graphWidget";
 
 interface Filters {
   selectedRegion: string;
@@ -53,9 +53,9 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   };
 
   const turnoverTooltip = {
-    ...getBaseToolTip(isDark, turnoverRateTooltip),
+    ...getBaseTooltip(isDark, turnoverRateTooltip),
     y: {
-      ...getBaseToolTip(isDark, turnoverRateTooltip).y,
+      ...getBaseTooltip(isDark, turnoverRateTooltip).y,
       formatter: (val: number) => val.toLocaleString(),
     },
   };
@@ -312,7 +312,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
           ))}
         </div>
 
-        <div className="w-full min-h-[200px]">
+        <div className="w-full h-65 overflow-hidden">
           <ReactApexChart
             options={warehouseChartOptions as any}
             series={warehouseChartSeries}
