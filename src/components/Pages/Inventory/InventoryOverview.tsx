@@ -4,7 +4,7 @@ import ReactApexChart from "react-apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { formatDateTime } from "../../utils/kpiUtils";
-import { getBaseTooltip, percentageTooltip, turnoverRateTooltip } from "../../modularity/graphs/graphWidget";
+import { getBaseToolTip, getBaseTooltip, percentageTooltip, turnoverRateTooltip } from "../../modularity/graphs/graphWidget";
 
 interface Filters {
   selectedRegion: string;
@@ -53,9 +53,9 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   };
 
   const turnoverTooltip = {
-    ...getBaseTooltip(isDark, turnoverRateTooltip),
+    ...getBaseToolTip(isDark, turnoverRateTooltip),
     y: {
-      ...getBaseTooltip(isDark, turnoverRateTooltip).y,
+      ...getBaseToolTip(isDark, turnoverRateTooltip).y,
       formatter: (val: number) => val.toLocaleString(),
     },
   };
