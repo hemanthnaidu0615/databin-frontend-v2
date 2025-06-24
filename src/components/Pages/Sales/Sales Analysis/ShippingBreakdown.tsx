@@ -213,13 +213,13 @@ const ShippingBreakdown = () => {
 
         <input
           type="text"
-          placeholder="Search shipments..."
+          placeholder="Search Shipments..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setPage(0);
           }}
-          className="app-search-input w-full sm:w-64"
+          className="app-search-input w-full sm:w-64 mb-2"
         />
       </div>
 
