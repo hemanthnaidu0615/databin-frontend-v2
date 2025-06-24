@@ -39,7 +39,6 @@ const ShippingBreakdown: React.FC = () => {
 
   const [data, setData] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [globalFilter, setGlobalFilter] = useState<string>("");
 
   const [filters, setFilters] = useState<any>({
     global: { value: null, matchMode: "contains" },
@@ -131,13 +130,6 @@ const ShippingBreakdown: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, enterpriseKey, page, rows, sortField, sortOrder, filters]);
 
-  // Handlers
-  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFilters({ ...filters, global: { value, matchMode: "contains" } });
-    setGlobalFilter(value);
-    setPage(0);
-  };
 
   const onPageChange = (e: DataTablePageEvent) => {
     setPage(e.page ?? 0);
@@ -231,7 +223,7 @@ const ShippingBreakdown: React.FC = () => {
 
   return (
     <div className="card p-4">
-      <h2 className="text-xl mb-3">Shipping Breakdown</h2>
+      <h2 className="app-subheading">Shipping Breakdown</h2>
 
       {loading ? (
         <div className="flex justify-center mt-5">
@@ -243,26 +235,62 @@ const ShippingBreakdown: React.FC = () => {
           {data.length === 0 && <p className="text-center text-gray-500">No shipments found</p>}
 
           <div className="space-y-3">
-            {data.map((shipment, idx) => (
+            {data.slice(page * rows, page * rows + rows).map((shipment, index) => (
               <div
-                key={idx}
-                className={`p-4 rounded-md border ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"
-                  }`}
+                key={index}
+                className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"}`}
               >
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold">{shipment.carrier || "Unknown Carrier"}</span>
-                  <span className="text-sm text-gray-400">{shipment.shipment_status}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                    Carrier:
+                  </span>
+                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+                    {shipment.carrier}
+                  </span>
                 </div>
-                <div className="text-sm mb-1">Method: {shipment.shipping_method || "N/A"}</div>
-                <div className="text-right font-semibold text-purple-600">
-                  ${shipment.shipment_cost_usd ? formatValue(shipment.shipment_cost_usd) : "0"}
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Method:</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {shipment.shipping_method}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {shipment.shipment_status}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Cost:</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    ${shipment.shipment_cost_usd ? formatValue(shipment.shipment_cost_usd) : "0"}
+                  </span>
                 </div>
               </div>
             ))}
+
           </div>
 
           {/* Mobile pagination */}
           {/* Mobile pagination */}
+          <div className="flex justify-end mt-4">
+            <label className="mr-2 text-sm">Rows per page:</label>
+            <select
+              value={rows}
+              onChange={(e) => {
+                setRows(Number(e.target.value));
+                setPage(0);
+              }}
+              className="px-2 py-1 text-sm rounded bg-gray-100 dark:bg-gray-800 border dark:border-gray-700"
+            >
+              {[5, 10, 20, 50, 100].map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="flex justify-center items-center gap-2 mt-6 text-xs">
             <button
               onClick={() => onMobilePageChange(0)}
@@ -359,7 +387,7 @@ const ShippingBreakdown: React.FC = () => {
         </>
       )}
 
-      <h3 className="mt-6 mb-4">Top 10 Carriers by Total Cost</h3>
+      <h3 className="mt-6 mb-6 app-subheading">Top 10 Carriers by Total Cost</h3>
       {Object.keys(carrierTotals).length > 0 ? (
         <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
       ) : (
