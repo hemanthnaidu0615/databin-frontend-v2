@@ -67,30 +67,35 @@ const CommonButton = ({
       break;
     case "responsive":
       return (
-        <>
-          {showMobile && (
-            <button
-              onClick={onClick}
-              className={`sm:hidden text-purple-600 text-sm font-medium self-start ${className}`}
-              style={style}
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="lg"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
-          )}
-          {showDesktop && (
-            <button
-              onClick={onClick}
-              className={`hidden sm:block text-xs font-medium text-purple-600 hover:underline ${className}`}
-              style={style}
-            >
-              {text || "View more"}
-            </button>
-          )}
-        </>
+<>
+  {showMobile && (
+    <button
+      onClick={onClick}
+      className={`sm:hidden text-purple-600 text-sm font-medium self-start ${className}`}
+      style={style}
+    >
+      <FontAwesomeIcon
+        icon={faShareFromSquare}
+        size="lg"
+        style={{ color: "#a855f7" }}
+      />
+    </button>
+  )}
+  {showDesktop && (
+    <button
+      onClick={onClick}
+      className={`hidden sm:block text-purple-600 text-sm font-medium ${className}`}
+      style={style}
+    >
+      <FontAwesomeIcon
+        icon={faShareFromSquare}
+        size="lg"
+        style={{ color: "#a855f7" }}
+      />
+    </button>
+  )}
+</>
+
       );
 
   }

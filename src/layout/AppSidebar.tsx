@@ -81,7 +81,7 @@ const AppSidebar: React.FC = () => {
         {
           icon: <UserManagementIcon />,
           name: "User Management",
-          path: "/usermanagement",
+          path: "usermanagement",
         },
       ]
       : []),

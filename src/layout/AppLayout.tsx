@@ -2,6 +2,7 @@ import { SidebarProvider, useSidebar } from "../context/SidebarContext";
 import { Outlet } from "react-router";
 import AppHeader from "./Navbar";
 import AppSidebar from "./AppSidebar";
+import Footer from "./Footer";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -40,6 +41,7 @@ const LayoutContent: React.FC = () => {
               <Outlet />
             </div>
           </div>
+          <Footer/>
         </main>
       </div>
     </div>

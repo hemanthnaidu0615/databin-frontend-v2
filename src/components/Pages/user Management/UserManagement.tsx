@@ -98,6 +98,15 @@ export const UserManagement = () => {
     );
   };
 
+  // For mobile pagination
+  const [first, setFirst] = useState(0);
+  const paginatedUsers = users.slice(first, first + rows);
+
+  const handlePageChange = ({ first, rows }: { first: number; rows: number }) => {
+    setFirst(first);
+    setRows(rows);
+  };
+
   return (
     <div className="p-6 bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-900 dark:text-gray-100">
       <div className="max-w-6xl mx-auto">
