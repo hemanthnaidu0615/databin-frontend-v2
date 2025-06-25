@@ -9,6 +9,19 @@ type ApiRow = {
   totalQuantity: number;
   totalAmountUSD: number;
 };
+type VolumeValueApiResponse = {
+  data: {
+    product_id: number;
+    product_name: string;
+    category: string;
+    total_amount: number;
+    total_quantity: number;
+  }[];
+  page: number;
+  size: number;
+  count: number;
+};
+
 
 function convertToUSD(rupees: number): number {
   const exchangeRate = 0.012;
@@ -45,15 +58,8 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
         },
       })
       .then((res) => {
-        const apiData = res.data as {
-          product_id: number;
-          product_name: string;
-          category: string;
-          total_amount: number;
-          total_quantity: number;
-        }[];
-
-        const formattedData: ApiRow[] = apiData.map((item) => ({
+        const apiRes = res.data as VolumeValueApiResponse;
+        const formattedData: ApiRow[] = apiRes.data.map((item) => ({
           productId: item.product_id.toString(),
           category: item.category,
           brand: item.product_name,
