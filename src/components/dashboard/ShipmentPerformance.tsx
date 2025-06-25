@@ -188,7 +188,7 @@ const ShipmentPerformance: React.FC<{
           ) : error ? (
             <p className="text-red-500">Error: {error}</p>
           ) : (
-            <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 150 : 300} />
+            <Chart options={barOptions} series={barSeries} type="bar" height={size === "small" ? 250 : 385} />
           )}
 
           {/* Totals */}
