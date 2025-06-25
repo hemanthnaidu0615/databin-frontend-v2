@@ -6,14 +6,14 @@ import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import React from "react";
-
-
+ 
+ 
 interface Marker {
   color: string;
   value: string;
   legend: string;
 }
-
+ 
 interface StateData {
   state_name: string;
   state_revenue: number;
@@ -22,7 +22,7 @@ interface StateData {
   customer_count?: number;
   average_revenue_per_unit?: number;
 }
-
+ 
 interface TableData {
   state: string;
   totalDollar: string;
@@ -30,20 +30,27 @@ interface TableData {
   quantity: string;
   avgRevenue?: string;
 }
-
+interface SalesByRegionResponse {
+  data: StateData[];
+  page: number;
+  size: number;
+  count: number;
+}
+ 
+ 
 const convertToUSD = (rupees: number): number => {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
-
+ 
 const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
 };
-
+ 
 const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
-
+ 
 export const SalesByRegion = () => {
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [stateData, setStateData] = useState<StateData[]>([]);
@@ -54,38 +61,39 @@ export const SalesByRegion = () => {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
   const [expandedStates, setExpandedStates] = useState<string[]>([]);
-
+ 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       if (!startDate || !endDate) return;
-
+ 
       setLoading(true);
       setError(null);
-
+ 
       const formattedStart = formatDate(new Date(startDate));
       const formattedEnd = formatDate(new Date(endDate));
-
+ 
       const params = new URLSearchParams({
         startDate: formattedStart,
         endDate: formattedEnd,
       });
-
+ 
       if (enterpriseKey) {
         params.append('enterpriseKey', enterpriseKey);
       }
-
+ 
       try {
         const [statesResponse, , topStatesResponse] = await Promise.all([
-          axiosInstance.get<StateData[]>(`sales-by-region?${params.toString()}`),
+          axiosInstance.get<SalesByRegionResponse>(`sales-by-region?${params.toString()}`),
+ 
           axiosInstance.get(`sales-by-region/countrywide?${params.toString()}`),
           axiosInstance.get<{ state_name: string, state_revenue: number }[]>(`sales-by-region/top5?${params.toString()}`),
         ]);
-
-        setStateData(statesResponse.data);
+ 
+        setStateData(statesResponse.data.data);
         setTopStates(topStatesResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -94,37 +102,37 @@ export const SalesByRegion = () => {
         setLoading(false);
       }
     };
-
+ 
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
-
+ 
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const isDark = document.documentElement.classList.contains("dark");
       setTheme(isDark ? "dark" : "light");
     });
-
+ 
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["class"],
     });
     return () => observer.disconnect();
   }, []);
-
+ 
   const formatterUSD = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   });
-
+ 
   const arrowExpand = (stateName: string) => {
     setExpandedStates((prev) =>
       prev[0] === stateName ? [] : [stateName]
     );
   };
-
-
+ 
+ 
   const convertToTableData = (data: StateData[]): TableData[] => {
     return data.map((state) => ({
       state: state.state_name,
@@ -134,23 +142,23 @@ export const SalesByRegion = () => {
       avgRevenue: formatterUSD.format(convertToUSD(state.average_revenue_per_unit || 0))
     }));
   };
-
+ 
   const tableData = convertToTableData(stateData);
-
+ 
   const colorScale = (stateCode: string) => {
     const topStateCodes = topStates.map(state => state.state_name);
     const colors = ["#58ddf5", "#65f785", "#f5901d", "#f7656c", "#8518b8"];
-
+ 
     const index = topStateCodes.indexOf(stateCode);
     return index >= 0 ? colors[index] : theme === "dark" ? "#444" : "#d6d4d0";
   };
-
+ 
   const markersList = topStates.slice(0, 5).map((state) => ({
     legend: state.state_name,
     color: colorScale(state.state_name),
     value: formatValue(convertToUSD(state.state_revenue))
   }));
-
+ 
   if (!startDate || !endDate) {
     return (
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
@@ -160,7 +168,7 @@ export const SalesByRegion = () => {
       </div>
     );
   }
-
+ 
   if (loading) {
     return (
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
@@ -171,7 +179,7 @@ export const SalesByRegion = () => {
       </div>
     );
   }
-
+ 
   if (error) {
     return (
       <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
@@ -181,7 +189,7 @@ export const SalesByRegion = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="h-full w-full flex flex-col m-2 rounded-lg bg-white dark:bg-gray-900 border-2 border-slate-200 dark:border-slate-700">
       <div className="flex justify-between px-3 py-2">
@@ -193,14 +201,14 @@ export const SalesByRegion = () => {
             Countrywide Sales
           </h3>
         </div>
-
+ 
         <div className="flex flex-col lg:flex-row gap-6 py-4 items-center lg:items-start">
           <div className="w-full lg:w-1/2 flex flex-col lg:flex-row items-center lg:items-start gap-4">
             {/* Map */}
             <div className="relative w-full h-full min-h-[250px] sm:min-h-[300px] md:min-h-[335px] flex-1 aspect-[4/3] overflow-hidden">
               <USMap />
             </div>
-
+ 
             {/* Legend */}
             <div className="flex flex-col p-2 gap-4 max-w-xs w-full lg:w-auto">
               <div className="text-xs p-2 font-bold rounded-sm text-violet-900 dark:text-violet-100 bg-red-100 dark:bg-red-900 ">
@@ -221,13 +229,13 @@ export const SalesByRegion = () => {
               </div>
             </div>
           </div>
-
+ 
           <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
             <h3 className="app-subheading">
               Revenues by State
             </h3>
-            <div className="w-full overflow-x-auto max-w-full lg:max-h-[400px] lg:overflow-y-auto">
-              <table className="table-auto lg:table-fixed min-w-full w-full border-separate border-spacing-0 lg:table lg:border lg:border-slate-300 dark:lg:border-slate-700">
+            <div className="lg:max-h-[400px] lg:overflow-y-auto">
+              <table className="min-w-full border-separate border-spacing-0 lg:table lg:border lg:border-slate-300 dark:lg:border-slate-700">
                 <thead className="sticky top-0 z-20 bg-purple-100 dark:bg-gray-800 text-xs">
                   <tr>
                     <th className="w-8 lg:hidden"></th>
@@ -272,7 +280,7 @@ export const SalesByRegion = () => {
                           {row.quantity}
                         </td>
                       </tr>
-
+ 
                       {/* Mobile-only expanded row */}
                       {expandedStates.includes(row.state) && (
                         <tr className="lg:hidden">
@@ -300,11 +308,10 @@ export const SalesByRegion = () => {
                 </tbody>
               </table>
             </div>
-
           </div>
         </div>
       </div>
     </div>
-    // </div>
   );
 };
+ 

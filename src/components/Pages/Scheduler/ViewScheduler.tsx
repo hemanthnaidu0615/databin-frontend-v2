@@ -1,14 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { Toast } from "primereact/toast";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
-import { FilterMatchMode } from "primereact/api";
-import { axiosInstance } from "../../../axios";
+"use client";
+
+import React, { useState } from "react";
+import { FaChevronUp, FaChevronDown } from "react-icons/fa";
 import moment from "moment";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import "./style.css";
+import { BaseDataTable, TableColumn } from "../../modularity/tables/BaseDataTable";
+import { axiosInstance } from "../../../axios";
 
 interface Scheduler {
   title: string;
@@ -19,209 +15,112 @@ interface Scheduler {
   date_range_type: string | null;
 }
 
-type FiltersType = {
-  [key: string]: {
-    value: string | null;
-    matchMode: FilterMatchMode;
-  };
-};
-
 const ViewScheduler: React.FC = () => {
-  const [schedulers, setSchedulers] = useState<Scheduler[]>([]);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
-  const toast = useRef<Toast>(null);
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [expandedStates, setExpandedStates] = useState<string[]>([]);
 
-  const [filters, setFilters] = useState<FiltersType>({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    title: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    description: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
-
-  useEffect(() => {
-    fetchSchedulers();
-  }, []);
-
-  const fetchSchedulers = async () => {
-    try {
-      const response = await axiosInstance.get("/schedulers/view");
-      setSchedulers(response.data as Scheduler[]);
-    } catch (error) {
-      console.error("Error fetching schedulers:", error);
-      toast.current?.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Error fetching scheduler data",
-        life: 3000,
-      });
-    }
-  };
-
-  const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const _filters = { ...filters };
-    _filters["global"].value = value;
-    setFilters(_filters);
-    setGlobalFilterValue(value);
-  };
-
-  const arrowExpand = (stateName: string) => {
+  const arrowExpand = (title: string) => {
     setExpandedStates((prev) =>
-      prev.includes(stateName)
-        ? prev.filter((name) => name !== stateName)
-        : [...prev, stateName]
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
     );
   };
 
-  const renderHeader = () => (
-    <div className="vw-scheduler-header">
-      <div className="vw-scheduler-header-controls">
-        <InputText
-          value={globalFilterValue}
-          onChange={onGlobalFilterChange}
-          placeholder="Search by title or description"
-          className="vw-scheduler-search-input"
-        />
-        <Dropdown
-          value={rowsPerPage}
-          options={[5, 10, 15, 20, 50]}
-          onChange={(e) => setRowsPerPage(e.value)}
-          placeholder="Rows per page"
-          className="vw-scheduler-rows-dropdown"
-        />
+  const fetchData = async (params: any) => {
+    const queryParams = new URLSearchParams({
+      ...params,
+      sortField: params.sortField || "start_date",
+      sortOrder: params.sortOrder || "asc"
+    });
+
+    const url = `/schedulers/view?${queryParams.toString()}`;
+
+    try {
+      const response = await axiosInstance.get(url);
+      const resp = response.data as { data: Scheduler[]; count: number };
+      return {
+        data: resp.data || [],
+        count: resp.count || 0
+      };
+    } catch (error) {
+      console.error("Error fetching schedulers:", error);
+      return { data: [], count: 0 };
+    }
+  };
+
+  const renderMobileCard = (item: Scheduler, index: number) => (
+    <div key={index} className="mb-3">
+      <div
+        className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg cursor-pointer"
+        onClick={() => arrowExpand(item.title)}
+      >
+        <div className="font-medium">{item.title}</div>
+        {expandedStates.includes(item.title) ? (
+          <FaChevronUp className="text-gray-500 dark:text-gray-400" />
+        ) : (
+          <FaChevronDown className="text-gray-500 dark:text-gray-400" />
+        )}
       </div>
-      <h1 className="vw-scheduler-title">View and Manage Schedulers</h1>
+
+      {expandedStates.includes(item.title) && (
+        <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="mb-2">
+            <div className="text-sm text-gray-600 dark:text-gray-300">Description</div>
+            <div className="text-sm font-medium">{item.description}</div>
+          </div>
+          <div className="mb-2">
+            <div className="text-sm text-gray-600 dark:text-gray-300">Email</div>
+            <div className="text-sm font-medium">{item.email}</div>
+          </div>
+          <div className="mb-2">
+            <div className="text-sm text-gray-600 dark:text-gray-300">Recurrence</div>
+            <div className="text-sm font-medium">{item.recurrence_pattern}</div>
+          </div>
+          <div className="mb-2">
+            <div className="text-sm text-gray-600 dark:text-gray-300">Start Date</div>
+            <div className="text-sm font-medium">
+              {moment(item.start_date).format("YYYY-MM-DD HH:mm")}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Time Frame</div>
+            <div className="text-sm font-medium">{item.date_range_type}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
+  const columns: TableColumn<Scheduler>[] = [
+    { field: "title", header: "Title", sortable: true, filter: true },
+    { field: "description", header: "Description", sortable: true, filter: true },
+    { field: "email", header: "Email", sortable: true, filter: true },
+    { field: "recurrence_pattern", header: "Recurrence", sortable: true, filter: true },
+    {
+      field: "start_date",
+      header: "Start Date",
+      sortable: true,
+      body: (rowData: Scheduler) => moment(rowData.start_date).format("YYYY-MM-DD HH:mm")
+    },
+    { field: "date_range_type", header: "Time Frame", sortable: true, filter: true }
+  ];
+
   return (
-    <div className="vw-scheduler-container">
-      <h1 className="app-subheading">Scheduled Reports</h1>
-      <Toast ref={toast} />
-      <div className="vw-scheduler-content">
-        {/* Desktop View */}
-        <div className="vw-scheduler-table-container hidden lg:block">
-          <DataTable
-            value={schedulers}
-            header={renderHeader()}
-            paginator
-            rows={rowsPerPage}
-            filters={filters}
-            filterDisplay="row"
-            globalFilterFields={["title", "description"]}
-            className="vw-scheduler-table"
-          >
-            <Column field="title" header="Title" style={{ width: "200px" }} />
-            <Column
-              field="description"
-              header="Description"
-              style={{ width: "300px" }}
-            />
-            <Column field="email" header="Email" style={{ width: "200px" }} />
-            <Column
-              field="recurrence_pattern"
-              header="Recurrence"
-              style={{ width: "200px" }}
-            />
-            <Column
-              field="start_date"
-              header="Start Date"
-              body={(rowData) =>
-                moment(rowData.start_date).format("YYYY-MM-DD HH:mm")
-              }
-              style={{ width: "200px" }}
-            />
-            <Column
-              field="date_range_type"
-              header="Time Frame"
-              style={{ width: "150px" }}
-            />
-          </DataTable>
-        </div>
-      </div>
-
-      {/* Mobile View */}
-      <div className="block lg:hidden">
-      <table className="min-w-full border-separate border-spacing-0">
-        <thead className="sticky top-0 z-20 bg-gray-200 dark:bg-gray-900 text-xs">
-          <tr>
-            <th className=""></th>
-            <th className="text-left px-4 py-2 app-table-heading text-gray-300 dark:text-gray-100">
-              Title
-            </th>
-          </tr>
-        </thead>
-        <tbody className="text-sm text-gray-800 dark:text-gray-200 app-table-content">
-          {schedulers.map((row) => (
-            <React.Fragment key={`${row.email}-${row.title}`}>
-              <tr
-                className="hover:bg-gray-50 hover:dark:bg-white/[0.05] cursor-pointer transition-colors"
-                onClick={() => arrowExpand(row.title)}
-              >
-                <td className="py-3 px-4">
-                  {expandedStates.includes(row.title) ? (
-                    <FaChevronUp className="text-gray-500 dark:text-gray-400" />
-                  ) : (
-                    <FaChevronDown className="text-gray-500 dark:text-gray-400" />
-                  )}
-                </td>
-                <td className="py-3 px-4">{row.title}</td>
-              </tr>
-
-              {expandedStates.includes(row.title) && (
-                <tr>
-                  <td colSpan={2} className="px-4 pb-4">
-                    <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-4 text-sm text-gray-800 dark:text-gray-300 shadow-sm space-y-3 w-full">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Description
-                        </span>
-                        <span className="text-right font-medium text-gray-900 dark:text-white break-words max-w-[60%]">
-                          {row.description}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Email
-                        </span>
-                        <span className="text-right font-medium text-gray-900 dark:text-white break-all max-w-[60%]">
-                          {row.email}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Recurrence
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {row.recurrence_pattern}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Start Date
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {moment(row.start_date).format("YYYY-MM-DD HH:mm")}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Time Frame
-                        </span>
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {row.date_range_type}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <div className="card p-4">
+      <BaseDataTable<Scheduler>
+        columns={columns}
+        fetchData={fetchData}
+        title="View Scheduled Reports"
+        mobileCardRender={renderMobileCard}
+        initialSortField="start_date"
+        initialRows={15}
+        globalFilterFields={[
+          "title",
+          "description",
+          "email",
+          "recurrence_pattern",
+          "start_date",
+          "date_range_type"
+        ]}
+        rowsPerPageOptions={[10, 15, 20, 50]} field={"title"} header={""} />
     </div>
   );
 };

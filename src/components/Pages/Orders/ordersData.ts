@@ -7,7 +7,7 @@ export interface Product {
   qty: number;
   price: number;
   estimatedDelivery?: string;
-  discount?: number; 
+  discount?: number;
 }
 
 export interface Order {
@@ -63,7 +63,7 @@ const mapProduct = (
   qty: safeNumber(p.quantity ?? p.qty),
   price: safeNumber(p.unit_price ?? p.price),
   estimatedDelivery: eta ?? undefined,
-  discount: safeNumber(p.discount ?? 0), 
+  discount: safeNumber(p.discount ?? 0),
 });
 
 
@@ -121,7 +121,7 @@ export const fetchOrders = async (
       },
     });
 
-    const rawOrders = response.data;
+    const { data: rawOrders } = (response as { data: { data: any[] } }).data;
     if (!Array.isArray(rawOrders)) return [];
 
     return rawOrders.map((order: any): Order => {
@@ -136,20 +136,20 @@ export const fetchOrders = async (
 
       const eta = summary.eta ?? null;
       return {
-  id: String(summary.order_id ?? order.order_id),
-  date: formatDate(summary.order_date ?? order.order_date),
-  customer: safeString(customerInfo.name ?? order.customer_name, "Unknown"),
-  product: order.product_name ?? products[0]?.name ?? "N/A",
-  total: products[0]?.total ?? order.total ?? 0,
-  discount: safeNumber(summary.discount ?? 0), 
-  status: statusFinal,
-  paymentMethod: summary.payment_method ?? order.payment_method ?? "PayPal",
-  orderType: summary.order_type ?? "Online",
-  products: products.map((p: any) => mapProduct(p, statusFinal, eta)),
-  shippingInfo: mapShippingInfo(shipping),
-  fulfillmentTimeline: mapFulfillmentTimeline(timeline),
-  customerDetails: mapCustomerDetails(customerInfo),
-};
+        id: String(summary.order_id ?? order.order_id),
+        date: formatDate(summary.order_date ?? order.order_date),
+        customer: safeString(customerInfo.name ?? order.customer_name, "Unknown"),
+        product: order.product_name ?? products[0]?.name ?? "N/A",
+        total: products[0]?.total ?? order.total ?? 0,
+        discount: safeNumber(summary.discount ?? 0),
+        status: statusFinal,
+        paymentMethod: summary.payment_method ?? order.payment_method ?? "PayPal",
+        orderType: summary.order_type ?? "Online",
+        products: products.map((p: any) => mapProduct(p, statusFinal, eta)),
+        shippingInfo: mapShippingInfo(shipping),
+        fulfillmentTimeline: mapFulfillmentTimeline(timeline),
+        customerDetails: mapCustomerDetails(customerInfo),
+      };
 
     });
   } catch (error) {
