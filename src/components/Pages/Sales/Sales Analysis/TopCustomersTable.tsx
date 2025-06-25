@@ -178,17 +178,18 @@ const TopCustomersTable = () => {
   }
 
   return (
-    <Card className="...">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 pt-4">
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
+       <div className="flex flex-col gap-4 px-4 pt-4">
         <h2 className="app-subheading">Customer Orders</h2>
-
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <input
+        <div className="flex flex-col gap-2 w-full">
+         <input
             type="text"
             placeholder="Search customers..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="app-search-input w-full sm:w-64"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+            }}
+            className="app-search-input w-full max-w-full"
           />
           <PrimeSelectFilter<"revenue" | "orders">
             value={viewMode}
@@ -197,7 +198,7 @@ const TopCustomersTable = () => {
               { label: "By Orders", value: "orders" as "orders" },
             ]}
             onChange={setViewMode}
-            className="w-43 h-10 leading-[0.9rem]"
+            className="w-full h-10 leading-[0.9rem]"
             placeholder="Select View Mode "
           />
         </div>

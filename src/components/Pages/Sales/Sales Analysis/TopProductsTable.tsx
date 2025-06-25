@@ -199,9 +199,9 @@ const TopProductsTable = () => {
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4">
+      <div className="flex flex-col gap-4 px-4 pt-4">
         <h2 className="app-subheading">Product Sales</h2>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-2 w-full">
           <input
             type="text"
             placeholder="Search products..."
@@ -210,13 +210,13 @@ const TopProductsTable = () => {
               setSearchTerm(e.target.value);
               setFirst(0);
             }}
-            className="app-search-input w-full sm:w-64"
+            className="app-search-input w-full max-w-full"
           />
           <PrimeSelectFilter<"revenue" | "units">
             value={viewMode}
             options={viewOptions}
             onChange={setViewMode}
-            className="w-50 h-10 leading-[0.9rem]"
+            className="w-full h-10 leading-[0.9rem]"
             placeholder="Select View Mode "
           />
         </div>
@@ -383,7 +383,7 @@ const TopProductsTable = () => {
             options={chartOptions}
             series={chartSeries}
             type="bar"
-            height={topProducts.length * 30 + 100} 
+            height={topProducts.length * 30 + 100}
           />
         ) : (
           <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">
