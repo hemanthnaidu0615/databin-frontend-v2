@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { useTheme } from "next-themes";
 import { axiosInstance } from "../../../../axios";
 import { formatDate } from "../../../utils/kpiUtils";
-import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
+import { getBaseToolTip, salesTooltip } from "../../../modularity/graphs/graphWidget";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
@@ -124,7 +124,7 @@ const SalesTrendsChart = () => {
         zoom: { enabled: false },
       },
 
-      tooltip: getBaseTooltip(isDark, salesTooltip),
+      tooltip: getBaseToolTip(isDark, salesTooltip),
 
       xaxis: {
         type: "category",

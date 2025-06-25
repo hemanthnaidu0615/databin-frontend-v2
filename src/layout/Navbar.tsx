@@ -185,7 +185,7 @@ const Navbar: React.FC = () => {
 
               {/* Dark mode logo */}
               <img
-                className="hidden dark:block w-6 h-6"
+                className="hidden dark:block w-8 h-8"
                 src={Logo}
                 alt="Logo"
               />

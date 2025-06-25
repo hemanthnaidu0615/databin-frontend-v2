@@ -95,8 +95,7 @@ const ShipmentPage = () => {
       {/* Shipment Table */}
       <div className="overflow-x-auto">
         <RecentShipmentsTable
-          selectedCarrier={selectedCarrier || null}
-          selectedMethod={selectedMethod || null}
+
         />
       </div>
     </div>
