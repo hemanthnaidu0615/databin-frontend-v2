@@ -179,10 +179,10 @@ const TopCustomersTable = () => {
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-       <div className="flex flex-col gap-4 px-4 pt-4">
+      <div className="flex flex-col gap-4 px-4 pt-4">
         <h2 className="app-subheading">Customer Orders</h2>
         <div className="flex flex-col gap-2 w-full">
-         <input
+          <input
             type="text"
             placeholder="Search customers..."
             value={searchTerm}
