@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import {
   DataTable,
   DataTablePageEvent,
@@ -19,6 +19,7 @@ interface BaseDataTableProps<T extends DataTableValue> {
   columns: TableColumn<T>[];
   fetchData: (params: any) => Promise<{ data: T[]; count: number }>;
   initialSortField?: string;
+  initialSortOrder?: 1 | -1;
   initialRows?: number;
   mobileCardRender?: (item: T, index: number) => React.ReactNode;
   mobilePagination?: boolean;
@@ -37,6 +38,18 @@ export interface TableColumn<T extends DataTableValue> {
   body?: (rowData: T) => React.ReactNode;
   className?: string;
 }
+
+interface BaseDataTableContextProps<T> {
+  data: T[];
+  loading: boolean;
+  totalRecords: number;
+}
+
+const BaseDataTableContext = createContext<BaseDataTableContextProps<any>>({
+  data: [],
+  loading: false,
+  totalRecords: 0,
+});
 
 export function BaseDataTable<T extends DataTableValue>({
   columns,
@@ -197,60 +210,71 @@ export function BaseDataTable<T extends DataTableValue>({
   };
 
   return (
-    <div className="card p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md">
-      {title && <h3 className="app-section-title mb-4">{title}</h3>}
+    <BaseDataTableContext.Provider value={{ data, loading, totalRecords }}>
+      <div className="card p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+        {title && <h3 className="app-section-title mb-4">{title}</h3>}
 
-      {loading ? (
-        <div className="flex justify-center mt-5">
-          <ProgressSpinner />
-        </div>
-      ) : isMobile && mobileCardRender ? (
-        <>
-          <div>{data.map((item, index) => mobileCardRender(item, index))}</div>
-          {renderMobilePagination()}
-        </>
-      ) : (
-        (() => {
-          const firstRecord = totalRecords === 0 ? 0 : page * rows + 1;
-          const lastRecord = Math.min(totalRecords, (page + 1) * rows);
-          return (
-            <DataTable
-              value={data}
-              lazy
-              paginator
-              first={page * rows}
-              paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-              currentPageReportTemplate={`Showing ${firstRecord} to ${lastRecord} of ${totalRecords} orders`}
-              rows={rows}
-              totalRecords={totalRecords}
-              onPage={onPageChange}
-              rowsPerPageOptions={rowsPerPageOptions}
-              sortMode="single"
-              sortField={sortField}
-              sortOrder={sortOrder}
-              onSort={onSort}
-              onFilter={onFilter}
-              filters={filters}
-              globalFilterFields={globalFilterFields}
-              emptyMessage={emptyMessage}
-              responsiveLayout="scroll"
-            >
-              {columns.map((column) => (
-                <Column
-                  key={column.field as string}
-                  field={column.field as string}
-                  header={column.header}
-                  sortable={column.sortable}
-                  filter={column.filter}
-                  filterElement={renderFilterInput(column.filterPlaceholder)}
-                  body={column.body}
-                  className={column.className}
-                />
-              ))}
-            </DataTable>
-          );
-        })()
-      )}
-    </div>
+        {loading ? (
+          <div className="flex justify-center mt-5">
+            <ProgressSpinner />
+          </div>
+        ) : isMobile && mobileCardRender ? (
+          <>
+            <div>{data.map((item, index) => mobileCardRender(item, index))}</div>
+            {renderMobilePagination()}
+          </>
+        ) : (
+          (() => {
+            const firstRecord = totalRecords === 0 ? 0 : page * rows + 1;
+            const lastRecord = Math.min(totalRecords, (page + 1) * rows);
+            return (
+              <DataTable
+                value={data}
+                lazy
+                paginator
+                first={page * rows}
+                paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                currentPageReportTemplate={`Showing ${firstRecord} to ${lastRecord} of ${totalRecords} orders`}
+                rows={rows}
+                totalRecords={totalRecords}
+                onPage={onPageChange}
+                rowsPerPageOptions={rowsPerPageOptions}
+                sortMode="single"
+                sortField={sortField}
+                sortOrder={sortOrder}
+                onSort={onSort}
+                onFilter={onFilter}
+                filters={filters}
+                globalFilterFields={globalFilterFields}
+                emptyMessage={emptyMessage}
+                responsiveLayout="scroll"
+              >
+                {columns.map((column) => (
+                  <Column
+                    key={column.field as string}
+                    field={column.field as string}
+                    header={column.header}
+                    sortable={column.sortable}
+                    filter={column.filter}
+                    filterElement={renderFilterInput(column.filterPlaceholder)}
+                    body={column.body}
+                    className={column.className}
+                  />
+                ))}
+              </DataTable>
+            );
+          })()
+        )}
+      </div>
+    </BaseDataTableContext.Provider>
   );
 }
+
+BaseDataTable.ChartWrapper = function ChartWrapper<T>({
+  children,
+}: {
+  children: (context: BaseDataTableContextProps<T>) => React.ReactNode;
+}) {
+  const context = useContext(BaseDataTableContext);
+  return <>{children(context)}</>;
+};

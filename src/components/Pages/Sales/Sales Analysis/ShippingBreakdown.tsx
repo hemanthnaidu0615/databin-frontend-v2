@@ -1,15 +1,15 @@
-import { useState, useMemo, useEffect } from "react";
-import { Card } from "primereact/card";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+"use client";
+
+import React, { useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
-import { Skeleton } from "primereact/skeleton";
-import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { axiosInstance } from "../../../../axios";
 import { getBaseTooltip, costTooltip } from "../../../modularity/graphs/graphWidget";
+import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataTable";
 
 interface Shipment {
   carrier: string;
@@ -19,142 +19,172 @@ interface Shipment {
   shipment_cost_usd?: number;
 }
 
-function convertToUSD(rupees: number): number {
-  const exchangeRate = 0.012;
-  return rupees * exchangeRate;
-}
+const convertToUSD = (rupees: number) => rupees * 0.012;
 
-const ShippingBreakdown = () => {
+const ShippingBreakdown: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [shipments, setShipments] = useState<Shipment[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(10);
-
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
-  const [startDate, endDate] = dateRange || [];
+  const [allData, setAllData] = useState<Shipment[]>([]);
 
-  useEffect(() => {
-    setPage(0);
-  }, [startDate, endDate, enterpriseKey]);
+  const fetchData = async (params: any) => {
+    if (!dateRange || !dateRange[0] || !dateRange[1]) {
+      return { data: [], count: 0 };
+    }
 
-  useEffect(() => {
-    const fetchShipments = async () => {
-      if (!startDate || !endDate) return;
+    const [startDate, endDate] = dateRange;
+    const queryParams = new URLSearchParams({
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      page: params.page.toString(),
+      size: params.size.toString(),
+    });
 
-      setLoading(true);
-      setError(null);
+    if (enterpriseKey?.trim()) {
+      queryParams.append("enterpriseKey", enterpriseKey);
+    }
 
-      const formattedStart = formatDateTime(startDate);
-      const formattedEnd = formatDateTime(endDate);
+    if (params.sortField) {
+      queryParams.append("sortField", params.sortField);
+      queryParams.append("sortOrder", params.sortOrder === "asc" ? "asc" : "desc");
+    }
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-        page: page.toString(),
-        size: rows.toString(),
-      });
-
-      if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
+    for (const key in params) {
+      if (key.endsWith("Filter") && params[key] != null && params[key] !== "") {
+        queryParams.append(key, params[key]);
       }
+    }
 
-      try {
-        const response = await axiosInstance.get(
-          `/analysis/shipment-summary?${params.toString()}`
-        );
-        const data = response.data as { shipments: Shipment[]; count: number };
+    try {
+      const res = await axiosInstance.get(`/analysis/shipment-summary?${queryParams.toString()}`);
+      const data = res.data as { shipments?: Shipment[]; count?: number };
+      const shipments = data.shipments || [];
+      const shipmentsWithUSD = shipments.map((s: Shipment) => ({
+        ...s,
+        shipment_cost_usd: convertToUSD(s.shipment_cost),
+      }));
 
-        setShipments(
-          (data.shipments || []).map((s) => ({
-            ...s,
-            shipment_cost_usd: convertToUSD(s.shipment_cost),
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching shipments:", err);
-        setError("Failed to load shipment data");
-        setShipments([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setAllData(shipmentsWithUSD);
 
-    fetchShipments();
-  }, [startDate, endDate, enterpriseKey, page, rows]);
+      return {
+        data: shipmentsWithUSD,
+        count: data.count || 0,
+      };
+    } catch (err) {
+      console.error("❌ Fetch error:", err);
+      return { data: [], count: 0 };
+    }
+  };
 
+  const columns: TableColumn<Shipment>[] = [
+    {
+      field: "carrier",
+      header: "Carrier",
+      sortable: true,
+      filter: true,
+      filterPlaceholder: "Search carriers",
+    },
+    {
+      field: "shipping_method",
+      header: "Shipping Method",
+      sortable: true,
+      filter: true,
+      filterPlaceholder: "Search methods",
+    },
+    {
+      field: "shipment_status",
+      header: "Status",
+      sortable: true,
+      filter: true,
+      filterPlaceholder: "Search statuses",
+    },
+    {
+      field: "shipment_cost_usd",
+      header: "Cost (USD)",
+      sortable: true,
+      body: (rowData: Shipment) =>
+        `$${rowData.shipment_cost_usd ? formatValue(rowData.shipment_cost_usd) : "0"}`,
+    },
+  ];
+
+const mobileCardRender = (shipment: Shipment, index: number) => (
+  <div
+    key={`${shipment.carrier}-${shipment.shipping_method}-${index}`}
+    className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"} mb-3`}
+  >
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Carrier:</span>
+      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+        {shipment.carrier || "Unknown"}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Method:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.shipping_method || "N/A"}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.shipment_status || "Unknown"}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Cost:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        ${shipment.shipment_cost_usd ? formatValue(shipment.shipment_cost_usd) : "0"}
+      </span>
+    </div>
+  </div>
+);
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
-    shipments.forEach((shipment) => {
-      totals[shipment.carrier] =
-        (totals[shipment.carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
+    allData.forEach((shipment) => {
+      const carrier = shipment.carrier || "Unknown";
+      totals[carrier] = (totals[carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
     });
     return Object.entries(totals)
-      .sort((a, b) => b[1] - a[1])
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .reduce((acc, [carrier, total]) => {
         acc[carrier] = total;
         return acc;
       }, {} as Record<string, number>);
-  }, [shipments]);
+  }, [allData]);
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
       chart: {
         type: "bar",
         toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
+        foreColor: isDark ? "#CBD5E1" : "#334155",
       },
       xaxis: {
         categories: Object.keys(carrierTotals),
         labels: {
-          style: {
-            fontSize: "12px",
-            colors: theme === "dark" ? "#CBD5E1" : "#334155",
-          },
+          style: { fontSize: "12px", colors: isDark ? "#CBD5E1" : "#334155" },
         },
         crosshairs: { show: false },
         title: {
           text: "Carriers",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
+          style: { fontSize: "14px", fontWeight: "normal", color: isDark ? "#CBD5E1" : "#64748B" },
         },
       },
       yaxis: {
         title: {
           text: "Total Cost ($)",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
+          style: { fontSize: "14px", fontWeight: "normal", color: isDark ? "#CBD5E1" : "#64748B" },
         },
-        labels: {
-          formatter: (val: number) => `$${formatValue(val)}`,
-        },
+        labels: { formatter: (val: number) => `$${formatValue(val)}` },
       },
       dataLabels: { enabled: false },
-      plotOptions: {
-        bar: {
-          borderRadius: 4,
-          columnWidth: "50%",
-        },
-      },
-      grid: {
-        borderColor: theme === "dark" ? "#334155" : "#E5E7EB",
-      },
+      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
+      grid: { borderColor: isDark ? "#334155" : "#E5E7EB" },
       colors: ["#a855f7"],
-
       tooltip: getBaseTooltip(isDark, costTooltip),
     }),
-    [carrierTotals, theme]
+    [carrierTotals, isDark]
   );
 
   const chartSeries = [
@@ -164,246 +194,32 @@ const ShippingBreakdown = () => {
     },
   ];
 
-  const onPage = (event: any) => {
-    setPage(event.page);
-    setRows(event.rows);
-  };
-
-  const filteredShipments = useMemo(() => {
-    if (!searchTerm.trim()) return shipments;
-    const lower = searchTerm.toLowerCase();
-    return shipments.filter((shipment) =>
-      Object.values(shipment).join(" ").toLowerCase().includes(lower)
-    );
-  }, [shipments, searchTerm]);
-
-  if (!startDate || !endDate) {
-    return (
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="text-center text-gray-500 dark:text-gray-400 p-4">
-          Please select a date range to view shipping breakdown
-        </div>
-      </Card>
-    );
-  }
-
-  if (loading) {
-    return (
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="p-4">
-          <Skeleton width="150px" height="30px" className="mb-4" />
-          <Skeleton width="100%" height="300px" />
-        </div>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-        <div className="p-4 text-red-500 dark:text-red-400">{error}</div>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl ">
-      <div className="px-4 pt-4 product-sales-header flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="app-subheading">Shipping Breakdown</h2>
+    <div className="card p-4">
+      <h2 className="app-subheading">Shipping Breakdown</h2>
 
-        <input
-          type="text"
-          placeholder="Search Shipments..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(0);
-          }}
-          className="app-search-input w-full sm:w-64 mb-2"
-        />
-      </div>
+      <BaseDataTable<Shipment>
+        columns={columns}
+        fetchData={fetchData}
+        initialSortField="shipment_cost_usd"
+        initialSortOrder={-1}
+        mobileCardRender={mobileCardRender}
+        title=""
+        globalFilterFields={["carrier", "shipping_method", "shipment_status"]}
+        emptyMessage="No shipments found"
+        field="carrier"
+        header=""
+      />
 
-      <div className="px-4 pb-6 app-table-heading">
-        {/* Desktop Table - Hidden on mobile */}
-        <div className="hidden sm:block">
-          <DataTable
-            value={filteredShipments.slice(page * rows, page * rows + rows)}
-            stripedRows
-            responsiveLayout="scroll"
-            scrollable
-            scrollHeight="400px"
-            sortMode="multiple"
-            emptyMessage="No shipments found for the selected filters"
-            paginator
-            paginatorClassName="hidden sm:flex"
-            loading={loading}
-            first={page * rows}
-            rows={rows}
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 20, 50, 100]}
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} shipments"
-            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-          >
-            <Column
-              field="carrier"
-              header="Carrier"
-              sortable
-              style={{ minWidth: "120px" }}
-            />
-            <Column
-              field="shipping_method"
-              header="Method"
-              sortable
-              style={{ minWidth: "120px" }}
-            />
-            <Column
-              field="shipment_status"
-              header="Status"
-              sortable
-              style={{ minWidth: "120px" }}
-            />
-            <Column
-              field="shipment_cost_usd"
-              header="Cost ($)"
-              sortable
-              body={(rowData) =>
-                `$${formatValue(rowData.shipment_cost_usd ?? 0)}`
-              }
-              style={{ minWidth: "120px" }}
-            />
-          </DataTable>
-        </div>
-
-        {/* Mobile-friendly stacked cards */}
-        <div className="block sm:hidden space-y-4 mt-4">
-          {filteredShipments
-            .slice(page * rows, page * rows + rows)
-            .map((shipment, index) => (
-              <div
-                key={index}
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    Carrier:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-                    {shipment.carrier}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Method:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {shipment.shipping_method}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Status:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {shipment.shipment_status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Cost:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    ${formatValue(shipment.shipment_cost_usd ?? 0)}
-                  </span>
-                </div>
-              </div>
-            ))}
-        </div>
-
-        {/* Mobile Pagination (only visible on small screens) */}
-        <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
-          <div className="flex flex-col gap-2 mb-2">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="mobileRows" className="whitespace-nowrap">
-                Rows per page:
-              </label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setPage(0);
-                }}
-                className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
-              >
-                {[5, 10, 20, 50, 100].map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              Page {page + 1} of {Math.ceil(filteredShipments.length / rows)}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-between gap-2">
-            <button
-              onClick={() => setPage(0)}
-              disabled={page === 0}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              ⏮ First
-            </button>
-            <button
-              onClick={() => setPage(Math.max(0, page - 1))}
-              disabled={page === 0}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <button
-              onClick={() =>
-                setPage(
-                  page + 1 < Math.ceil(filteredShipments.length / rows)
-                    ? page + 1
-                    : page
-                )
-              }
-              disabled={(page + 1) * rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              Next
-            </button>
-            <button
-              onClick={() =>
-                setPage(Math.ceil(filteredShipments.length / rows) - 1)
-              }
-              disabled={(page + 1) * rows >= filteredShipments.length}
-              className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-            >
-              ⏭ Last
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4">
-        <h3 className="app-subheading mb-4">Top 10 Carriers by Total Cost</h3>
+      <div className="mt-8">
+        <h3 className="app-subheading mb-6">Top 10 Carriers by Total Cost</h3>
         {Object.keys(carrierTotals).length > 0 ? (
-          <Chart
-            options={chartOptions}
-            series={chartSeries}
-            type="bar"
-            height={350}
-          />
+          <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
         ) : (
-          <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">
-            No shipment data available for visualization
-          </div>
+          <p className="text-center text-gray-500">No shipment data available for visualization.</p>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 
