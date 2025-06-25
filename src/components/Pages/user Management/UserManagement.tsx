@@ -1,96 +1,136 @@
 import { useState, useEffect } from "react";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableFilterEvent, DataTablePageEvent, DataTableSortEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
 import { AddUser } from "./AddUser";
 import { axiosInstance } from "../../../axios";
 
-
 export const UserManagement = () => {
-  const [users, setUsers] = useState<any[]>([
+  const [users, setUsers] = useState<any[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rows, setRows] = useState(10);
+  const [sortField, setSortField] = useState("id");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  ]);
+  const [filters, setFilters] = useState<any>({
+    global: { value: null, matchMode: "contains" },
+    email: { value: null, matchMode: "contains" },
+    role: { value: null, matchMode: "contains" },
+    role_level: { value: null, matchMode: "contains" },
+  });
 
   const [editUser, setEditUser] = useState<any | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axiosInstance.get("/auth/users", {
-          withCredentials: true,
-        });
 
-        const usersData = response.data as any[];
-        const formattedUsers = usersData.map((user: any) => ({
-          id: user.id,
-          username: user.username || user.name || user.email.split("@")[0],
-          email: user.email,
-          role: user.role?.identifier || user.role?.roleLevel || "user",
-        }));
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const params: any = {
+        page,
+        size: rows,
+        sortField,
+        sortOrder,
+      };
 
-        setUsers(formattedUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      for (const key in filters) {
+        const value = filters[key]?.value;
+        const matchMode = filters[key]?.matchMode;
+        if (value && matchMode && key !== "global") {
+          params[`${key}.value`] = value;
+          params[`${key}.matchMode`] = matchMode;
+        }
       }
-    };
 
+      const response = await axiosInstance.get("/auth/users", {
+        params,
+        withCredentials: true,
+      });
+
+      const { data, count } = response.data;
+
+      const formatted = (data || []).map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        role_level: user.role_level,
+        department: user.department,
+        username: user.username || user.email?.split("@")[0],
+      }));
+
+      setUsers(formatted);
+      setTotalRecords(count);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, rows, sortField, sortOrder, filters]);
 
+  const onPageChange = (e: DataTablePageEvent) => {
+    setPage(e.page ?? 0);
+    setRows(e.rows ?? 10);
+  };
 
-  //   const handleDelete = (userId: string) => {
-  //     if (!window.confirm("Are you sure you want to delete this user?")) return;
-  // 
-  //     setUsers((prev) => prev.filter((u) => u.id !== userId));
-  //   };
-  // 
-  //   const handleEdit = (user: any) => {
-  //     setEditUser(user);
-  //     setShowEditDialog(true);
-  //   };
+  const onSort = (e: DataTableSortEvent) => {
+    setSortField(e.sortField ?? "id");
+    setSortOrder(e.sortOrder === 1 ? "asc" : "desc");
+  };
 
-  // const actionBody = (rowData: any) => (
-  //   <div className="flex gap-2">
-  //     <Button
-  //       icon="pi pi-pencil"
-  //       className="p-button-rounded p-button-info p-button-sm"
-  //       onClick={() => handleEdit(rowData)}
-  //       tooltip="Edit"
-  //       tooltipOptions={{ position: "top" }}
-  //     />
-  //     <Button
-  //       icon="pi pi-trash"
-  //       className="p-button-rounded p-button-danger p-button-sm"
-  //       onClick={() => handleDelete(rowData.id)}
-  //       tooltip="Delete"
-  //       tooltipOptions={{ position: "top" }}
-  //     />
-  //   </div>
-  // );
+  const onFilter = (e: DataTableFilterEvent) => {
+    setFilters(e.filters);
+  };
+
+  const renderFilterInput = (placeholder = "Search") => {
+    return (options: any) => (
+      <InputText
+        value={options.value || ""}
+        onChange={(e) => options.filterCallback(e.target.value)}
+        placeholder={placeholder}
+        className="p-column-filter"
+      />
+    );
+  };
 
   return (
     <div className="p-6 bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-900 dark:text-gray-100">
       <div className="max-w-6xl mx-auto">
-        <h2 className="app-section-title mb-4">
-          User Management
-        </h2>
+        <h2 className="app-section-title mb-4">User Management</h2>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
           <AddUser
             users={users}
             setUsers={setUsers}
             editingUser={null}
-            onClose={() => { }}
+            onClose={() => {}}
           />
         </div>
 
         <div className="mt-6 app-table-heading rounded-lg shadow-md p-4">
           <DataTable
             value={users}
+            loading={loading}
+            paginator
+            lazy
+            first={page * rows}
+            rows={rows}
+            totalRecords={totalRecords}
+            sortMode="single"
+            sortField={sortField}
+            sortOrder={sortOrder === "asc" ? 1 : -1}
+            onPage={onPageChange}
+            onSort={onSort}
+            onFilter={onFilter}
+            filters={filters}
+            globalFilterFields={["email", "role", "role_level"]}
             className="mt-4"
             stripedRows
-            paginator
-            rows={5}
             responsiveLayout="scroll"
           >
             <Column
@@ -98,27 +138,33 @@ export const UserManagement = () => {
               header="Username"
               sortable
               style={{ minWidth: "12rem" }}
-              className="app-table-content"
+              filter
+              filterElement={renderFilterInput()}
             />
             <Column
               field="email"
               header="Email"
               sortable
               style={{ minWidth: "16rem" }}
-              className="app-table-content"
+              filter
+              filterElement={renderFilterInput()}
             />
             <Column
               field="role"
-              header="Role Identifier"
+              header="Role"
               sortable
               style={{ minWidth: "12rem" }}
-              className="app-table-content"
+              filter
+              filterElement={renderFilterInput()}
             />
-            {/* <Column
-              body={actionBody}
-              header="Actions"
-              style={{ minWidth: "8rem" }}
-            /> */}
+            <Column
+              field="role_level"
+              header="Role Level"
+              sortable
+              style={{ minWidth: "12rem" }}
+              filter
+              filterElement={renderFilterInput()}
+            />
           </DataTable>
         </div>
 
