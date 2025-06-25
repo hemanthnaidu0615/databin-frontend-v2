@@ -6,8 +6,6 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import { getBaseTooltip, ordersTooltip } from "../modularity/graphs/graphWidget";

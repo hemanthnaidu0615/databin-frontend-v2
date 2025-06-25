@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-import { BaseDataTable, TableColumn } from "../modularity/tables/BaseDataTable";
+import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { axiosInstance } from "../../axios";
 import { formatDateTime, formatValue } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import CommonButton from "../modularity/buttons/Button";
 import { FaTable } from "react-icons/fa";
+import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 
 const ShipmentPerformance: React.FC<{
   size?: "small" | "full";
@@ -206,44 +206,26 @@ const ShipmentPerformance: React.FC<{
         </>
       )}
 
-      <Dialog
-        header="All Shipments"
+      <FilteredDataDialog
         visible={showAllDialog}
         onHide={() => setShowAllDialog(false)}
-        style={{ width: "1000vw", maxWidth: "1300px" }}
-        dismissableMask
-      >
-        <BaseDataTable
-          field="shipment_id"
-          header="Shipment ID"
-          columns={tableColumns}
-          fetchData={fetchGridData()}
-          globalFilterFields={["shipment_id", "order_id", "carrier", "shipping_method", "shipment_status"]}
-          mobileCardRender={renderShipmentCard}
-        />
-
-
-      </Dialog>
-
-      <Dialog
-        header={`Filtered: ${filterParams.carrier} • ${filterParams.method}`}
+        header="All Shipments"
+        columns={tableColumns}
+        fetchData={fetchGridData}
+        mobileCardRender={renderShipmentCard}
+      />
+      <FilteredDataDialog
         visible={showFilteredDialog}
         onHide={() => {
           setShowFilteredDialog(false);
           setFilterParams({});
         }}
-        style={{ width: "1000vw", maxWidth: "1300px" }}
-        dismissableMask
-      >
-        <BaseDataTable
-          field="shipment_id"
-          header="Shipment ID"
-          columns={tableColumns}
-          fetchData={fetchGridData(filterParams)}
-          globalFilterFields={["shipment_id", "order_id", "carrier", "shipping_method", "shipment_status"]}
-          mobileCardRender={renderShipmentCard}
-        />
-      </Dialog>
+        header={`Filtered: ${filterParams.carrier} • ${filterParams.method}`}
+        columns={tableColumns}
+        fetchData={fetchGridData}
+        filterParams={filterParams}
+        mobileCardRender={renderShipmentCard}
+      />
     </div>
   );
 };
