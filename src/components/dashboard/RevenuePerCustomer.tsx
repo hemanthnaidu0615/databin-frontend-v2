@@ -53,7 +53,8 @@ const RevenuePerCustomer: React.FC<RevenuePerCustomerProps> = ({
         top_customers: { customer_name: string; revenue: number }[];
       };
 
-      const formattedData = result.top_customers.map((item: any) => ({
+      const formattedData = result.top_customers
+      .slice(0, 5).map((item: any) => ({
         customer: item.customer_name,
         revenue: item.revenue,
       }));
