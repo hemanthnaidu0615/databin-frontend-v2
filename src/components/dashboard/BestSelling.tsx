@@ -11,8 +11,6 @@ interface ProductData {
   name: string;
   price: number;
   description: string;
-  url: string;
-  updateDate?: string;
   quantity_sold: number;
 }
 
@@ -74,22 +72,20 @@ const ProfitabilityTable: React.FC = () => {
         const response = await axiosInstance.get("/top-sellers/top-products", {
           params,
         });
-        const json = response.data as { top_products?: any[] };
+        const json = response.data;
 
-        if (json.top_products && Array.isArray(json.top_products)) {
-          const transformed = json.top_products.map(
-            (product: any, index: number) => ({
-              id: index + 1,
-              name: product.product_name,
-              price: parseFloat(product.price ?? 0),
-              description: product.description ?? "No description available",
-              url: product.url ?? "#",
-              updateDate: product.update_date,
-              quantity_sold: product.quantity_sold ?? 0,
-            })
-          );
-          setProductData(transformed.slice(0, 10));
+        if (json.data && Array.isArray(json.data)) {
+          const transformed = json.data.map((product: any, index: number) => ({
+            id: index + 1,
+            name: product.product_name,
+            price: parseFloat(product.price ?? 0),
+            description: product.description ?? "No description available",
+            quantity_sold: product.quantity_sold ?? 0,
+          }));
+
+          setProductData(transformed); 
         }
+
       } catch (error) {
         console.error("Failed to fetch top products:", error);
       }
@@ -283,14 +279,6 @@ const ProfitabilityTable: React.FC = () => {
                     <p className="text-xs text-gray-700 dark:text-gray-400">
                       Price: {formatUSD(convertToUSD(product.price))}
                     </p>
-                  </div>
-
-                  <div className="flex flex-col items-center mt-2">
-                    {product.updateDate && (
-                      <p className="text-[10px] mt-2 text-gray-500 dark:text-gray-400">
-                        Updated: {formatDate(product.updateDate)}
-                      </p>
-                    )}
                   </div>
                 </div>
               );
