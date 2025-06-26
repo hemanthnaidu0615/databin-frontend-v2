@@ -23,6 +23,18 @@ type TrendItem = {
   sales: number;
 };
 
+const renderMobileCard = (item: TrendItem, index: number) => (
+  <div key={index} className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700">
+    <div className="text-sm font-semibold mb-2">Month: {item.month}</div>
+    <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+      Category: <span className="font-medium">{item.category}</span>
+    </div>
+    <div className="text-sm text-gray-500 dark:text-gray-300">
+      Sales: <span className="font-medium">{formatVal(item.sales)}</span>
+    </div>
+  </div>
+);
+
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
 }) => {
@@ -205,7 +217,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         columns={columns}
         fetchData={fetchData}
         width="90vw"
+        mobileCardRender={renderMobileCard}
       />
+
 
     </>
   );
