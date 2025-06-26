@@ -52,7 +52,7 @@ const ByTypeSection: React.FC<{ company: string }> = ({ company }) => {
             `/sales/${endpoint}/${formattedCompany}`,
             { params: { startDate: formattedStart, endDate: formattedEnd } }
           );
-          return { title, data: response.data as any[] };
+          return { title, data: response.data.data || [] };
         } catch (err) {
           console.error(`Error fetching data for ${title}:`, err);
           return { title, data: [] };
