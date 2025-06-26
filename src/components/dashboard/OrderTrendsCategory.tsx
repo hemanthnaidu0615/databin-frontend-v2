@@ -50,7 +50,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
 
-  // 👉 Fetch chart data
   useEffect(() => {
     const fetchData = async () => {
       try {
