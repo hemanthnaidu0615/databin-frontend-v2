@@ -7,65 +7,29 @@ import {
   Annotation,
 } from "react-simple-maps";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import allStates from "./allStates.json";
 import { axiosInstance } from "../../axios";
 import CommonButton from "../modularity/buttons/Button";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
+import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
+import { TableColumn } from "../modularity/tables/BaseDataTable";
+import { formatDateTime } from "../utils/kpiUtils";
+import { FaTable } from "react-icons/fa";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
 
 const CANONICAL_STATES = [
-  "Alabama",
-  "Alaska",
-  "Arizona",
-  "Arkansas",
-  "California",
-  "Colorado",
-  "Connecticut",
-  "Delaware",
-  "Florida",
-  "Georgia",
-  "Hawaii",
-  "Idaho",
-  "Illinois",
-  "Indiana",
-  "Iowa",
-  "Kansas",
-  "Kentucky",
-  "Louisiana",
-  "Maine",
-  "Maryland",
-  "Massachusetts",
-  "Michigan",
-  "Minnesota",
-  "Mississippi",
-  "Missouri",
-  "Montana",
-  "Nebraska",
-  "Nevada",
-  "New Hampshire",
-  "New Jersey",
-  "New Mexico",
-  "New York",
-  "North Carolina",
-  "North Dakota",
-  "Ohio",
-  "Oklahoma",
-  "Oregon",
-  "Pennsylvania",
-  "Rhode Island",
-  "South Carolina",
-  "South Dakota",
-  "Tennessee",
-  "Texas",
-  "Utah",
-  "Vermont",
-  "Virginia",
-  "Washington",
-  "West Virginia",
-  "Wisconsin",
-  "Wyoming",
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+  "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+  "New Hampshire", "New Jersey", "New Mexico", "New York",
+  "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+  "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+  "West Virginia", "Wisconsin", "Wyoming"
 ];
 
 const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
@@ -80,26 +44,18 @@ const formatValue = (value: number) => {
   return `$${usd.toFixed(0)}`;
 };
 
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}`;
-};
+interface SalesRegionData {
+  state_name: string;
+  state_revenue: number;
+  state_quantity: number;
+  revenue_percentage: number;
+}
 
 const DemographicCard = () => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const navigate = useNavigate();
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const [tooltip, setTooltip] = useState<{
@@ -122,6 +78,8 @@ const DemographicCard = () => {
     highSpenders: 0,
   });
 
+  const [showDataDialog, setShowDataDialog] = useState(false);
+
   type MetricsData = {
     new_customers?: number;
     returning_customers?: number;
@@ -141,8 +99,8 @@ const DemographicCard = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const formattedStart = formatDate(startDate);
-        const formattedEnd = formatDate(endDate);
+        const formattedStart = formatDateTime(startDate);
+        const formattedEnd = formatDateTime(endDate);
         const params = new URLSearchParams({
           startDate: formattedStart,
           endDate: formattedEnd,
@@ -162,15 +120,12 @@ const DemographicCard = () => {
           { customers: number; revenue: number; avgRevenue: number }
         > = {};
 
-        // Step 1: Add real data
         if (Array.isArray(mapData)) {
           mapData.forEach((row) => {
             const raw = row.state?.trim().toLowerCase();
             const canonicalName = STATE_NAME_MAP[raw];
             if (!canonicalName) {
-              console.warn(
-                `State name mismatch: "${row.state}" not found in map.`
-              );
+              console.warn(`State name mismatch: "${row.state}" not found in map.`);
               return;
             }
             const customers = row.total_customers || 0;
@@ -185,15 +140,13 @@ const DemographicCard = () => {
           });
         }
 
-        // Step 2: Fill missing states
         const missingStates = CANONICAL_STATES.filter(
           (state) => !formatted[state]
         );
 
         const donorStates = allStates
-          .filter(({ name }) => formatted[name]) // States with real data
+          .filter(({ name }) => formatted[name])
           .sort((a, b) => {
-            // Sort from top-left to bottom-right
             const [ax, ay] = a.coordinates;
             const [bx, by] = b.coordinates;
             return ay - by || ax - bx;
@@ -203,16 +156,13 @@ const DemographicCard = () => {
 
         missingStates.forEach((missingState) => {
           if (donorPool.length > 0) {
-            // Use deterministic index based on ASCII sum of state name
             const asciiSum = missingState
               .split("")
               .reduce((sum, char) => sum + char.charCodeAt(0), 0);
             const index = asciiSum % donorPool.length;
             const donor = donorPool[index];
-
             formatted[missingState] = { ...donor };
           } else {
-            // fallback: assign dummy non-zero
             formatted[missingState] = {
               customers: 5,
               avgRevenue: 2000,
@@ -223,7 +173,6 @@ const DemographicCard = () => {
 
         setStateData(formatted);
 
-        // Step 3: Set metrics
         if (metricsData) {
           setMetrics({
             newCustomers: metricsData.new_customers || 0,
@@ -242,21 +191,108 @@ const DemographicCard = () => {
 
   const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-    navigate("/sales/region");
+    navigate("/sales-region");
   };
+
+  const handleGridClick = () => {
+    setShowDataDialog(true);
+  };
+
+  const columns: TableColumn<SalesRegionData>[] = [
+    {
+      field: "state_name",
+      header: "State",
+      sortable: true,
+      filter: true,
+      filterPlaceholder: "Search by state",
+    },
+    {
+      field: "state_revenue",
+      header: "Revenue",
+      sortable: true,
+      filter: true,
+      body: (rowData: any) => formatValue(rowData.state_revenue),
+    },
+    {
+      field: "state_quantity",
+      header: "Quantity",
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: "revenue_percentage",
+      header: "Revenue %",
+      sortable: true,
+      filter: true,
+      body: (rowData: any) => `${rowData.revenue_percentage?.toFixed(2) ?? 0}%`,
+    },
+  ];
+
+  const fetchGridData = (customFilters: any = {}) => {
+    return async (tableParams: any) => {
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
+
+      const requestParams = {
+        startDate: formattedStart,
+        endDate: formattedEnd,
+        ...(enterpriseKey && { enterpriseKey }),
+        ...customFilters,
+        ...tableParams,
+      };
+
+      try {
+        const response = await axiosInstance.get("/sales-by-region", { params: requestParams });
+        const respData = response.data as { data?: any[]; count?: number };
+        return {
+          data: respData.data || [],
+          count: respData.count || 0,
+        };
+      } catch (error) {
+        console.error("Error fetching table data:", error);
+        return {
+          data: [],
+          count: 0,
+        };
+      }
+    };
+  };
+
+  const renderStateCard = (item: SalesRegionData, index: number) => (
+    <div key={index} className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700">
+      <div className="text-sm font-semibold mb-2">{item.state_name}</div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Revenue: <span className="font-medium">{formatValue(item.state_revenue)}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Quantity: <span className="font-medium">{item.state_quantity}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300">
+        Revenue %: <span className="font-medium">{item.revenue_percentage?.toFixed(2) ?? 0}%</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
-      <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 ">
-        <div className="flex items-start justify-between w-full sm:w-auto">
-          <h2 className="app-subheading flex-1 mr-2">Customer Demographic</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="app-subheading">Customer Demographic</h2>
 
-          {/* Mobile arrow (→) aligned right */}
-          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
+        <div className="flex items-center">
+          <CommonButton
+            variant="responsive"
+            onClick={handleViewMore}
+            text="View more"
+            className="h-9 flex items-center"
+          />
+          <button
+            onClick={handleGridClick}
+            className="h-9 w-9 flex items-center justify-center text-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
+            aria-label="View data in table"
+          >
+            <FaTable size={18} />
+          </button>
         </div>
-
-        {/* Desktop & tablet "View More" */}
-        <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
       </div>
 
       <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
@@ -305,7 +341,6 @@ const DemographicCard = () => {
             }
           </Geographies>
 
-          {/* State Labels */}
           {allStates.map(({ name, abbreviation, coordinates }) => (
             <Annotation
               key={name}
@@ -375,6 +410,16 @@ const DemographicCard = () => {
           </p>
         </div>
       </div>
+
+      <FilteredDataDialog
+        visible={showDataDialog}
+        onHide={() => setShowDataDialog(false)}
+        header="Sales by Region"
+        columns={columns}
+        fetchData={fetchGridData}
+        mobileCardRender={renderStateCard}
+        width="90%"
+      />
     </div>
   );
 };
