@@ -178,17 +178,18 @@ const TopCustomersTable = () => {
   }
 
   return (
-    <Card className="...">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 pt-4">
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
+      <div className="flex flex-col gap-4 px-4 pt-4">
         <h2 className="app-subheading">Customer Orders</h2>
-
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-2 w-full">
           <input
             type="text"
             placeholder="Search customers..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="app-search-input w-full sm:w-64"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+            }}
+            className="app-search-input w-full max-w-full"
           />
           <PrimeSelectFilter<"revenue" | "orders">
             value={viewMode}
@@ -204,7 +205,7 @@ const TopCustomersTable = () => {
       </div>
 
       <div className="px-4 pt-2 pb-6 app-table-heading">
-        {/* 🟣 DataTable - Only on desktop */}
+        {/* DataTable - Only on desktop */}
         <div className="hidden sm:block">
           <DataTable
             value={filteredCustomers}
@@ -234,7 +235,7 @@ const TopCustomersTable = () => {
           </DataTable>
         </div>
 
-        {/* 🟣 Mobile-friendly stacked cards */}
+        {/* Mobile-friendly stacked cards */}
         <div className="block sm:hidden space-y-4 mt-4">
           {filteredCustomers.map((customer, index) => (
             <div
