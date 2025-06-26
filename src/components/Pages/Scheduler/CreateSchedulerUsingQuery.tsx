@@ -1,23 +1,31 @@
 import moment from "moment";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
 import { useState, useRef } from "react";
 import { axiosInstance } from "../../../axios";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
 import { InputTextarea } from "primereact/inputtextarea";
+import CommonButton from "../../modularity/buttons/Button";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 interface SchedulerData {
   schedulerStartDate: Date | null;
   schedulerEndDate: Date | null;
-  recurrencePattern: string;
+  recurrencePattern: RecurrencePattern;
   email: string[];
   bcc: string[];
   title: string;
   description: string;
   query: string;
 }
+
+type RecurrencePattern = "daily" | "weekly" | "monthly";
+const recurrenceOptions: { label: string; value: RecurrencePattern }[] = [
+  { label: "Get emails Daily", value: "daily" },
+  { label: "Get emails Weekly", value: "weekly" },
+  { label: "Get emails Monthly", value: "monthly" },
+];
 
 export const CreateSchedulerUsingQuery = () => {
   const toast = useRef<Toast>(null);
@@ -28,7 +36,7 @@ export const CreateSchedulerUsingQuery = () => {
     bcc: [],
     schedulerStartDate: null,
     schedulerEndDate: null,
-    recurrencePattern: "",
+    recurrencePattern: "daily",
     email: [],
     query: "",
   });
@@ -106,7 +114,7 @@ export const CreateSchedulerUsingQuery = () => {
         bcc: [],
         schedulerStartDate: null,
         schedulerEndDate: null,
-        recurrencePattern: "",
+        recurrencePattern: "daily",
         email: [],
         query: "",
       });
@@ -278,21 +286,16 @@ export const CreateSchedulerUsingQuery = () => {
           >
             Email Recurrence Pattern<span className="text-red-500">*</span>
           </label>
-          <Dropdown
-            id="recurrencePattern"
+          <PrimeSelectFilter<RecurrencePattern>
             value={schedulerData.recurrencePattern}
-            placeholder="Select recurrence pattern"
-            options={[
-              { label: "Get emails Daily", value: "daily" },
-              { label: "Get emails Weekly", value: "weekly" },
-              { label: "Get emails Monthly", value: "monthly" },
-            ]}
-            onChange={(e) =>
+            options={recurrenceOptions}
+            onChange={(value) =>
               setSchedulerData({
                 ...schedulerData,
-                recurrencePattern: e.value,
+                recurrencePattern: value,
               })
             }
+            placeholder="Select recurrence pattern"
           />
         </div>
 
@@ -340,16 +343,7 @@ export const CreateSchedulerUsingQuery = () => {
 
         {/* Save Scheduler Button */}
         <div className="flex justify-end">
-          <Button
-            label="Save Scheduler"
-            onClick={handleSaveScheduler}
-            style={{
-              backgroundColor: "#a855f7",
-              border: "none",
-              color: "white",
-            }}
-            className="w-auto ml-auto mr-auto text-sm hover:brightness-90 transition-none"
-          />
+          <CommonButton variant="action" text="Save Scheduler" onClick={handleSaveScheduler} />
         </div>
       </div>
     </div>

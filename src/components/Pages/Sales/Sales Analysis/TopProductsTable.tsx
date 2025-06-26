@@ -1,47 +1,41 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dropdown } from "primereact/dropdown";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
-import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
+
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
 const viewOptions = [
-  { label: "By Revenue", value: "revenue" },
-  { label: "By Units", value: "units" },
+  { label: "By Revenue", value: "revenue" as "revenue" },
+  { label: "By Units", value: "units" as "units" },
 ];
-
 interface Product {
   product_name: string;
   total_sales: number;
   units_sold: number;
 }
 
-const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 const convertToUSD = (rupees: number): number => {
   const exchangeRate = 0.012;
   return rupees * exchangeRate;
 };
 
-const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
-
 const TopProductsTable = () => {
   const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [viewMode, setViewMode] = useState<"revenue" | "units">("revenue");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
   const [rows, setRows] = useState(5);
@@ -60,8 +54,8 @@ const TopProductsTable = () => {
       setLoading(true);
       setError(null);
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       const params = new URLSearchParams({
         startDate: formattedStart,
@@ -109,68 +103,56 @@ const TopProductsTable = () => {
     [sortedProducts]
   );
 
-const chartOptions: ApexOptions = useMemo(
-  () => ({
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
-    },
-    xaxis: {
-      categories: topProducts.map((p) => p.product_name),
-      labels: {
-        style: {
-          fontSize: "12px",
-          colors: theme === "dark" ? "#CBD5E1" : "#334155",
-        },
-        formatter: (value: string) =>
-          value.length > 20 ? value.substring(0, 20) + "..." : value,
+  const chartOptions: ApexOptions = useMemo(
+    () => ({
+      chart: {
+        type: "bar",
+        toolbar: { show: false },
+        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
       },
-      crosshairs: { show: false },
-      title: {
-        text: "Products",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+      xaxis: {
+        categories: topProducts.map((p) => p.product_name),
+        labels: {
+          style: {
+            fontSize: "12px",
+            colors: theme === "dark" ? "#CBD5E1" : "#334155",
+          },
+          formatter: (value: string) =>
+            value.length > 20 ? value.substring(0, 20) + "..." : value,
         },
-      },
-    },
-    yaxis: {
-      title: {
-        text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
-        style: {
-          fontSize: "14px",
-          fontWeight: "normal",
-          color: theme === "dark" ? "#CBD5E1" : "#64748B",
+        crosshairs: { show: false },
+        title: {
+          text: "Products",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
         },
       },
-      labels: {
-        formatter: (val: number) =>
-          viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
+      yaxis: {
+        title: {
+          text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
+        },
+        labels: {
+          formatter: (val: number) =>
+            viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
+        },
       },
-    },
-    dataLabels: { enabled: false },
-    plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-    grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
-    colors: ["#a855f7"],
-    legend: { show: false },
-    tooltip: {
-      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-        const value = series[seriesIndex][dataPointIndex];
-        const color = w.globals.colors[seriesIndex] || "#a855f7";
-        return `
-          <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">Revenue</div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
-            <span style="font-weight: 600;">$${value.toFixed(2)}</span>
-          </div>
-        `;
-      },
-    },
-  }),
-  [theme, viewMode, topProducts]
-);
+      dataLabels: { enabled: false },
+      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
+      grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
+      colors: ["#a855f7"],
+      legend: { show: false },
+      tooltip: getBaseTooltip(isDark, revenueTooltip),
+    }),
+    [theme, viewMode, topProducts]
+  );
 
   const chartSeries = [
     {
@@ -217,9 +199,9 @@ const chartOptions: ApexOptions = useMemo(
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 pt-4 gap-4">
+      <div className="flex flex-col gap-4 px-4 pt-4">
         <h2 className="app-subheading">Product Sales</h2>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-2 w-full">
           <input
             type="text"
             placeholder="Search products..."
@@ -228,13 +210,14 @@ const chartOptions: ApexOptions = useMemo(
               setSearchTerm(e.target.value);
               setFirst(0);
             }}
-            className="app-search-input w-full sm:w-64"
+            className="app-search-input w-full max-w-full"
           />
-          <Dropdown
+          <PrimeSelectFilter<"revenue" | "units">
             value={viewMode}
             options={viewOptions}
-            onChange={(e) => setViewMode(e.value)}
-            className="w-50"
+            onChange={setViewMode}
+            className="w-full sm:w-64 h-10 leading-[0.9rem]"
+            placeholder="Select View Mode "
           />
         </div>
       </div>
@@ -246,7 +229,7 @@ const chartOptions: ApexOptions = useMemo(
           stripedRows
           responsiveLayout="scroll"
           scrollable
-          scrollHeight="400px"
+          scrollHeight="428px"
           sortMode="multiple"
           emptyMessage="No products found for the selected filters"
         >
@@ -263,7 +246,7 @@ const chartOptions: ApexOptions = useMemo(
             sortable
             className="app-table-content"
             body={(rowData) => formatValue(rowData.units_sold)}
-            style={{ minWidth: "100px" }}
+            style={{ minWidth: "100px"}}
           />
           <Column
             field="total_sales"
@@ -287,7 +270,7 @@ const chartOptions: ApexOptions = useMemo(
           >
             <div className="flex flex-col">
               <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                Product:
+                Products:
               </span>
               <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
                 {product.product_name}
@@ -391,8 +374,8 @@ const chartOptions: ApexOptions = useMemo(
       </div>
 
       {/* Chart */}
-      <div className="relative px-4 pb-6 overflow-visible">
-        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4">
+      <div className="relative px-4 overflow-visible">
+        <h3 className="text-md app-subheading font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
           Top 10 Products Visualization
         </h3>
         {topProducts.length > 0 ? (
@@ -400,7 +383,7 @@ const chartOptions: ApexOptions = useMemo(
             options={chartOptions}
             series={chartSeries}
             type="bar"
-            height={350}
+            height={topProducts.length * 30 + 100}
           />
         ) : (
           <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Calendar } from "primereact/calendar";
 import { useSidebar } from "../context/SidebarContext";
@@ -11,7 +11,6 @@ import { useDispatch } from "react-redux";
 import { setDates } from "../store/dateRangeSlice";
 import { setEnterpriseKey as setEnterpriseKeyRedux } from "../store/enterpriseKeySlice";
 import { axiosInstance } from "../axios";
-
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
@@ -22,6 +21,7 @@ const Navbar: React.FC = () => {
   const calendarRef = useRef<any>(null);
   const dispatch = useDispatch();
   const location = useLocation();
+  const headerRef = useRef<HTMLDivElement>(null);
 
   const {
     isMobileOpen,
@@ -32,7 +32,6 @@ const Navbar: React.FC = () => {
     toggleMobileRightSidebar,
   } = useSidebar();
 
-
   const reduxDates = useSelector((state: any) => state.dateRange.dates);
   const [dateRange, setDateRange] = useState<[Date, Date] | null>(() => {
     if (Array.isArray(reduxDates) && reduxDates[0] && reduxDates[1]) {
@@ -40,7 +39,6 @@ const Navbar: React.FC = () => {
     }
     return null;
   });
-
 
   useScrollLock(isMobileRightOpen);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -123,9 +121,26 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useLayoutEffect(() => {
+  const updateHeight = () => {
+    if (headerRef.current) {
+      document.documentElement.style.setProperty(
+        "--navbar-height",
+        `${headerRef.current.offsetHeight}px`
+      );
+    }
+  };
+
+  updateHeight(); // initial run
+
+  window.addEventListener("resize", updateHeight); // resize watcher
+
+  return () => window.removeEventListener("resize", updateHeight);
+}, [location.pathname]);
   return (
     <>
       <header
+        ref={headerRef}
         className={`
     sticky top-0 z-[40] w-full
     bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 backdrop-blur
@@ -139,11 +154,12 @@ const Navbar: React.FC = () => {
             {/* Sidebar toggle button */}
             <button
               onClick={handleToggle}
-              aria-label="Toggle Sidebar"              
-              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${!isMobileOpen
-                ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
-                : ""
-                }`}
+              aria-label="Toggle Sidebar"
+              className={`flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 lg:hidden ${
+                !isMobileOpen
+                  ? "border border-gray-200 rounded-lg dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : ""
+              }`}
             >
               {isMobileOpen ? (
                 <span className="text-xl font-bold">✕</span>
@@ -169,7 +185,7 @@ const Navbar: React.FC = () => {
 
               {/* Dark mode logo */}
               <img
-                className="hidden dark:block w-6 h-6"
+                className="hidden dark:block w-8 h-8"
                 src={Logo}
                 alt="Logo"
               />
@@ -213,7 +229,7 @@ const Navbar: React.FC = () => {
                   showIcon
                   hideOnDateTimeSelect
                   hideOnRangeSelection
-                  icon={<i className="pi pi-calendar text-white" />} 
+                  icon={<i className="pi pi-calendar text-white" />}
                 />
               )}
 
@@ -246,7 +262,6 @@ const Navbar: React.FC = () => {
                 <i className="pi pi-sliders-h" />
               )}
             </button>
-
           )}
         </div>
       </header>

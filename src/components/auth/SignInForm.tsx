@@ -7,6 +7,8 @@ import { Carousel } from "primereact/carousel";
 import logo from "../../images/logo.png";
 import { ThemeToggleButton } from "../common/ThemeToggleButton";
 import FeatureCard from "./FeatureCard";
+import CommonButton from "../modularity/buttons/Button";
+
 
 const features = [
   { title: "Custom Alerts & Thresholds", icon: "pi pi-bell" },
@@ -41,12 +43,37 @@ function Signin() {
         { email, password },
         { withCredentials: true }
       );
-      const role = data.role.identifier || "";
+      const userData = data as { role: { identifier: string } };
+      const role = userData.role.identifier || "";
       const isAdmin = role.includes("admin") || role.includes("manager");
 
-      navigate("/", { state: { user: data, showUserManagement: isAdmin } });
-    } catch {
-      setError("Invalid credentials or invalid user.");
+      navigate("/", { state: { user: userData, showUserManagement: isAdmin } });
+    } catch (err: any) {
+      if (err.response) {
+        switch (err.response.status) {
+          case 400:
+            setError("Please check your input and try again.");
+            break;
+          case 401:
+            setError("Incorrect email or password. Please try again.");
+            break;
+          case 403:
+            setError("Access denied. Contact support if needed.");
+            break;
+          case 404:
+            setError("Service temporarily unavailable. Please try again later.");
+            break;
+          case 500:
+            setError("Something went wrong on our end. Try again soon.");
+            break;
+          default:
+            setError("Something went wrong. Please try again.");
+        }
+      } else if (err.request) {
+        setError("Check your connection and try again.");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -141,9 +168,14 @@ function Signin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 rounded-lg text-sm bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/10
-    text-white placeholder-white/50 backdrop-blur-md
-    focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:scale-105 transition-transform duration-200"
+                className="w-full px-4 py-3 rounded-lg text-sm 
+  bg-white/10 dark:bg-white/5 
+  border border-white/10 dark:border-white/10
+  text-gray-600
+  dark:text-white
+  placeholder-black/50 dark:placeholder-white/50
+  backdrop-blur-md
+  focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:scale-105 transition-transform duration-200"
               />
             </div>
             <div>
@@ -154,9 +186,13 @@ function Signin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 rounded-lg text-sm bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/10
-    text-white placeholder-white/50 backdrop-blur-md
-    focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:scale-105 transition-transform duration-200"
+                  className="w-full px-4 py-3 rounded-lg text-sm 
+  bg-white/10 dark:bg-white/5 
+  border border-white/10 dark:border-white/10
+  text-black dark:text-white
+  placeholder-black/50 dark:placeholder-white/50
+  backdrop-blur-md
+  focus:outline-none focus:ring-2 focus:ring-[#a855f7] focus:scale-105 transition-transform duration-200"
                 />
 
                 <button
@@ -171,18 +207,8 @@ function Signin() {
               </div>
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`
-    w-full py-2 px-4 text-white font-medium rounded-md
-    bg-[#a855f7] transition duration-300 ease-in-out
-    hover:scale-105 hover:shadow-lg active:scale-100 active:shadow-sm
-    disabled:opacity-50 disabled:cursor-not-allowed
-  `}
-            >
-              {loading ? "Signing in..." : "Login"}
-            </button>
+           <CommonButton text="Login" loading={loading} type="submit" variant="auth" />
+
           </form>
         </motion.div>
       </motion.div>

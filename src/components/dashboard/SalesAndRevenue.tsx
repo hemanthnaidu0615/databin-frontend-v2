@@ -1,36 +1,21 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
+import { formatDateTime, formatValue } from "../utils/kpiUtils";
+import CommonButton from "../modularity/buttons/Button";
+
 
 interface StatisticsChartProps {
   onRemove?: () => void;
   onViewMore?: () => void;
 }
 
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(2, "0")}.000`;
-};
-
-export default function StatisticsChart({}: StatisticsChartProps) {
+export default function StatisticsChart({ }: StatisticsChartProps) {
   const navigate = useNavigate();
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
-
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
 
   const [salesByMonth, setSalesByMonth] = useState<number[]>(
@@ -41,8 +26,8 @@ export default function StatisticsChart({}: StatisticsChartProps) {
   const fetchChartData = async () => {
     if (!startDate || !endDate) return;
 
-    const formattedStart = formatDate(startDate);
-    const formattedEnd = formatDate(endDate);
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
 
     const apiParams = enterpriseKey
       ? { startDate: formattedStart, endDate: formattedEnd, enterpriseKey }
@@ -93,12 +78,6 @@ export default function StatisticsChart({}: StatisticsChartProps) {
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
-
-  const formatValue = (value: number) => {
-    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-    if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-    return value.toFixed(0);
-  };
 
   const options: ApexOptions = {
     chart: {
@@ -200,25 +179,11 @@ export default function StatisticsChart({}: StatisticsChartProps) {
           <h2 className="app-subheading flex-1 mr-2">Sales & Revenue</h2>
 
           {/* Mobile arrow (→) aligned right */}
-          <button
-            onClick={handleViewMore}
-            className="sm:hidden text-purple-600 text-sm font-medium self-start"
-          >
-            <FontAwesomeIcon
-              icon={faShareFromSquare}
-              size="lg"
-              style={{ color: "#a855f7" }}
-            />
-          </button>
+          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
         </div>
 
         {/* Desktop & tablet "View More" */}
-        <button
-          onClick={handleViewMore}
-          className="hidden sm:block text-xs font-medium text-purple-600 hover:underline"
-        >
-          View More
-        </button>
+        <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
       </div>
 
       <div className="flex-1 w-full mt-3">

@@ -17,7 +17,7 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/DashboardHome";
-import DummyDashboard from "./components/Pages/Sales/Dashboard/DummyDashboard";
+import DummyDashboard from "./components/Pages/Sales/SalesDashboard/DummyDashboard";
 import InventoryPage from "./components/Pages/Inventory/InventoryPage";
 import ShipmentPage from "./components/Pages/Shipment/ShipmentPage";
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
@@ -26,7 +26,7 @@ import 'primeicons/primeicons.css';
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import OrdersPage from "./components/Pages/Orders/OrdersPage";
 import SalesAnalysis from "./components/Pages/Sales/Sales Analysis/SalesAnalysis";
-import { SalesByRegion } from "./components/Pages/Sales/Region/SalesByRegion";
+import { SalesByRegion } from "./components/Pages/Sales/SalesByRegion/SalesByRegion";
 import SalesFlow from "./components/Pages/Sales/SalesFlow";
 import Scheduler from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
@@ -50,10 +50,10 @@ export default function App() {
               <ProtectedRoute element={<UserManagement />} allowedRoles={["admin", "manager"]} />
             } />
             <Route path="orders" element={<OrdersPage />} />
-            <Route path="sales/analysis" element={<SalesAnalysis />} />
-            <Route path="sales/dashboard" element={<DummyDashboard />} />
-            <Route path="sales/region" element={<SalesByRegion />} />
-            <Route path="sales/flow" element={<SalesFlow />} />
+            <Route path="sales-analysis" element={<SalesAnalysis />} />
+            <Route path="sales-dashboard" element={<DummyDashboard />} />
+            <Route path="sales-region" element={<SalesByRegion />} />
+            <Route path="sales-flow" element={<SalesFlow />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="shipment" element={<ShipmentPage />} />
             <Route path="fulfillment" element={<FulfillmentPage />} />

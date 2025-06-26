@@ -1,6 +1,4 @@
 import moment from "moment";
-import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { MultiSelect } from "primereact/multiselect";
 import { useEffect, useState, useRef } from "react";
@@ -8,11 +6,13 @@ import { axiosInstance } from "../../../axios";
 import { Toast } from "primereact/toast";
 import { Calendar } from "primereact/calendar";
 import "./style.css";
+import CommonButton from "../../modularity/buttons/Button";
+import { PrimeSelectFilter } from "../../modularity/dropdowns/Dropdown";
 
 interface SchedulerData {
   schedulerStartDate: Date | null;
   schedulerEndDate: Date | null;
-  recurrencePattern: string;
+  recurrencePattern: RecurrencePattern | "";
   email: string[];
   bcc: string[];
   title: string;
@@ -21,6 +21,15 @@ interface SchedulerData {
   columnSelection: string[];
   timeFrame: string;
 }
+
+type RecurrencePattern = "daily" | "weekly" | "monthly" | "yearly";;
+const recurrenceOptions: { label: string; value: RecurrencePattern }[] = [
+  { label: "Get emails Daily", value: "daily" },
+  { label: "Get emails Weekly", value: "weekly" },
+  { label: "Get emails Monthly", value: "monthly" },
+  { label: "Get emails Yearly", value: "yearly" },
+];
+
 
 export const CreateScheduler = () => {
   const [tables, setTables] = useState<{ label: string; value: string }[]>([]);
@@ -227,33 +236,33 @@ export const CreateScheduler = () => {
     const timeFrames: Record<string, { label: string; value: string }[]> = {
       daily: [
         { label: "Today", value: "Today" },
-        { label: "Past Week Data", value: "Past Week" },
-        { label: "Past Month Data", value: "Past Month" },
-        { label: "Past 3 Months Data", value: "Past 3 Months" },
-        { label: "Past 6 Months Data", value: "Past 6 Months" },
-        { label: "Past Year Data", value: "Past Year" },
+        { label: "Past Week", value: "Past Week" },
+        { label: "Past Month", value: "Past Month" },
+        { label: "Past 3 Months", value: "Past 3 Months" },
+        { label: "Past 6 Months", value: "Past 6 Months" },
+        { label: "Past Year", value: "Past Year" },
       ],
       weekly: [
-        { label: "Past Week Data", value: "Past Week" },
-        { label: "Past Month Data", value: "Past Month" },
-        { label: "Past 3 Months Data", value: "Past 3 Months" },
-        { label: "Past 6 Months Data", value: "Past 6 Months" },
-        { label: "Past Year Data", value: "Past Year" },
+        { label: "Past Week", value: "Past Week" },
+        { label: "Past Month", value: "Past Month" },
+        { label: "Past 3 Months", value: "Past 3 Months" },
+        { label: "Past 6 Months", value: "Past 6 Months" },
+        { label: "Past Year", value: "Past Year" },
       ],
       monthly: [
-        { label: "Past Month Data", value: "Past Month" },
-        { label: "Past 3 Months Data", value: "Past 3 Months" },
-        { label: "Past 6 Months Data", value: "Past 6 Months" },
-        { label: "Past Year Data", value: "Past Year" },
-        { label: "Past 2 Years Data", value: "Past 2 Years" },
-        { label: "Past 5 Years Data", value: "Past 5 Years" },
-        { label: "Past 10 Years Data", value: "Past 10 Years" },
+        { label: "Past Month", value: "Past Month" },
+        { label: "Past 3 Months", value: "Past 3 Months" },
+        { label: "Past 6 Months", value: "Past 6 Months" },
+        { label: "Past Year", value: "Past Year" },
+        { label: "Past 2 Years", value: "Past 2 Years" },
+        { label: "Past 5 Years", value: "Past 5 Years" },
+        { label: "Past 10 Years", value: "Past 10 Years" },
       ],
       yearly: [
-        { label: "Past Year Data", value: "Past Year" },
-        { label: "Past 2 Years Data", value: "Past 2 Years" },
-        { label: "Past 5 Years Data", value: "Past 5 Years" },
-        { label: "Past 10 Years Data", value: "Past 10 Years" },
+        { label: "Past Year", value: "Past Year" },
+        { label: "Past 2 Years", value: "Past 2 Years" },
+        { label: "Past 5 Years", value: "Past 5 Years" },
+        { label: "Past 10 Years", value: "Past 10 Years" },
       ],
     };
     return timeFrames[recurrencePattern] || [];
@@ -378,23 +387,17 @@ export const CreateScheduler = () => {
           >
             Email Recurrence Pattern<span className="text-red-500">*</span>
           </label>
-          <Dropdown
-            id="recurrencePattern"
-            value={schedulerData.recurrencePattern}
-            placeholder="Select recurrence pattern"
-            options={[
-              { label: "Get emails Daily", value: "daily" },
-              { label: "Get emails Weekly", value: "weekly" },
-              { label: "Get emails Monthly", value: "monthly" },
-              { label: "Get emails Yearly", value: "yearly" },
-            ]}
-            onChange={(e) =>
+          <PrimeSelectFilter<RecurrencePattern>
+            value={schedulerData.recurrencePattern as RecurrencePattern}
+            options={recurrenceOptions}
+            onChange={(value) =>
               setSchedulerData({
                 ...schedulerData,
-                recurrencePattern: e.value,
-                timeFrame: getTimeFrames(e.value)[0]?.value || "",
+                recurrencePattern: value,
+                timeFrame: getTimeFrames(value)[0]?.value || "",
               })
             }
+            placeholder="Select recurrence pattern"
           />
         </div>
 
@@ -402,20 +405,20 @@ export const CreateScheduler = () => {
           <label className="text-base font-semibold" htmlFor="tableSelection">
             Table Selection<span className="text-red-500">*</span>
           </label>
-          <Dropdown
-            id="tableSelection"
+          <PrimeSelectFilter<string>
             value={schedulerData.tableSelection}
-            placeholder="Select Table"
             options={tables}
-            onChange={(e) => {
+            onChange={(value) => {
               setSchedulerData({
                 ...schedulerData,
-                tableSelection: e.value,
+                tableSelection: value,
                 columnSelection: [],
               });
-              fetchColumns(e.value);
+              fetchColumns(value);
             }}
+            placeholder="Select Table"
           />
+
         </div>
 
         <div className="p-field">
@@ -433,7 +436,7 @@ export const CreateScheduler = () => {
             selectAll
             selectAllLabel={
               schedulerData.columnSelection.length ===
-              getTableColumns(data).slice(1).length
+                getTableColumns(data).slice(1).length
                 ? "Deselect All"
                 : "Select All"
             }
@@ -447,29 +450,20 @@ export const CreateScheduler = () => {
           <label className="text-base font-semibold" htmlFor="timeFrame">
             Data Range<span className="text-red-500">*</span>
           </label>
-          <Dropdown
-            id="timeFrame"
+          <PrimeSelectFilter<string>
             value={schedulerData.timeFrame}
-            placeholder="Select data range"
             options={getTimeFrames(schedulerData.recurrencePattern)}
-            onChange={(e) =>
-              setSchedulerData({ ...schedulerData, timeFrame: e.value })
+            onChange={(value) =>
+              setSchedulerData({ ...schedulerData, timeFrame: value })
             }
+            placeholder="Select data range"
           />
         </div>
 
         <div className="flex justify-end">
-          <Button
-            label="Save Scheduler"
-            onClick={handleSaveScheduler}
-            style={{
-              backgroundColor: "#a855f7",
-              border: "none",
-              color: "white",
-            }}
-            className="w-auto ml-auto mr-auto text-sm hover:brightness-90 transition-none"
-          />
+          <CommonButton variant="action" text="Save Scheduler" onClick={handleSaveScheduler} />
         </div>
+
       </div>
     </div>
   );

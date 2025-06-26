@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Chart from "react-apexcharts";
-import { useSelector } from "react-redux";
 import { useTheme } from "next-themes";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../../axios";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
 interface Props {
   company: "AWW" | "AWD";
@@ -17,12 +20,6 @@ interface OrderData {
 
 const usdRate = 83;
 
-const formatDate = (date: string | Date): string => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}T00:00:00`;
-};
 function getXAxisTitle(categories: string[]): string {
   if (categories.length === 0) return "Date";
 
@@ -49,7 +46,7 @@ function getXAxisTitle(categories: string[]): string {
   if (diffDays <= 365) {
     return "Months";
   }
-  return "Years";
+  return "Year";
 }
 
 const ChartSection: React.FC<Props> = ({ company }) => {
@@ -58,11 +55,9 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   const [series, setSeries] = useState<{ name: string; data: number[] }[]>([]);
   const [pieSeries, setPieSeries] = useState<number[]>([]);
   const { theme } = useTheme();
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const [startDate, endDate] = dateRange;
-
   const isDark = theme === "dark";
+  const { dateRange } = useDateRangeEnterprise();
+  const [startDate, endDate] = dateRange;
   const labelColor = isDark ? "#f1f5f9" : "#1e293b";
   const gridColor = isDark ? "#334155" : "#e2e8f0";
 
@@ -77,8 +72,8 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           data: OrderData[];
         }>(url, {
           params: {
-            startDate: formatDate(startDate),
-            endDate: formatDate(endDate),
+            startDate: formatDateTime(startDate),
+            endDate: formatDateTime(endDate),
           },
         });
 
@@ -130,16 +125,15 @@ const ChartSection: React.FC<Props> = ({ company }) => {
       },
       legend: {
         labels: { colors: labelColor },
-        position: "top",
+        position: "bottom",
       },
       grid: {
         borderColor: gridColor,
       },
       colors: ["#14b8a6", "#a855f7", "#db2777"],
 
-      tooltip: {
-        theme: isDark ? "dark" : "light",
-      },
+      tooltip: getBaseTooltip(isDark, salesTooltip),
+
       markers: {
         size: 4,
         hover: {
@@ -163,6 +157,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           title: {
             text: getXAxisTitle(categories),
             style: { color: labelColor },
+             offsetY: -15,
           },
           crosshairs: {
             show: false,
@@ -171,8 +166,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         yaxis: {
           labels: {
             style: { colors: labelColor },
-            formatter: (value: number) =>
-              value === 0 ? "$0M" : `$${(value / 1_000_000).toFixed(1)}M`,
+            formatter: formatValue,
           },
           title: {
             text: "Order Amount ($)",
@@ -230,7 +224,11 @@ const ChartSection: React.FC<Props> = ({ company }) => {
     return `clamp(${minWidth}px, ${calculatedWidth}px, ${maxWidth}px)`;
   }, [categories.length, selectedChart]);
 
-  const chartOptions = ["Bar", "Line", "Pie", "Table"];
+  const chartOptions = ["Bar", "Line", "Pie", "Table"].map((type) => ({
+    label: type,
+    value: type,
+  }));
+
 
   return (
     <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-5 shadow-sm">
@@ -238,46 +236,40 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
           Chart Type
         </p>
-        <select
+        <PrimeSelectFilter
           value={selectedChart}
-          onChange={(e) => setSelectedChart(e.target.value)}
-          className="px-3 py-1.5 text-sm rounded-md border bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-        >
-          {chartOptions.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setSelectedChart(val)}
+          options={chartOptions}
+          placeholder="Select Chart Type"
+          className="w-29 text-sm h-[35px] text-xs leading-[0.6]"
+        />
       </div>
 
       {(selectedChart === "Bar" ||
         selectedChart === "Line" ||
         selectedChart === "Pie") && (
-        <div
-          className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2"
-          style={{ overflow: "visible" }}
-        >
           <div
-            style={{
-              width: dynamicChartWidth,
-              height: selectedChart === "Pie" ? "350px" : "370px",
-              maxWidth: "100%",
-              overflow: "visible",
-            }}
+            className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2 overflow-visible"
           >
-            <Chart
-              options={getChartOptions(
-                selectedChart.toLowerCase() as "bar" | "line" | "pie"
-              )}
-              series={selectedChart === "Pie" ? pieSeries : series}
-              type={selectedChart.toLowerCase() as any}
-              height="100%"
-              width="100%"
-            />
+            <div
+              style={{
+                width: dynamicChartWidth,
+                height: selectedChart === "Pie" ? "350px" : "370px",
+              }}
+              className="max-w-full overflow-visible"
+            >
+              <Chart
+                options={getChartOptions(
+                  selectedChart.toLowerCase() as "bar" | "line" | "pie"
+                )}
+                series={selectedChart === "Pie" ? pieSeries : series}
+                type={selectedChart.toLowerCase() as any}
+                height="100%"
+                width="100%"
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {selectedChart === "Table" && (
         <>

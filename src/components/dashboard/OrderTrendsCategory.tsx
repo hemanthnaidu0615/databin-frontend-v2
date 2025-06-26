@@ -1,24 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useTheme } from "next-themes";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
-
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")} ${d
-    .getHours()
-    .toString()
-    .padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}:${d
-    .getSeconds()
-    .toString()
-    .padStart(3, "0")}`;
-};
+import { formatDateTime, formatVal } from "../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
+import CommonButton from "../modularity/buttons/Button";
 
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
@@ -32,18 +20,11 @@ type ApiResponse = {
   };
 };
 
-const INR_TO_USD = 1 / 83.3;
-
-const formatValue = (value: number) => {
-  const usd = value * INR_TO_USD;
-  if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}M`;
-  if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}K`;
-  return `$${usd.toFixed(0)}`;
-};
-
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [chartData, setChartData] = useState<{
     categories: string[];
     series: { name: string; data: number[] }[];
@@ -51,10 +32,9 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     categories: [],
     series: [],
   });
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
   const [startDate, endDate] = dateRange;
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,8 +48,8 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
+        const formattedStartDate = formatDateTime(startDate);
+        const formattedEndDate = formatDateTime(endDate);
 
         const params = new URLSearchParams({
           startDate: encodeURIComponent(formattedStartDate),
@@ -126,26 +106,27 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     }
   }, [startDate, endDate, enterpriseKey]);
 
+
   const options: ApexOptions = {
     chart: {
       type: "line",
       zoom: { enabled: false },
       toolbar: { show: false },
-      foreColor: "#a855f7",
+      foreColor: isDark ? "#d1d5db" : "#a855f7",
     },
     xaxis: {
       categories: chartData.categories,
       title: {
         text: "Month",
         style: {
-          color: "#a855f7",
+          color: isDark ? "#d1d5db" : "#a855f7",
           fontSize: "14px",
           fontWeight: 400,
         },
       },
       labels: {
         style: {
-          colors: "#a855f7",
+          colors: isDark ? "#d1d5db" : "#a855f7",
         },
       },
     },
@@ -153,23 +134,23 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       title: {
         text: "Order Amount",
         style: {
-          color: "#a855f7",
+          color: isDark ? "#d1d5db" : "#a855f7",
           fontSize: "14px",
           fontWeight: 400,
         },
       },
       labels: {
         style: {
-          colors: "#a855f7",
+          colors: isDark ? "#d1d5db" : "#a855f7",
         },
-        formatter: formatValue,
+        formatter: formatVal,
       },
     },
     tooltip: {
-      theme: "light",
+      theme: isDark ? "dark" : "light",
       x: { show: true },
       y: {
-        formatter: formatValue,
+        formatter: formatVal,
       },
     },
     stroke: {
@@ -179,22 +160,19 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     markers: {
       size: 4,
     },
-    colors: ["#a855f7", "#22C55E", "#EAB308"],
+    colors: isDark
+      ? ["#c084fc", "#86efac", "#fde047"]
+      : ["#a855f7", "#22C55E", "#EAB308"], // ✅ Dark vs Light color palettes
     legend: {
       position: "bottom",
       labels: {
-        colors: "#a855f7",
+        colors: isDark ? "#d1d5db" : "#a855f7",
       },
     },
     responsive: [
       {
         breakpoint: 768,
         options: {
-          plotOptions: {
-            bar: {
-              columnWidth: "35%",
-            },
-          },
           xaxis: {
             labels: {
               style: {
@@ -229,25 +207,11 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </h2>
 
             {/* Mobile arrow (→) aligned right */}
-            <button
-              onClick={handleViewMore}
-              className="sm:hidden text-purple-600 text-sm font-medium self-start"
-            >
-              <FontAwesomeIcon
-                icon={faShareFromSquare}
-                size="lg"
-                style={{ color: "#a855f7" }}
-              />
-            </button>
+          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
           </div>
 
           {/* Desktop & tablet "View More" */}
-          <button
-            onClick={handleViewMore}
-            className="hidden sm:block text-xs font-medium text-purple-500 hover:underline"
-          >
-            View More
-          </button>
+          <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
         </div>
       )}
 

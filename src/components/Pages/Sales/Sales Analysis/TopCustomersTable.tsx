@@ -1,20 +1,16 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { Card } from "primereact/card";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dropdown } from "primereact/dropdown";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
-import dayjs from "dayjs";
 import { axiosInstance } from "../../../../axios";
-
-const viewOptions = [
-  { label: "By Revenue", value: "revenue" },
-  { label: "By Orders", value: "orders" },
-];
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
 interface Customer {
   customer_name: string;
@@ -22,33 +18,18 @@ interface Customer {
   total_orders: number;
 }
 
-const formatDate = (date: Date) => dayjs(date).format("YYYY-MM-DD");
 const convertToUSD = (rupees: number): number => rupees * 0.012;
-
-const formatValue = (value: number): string => {
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
-  if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
-  return value.toFixed(0);
-};
 
 const TopCustomersTable = () => {
   const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [viewMode, setViewMode] = useState<"revenue" | "orders">("revenue");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
-
-  useEffect(() => {
-    setPage(0);
-  }, [startDate, endDate, enterpriseKey]);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -57,14 +38,12 @@ const TopCustomersTable = () => {
       setLoading(true);
       setError(null);
 
-      const formattedStart = formatDate(new Date(startDate));
-      const formattedEnd = formatDate(new Date(endDate));
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
 
       const params = new URLSearchParams({
         startDate: formattedStart,
         endDate: formattedEnd,
-        page: page.toString(),
-        size: rows.toString(),
       });
 
       if (enterpriseKey) {
@@ -77,11 +56,9 @@ const TopCustomersTable = () => {
         );
         const data = response.data as {
           customers?: Customer[];
-          count?: number;
         };
 
         setCustomers(data.customers || []);
-        setTotalRecords(data.count || 0);
       } catch (err) {
         console.error("Error fetching customers:", err);
         setError("Failed to load customer data");
@@ -91,12 +68,7 @@ const TopCustomersTable = () => {
     };
 
     fetchCustomers();
-  }, [startDate, endDate, enterpriseKey, page, rows]);
-
-  const onPage = (event: any) => {
-    setPage(event.page);
-    setRows(event.rows);
-  };
+  }, [startDate, endDate, enterpriseKey]);
 
   const filteredCustomers = useMemo(() => {
     if (!searchTerm) return customers;
@@ -134,7 +106,7 @@ const TopCustomersTable = () => {
         },
         crosshairs: { show: false },
         title: {
-          text: "Customer",
+          text: "Customers",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
@@ -161,26 +133,7 @@ const TopCustomersTable = () => {
       grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
       colors: ["#a855f7"],
       legend: { show: false },
-      tooltip: {
-        custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-          const value = series[seriesIndex][dataPointIndex];
-          const color = w.globals.colors[seriesIndex] || "#a855f7";
-          const label = viewMode === "revenue" ? "Revenue" : "Orders";
-
-          const formattedValue =
-            viewMode === "revenue"
-              ? `$${value.toFixed(2)}`
-              : `${value.toFixed(0)} orders`;
-
-          return `
-        <div class="apexcharts-tooltip-title" style="font-weight: 500; margin-bottom: 4px;">${label}</div>
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${color};"></span>
-          <span style="font-weight: 600;">${formattedValue}</span>
-        </div>
-      `;
-        },
-      },
+      tooltip: getBaseTooltip(isDark, revenueTooltip),
     }),
     [theme, viewMode, topCustomers]
   );
@@ -225,32 +178,34 @@ const TopCustomersTable = () => {
   }
 
   return (
-    <Card className="...">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 pt-4">
+    <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
+      <div className="flex flex-col gap-4 px-4 pt-4">
         <h2 className="app-subheading">Customer Orders</h2>
-
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-2 w-full">
           <input
             type="text"
             placeholder="Search customers..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setPage(0);
             }}
-            className="app-search-input w-full sm:w-64"
+            className="app-search-input w-full max-w-full"
           />
-          <Dropdown
+          <PrimeSelectFilter<"revenue" | "orders">
             value={viewMode}
-            options={viewOptions}
-            onChange={(e) => setViewMode(e.value)}
-            className="w-43"
+            options={[
+              { label: "By Revenue", value: "revenue" as "revenue" },
+              { label: "By Orders", value: "orders" as "orders" },
+            ]}
+            onChange={setViewMode}
+            className="w-full sm:w-64 h-10 leading-[0.9rem]"
+            placeholder="Select View Mode "
           />
         </div>
       </div>
 
       <div className="px-4 pt-2 pb-6 app-table-heading">
-        {/* 🟣 DataTable - Only on desktop */}
+        {/* DataTable - Only on desktop */}
         <div className="hidden sm:block">
           <DataTable
             value={filteredCustomers}
@@ -260,16 +215,7 @@ const TopCustomersTable = () => {
             scrollHeight="400px"
             sortMode="multiple"
             emptyMessage="No customers found for the selected filters"
-            paginator
-            paginatorClassName="hidden sm:flex"
             loading={loading}
-            totalRecords={totalRecords}
-            first={page * rows}
-            rows={rows}
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 20, 50, 100]}
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} customers"
-            paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
           >
             <Column field="customer_name" header="Customer Name" sortable />
             <Column
@@ -289,100 +235,43 @@ const TopCustomersTable = () => {
           </DataTable>
         </div>
 
-        {/* 🟣 Mobile-friendly stacked cards */}
+        {/* Mobile-friendly stacked cards */}
         <div className="block sm:hidden space-y-4 mt-4">
-          {filteredCustomers
-            .slice(page * rows, page * rows + rows)
-            .map((customer, index) => (
-              <div
-                key={index}
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                    Customer:
-                  </span>
-                  <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-                    {customer.customer_name}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Orders:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {formatValue(customer.total_orders)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Total Spent:
-                  </span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    ${formatValue(convertToUSD(customer.total_spent))}
-                  </span>
-                </div>
+          {filteredCustomers.map((customer, index) => (
+            <div
+              key={index}
+              className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                  Customer:
+                </span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+                  {customer.customer_name}
+                </span>
               </div>
-            ))}
-        </div>
-
-        {/* 🟣 Mobile Pagination */}
-        <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden">
-          <div className="flex flex-col gap-2 mb-2">
-            <div>
-              <label htmlFor="mobileRows">Rows per page:</label>
-              <select
-                id="mobileRows"
-                value={rows}
-                onChange={(e) => {
-                  setRows(Number(e.target.value));
-                  setPage(0);
-                }}
-                className="px-2 py-1 rounded w-full border dark:bg-gray-800 bg-gray-100"
-              >
-                {[5, 10, 20, 50, 100].map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  Orders:
+                </span>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  {formatValue(customer.total_orders)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  Total Spent:
+                </span>
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  ${formatValue(convertToUSD(customer.total_spent))}
+                </span>
+              </div>
             </div>
-            <div>
-              Page {page + 1} of {Math.ceil(totalRecords / rows)}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-between gap-2">
-            <button onClick={() => setPage(0)} disabled={page === 0}>
-              ⏮ First
-            </button>
-            <button
-              onClick={() => setPage(Math.max(0, page - 1))}
-              disabled={page === 0}
-            >
-              Prev
-            </button>
-            <button
-              onClick={() =>
-                setPage(
-                  page + 1 < Math.ceil(totalRecords / rows) ? page + 1 : page
-                )
-              }
-              disabled={(page + 1) * rows >= totalRecords}
-            >
-              Next
-            </button>
-            <button
-              onClick={() => setPage(Math.ceil(totalRecords / rows) - 1)}
-              disabled={(page + 1) * rows >= totalRecords}
-            >
-              ⏭ Last
-            </button>
-          </div>
+          ))}
         </div>
       </div>
 
-      <div className="px-4 pb-6">
+      <div className="px-4">
         <h3 className="app-subheading mb-4">Top 10 Customers Visualization</h3>
         {topCustomers.length > 0 ? (
           <Chart

@@ -1,96 +1,146 @@
 import { useState, useEffect } from "react";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableFilterEvent, DataTablePageEvent, DataTableSortEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
 import { AddUser } from "./AddUser";
 import { axiosInstance } from "../../../axios";
 
-
 export const UserManagement = () => {
-  const [users, setUsers] = useState<any[]>([
+  const [users, setUsers] = useState<any[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rows, setRows] = useState(10);
+  const [sortField, setSortField] = useState("id");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  ]);
+  const [filters, setFilters] = useState<any>({
+    global: { value: null, matchMode: "contains" },
+    email: { value: null, matchMode: "contains" },
+    role: { value: null, matchMode: "contains" },
+    role_level: { value: null, matchMode: "contains" },
+  });
 
   const [editUser, setEditUser] = useState<any | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axiosInstance.get("/auth/users", {
-          withCredentials: true,
-        });
 
-        const usersData = response.data as any[];
-        const formattedUsers = usersData.map((user: any) => ({
-          id: user.id,
-          username: user.username || user.name || user.email.split("@")[0],
-          email: user.email,
-          role: user.role?.identifier || user.role?.roleLevel || "user",
-        }));
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const params: any = {
+        page,
+        size: rows,
+        sortField,
+        sortOrder,
+      };
 
-        setUsers(formattedUsers);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+      for (const key in filters) {
+        const value = filters[key]?.value;
+        const matchMode = filters[key]?.matchMode;
+        if (value && matchMode && key !== "global") {
+          params[`${key}.value`] = value;
+          params[`${key}.matchMode`] = matchMode;
+        }
       }
-    };
 
+      const response = await axiosInstance.get("/auth/users", {
+        params,
+        withCredentials: true,
+      });
+
+      const { data, count } = response.data;
+
+      const formatted = (data || []).map((user: any) => ({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        role_level: user.role_level,
+        department: user.department,
+        username: user.username || user.email?.split("@")[0],
+      }));
+
+      setUsers(formatted);
+      setTotalRecords(count);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, rows, sortField, sortOrder, filters]);
 
+  const onPageChange = (e: DataTablePageEvent) => {
+    setPage(e.page ?? 0);
+    setRows(e.rows ?? 10);
+  };
 
-  //   const handleDelete = (userId: string) => {
-  //     if (!window.confirm("Are you sure you want to delete this user?")) return;
-  // 
-  //     setUsers((prev) => prev.filter((u) => u.id !== userId));
-  //   };
-  // 
-  //   const handleEdit = (user: any) => {
-  //     setEditUser(user);
-  //     setShowEditDialog(true);
-  //   };
+  const onSort = (e: DataTableSortEvent) => {
+    setSortField(e.sortField ?? "id");
+    setSortOrder(e.sortOrder === 1 ? "asc" : "desc");
+  };
 
-  // const actionBody = (rowData: any) => (
-  //   <div className="flex gap-2">
-  //     <Button
-  //       icon="pi pi-pencil"
-  //       className="p-button-rounded p-button-info p-button-sm"
-  //       onClick={() => handleEdit(rowData)}
-  //       tooltip="Edit"
-  //       tooltipOptions={{ position: "top" }}
-  //     />
-  //     <Button
-  //       icon="pi pi-trash"
-  //       className="p-button-rounded p-button-danger p-button-sm"
-  //       onClick={() => handleDelete(rowData.id)}
-  //       tooltip="Delete"
-  //       tooltipOptions={{ position: "top" }}
-  //     />
-  //   </div>
-  // );
+  const onFilter = (e: DataTableFilterEvent) => {
+    setFilters(e.filters);
+  };
+
+  const renderFilterInput = (placeholder = "Search") => {
+    return (options: any) => (
+      <InputText
+        value={options.value || ""}
+        onChange={(e) => options.filterCallback(e.target.value)}
+        placeholder={placeholder}
+        className="p-column-filter"
+      />
+    );
+  };
+
+  // For mobile pagination
+  const [first, setFirst] = useState(0);
+  const paginatedUsers = users.slice(first, first + rows);
+
+  const handlePageChange = ({ first, rows }: { first: number; rows: number }) => {
+    setFirst(first);
+    setRows(rows);
+  };
 
   return (
     <div className="p-6 bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-900 dark:text-gray-100">
       <div className="max-w-6xl mx-auto">
-        <h2 className="app-section-title mb-4">
-          User Management
-        </h2>
+        <h2 className="app-section-title mb-4">User Management</h2>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
           <AddUser
             users={users}
             setUsers={setUsers}
             editingUser={null}
-            onClose={() => { }}
+            onClose={() => {}}
           />
         </div>
 
-        <div className="mt-6 app-table-heading rounded-lg shadow-md p-4">
+        {/* Desktop Table */}
+        <div className="mt-6 app-table-heading rounded-lg shadow-md p-4 hidden lg:block">
           <DataTable
             value={users}
+            loading={loading}
+            paginator
+            lazy
+            first={page * rows}
+            rows={rows}
+            totalRecords={totalRecords}
+            sortMode="single"
+            sortField={sortField}
+            sortOrder={sortOrder === "asc" ? 1 : -1}
+            onPage={onPageChange}
+            onSort={onSort}
+            onFilter={onFilter}
+            filters={filters}
+            globalFilterFields={["email", "role", "role_level"]}
             className="mt-4"
             stripedRows
-            paginator
-            rows={5}
             responsiveLayout="scroll"
           >
             <Column
@@ -98,28 +148,123 @@ export const UserManagement = () => {
               header="Username"
               sortable
               style={{ minWidth: "12rem" }}
-              className="app-table-content"
+              filter
+              filterElement={renderFilterInput()}
             />
             <Column
               field="email"
               header="Email"
               sortable
               style={{ minWidth: "16rem" }}
-              className="app-table-content"
+              filter
+              filterElement={renderFilterInput()}
             />
             <Column
               field="role"
-              header="Role Identifier"
+              header="Role"
               sortable
               style={{ minWidth: "12rem" }}
-              className="app-table-content"
+              filter
+              filterElement={renderFilterInput()}
             />
-            {/* <Column
-              body={actionBody}
-              header="Actions"
-              style={{ minWidth: "8rem" }}
-            /> */}
+            <Column
+              field="role_level"
+              header="Role Level"
+              sortable
+              style={{ minWidth: "12rem" }}
+              filter
+              filterElement={renderFilterInput()}
+            />
           </DataTable>
+        </div>
+
+        {/* Mobile Card View + Pagination */}
+        <div className="lg:hidden mt-6 p-4 flex flex-col gap-4">
+          {paginatedUsers.map((user) => (
+            <div
+              key={user.id}
+              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow"
+            >
+              <div className="text-lg font-semibold mb-1">{user.username}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                📧 {user.email}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                🛡 Role: {user.role}
+              </div>
+            </div>
+          ))}
+
+          {/* Mobile Pagination */}
+          <div className="mt-4 text-sm text-gray-800 dark:text-gray-100">
+            <div className="flex flex-col gap-2 mb-2">
+              <div className="flex flex-col gap-1">
+                <label htmlFor="mobileRows">Rows per page:</label>
+                <select
+                  id="mobileRows"
+                  value={rows}
+                  onChange={(e) => {
+                    const r = Number(e.target.value);
+                    setRows(r);
+                    setFirst(0);
+                  }}
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
+                >
+                  {[5, 10, 15].map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                Page {Math.floor(first / rows) + 1} of {Math.ceil(users.length / rows)}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-between gap-2">
+              <button
+                onClick={() => handlePageChange({ first: 0, rows })}
+                disabled={first === 0}
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+              >
+                ⏮ First
+              </button>
+              <button
+                onClick={() =>
+                  handlePageChange({ first: Math.max(0, first - rows), rows })
+                }
+                disabled={first === 0}
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <button
+                onClick={() =>
+                  handlePageChange({
+                    first: first + rows < users.length ? first + rows : first,
+                    rows,
+                  })
+                }
+                disabled={first + rows >= users.length}
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+              >
+                Next
+              </button>
+              <button
+                onClick={() =>
+                  handlePageChange({
+                    first: (Math.ceil(users.length / rows) - 1) * rows,
+                    rows,
+                  })
+                }
+                disabled={first + rows >= users.length}
+                className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
+              >
+                Last ⏭
+              </button>
+            </div>
+          </div>
         </div>
 
         <Dialog
