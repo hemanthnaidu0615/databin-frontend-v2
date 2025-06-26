@@ -210,17 +210,20 @@ const DemographicCard = () => {
       field: "state_revenue",
       header: "Revenue",
       sortable: true,
+      filter: true,
       body: (rowData: any) => formatValue(rowData.state_revenue),
     },
     {
       field: "state_quantity",
       header: "Quantity",
       sortable: true,
+      filter: true,
     },
     {
       field: "revenue_percentage",
       header: "Revenue %",
       sortable: true,
+      filter: true,
       body: (rowData: any) => `${rowData.revenue_percentage?.toFixed(2) ?? 0}%`,
     },
   ];
@@ -275,7 +278,7 @@ const DemographicCard = () => {
       <div className="flex justify-between items-center">
         <h2 className="app-subheading">Customer Demographic</h2>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <CommonButton
             variant="responsive"
             onClick={handleViewMore}

@@ -7,6 +7,9 @@ import { axiosInstance } from "../../axios";
 import { formatDateTime, formatVal } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import CommonButton from "../modularity/buttons/Button";
+import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
+import { TableColumn } from "../modularity/tables/BaseDataTable";
+import { FaTable } from "react-icons/fa";
 
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
@@ -14,10 +17,10 @@ type OrderTrendsCategoryProps = {
   onRemove?: () => void;
 };
 
-type ApiResponse = {
-  order_trends: {
-    [month: string]: Record<string, number>;
-  };
+type TrendItem = {
+  month: string;
+  category: string;
+  sales: number;
 };
 
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
@@ -28,23 +31,14 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   const [chartData, setChartData] = useState<{
     categories: string[];
     series: { name: string; data: number[] }[];
-  }>({
-    categories: [],
-    series: [],
-  });
-  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
+  }>({ categories: [], series: [] });
 
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const savedScroll = sessionStorage.getItem("scrollPosition");
-    if (savedScroll !== null) {
-      window.scrollTo({ top: parseInt(savedScroll, 10), behavior: "auto" });
-      sessionStorage.removeItem("scrollPosition");
-    }
-  }, []);
-
+  // 👉 Fetch chart data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -52,31 +46,30 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         const formattedEndDate = formatDateTime(endDate);
 
         const params = new URLSearchParams({
-          startDate: encodeURIComponent(formattedStartDate),
-          endDate: encodeURIComponent(formattedEndDate),
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
         });
 
         if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
 
-        const response = await axiosInstance.get<ApiResponse>(
-          `/order-trends-by-category?${params.toString()}`
-        );
-        const data = response.data;
+        const response = await axiosInstance.get(`/order-trends-by-category?${params.toString()}`);
+        const data = (response.data as { data: TrendItem[] }).data;
 
-        const trends = data.order_trends;
+        const trendsByMonth: Record<string, Record<string, number>> = {};
 
-        if (!trends || Object.keys(trends).length === 0) {
-          setChartData({ categories: [], series: [] });
-          return;
+        for (const item of data) {
+          const { month, category, sales } = item;
+          if (!trendsByMonth[month]) trendsByMonth[month] = {};
+          trendsByMonth[month][category] = sales;
         }
 
-        const months = Object.keys(trends).sort();
+        const months = Object.keys(trendsByMonth).sort();
         const categoryTotals: Record<string, number> = {};
 
         for (const month of months) {
-          const monthData = trends[month];
+          const monthData = trendsByMonth[month];
           for (const [category, sales] of Object.entries(monthData)) {
             categoryTotals[category] = (categoryTotals[category] || 0) + sales;
           }
@@ -89,13 +82,10 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
         const series = topCategories.map((category) => ({
           name: category,
-          data: months.map((month) => trends[month]?.[category] || 0),
+          data: months.map((month) => trendsByMonth[month]?.[category] || 0),
         }));
 
-        setChartData({
-          categories: months,
-          series,
-        });
+        setChartData({ categories: months, series });
       } catch (error) {
         console.error("Failed to fetch order trends:", error);
       }
@@ -106,7 +96,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     }
   }, [startDate, endDate, enterpriseKey]);
 
-
   const options: ApexOptions = {
     chart: {
       type: "line",
@@ -116,80 +105,24 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     },
     xaxis: {
       categories: chartData.categories,
-      title: {
-        text: "Month",
-        style: {
-          color: isDark ? "#d1d5db" : "#a855f7",
-          fontSize: "14px",
-          fontWeight: 400,
-        },
-      },
-      labels: {
-        style: {
-          colors: isDark ? "#d1d5db" : "#a855f7",
-        },
-      },
+      title: { text: "Month", style: { color: isDark ? "#d1d5db" : "#a855f7" } },
+      labels: { style: { colors: isDark ? "#d1d5db" : "#a855f7" } },
     },
     yaxis: {
-      title: {
-        text: "Order Amount",
-        style: {
-          color: isDark ? "#d1d5db" : "#a855f7",
-          fontSize: "14px",
-          fontWeight: 400,
-        },
-      },
-      labels: {
-        style: {
-          colors: isDark ? "#d1d5db" : "#a855f7",
-        },
-        formatter: formatVal,
-      },
+      title: { text: "Order Amount", style: { color: isDark ? "#d1d5db" : "#a855f7" } },
+      labels: { style: { colors: isDark ? "#d1d5db" : "#a855f7" }, formatter: formatVal },
     },
     tooltip: {
       theme: isDark ? "dark" : "light",
-      x: { show: true },
-      y: {
-        formatter: formatVal,
-      },
+      y: { formatter: formatVal },
     },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-    },
-    markers: {
-      size: 4,
-    },
-    colors: isDark
-      ? ["#c084fc", "#86efac", "#fde047"]
-      : ["#a855f7", "#22C55E", "#EAB308"], // ✅ Dark vs Light color palettes
+    stroke: { curve: "smooth", width: 2 },
+    markers: { size: 4 },
+    colors: isDark ? ["#c084fc", "#86efac", "#fde047"] : ["#a855f7", "#22C55E", "#EAB308"],
     legend: {
       position: "bottom",
-      labels: {
-        colors: isDark ? "#d1d5db" : "#a855f7",
-      },
+      labels: { colors: isDark ? "#d1d5db" : "#a855f7" },
     },
-    responsive: [
-      {
-        breakpoint: 768,
-        options: {
-          xaxis: {
-            labels: {
-              style: {
-                fontSize: "10px",
-              },
-            },
-          },
-          yaxis: {
-            labels: {
-              style: {
-                fontSize: "10px",
-              },
-            },
-          },
-        },
-      },
-    ],
   };
 
   const handleViewMore = () => {
@@ -197,33 +130,84 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     navigate("/orders");
   };
 
+  const columns: TableColumn<TrendItem>[] = [
+    { field: "month", header: "Month", sortable: true, filter: true },
+    { field: "category", header: "Category", sortable: true, filter: true },
+    {
+      field: "sales",
+      header: "Sales",
+      sortable: true,
+      filter: true,
+      body: (row) => <span>{formatVal(row.sales)}</span>,
+    },
+  ];
+
+  const fetchData = () => async (params: any) => {
+    const query = new URLSearchParams({
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      page: params.page,
+      size: params.size,
+      sortField: params.sortField || "month",
+      sortOrder: params.sortOrder || "asc",
+      ...(enterpriseKey ? { enterpriseKey } : {}),
+    });
+
+    for (const key in params) {
+      if (key.endsWith("Filter")) {
+        const field = key.replace("Filter", "");
+        query.append(`${field}.value`, params[key]);
+        query.append(`${field}.matchMode`, "contains");
+      }
+    }
+
+    const res = await axiosInstance.get(`/order-trends-by-category?${query.toString()}`);
+    const responseData = res.data as { data?: TrendItem[]; count?: number };
+    return {
+      data: responseData.data || [],
+      count: responseData.count || 0,
+    };
+  };
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
-      {size === "full" && (
-        <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-8">
-          <div className="flex items-start justify-between w-full sm:w-auto">
-            <h2 className="app-subheading flex-1 mr-2">
-              Order Trends By Product Category
-            </h2>
-
-            {/* Mobile arrow (→) aligned right */}
-          <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
+    <>
+      <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
+        {size === "full" && (
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="app-subheading">Order Trends By Product Category</h2>
+            <div className="flex items-center ">
+              <CommonButton
+                variant="responsive"
+                onClick={handleViewMore}
+                text="View more"
+                className="h-9 flex items-center"
+              />
+              <button
+                onClick={() => setDialogVisible(true)}
+                className="h-9 w-9 flex items-center justify-center text-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
+                aria-label="View data in table"
+              >
+                <FaTable size={18} />
+              </button>
+            </div>
           </div>
+        )}
 
-          {/* Desktop & tablet "View More" */}
-          <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more"/>
+        <div className="h-[420px] sm:h-[490px]">
+          <Chart options={options} series={chartData.series} type="line" height="100%" />
         </div>
-      )}
-
-      <div className="h-[420px] sm:h-[490px]">
-        <Chart
-          options={options}
-          series={chartData.series}
-          type="line"
-          height="100%"
-        />
       </div>
-    </div>
+
+      <FilteredDataDialog
+        visible={dialogVisible}
+        onHide={() => setDialogVisible(false)}
+        header="Order Trends by Product Category"
+        columns={columns}
+        fetchData={fetchData}
+        width="90vw"
+      />
+
+    </>
   );
 };
 
