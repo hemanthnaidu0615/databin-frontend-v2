@@ -375,7 +375,7 @@ const TopProductsTable = () => {
 
       {/* Chart */}
       <div className="relative px-4 overflow-visible">
-        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
+        <h3 className="text-md app-subheading font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
           Top 10 Products Visualization
         </h3>
         {topProducts.length > 0 ? (

@@ -169,7 +169,7 @@ export default function OrderTracking(_: OrderTrackingProps) {
       {isVisible && (
         <>
           <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
-            <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 mb-4">
+            <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 md:mb-30">
               <div className="flex items-start justify-between w-full sm:w-auto">
                 <h2 className="app-subheading flex-1 mr-2">Order Tracking</h2>
 
