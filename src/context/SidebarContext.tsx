@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-
+ 
 type SidebarContextType = {
   isExpanded: boolean;
   isMobileOpen: boolean;
@@ -14,10 +14,12 @@ type SidebarContextType = {
   screenSize: "mobile" | "tablet" | "desktop";
   isMobileRightOpen: boolean;
   toggleMobileRightSidebar: () => void;
+  isPinned: boolean;
+  togglePin: () => void;
 };
-
+ 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
-
+ 
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
@@ -25,58 +27,47 @@ export const useSidebar = () => {
   }
   return context;
 };
-
+ 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 768);
-
+ 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
+ 
     handleResize();
     window.addEventListener("resize", handleResize);
-
+ 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
+ 
   return isMobile;
 };
-
-export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-
-  const savedIsExpanded = localStorage.getItem("isExpanded") === "true";
+ 
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isMobile = useIsMobile();
+ 
+  const savedIsPinned = localStorage.getItem("isPinned") === "true";
   const savedIsMobileOpen = localStorage.getItem("isMobileOpen") === "true";
-
-  const [isExpanded, setIsExpanded] = useState(savedIsExpanded || false);
+ 
+  const [isPinned, setIsPinned] = useState(savedIsPinned || false); // ✅ NEW
   const [isMobileOpen, setIsMobileOpen] = useState(savedIsMobileOpen || false);
   const [isHovered, setIsHovered] = useState(false);
   const [activeItem, setActiveItem] = useState<string | null>(null);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
-
   const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
-
-  const toggleMobileRightSidebar = () => {
-    setIsMobileRightOpen((prev) => {
-      if (!prev) setIsMobileOpen(false);
-      return !prev;
-    });
-  };
-
-  const isMobile = useIsMobile();
-
+ 
   const [screenSize, setScreenSize] = useState<"mobile" | "tablet" | "desktop">(
     window.innerWidth < 768
       ? "mobile"
       : window.innerWidth < 1024
-        ? "tablet"
-        : "desktop"
+      ? "tablet"
+      : "desktop"
   );
-
+ 
   useEffect(() => {
     const updateScreenSize = () => {
       if (window.innerWidth < 768) {
@@ -87,47 +78,60 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
         setScreenSize("desktop");
       }
     };
-
+ 
     updateScreenSize();
     window.addEventListener("resize", updateScreenSize);
     return () => window.removeEventListener("resize", updateScreenSize);
   }, []);
-
+ 
   useEffect(() => {
     if (!isMobile) {
       setIsMobileOpen(false);
       setIsMobileRightOpen(false);
     }
   }, [isMobile]);
-
+ 
+  
   useEffect(() => {
-    localStorage.setItem("isExpanded", JSON.stringify(isExpanded));
+    localStorage.setItem("isPinned", JSON.stringify(isPinned));
     localStorage.setItem("isMobileOpen", JSON.stringify(isMobileOpen));
-  }, [isExpanded, isMobileOpen]);
-
+  }, [isPinned, isMobileOpen]);
+ 
   const toggleSidebar = () => {
-    setIsExpanded((prev) => !prev);
+    setIsPinned((prev) => !prev);
   };
-
+ 
+  const togglePin = () => {
+    setIsPinned((prev) => !prev);
+  };
+ 
   const toggleMobileSidebar = () => {
     setIsMobileOpen((prev) => {
-      if (!prev) setIsMobileRightOpen(false); 
+      if (!prev) setIsMobileRightOpen(false);
       return !prev;
     });
   };
+ 
+  const toggleMobileRightSidebar = () => {
+    setIsMobileRightOpen((prev) => {
+      if (!prev) setIsMobileOpen(false);
+      return !prev;
+    });
+  };
+ 
   const toggleSubmenu = (item: string) => {
     setOpenSubmenu((prev) => (prev === item ? null : item));
   };
-
+ 
   return (
-    <SidebarContext.Provider
+<SidebarContext.Provider
       value={{
-        isExpanded: isMobile ? false : isExpanded,
+        isExpanded: isMobile ? false : isPinned,
         isMobileOpen,
         isHovered,
         activeItem,
         openSubmenu,
-        toggleSidebar,
+        toggleSidebar, 
         toggleMobileSidebar,
         setIsHovered,
         setActiveItem,
@@ -135,9 +139,11 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
         screenSize,
         isMobileRightOpen,
         toggleMobileRightSidebar,
+        isPinned,
+        togglePin,
       }}
-    >
+>
       {children}
-    </SidebarContext.Provider>
+</SidebarContext.Provider>
   );
 };

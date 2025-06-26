@@ -295,7 +295,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     const products = details.products || order.products || [];
 
     const maskPhoneNumber = (phone: string): string => {
-      const cleaned = phone.replace(/\D/g, ""); 
+      const cleaned = phone.replace(/\D/g, "");
       const last4 = cleaned.slice(-4);
       return last4 ? `**** **** ${last4}` : "N/A";
     };
@@ -514,7 +514,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                     product.quantity ?? product.qty;
                                   const unitPrice =
                                     product.unit_price ?? product.price;
-                                  const totalPrice = quantity * unitPrice;
                                   return (
                                     <div
                                       key={i}
@@ -526,19 +525,18 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                             {product.name}
                                           </div>
                                           <div className="text-sm text-gray-600 dark:text-gray-400">
-                                            {product.category ||
-                                              product.specs ||
-                                              ""}
-                                          </div>
-                                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                            Qty: {quantity}
-                                          </div>
-                                          <div className="text-xs text-gray-600 dark:text-gray-400">
-                                            Unit Price: {formatUSD(unitPrice)}
+                                            {product.category || product.specs || ""}
                                           </div>
                                         </div>
-                                        <div className="text-right text-gray-900 dark:text-white font-semibold">
-                                          {formatUSD(totalPrice)}
+                                      </div>
+                                      <div className="mt-2 text-sm text-gray-700 dark:text-gray-400 space-y-1">
+                                        <div className="flex justify-between">
+                                          <span>Quantity:</span>
+                                          <span>{quantity}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span>Unit Price:</span>
+                                          <span>{formatUSD(unitPrice)}</span>
                                         </div>
                                       </div>
                                     </div>
@@ -609,17 +607,17 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                                     )}
                                     <span
                                       className={`absolute left-0 top-0 w-3 h-3 rounded-full border-2 ${step.Delayed
-                                          ? "bg-red-500 border-red-500"
-                                          : step.complete
-                                            ? "bg-green-500 border-green-500"
-                                            : "bg-gray-400 border-gray-400"
+                                        ? "bg-red-500 border-red-500"
+                                        : step.complete
+                                          ? "bg-green-500 border-green-500"
+                                          : "bg-gray-400 border-gray-400"
                                         }`}
                                     />
                                     <div className="ml-4">
                                       <p
                                         className={`text-sm font-medium ${step.Delayed
-                                            ? "text-red-600 dark:text-red-400"
-                                            : "text-gray-800 dark:text-white"
+                                          ? "text-red-600 dark:text-red-400"
+                                          : "text-gray-800 dark:text-white"
                                           }`}
                                       >
                                         {step.label}

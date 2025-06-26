@@ -216,7 +216,7 @@ const TopProductsTable = () => {
             value={viewMode}
             options={viewOptions}
             onChange={setViewMode}
-            className="w-full h-10 leading-[0.9rem]"
+            className="w-full sm:w-64 h-10 leading-[0.9rem]"
             placeholder="Select View Mode "
           />
         </div>
@@ -229,7 +229,7 @@ const TopProductsTable = () => {
           stripedRows
           responsiveLayout="scroll"
           scrollable
-          scrollHeight="400px"
+          scrollHeight="428px"
           sortMode="multiple"
           emptyMessage="No products found for the selected filters"
         >
@@ -246,7 +246,7 @@ const TopProductsTable = () => {
             sortable
             className="app-table-content"
             body={(rowData) => formatValue(rowData.units_sold)}
-            style={{ minWidth: "100px" }}
+            style={{ minWidth: "100px"}}
           />
           <Column
             field="total_sales"
@@ -375,7 +375,7 @@ const TopProductsTable = () => {
 
       {/* Chart */}
       <div className="relative px-4 overflow-visible">
-        <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
+        <h3 className="text-md app-subheading font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
           Top 10 Products Visualization
         </h3>
         {topProducts.length > 0 ? (

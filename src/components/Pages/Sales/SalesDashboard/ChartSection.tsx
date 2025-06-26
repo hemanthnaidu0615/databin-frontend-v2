@@ -3,9 +3,10 @@ import Chart from "react-apexcharts";
 import { useTheme } from "next-themes";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "./../../../utils/kpiUtils";
+import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
 interface Props {
   company: "AWW" | "AWD";
@@ -156,6 +157,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           title: {
             text: getXAxisTitle(categories),
             style: { color: labelColor },
+             offsetY: -15,
           },
           crosshairs: {
             show: false,
@@ -222,7 +224,11 @@ const ChartSection: React.FC<Props> = ({ company }) => {
     return `clamp(${minWidth}px, ${calculatedWidth}px, ${maxWidth}px)`;
   }, [categories.length, selectedChart]);
 
-  const chartOptions = ["Bar", "Line", "Pie", "Table"];
+  const chartOptions = ["Bar", "Line", "Pie", "Table"].map((type) => ({
+    label: type,
+    value: type,
+  }));
+
 
   return (
     <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-5 shadow-sm">
@@ -230,17 +236,13 @@ const ChartSection: React.FC<Props> = ({ company }) => {
         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
           Chart Type
         </p>
-        <select
+        <PrimeSelectFilter
           value={selectedChart}
-          onChange={(e) => setSelectedChart(e.target.value)}
-          className="px-3 py-1.5 text-sm rounded-md border bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-        >
-          {chartOptions.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setSelectedChart(val)}
+          options={chartOptions}
+          placeholder="Select Chart Type"
+          className="w-29 text-sm h-[35px] text-xs leading-[0.6]"
+        />
       </div>
 
       {(selectedChart === "Bar" ||

@@ -22,6 +22,13 @@ const RecentShipmentsTable: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<any>(null);
 
+  const convertToUSD = (rupees: number): number => rupees * 0.012;
+  const formatValue = (value: number): string => {
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
+    if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
+    return value.toFixed(0);
+  };
+
   const fetchData = async (params: any) => {
     if (!startDate || !endDate) return { data: [], count: 0 };
 
@@ -33,7 +40,7 @@ const RecentShipmentsTable: React.FC = () => {
     };
 
     const response = await axiosInstance.get("/recent-shipments", { params: queryParams });
-    const { data: shipmentData, count } = (response as { data: { data: Shipment[]; count: number } }).data;
+    const { data: shipmentData, count } = response.data;
 
     return {
       data: shipmentData || [],
@@ -55,11 +62,18 @@ const RecentShipmentsTable: React.FC = () => {
       const response = await axiosInstance.get("/recent-shipments/details", {
         params: { shipmentId: shipment.shipment_id },
       });
-      setSelectedShipment(response.data);
-      setVisible(true);
+
+      const detailed = response.data;
+      if (detailed?.cost) {
+        detailed.cost = convertToUSD(detailed.cost);
+      }
+
+      setSelectedShipment(detailed);
     } catch (err) {
       console.error("Error loading details:", err);
       setSelectedShipment(null);
+    } finally {
+      setVisible(true);
     }
   };
 
@@ -102,15 +116,15 @@ const RecentShipmentsTable: React.FC = () => {
     },
     {
       header: "Action",
+      field: "shipment_id",
       body: (rowData: Shipment) => (
         <button
-          className="text-purple-500 text-sm"
+          className="text-purple-500 hover:underline text-sm"
           onClick={() => showDetails(rowData)}
         >
           View
         </button>
-      ),
-      field: "shipment_id"
+      )
     }
   ];
 
@@ -121,7 +135,10 @@ const RecentShipmentsTable: React.FC = () => {
         fetchData={fetchData}
         title="Recent Shipments"
         mobileCardRender={renderMobileCard}
-        globalFilterFields={["shipment_id", "customer_name", "carrier", "actual_shipment_date", "shipment_status"]} field={"shipment_id"} header={""} />
+        globalFilterFields={["shipment_id", "customer_name", "carrier", "actual_shipment_date", "shipment_status"]}
+        field={"shipment_id"}
+        header={""}
+      />
 
       <Dialog
         header="Shipment Details"
@@ -132,16 +149,20 @@ const RecentShipmentsTable: React.FC = () => {
         draggable={false}
       >
         {selectedShipment ? (
-          <div className="text-sm space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
             <div><strong>Order ID:</strong> {selectedShipment.order_id}</div>
             <div><strong>Customer:</strong> {selectedShipment.customer}</div>
             <div><strong>Carrier:</strong> {selectedShipment.carrier}</div>
-            <div><strong>Status:</strong> {selectedShipment.status}</div>
+            <div><strong>Shipping Method:</strong> {selectedShipment.shipping_method}</div>
+            <div>
+              <strong>Status:</strong>{" "}
+              <Tag value={selectedShipment.status} severity={getStatusSeverity(selectedShipment.status)} />
+            </div>
             <div><strong>Ship Date:</strong> {formatDateTime(selectedShipment.ship_date)}</div>
             <div><strong>Estimated Delivery:</strong> {formatDateTime(selectedShipment.estimated_delivery)}</div>
             <div><strong>Origin:</strong> {selectedShipment.origin}</div>
             <div><strong>Destination:</strong> {selectedShipment.destination}</div>
-            <div><strong>Cost:</strong> ${selectedShipment.cost}</div>
+            <div><strong>Cost:</strong> ${selectedShipment.cost ? formatValue(selectedShipment.cost) : "0"}</div>
           </div>
         ) : (
           <p>No data found</p>

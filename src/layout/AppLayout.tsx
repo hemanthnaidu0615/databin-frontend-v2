@@ -2,52 +2,56 @@ import { SidebarProvider, useSidebar } from "../context/SidebarContext";
 import { Outlet } from "react-router";
 import AppHeader from "./Navbar";
 import AppSidebar from "./AppSidebar";
+import Footer from "./Footer";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
+  const desktopMargin =
+    isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]";
+  const mobileReset = isMobileOpen ? "ml-0" : "";
+
   return (
     <div className="relative min-h-screen">
-      {/* Navbar - fixed at top */}
-      <div className="fixed top-0 left-0 right-0 z-40">
+      {/* Header (fixed) */}
+      <div className="fixed inset-x-0 top-0 z-40">
         <AppHeader />
       </div>
 
-      {/* Sidebar - fixed below Navbar */}
-      <aside
-        className={`
-          fixed top-20 left-0 h-[calc(100vh-64px)] z-30 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-          transition-all duration-300 ease-in-out
-          ${isExpanded || isHovered ? "lg:w-[290px]" : "lg:w-[90px]"}
-          ${isMobileOpen ? "w-[290px]" : "hidden lg:block"}
-        `}
-      >
+      {/* Flex row: sidebar + main */}
+      <div className="flex">
         <AppSidebar />
-      </aside>
 
-      {/* Main content area - pushed by sidebar */}
-      <main
-        className={`
-          pt-16
-          transition-all duration-300 ease-in-out
-          ${isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]"}
-          ${isMobileOpen ? "ml-0" : ""}
-        `}
-      >
-        <div className="p-4 mx-auto max-w-[--breakpoint-2xl] md:p-6">
-          <Outlet />
-        </div>
-      </main>
+        {/* Main area */}
+        <main
+          className={`
+            flex-1 pt-[var(--navbar-height)]
+            transition-all duration-300 ease-in-out
+            ${desktopMargin} ${mobileReset}
+          `}
+        >
+          <div
+            className="
+              pt-4 pr-4 pb-4 pl-0
+              md:pt-6 md:pr-6 md:pb-6 md:pl-0
+              mx-auto max-w-[--breakpoint-2xl]
+            "
+          >
+            <div className="page-container">
+              <Outlet />
+            </div>
+          </div>
+          <Footer/>
+        </main>
+      </div>
     </div>
   );
 };
 
-const AppLayout: React.FC = () => {
-  return (
-    <SidebarProvider>
-      <LayoutContent />
-    </SidebarProvider>
-  );
-};
+const AppLayout: React.FC = () => (
+  <SidebarProvider>
+    <LayoutContent />
+  </SidebarProvider>
+);
 
 export default AppLayout;

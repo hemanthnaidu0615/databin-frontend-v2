@@ -198,14 +198,14 @@ const TopCustomersTable = () => {
               { label: "By Orders", value: "orders" as "orders" },
             ]}
             onChange={setViewMode}
-            className="w-full h-10 leading-[0.9rem]"
+            className="w-full sm:w-64 h-10 leading-[0.9rem]"
             placeholder="Select View Mode "
           />
         </div>
       </div>
 
       <div className="px-4 pt-2 pb-6 app-table-heading">
-        {/* 🟣 DataTable - Only on desktop */}
+        {/* DataTable - Only on desktop */}
         <div className="hidden sm:block">
           <DataTable
             value={filteredCustomers}
@@ -235,7 +235,7 @@ const TopCustomersTable = () => {
           </DataTable>
         </div>
 
-        {/* 🟣 Mobile-friendly stacked cards */}
+        {/* Mobile-friendly stacked cards */}
         <div className="block sm:hidden space-y-4 mt-4">
           {filteredCustomers.map((customer, index) => (
             <div

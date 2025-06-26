@@ -40,7 +40,7 @@ const ShipmentPage = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8 overflow-x-hidden">
+    <div className="w-full max-w-screen-2xl mx-auto space-y-8 overflow-x-hidden">
       <h1 className="app-section-title">Shipment Analytics</h1>
 
       {/* Filters */}
@@ -95,8 +95,7 @@ const ShipmentPage = () => {
       {/* Shipment Table */}
       <div className="overflow-x-auto">
         <RecentShipmentsTable
-          selectedCarrier={selectedCarrier || null}
-          selectedMethod={selectedMethod || null}
+
         />
       </div>
     </div>

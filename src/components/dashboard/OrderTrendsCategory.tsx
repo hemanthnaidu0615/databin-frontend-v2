@@ -4,8 +4,6 @@ import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShareFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { formatDateTime, formatVal } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import CommonButton from "../modularity/buttons/Button";
