@@ -11,8 +11,6 @@ interface ProductData {
   name: string;
   price: number;
   description: string;
-  url: string;
-  updateDate?: string;
   quantity_sold: number;
 }
 
@@ -82,12 +80,10 @@ const ProfitabilityTable: React.FC = () => {
             name: product.product_name,
             price: parseFloat(product.price ?? 0),
             description: product.description ?? "No description available",
-            url: product.url ?? "#",
-            updateDate: product.update_date,
             quantity_sold: product.quantity_sold ?? 0,
           }));
 
-          setProductData(transformed); // no need to slice, already 10
+          setProductData(transformed); 
         }
 
       } catch (error) {
@@ -283,14 +279,6 @@ const ProfitabilityTable: React.FC = () => {
                     <p className="text-xs text-gray-700 dark:text-gray-400">
                       Price: {formatUSD(convertToUSD(product.price))}
                     </p>
-                  </div>
-
-                  <div className="flex flex-col items-center mt-2">
-                    {product.updateDate && (
-                      <p className="text-[10px] mt-2 text-gray-500 dark:text-gray-400">
-                        Updated: {formatDate(product.updateDate)}
-                      </p>
-                    )}
                   </div>
                 </div>
               );
