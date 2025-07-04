@@ -11,6 +11,8 @@ import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
+import { FaTable } from "react-icons/fa";
+import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 
 interface Customer {
   customer_name: string;
@@ -30,6 +32,10 @@ const TopCustomersTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+
+
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -93,6 +99,15 @@ const TopCustomersTable = () => {
         type: "bar",
         toolbar: { show: false },
         foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
+        events: {
+          dataPointSelection: (_event, _chartContext, config) => {
+            const customerName = topCustomers[config.dataPointIndex]?.customer_name;
+            if (customerName) {
+              setSelectedCustomer(customerName);
+              setDialogVisible(true);
+            }
+          },
+        },
       },
       xaxis: {
         categories: topCustomers.map((c) => c.customer_name),
@@ -147,6 +162,40 @@ const TopCustomersTable = () => {
           : topCustomers.map((c) => c.total_orders),
     },
   ];
+  const dialogFetchData = (params?: any) => async (tableParams: any) => {
+    const query = new URLSearchParams({
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      page: tableParams.page?.toString() ?? "0",
+      size: tableParams.rows?.toString() ?? "10",
+      ...params,
+      ...tableParams.filters,
+    });
+
+    if (tableParams.sortField) {
+      query.append("sortField", tableParams.sortField);
+      query.append("sortOrder", tableParams.sortOrder?.toString() ?? "1");
+    }
+
+    if (enterpriseKey) {
+      query.append("enterpriseKey", enterpriseKey);
+    }
+
+    if (selectedCustomer) {
+      query.append("customer_name", selectedCustomer);
+    }
+
+    const response = await axiosInstance.get(
+      `/analysis/details-customers-grid?${query.toString()}`
+    );
+
+    return {
+      data: response.data.customers,
+      count: response.data.count,
+    };
+  };
+
+
 
   if (!startDate || !endDate) {
     return (
@@ -272,7 +321,17 @@ const TopCustomersTable = () => {
       </div>
 
       <div className="px-4">
-        <h3 className="app-subheading mb-4">Top 10 Customers Visualization</h3>
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="app-subheading mb-2">Top 10 Customers Visualization</h3>
+          <button
+            onClick={() => setDialogVisible(true)}
+            className="text-purple-500 hover:text-purple-700"
+            title="View detailed customer table"
+          >
+            <FaTable className="text-xl" />
+          </button>
+        </div>
+
         {topCustomers.length > 0 ? (
           <Chart
             options={chartOptions}
@@ -286,6 +345,34 @@ const TopCustomersTable = () => {
           </div>
         )}
       </div>
+      <FilteredDataDialog
+        visible={dialogVisible}
+        onHide={() => {
+          setDialogVisible(false);
+          setSelectedCustomer(null); // Reset when dialog closes
+        }}
+        header={
+          selectedCustomer
+            ? `Details for ${selectedCustomer}`
+            : "Customer Order Details"
+        }
+        fetchData={dialogFetchData}
+        columns={[
+          { field: "first_name", header: "First Name", sortable: true, filter: true },
+          { field: "last_name", header: "Last Name", sortable: true, filter: true },
+          { field: "email", header: "Email", sortable: true, filter: true },
+          {
+            field: "total_spent",
+            header: "Total Spent ($)",
+            sortable: true,
+            filter: true,
+            body: (row: any) => `$${formatValue(convertToUSD(row.total_spent))}`,
+          },
+        ]}
+      />
+
+
+
     </Card>
   );
 };

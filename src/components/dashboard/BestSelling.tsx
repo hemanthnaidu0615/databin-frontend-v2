@@ -5,14 +5,24 @@ import { useTheme } from "next-themes";
 import "primeicons/primeicons.css";
 import { axiosInstance } from "../../axios";
 import CommonButton from "../modularity/buttons/Button";
+import { FaTable } from "react-icons/fa";
+import { TableColumn } from "../modularity/tables/BaseDataTable";
+import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 
 interface ProductData {
   id: number;
-  name: string;
+   product_name: string;
   price: number;
   description: string;
   quantity_sold: number;
 }
+const tableColumns: TableColumn<ProductData>[] = [
+  { field: "product_name", header: "Product", filter: true },
+  { field: "description", header: "Description", filter: true },
+  { field: "quantity_sold", header: "Qty Sold", sortable: true },
+  { field: "price", header: "Price", sortable: true },
+];
+
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -44,6 +54,14 @@ const ProfitabilityTable: React.FC = () => {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
+  const [showGridModal, setShowGridModal] = useState(false);
+  const [, setGridTotalRecords] = useState(0);
+  const [gridPage] = useState(0);
+  const [gridRows] = useState(10);
+  const [gridSortField] = useState<string | undefined>(undefined);
+  const [gridSortOrder] = useState<number | undefined>(undefined);
+  const [, setLoadingGrid] = useState(false);
+
   const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
@@ -60,9 +78,10 @@ const ProfitabilityTable: React.FC = () => {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
 
-        const params: Record<string, string> = {
+        const params: Record<string, string | number> = {
           startDate: formattedStartDate,
           endDate: formattedEndDate,
+          size: 10,
         };
 
         if (enterpriseKey) {
@@ -77,15 +96,15 @@ const ProfitabilityTable: React.FC = () => {
         if (json.data && Array.isArray(json.data)) {
           const transformed = json.data.map((product: any, index: number) => ({
             id: index + 1,
-            name: product.product_name,
+             product_name: product.product_name,
             price: parseFloat(product.price ?? 0),
             description: product.description ?? "No description available",
             quantity_sold: product.quantity_sold ?? 0,
           }));
 
-          setProductData(transformed); 
+          setProductData(transformed);
+          setPosition(1);
         }
-
       } catch (error) {
         console.error("Failed to fetch top products:", error);
       }
@@ -95,6 +114,51 @@ const ProfitabilityTable: React.FC = () => {
       fetchTopProducts();
     }
   }, [startDate, endDate, enterpriseKey]);
+
+  useEffect(() => {
+    if (!showGridModal) return;
+
+    const fetchGridData = async () => {
+      setLoadingGrid(true);
+      try {
+        const params: Record<string, any> = {
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          page: gridPage,
+          size: gridRows,
+        };
+
+        if (enterpriseKey) params.enterpriseKey = enterpriseKey;
+        if (gridSortField) params.sortField = gridSortField;
+        if (gridSortOrder !== undefined) {
+          params.sortOrder = gridSortOrder === 1 ? "asc" : "desc";
+        }
+
+        const response = await axiosInstance.get("/top-sellers/top-products", {
+          params,
+        });
+        const json = response.data;
+
+        if (json.data && Array.isArray(json.data)) {
+          setGridTotalRecords(json.count ?? 0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch grid products:", error);
+      }
+      setLoadingGrid(false);
+    };
+
+    fetchGridData();
+  }, [
+    showGridModal,
+    gridPage,
+    gridRows,
+    gridSortField,
+    gridSortOrder,
+    startDate,
+    endDate,
+    enterpriseKey,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -110,67 +174,6 @@ const ProfitabilityTable: React.FC = () => {
     return () => clearInterval(interval);
   }, [productData.length]);
 
-  // 👇 Swipe gesture support
-  useEffect(() => {
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.touches[0].clientX;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      touchEndX = e.touches[0].clientX;
-    };
-
-    const handleTouchEnd = () => {
-      const deltaX = touchEndX - touchStartX;
-      if (Math.abs(deltaX) > 50) {
-        if (deltaX > 0) {
-          moveLeft();
-        } else {
-          moveRight();
-        }
-      }
-    };
-
-    const carouselContainer = document.querySelector(
-      ".carousel-container"
-    ) as HTMLDivElement | null;
-
-    if (carouselContainer) {
-      carouselContainer.addEventListener(
-        "touchstart",
-        (e) => handleTouchStart(e as TouchEvent),
-        { passive: true }
-      );
-      carouselContainer.addEventListener(
-        "touchmove",
-        (e) => handleTouchMove(e as TouchEvent),
-        { passive: true }
-      );
-      carouselContainer.addEventListener(
-        "touchend",
-        handleTouchEnd as EventListener
-      );
-    }
-
-    return () => {
-      if (carouselContainer) {
-        carouselContainer.removeEventListener("touchstart", (e) =>
-          handleTouchStart(e as TouchEvent)
-        );
-        carouselContainer.removeEventListener("touchmove", (e) =>
-          handleTouchMove(e as TouchEvent)
-        );
-        carouselContainer.removeEventListener(
-          "touchend",
-          handleTouchEnd as EventListener
-        );
-      }
-    };
-  }, [productData.length]);
-
   useEffect(() => {
     const scrollY = sessionStorage.getItem("scrollPosition");
     if (scrollY) {
@@ -178,6 +181,58 @@ const ProfitabilityTable: React.FC = () => {
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
+  // Add a type for filter objects
+  type FilterObj = { value?: any; matchMode?: string };
+
+  const fetchTopSellingProducts =
+    (filterParams: any) =>
+      async (tableParams: { page: number; size: number; sortField?: string; sortOrder?: number; filters?: Record<string, FilterObj> }) => {
+        const { page, size, sortField, sortOrder, filters = {} } = tableParams;
+         console.log("🔍 Raw filters from table:", filters);
+        const params: any = {
+          ...filterParams,
+          page,
+          size,
+        };
+
+        if (sortField) params.sortField = sortField;
+        if (sortOrder != null) params.sortOrder = sortOrder === 1 ? "asc" : "desc";
+
+        for (const [col, filterObj] of Object.entries(filters as Record<string, FilterObj>)) {
+          if (filterObj?.value) {
+            params[`${col}.value`] = filterObj.value;
+            params[`${col}.matchMode`] = filterObj.matchMode || "contains";
+          }
+        }
+        console.log("🚀 Final query params to backend:", params);
+
+        const res = await axiosInstance.get("/top-sellers/top-products", { params });
+
+        // ✅ Transform the data to match ProductData
+        const transformedData: ProductData[] = res.data.data.map((product: any, index: number) => ({
+          id: index + 1,
+          product_name: product.product_name, // this now matches your tableColumns
+          description: product.description ?? "No description available",
+          quantity_sold: product.quantity_sold ?? 0,
+          price: parseFloat(product.price ?? 0),
+        }));
+
+        return {
+          data: transformedData,
+          count: res.data.count,
+        };
+      };
+
+  const renderMobileCard = (product: ProductData, index: number) => (
+    <div key={index} className="mb-3 p-3 border rounded shadow-sm bg-white dark:bg-gray-800">
+      <div className="font-semibold">{product.product_name}</div>
+      <div className="text-sm">{product.description}</div>
+      <div className="text-xs text-gray-500">Qty: {product.quantity_sold.toLocaleString()}</div>
+      <div className="text-xs text-gray-500">Price: {formatUSD(convertToUSD(product.price))}</div>
+    </div>
+  );
+
+
 
   return (
     <div className="overflow-visible rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-md p-4 w-full relative min-h-[400px] sm:p-5">
@@ -190,8 +245,25 @@ const ProfitabilityTable: React.FC = () => {
           <CommonButton variant="responsive" onClick={handleViewMore} showDesktop={false} />
         </div>
 
-        {/* Desktop & tablet "View More" */}
-        <CommonButton variant="responsive" onClick={handleViewMore} showMobile={false} text="View more" />
+        <div className="flex items-center gap-3">
+          {/* Desktop & tablet "View More" */}
+          <CommonButton
+            variant="responsive"
+            onClick={handleViewMore}
+            showMobile={false}
+            text="View more"
+          />
+
+          {/* Grid view button */}
+          <button
+            onClick={() => setShowGridModal(true)}
+            aria-label="Show grid view"
+            className="text-purple-600 dark:text-purple-400 hover:text-purple-800 rounded-lg dark:border-purple-400"
+            title="Show Grid View"
+          >
+            <FaTable size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Carousel Container */}
@@ -239,17 +311,14 @@ const ProfitabilityTable: React.FC = () => {
                 <div
                   key={product.id}
                   onClick={() => setPosition(offset)}
-                  className={`cursor-pointer absolute w-[90%] max-w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${abs === 0
-                    ? "scale-105 transition-transform duration-300 ease-out"
-                    : ""
+                  className={`cursor-pointer absolute w-[90%] max-w-[220px] h-[280px] flex flex-col justify-between items-center p-3 rounded-2xl border text-center shadow-lg bg-white dark:bg-gray-800 ${abs === 0 ? "scale-105 transition-transform duration-300 ease-out" : ""
                     }`}
                   style={{
                     transform: `translateX(${translateX}px) rotateY(${rotateY}deg) scale(${scale})`,
                     zIndex: 100 - abs,
                     opacity,
                     border: `2px solid ${abs === 0 ? "#a855f7" : "#8417b2"}`,
-                    boxShadow: `0 0 10px ${abs === 0 ? "#a855f7" : "#8417b2"
-                      }40`,
+                    boxShadow: `0 0 10px ${abs === 0 ? "#a855f7" : "#8417b2"}40`,
                     pointerEvents: abs > 2 ? "none" : "auto",
                     transition:
                       "transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease-out, border 0.3s ease-out, box-shadow 0.3s ease-out",
@@ -266,7 +335,7 @@ const ProfitabilityTable: React.FC = () => {
 
                   <div className="mt-20 w-full">
                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                      {product.name}
+                      {product.product_name}
                     </h4>
                     <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 whitespace-normal break-words">
                       {product.description.length > 100
@@ -298,11 +367,29 @@ const ProfitabilityTable: React.FC = () => {
                   ? "border-gray-600 bg-gray-800"
                   : "border-gray-300 bg-white"
                 }`}
-              aria-label={`Go to product ${index + 1}`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
       </div>
+
+      {/* Grid Modal */}
+      <FilteredDataDialog
+        visible={showGridModal}
+        onHide={() => setShowGridModal(false)}
+        header="Top Selling Products – Details"
+        columns={tableColumns}
+        fetchData={fetchTopSellingProducts}
+        filterParams={{
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          enterpriseKey: enterpriseKey || undefined,
+        }}
+        mobileCardRender={renderMobileCard}
+        width="80vw"
+      />
+
+
     </div>
   );
 };
