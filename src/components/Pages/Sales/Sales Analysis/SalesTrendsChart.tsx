@@ -11,12 +11,16 @@ import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 
-
+// NEW IMPORTS FOR DETAILED TABLE & DIALOG
+import { FaTable } from "react-icons/fa";
+import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
+import { TableColumn } from "../../../modularity/tables/BaseDataTable";
 
 const SalesTrendsChart = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
+  // Chart states (UNCHANGED)
   const [chartType, setChartType] = useState<"bar" | "line">("line");
   const [channels, setChannels] = useState<string[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
@@ -31,6 +35,11 @@ const SalesTrendsChart = () => {
 
   const [startDate, endDate] = dateRange || [];
 
+  // --- NEW STATES for dialog and filtered params
+  const [showDialog, setShowDialog] = useState(false);
+  const [filteredParams, setFilteredParams] = useState<{ period?: string; channel?: string }>({});
+
+  // Chart data fetching (UNCHANGED)
   useEffect(() => {
     const fetchSalesData = async () => {
       if (!startDate || !endDate) return;
@@ -40,7 +49,6 @@ const SalesTrendsChart = () => {
 
       const formattedStart = formatDate(startDate);
       const formattedEnd = formatDate(endDate);
-
 
       const params = new URLSearchParams({
         startDate: formattedStart,
@@ -77,6 +85,7 @@ const SalesTrendsChart = () => {
     fetchSalesData();
   }, [startDate, endDate, enterpriseKey, selectedChannel]);
 
+  // Channel fetching (UNCHANGED)
   useEffect(() => {
     const fetchChannels = async () => {
       try {
@@ -92,6 +101,7 @@ const SalesTrendsChart = () => {
     fetchChannels();
   }, []);
 
+  // Memoized chart categories and values (UNCHANGED)
   const { categories, values } = useMemo(() => {
     if (!salesData.length) return { categories: [], values: [] };
 
@@ -115,6 +125,7 @@ const SalesTrendsChart = () => {
     return { categories, values };
   }, [salesData, aggregationLevel]);
 
+  // Chart options with new event for dataPointSelection to open dialog
   const chartOptions: ApexOptions = useMemo(
     () => ({
       chart: {
@@ -122,6 +133,17 @@ const SalesTrendsChart = () => {
         toolbar: { show: false },
         foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
         zoom: { enabled: false },
+
+        // NEW EVENT: open dialog on chart point click
+        events: {
+          dataPointSelection: (_event, _chartContext, config) => {
+            const clickedPeriod = salesData[config.dataPointIndex]?.period;
+            if (clickedPeriod) {
+              setFilteredParams({ period: clickedPeriod, channel: selectedChannel });
+              setShowDialog(true);
+            }
+          },
+        },
       },
 
       tooltip: getBaseToolTip(isDark, salesTooltip),
@@ -186,7 +208,50 @@ const SalesTrendsChart = () => {
       },
       legend: { show: false },
     }),
-    [chartType, theme, categories, aggregationLevel]
+    [chartType, theme, categories, aggregationLevel, salesData, selectedChannel, isDark]
+  );
+
+  // New: columns definition for FilteredDataDialog
+  const columns: TableColumn<any>[] = [
+    { field: "order_id", header: "Order ID", sortable: true, filter: true },
+    { field: "fulfillment_channel", header: "Channel", sortable: true, filter: true },
+    { field: "subtotal", header: "Subtotal", sortable: true, filter: true },
+    { field: "shipping_fee", header: "Shipping Fee", sortable: true, filter: true },
+    { field: "tax_amount", header: "Tax", sortable: true, filter: true },
+    { field: "discount_amount", header: "Discount", sortable: true, filter: true },
+    { field: "total_amount", header: "Total", sortable: true, filter: true },
+  ];
+
+  // New: data fetch function for dialog table with filters
+  const fetchTableData = (extraFilters: any = {}) => async (tableParams: any) => {
+    const response = await axiosInstance.get("/analysis/details-sales-trends-grid", {
+      params: {
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+        enterpriseKey,
+        fulfillmentChannel: extraFilters.channel !== "all" ? extraFilters.channel : undefined,
+        period: extraFilters.period,
+        ...tableParams,
+      },
+    });
+
+    return {
+      data: response.data.data,
+      count: response.data.totalRecords,
+    };
+  };
+
+  // New: mobile card renderer for FilteredDataDialog
+  const renderMobileCard = (item: any, index: number) => (
+    <div key={index} className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800">
+      <div><b>Order ID:</b> {item.order_id}</div>
+      <div><b>Channel:</b> {item.fulfillment_channel}</div>
+      <div><b>Subtotal:</b> ${item.subtotal}</div>
+      <div><b>Shipping:</b> ${item.shipping_fee}</div>
+      <div><b>Tax:</b> ${item.tax_amount}</div>
+      <div><b>Discount:</b> ${item.discount_amount}</div>
+      <div><b>Total:</b> ${item.total_amount}</div>
+    </div>
   );
 
   if (!startDate || !endDate) {
@@ -221,6 +286,7 @@ const SalesTrendsChart = () => {
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+      {/* FILTERS & CHART UI (UNCHANGED) */}
       <div className="flex gap-2 flex-wrap mb-4">
         <PrimeSelectFilter<"line" | "bar">
           value={chartType}
@@ -247,6 +313,23 @@ const SalesTrendsChart = () => {
         />
       </div>
 
+      {/* NEW BUTTON to open full table dialog */}
+      <div className="absolute top-4 right-4">
+        <button
+          className="text-purple-500 hover:text-purple-700 p-2 rounded"
+          title="View All"
+          onClick={() => {
+            setFilteredParams({ channel: selectedChannel });
+            setShowDialog(true);
+          }}
+          aria-label="View All"
+        >
+          <FaTable size={18} />
+        </button>
+      </div>
+
+
+      {/* YOUR EXISTING CHART (UNCHANGED) */}
       {categories.length > 0 ? (
         <Chart
           options={chartOptions}
@@ -264,6 +347,16 @@ const SalesTrendsChart = () => {
           No sales data available for the selected filters
         </div>
       )}
+
+      {/* NEW DIALOG with detailed sales data */}
+      <FilteredDataDialog
+        visible={showDialog}
+        onHide={() => setShowDialog(false)}
+        header="Sales Trends – Detailed View"
+        fetchData={(params?: any) => fetchTableData({ ...filteredParams, ...params })}
+        columns={columns}
+        mobileCardRender={renderMobileCard}
+      />
     </div>
   );
 };

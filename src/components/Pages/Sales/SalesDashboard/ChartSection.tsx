@@ -116,15 +116,30 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           ? "/sales/charts/details-grid/aww"
           : "/sales/charts/details-grid/awd";
 
-      const params = {
-        startDate: formatDateTime(startDate),
-        endDate: formatDateTime(endDate),
-        ...customFilters,
-        page: tableParams.page,
-        size: tableParams.size,
-        sortField: tableParams.sortField,
-        sortOrder: tableParams.sortOrder,
-      };
+      const filterQuery: Record<string, string> = {};
+if (tableParams.filters) {
+  Object.entries(tableParams.filters).forEach(([field, filter]) => {
+    const value = (filter as any)?.value;
+    const matchMode = (filter as any)?.matchMode ?? "contains";
+
+    if (value !== undefined && value !== null && value !== "") {
+      filterQuery[`${field}.value`] = value;
+      filterQuery[`${field}.matchMode`] = matchMode;
+    }
+  });
+}
+
+const params = {
+  startDate: formatDateTime(startDate),
+  endDate: formatDateTime(endDate),
+  ...customFilters,
+  ...filterQuery,
+  page: tableParams.page,
+  size: tableParams.size,
+  sortField: tableParams.sortField,
+  sortOrder: tableParams.sortOrder,
+};
+
 
       try {
         const response = await axiosInstance.get(url, { params });
