@@ -49,34 +49,34 @@ const TopProductsTable = () => {
   const [dialogFilter, setDialogFilter] = useState<string | null>(null);
 
   // Factory function to create fetchData for FilteredDataDialog
- const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
-  return (params = {}) => {
-    return async (tableParams: any) => {
-      const combinedParams = {
-        ...baseParams,
-        ...params,
-        page: tableParams.page,
-        size: tableParams.pageSize,
-        sortField: tableParams.sortField,
-        sortOrder: tableParams.sortOrder,
-        filters: tableParams.filters,
-      };
-
-      try {
-        const response = await axiosInstance.get(endpoint, { params: combinedParams });
-
-        // Map your response here
-        return {
-          data: response.data.products || [],   // note 'products' here
-          count: response.data.count || 0,
+  const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
+    return (params = {}) => {
+      return async (tableParams: any) => {
+        const combinedParams = {
+          ...baseParams,
+          ...params,
+          page: tableParams.page,
+          size: tableParams.pageSize,
+          sortField: tableParams.sortField,
+          sortOrder: tableParams.sortOrder,
+          filters: tableParams.filters,
         };
-      } catch (error) {
-        console.error("Failed to fetch filtered data:", error);
-        return { data: [], count: 0 };
-      }
+
+        try {
+          const response = await axiosInstance.get(endpoint, { params: combinedParams });
+
+          // Map your response here
+          return {
+            data: response.data.products || [],   // note 'products' here
+            count: response.data.count || 0,
+          };
+        } catch (error) {
+          console.error("Failed to fetch filtered data:", error);
+          return { data: [], count: 0 };
+        }
+      };
     };
   };
-};
 
 
   const onPageChange = (event: { first: number; rows: number }) => {
@@ -137,14 +137,14 @@ const TopProductsTable = () => {
 
   const topProducts = useMemo(() => sortedProducts.slice(0, 10), [sortedProducts]);
   const dialogFetchData = useCallback(
-  createFetchData("analysis/details-products-grid", {
-    startDate: startDate ? formatDateTime(startDate) : undefined,
-    endDate: endDate ? formatDateTime(endDate) : undefined,
-    enterpriseKey,
-    productName: dialogFilter || undefined,
-  }),
-  [startDate, endDate, enterpriseKey, dialogFilter]
-);
+    createFetchData("analysis/details-products-grid", {
+      startDate: startDate ? formatDateTime(startDate) : undefined,
+      endDate: endDate ? formatDateTime(endDate) : undefined,
+      enterpriseKey,
+      productName: dialogFilter || undefined,
+    }),
+    [startDate, endDate, enterpriseKey, dialogFilter]
+  );
 
 
   const chartOptions: ApexOptions = useMemo(
@@ -251,6 +251,48 @@ const TopProductsTable = () => {
       </Card>
     );
   }
+  const productDialogMobileCardRender = (product: any, index: number) => (
+    <div
+      key={`${product.product_name || index}`}
+      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
+        } mb-3`}
+    >
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Product Name:</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+          {product.product_name || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Description:</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+          {product.product_description || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Quantity:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {product.quantity || 0}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Unit Price:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {product.unit_price ? `$${formatValue(product.unit_price)}` : "N/A"}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Amount:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {product.total_amount ? `$${formatValue(product.total_amount)}` : "N/A"}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
@@ -382,18 +424,19 @@ const TopProductsTable = () => {
 
       {/* FilteredDataDialog for detailed product info */}
       <FilteredDataDialog
-  visible={dialogVisible}
-  onHide={() => setDialogVisible(false)}
-  header="Product Details"
-  fetchData={dialogFetchData}
-  columns={[
-  { field: "product_name", header: "Product Name", sortable:true, filter: true },
-  { field: "product_description", header: "Description", sortable:true, filter: true },
-  { field: "quantity", header: "Quantity", sortable:true, filter: true  },
-  { field: "unit_price", header: "Unit Price", sortable:true, filter: true  },
-  { field: "total_amount", header: "Total Amount" , sortable:true, filter: true },
-]}
-/>
+        visible={dialogVisible}
+        onHide={() => setDialogVisible(false)}
+        header="Product Details"
+        fetchData={dialogFetchData}
+        columns={[
+          { field: "product_name", header: "Product Name", sortable: true, filter: true },
+          { field: "product_description", header: "Description", sortable: true, filter: true },
+          { field: "quantity", header: "Quantity", sortable: true, filter: true },
+          { field: "unit_price", header: "Unit Price", sortable: true, filter: true },
+          { field: "total_amount", header: "Total Amount", sortable: true, filter: true },
+        ]}
+        mobileCardRender={productDialogMobileCardRender}
+      />
 
     </Card>
   );

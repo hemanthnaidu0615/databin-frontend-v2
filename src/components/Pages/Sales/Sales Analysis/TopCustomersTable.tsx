@@ -225,6 +225,41 @@ const TopCustomersTable = () => {
       </Card>
     );
   }
+  const customerDialogMobileCardRender = (customer: any, index: number) => (
+    <div
+      key={index}
+      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
+        } mb-3`}
+    >
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">First Name:</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+          {customer.first_name || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Last Name:</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+          {customer.last_name || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Email:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
+          {customer.email || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Spent:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          ${formatValue(convertToUSD(customer.total_spent))}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
@@ -369,6 +404,7 @@ const TopCustomersTable = () => {
             body: (row: any) => `$${formatValue(convertToUSD(row.total_spent))}`,
           },
         ]}
+        mobileCardRender={customerDialogMobileCardRender}
       />
 
 

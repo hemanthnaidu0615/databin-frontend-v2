@@ -172,6 +172,49 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
       })
       .catch(err => console.error("Error fetching charts:", err));
   }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
+  const shipmentDialogMobileCardRender = (shipment: any, index: number) => (
+  <div
+    key={index}
+    className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${
+      isDark ? "border-gray-700" : "border-gray-200"
+    } mb-3`}
+  >
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Shipment ID:</span>
+      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+        {shipment.shipment_id || "N/A"}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Carrier:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.carrier || "N/A"}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Status:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.shipment_status || "N/A"}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Cost:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        ${formatValue(shipment.shipment_cost || 0)}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Tracking #:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
+        {shipment.tracking_number || "N/A"}
+      </span>
+    </div>
+  </div>
+);
 
   return (
     <div className="space-y-12">
@@ -219,6 +262,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
     });
     return { data: response.data.data, count: response.data.count };
   }}
+  mobileCardRender={shipmentDialogMobileCardRender}
 />
 
 
@@ -243,6 +287,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
           });
           return { data: response.data.data, count: response.data.count };
         }}
+        mobileCardRender={shipmentDialogMobileCardRender}
       />
     </div>
   );
