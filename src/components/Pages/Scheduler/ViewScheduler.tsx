@@ -13,6 +13,7 @@ interface Scheduler {
   start_date: string;
   recurrence_pattern: string;
   date_range_type: string | null;
+  created_by: string;
 }
 
 const ViewScheduler: React.FC = () => {
@@ -71,6 +72,11 @@ const ViewScheduler: React.FC = () => {
             <div className="text-sm font-medium">{item.email}</div>
           </div>
           <div className="mb-2">
+  <div className="text-sm text-gray-600 dark:text-gray-300">Created By</div>
+  <div className="text-sm font-medium">{item.created_by}</div>
+</div>
+
+          <div className="mb-2">
             <div className="text-sm text-gray-600 dark:text-gray-300">Recurrence</div>
             <div className="text-sm font-medium">{item.recurrence_pattern}</div>
           </div>
@@ -89,19 +95,20 @@ const ViewScheduler: React.FC = () => {
     </div>
   );
 
-  const columns: TableColumn<Scheduler>[] = [
-    { field: "title", header: "Title", sortable: true, filter: true },
-    { field: "description", header: "Description", sortable: true, filter: true },
-    { field: "email", header: "Email", sortable: true, filter: true },
-    { field: "recurrence_pattern", header: "Recurrence", sortable: true, filter: true },
-    {
-      field: "start_date",
-      header: "Start Date",
-      sortable: true,
-      body: (rowData: Scheduler) => moment(rowData.start_date).format("YYYY-MM-DD HH:mm")
-    },
-    { field: "date_range_type", header: "Time Frame", sortable: true, filter: true }
-  ];
+const columns: TableColumn<Scheduler>[] = [
+  { field: "title", header: "Title", sortable: true, filter: true },
+  { field: "description", header: "Description", sortable: true, filter: true },
+  { field: "email", header: "Email", sortable: true, filter: true },
+  { field: "created_by", header: "Created By", sortable: true, filter: true }, // 👈 New column
+  { field: "recurrence_pattern", header: "Recurrence", sortable: true, filter: true },
+  {
+    field: "start_date",
+    header: "Start Date",
+    sortable: true,
+    body: (rowData: Scheduler) => moment(rowData.start_date).format("YYYY-MM-DD HH:mm")
+  },
+  { field: "date_range_type", header: "Time Frame", sortable: true, filter: true }
+];
 
   return (
     <div className="card p-4">

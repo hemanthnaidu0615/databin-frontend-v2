@@ -84,9 +84,11 @@ const RevenuePerCustomer: React.FC = () => {
 
     const response = await axiosInstance.get("/revenue/top-customers", { params: queryParams });
 
+    const responseData = response.data as { data: any[]; count: number };
+
     return {
-      data: response.data.data,
-      count: response.data.count,
+      data: responseData.data,
+      count: responseData.count,
     };
   };
 
@@ -142,7 +144,7 @@ const RevenuePerCustomer: React.FC = () => {
       field: "revenue",
       header: "Revenue",
       sortable: true,
-      // filter: true,
+      filter: true,
       body: (row: any) => formatValue(row.revenue),
     },
   ];

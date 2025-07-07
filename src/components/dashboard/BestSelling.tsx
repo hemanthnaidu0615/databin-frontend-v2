@@ -11,16 +11,16 @@ import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 
 interface ProductData {
   id: number;
-   product_name: string;
+  product_name: string;
   price: number;
   description: string;
-  quantity_sold: number;
+  quantity: number;
 }
 const tableColumns: TableColumn<ProductData>[] = [
-  { field: "product_name", header: "Product", filter: true },
-  { field: "description", header: "Description", filter: true },
-  { field: "quantity_sold", header: "Qty Sold", sortable: true },
-  { field: "price", header: "Price", sortable: true },
+  { field: "product_name", header: "Product", filter: true, sortable: true },
+  { field: "description", header: "Description", filter: true, sortable: true },
+  { field: "quantity", header: "Qty Sold", filter: true, sortable: true },
+  { field: "price", header: "Price", filter: true, sortable: true },
 ];
 
 
@@ -91,15 +91,15 @@ const ProfitabilityTable: React.FC = () => {
         const response = await axiosInstance.get("/top-sellers/top-products", {
           params,
         });
-        const json = response.data;
+        const json = response.data as { data?: any[] };
 
         if (json.data && Array.isArray(json.data)) {
           const transformed = json.data.map((product: any, index: number) => ({
             id: index + 1,
-             product_name: product.product_name,
+            product_name: product.product_name,
             price: parseFloat(product.price ?? 0),
             description: product.description ?? "No description available",
-            quantity_sold: product.quantity_sold ?? 0,
+            quantity: product.quantity ?? 0,
           }));
 
           setProductData(transformed);
@@ -137,7 +137,7 @@ const ProfitabilityTable: React.FC = () => {
         const response = await axiosInstance.get("/top-sellers/top-products", {
           params,
         });
-        const json = response.data;
+        const json = response.data as { data?: any[]; count?: number };
 
         if (json.data && Array.isArray(json.data)) {
           setGridTotalRecords(json.count ?? 0);
@@ -184,50 +184,60 @@ const ProfitabilityTable: React.FC = () => {
   // Add a type for filter objects
   type FilterObj = { value?: any; matchMode?: string };
 
-  const fetchTopSellingProducts =
-    (filterParams: any) =>
-      async (tableParams: { page: number; size: number; sortField?: string; sortOrder?: number; filters?: Record<string, FilterObj> }) => {
-        const { page, size, sortField, sortOrder, filters = {} } = tableParams;
-         console.log("🔍 Raw filters from table:", filters);
-        const params: any = {
-          ...filterParams,
-          page,
-          size,
-        };
+  const fetchTopSellingProducts = async ({
+    page,
+    size,
+    sortField,
+    sortOrder,
+    filters = {},
+    ...restParams
+  }: {
+    page: number;
+    size: number;
+    sortField?: string;
+    sortOrder?: number;
+    filters?: Record<string, FilterObj>;
+    [key: string]: any;
+  }) => {
+    const params: any = {
+      page,
+      size,
+      sortField,
+      sortOrder: sortOrder === 1 ? "asc" : "desc",
+      ...restParams,
+    };
 
-        if (sortField) params.sortField = sortField;
-        if (sortOrder != null) params.sortOrder = sortOrder === 1 ? "asc" : "desc";
+    for (const [col, filterObj] of Object.entries(filters)) {
+      if (filterObj?.value) {
+        params[`${col}.value`] = filterObj.value;
+        params[`${col}.matchMode`] = filterObj.matchMode || "contains";
+      }
+    }
 
-        for (const [col, filterObj] of Object.entries(filters as Record<string, FilterObj>)) {
-          if (filterObj?.value) {
-            params[`${col}.value`] = filterObj.value;
-            params[`${col}.matchMode`] = filterObj.matchMode || "contains";
-          }
-        }
-        console.log("🚀 Final query params to backend:", params);
+    const res = await axiosInstance.get("/top-sellers/top-products", { params });
 
-        const res = await axiosInstance.get("/top-sellers/top-products", { params });
+    const data = res.data as { data: any[]; count: number };
 
-        // ✅ Transform the data to match ProductData
-        const transformedData: ProductData[] = res.data.data.map((product: any, index: number) => ({
-          id: index + 1,
-          product_name: product.product_name, // this now matches your tableColumns
-          description: product.description ?? "No description available",
-          quantity_sold: product.quantity_sold ?? 0,
-          price: parseFloat(product.price ?? 0),
-        }));
+    const transformedData: ProductData[] = data.data.map((product: any, index: number) => ({
+      id: index + 1,
+      product_name: product.product_name,
+      description: product.description ?? "No description available",
+      quantity: product.quantity ?? 0,
+      price: parseFloat(product.price ?? 0),
+    }));
 
-        return {
-          data: transformedData,
-          count: res.data.count,
-        };
-      };
+    return {
+      data: transformedData,
+      count: data.count,
+    };
+  };
+
 
   const renderMobileCard = (product: ProductData, index: number) => (
     <div key={index} className="mb-3 p-3 border rounded shadow-sm bg-white dark:bg-gray-800">
       <div className="font-semibold">{product.product_name}</div>
       <div className="text-sm">{product.description}</div>
-      <div className="text-xs text-gray-500">Qty: {product.quantity_sold.toLocaleString()}</div>
+      <div className="text-xs text-gray-500">Qty: {product.quantity.toLocaleString()}</div>
       <div className="text-xs text-gray-500">Price: {formatUSD(convertToUSD(product.price))}</div>
     </div>
   );
@@ -343,7 +353,7 @@ const ProfitabilityTable: React.FC = () => {
                         : product.description}
                     </p>
                     <p className="text-xs text-gray-700 dark:text-gray-400">
-                      Quantity Sold: {product.quantity_sold.toLocaleString()}
+                      Quantity Sold: {product.quantity.toLocaleString()}
                     </p>
                     <p className="text-xs text-gray-700 dark:text-gray-400">
                       Price: {formatUSD(convertToUSD(product.price))}
@@ -379,7 +389,12 @@ const ProfitabilityTable: React.FC = () => {
         onHide={() => setShowGridModal(false)}
         header="Top Selling Products – Details"
         columns={tableColumns}
-        fetchData={fetchTopSellingProducts}
+        fetchData={(filterParams) => (tableParams) =>
+          fetchTopSellingProducts({
+            ...filterParams,
+            ...tableParams,
+          })
+        }
         filterParams={{
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
@@ -388,6 +403,7 @@ const ProfitabilityTable: React.FC = () => {
         mobileCardRender={renderMobileCard}
         width="80vw"
       />
+
 
 
     </div>
