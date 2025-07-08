@@ -90,18 +90,23 @@ export function BaseDataTable<T extends DataTableValue>({
         size: rows,
         sortField: sortField || undefined,
         sortOrder: sortOrder === 1 ? "asc" : "desc",
-        ...Object.entries(filters).reduce((acc, [key, value]) => {
+        ...Object.entries(filters).reduce((acc, [key, filterObj]) => {
+          const f = filterObj as { value: string | null; matchMode?: string };
           if (
             key !== "global" &&
-            value &&
-            typeof value === "object" &&
-            "value" in value &&
-            value.value
+            f &&
+            typeof f === "object" &&
+            f.value !== null &&
+            f.value !== undefined &&
+            f.value !== ""
           ) {
-            acc[`${key}Filter`] = value.value;
+            acc[`${key}.value`] = f.value;
+            acc[`${key}.matchMode`] = f.matchMode || "contains";
           }
           return acc;
         }, {} as Record<string, any>),
+
+
       };
 
       const response = await fetchData(params);
@@ -141,6 +146,7 @@ export function BaseDataTable<T extends DataTableValue>({
       <InputText
         value={options.value || ""}
         onChange={(e) => options.filterCallback(e.target.value)}
+        
         placeholder={placeholder}
         className="p-column-filter"
       />

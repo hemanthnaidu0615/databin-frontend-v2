@@ -10,13 +10,15 @@ import { axiosInstance } from "../../../../axios";
 import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
-
+import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
+import { FaTable } from "react-icons/fa";
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
-
+import { useCallback } from "react";
 const viewOptions = [
   { label: "By Revenue", value: "revenue" as "revenue" },
   { label: "By Units", value: "units" as "units" },
 ];
+
 interface Product {
   product_name: string;
   total_sales: number;
@@ -41,6 +43,41 @@ const TopProductsTable = () => {
   const [rows, setRows] = useState(5);
   const [first, setFirst] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Dialog state & filter (productName)
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogFilter, setDialogFilter] = useState<string | null>(null);
+
+  // Factory function to create fetchData for FilteredDataDialog
+  const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
+    return (params = {}) => {
+      return async (tableParams: any) => {
+        const combinedParams = {
+          ...baseParams,
+          ...params,
+          page: tableParams.page,
+          size: tableParams.pageSize,
+          sortField: tableParams.sortField,
+          sortOrder: tableParams.sortOrder,
+          filters: tableParams.filters,
+        };
+
+        try {
+          const response = await axiosInstance.get(endpoint, { params: combinedParams });
+
+          // Map your response here
+          return {
+            data: (response.data as { products?: any[] }).products || [],   // note 'products' here
+            count: (response.data as { count?: number }).count || 0,
+          };
+        } catch (error) {
+          console.error("Failed to fetch filtered data:", error);
+          return { data: [], count: 0 };
+        }
+      };
+    };
+  };
+
 
   const onPageChange = (event: { first: number; rows: number }) => {
     setFirst(event.first);
@@ -98,24 +135,42 @@ const TopProductsTable = () => {
     );
   }, [viewMode, filteredProducts]);
 
-  const topProducts = useMemo(
-    () => sortedProducts.slice(0, 10),
-    [sortedProducts]
+  const topProducts = useMemo(() => sortedProducts.slice(0, 10), [sortedProducts]);
+  const dialogFetchData = useCallback(
+    createFetchData("analysis/details-products-grid", {
+      startDate: startDate ? formatDateTime(startDate) : undefined,
+      endDate: endDate ? formatDateTime(endDate) : undefined,
+      enterpriseKey,
+      productName: dialogFilter || undefined,
+    }),
+    [startDate, endDate, enterpriseKey, dialogFilter]
   );
+
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
       chart: {
         type: "bar",
         toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
+        foreColor: isDark ? "#CBD5E1" : "#334155",
+        events: {
+          dataPointSelection: (_: any, _chartContext, config) => {
+            const index = config.dataPointIndex;
+            const selectedProduct = topProducts[index]?.product_name;
+            if (selectedProduct) {
+              setDialogFilter(selectedProduct);
+              setDialogVisible(true);
+            }
+          },
+        },
       },
+
       xaxis: {
         categories: topProducts.map((p) => p.product_name),
         labels: {
           style: {
             fontSize: "12px",
-            colors: theme === "dark" ? "#CBD5E1" : "#334155",
+            colors: isDark ? "#CBD5E1" : "#334155",
           },
           formatter: (value: string) =>
             value.length > 20 ? value.substring(0, 20) + "..." : value,
@@ -126,7 +181,7 @@ const TopProductsTable = () => {
           style: {
             fontSize: "14px",
             fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+            color: isDark ? "#CBD5E1" : "#64748B",
           },
         },
       },
@@ -136,7 +191,7 @@ const TopProductsTable = () => {
           style: {
             fontSize: "14px",
             fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+            color: isDark ? "#CBD5E1" : "#64748B",
           },
         },
         labels: {
@@ -146,12 +201,12 @@ const TopProductsTable = () => {
       },
       dataLabels: { enabled: false },
       plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-      grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
+      grid: { borderColor: isDark ? "#334155" : "#E5E7EB" },
       colors: ["#a855f7"],
       legend: { show: false },
       tooltip: getBaseTooltip(isDark, revenueTooltip),
     }),
-    [theme, viewMode, topProducts]
+    [isDark, viewMode, topProducts]
   );
 
   const chartSeries = [
@@ -196,6 +251,48 @@ const TopProductsTable = () => {
       </Card>
     );
   }
+  const productDialogMobileCardRender = (product: any, index: number) => (
+    <div
+      key={`${product.product_name || index}`}
+      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
+        } mb-3`}
+    >
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Product Name:</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+          {product.product_name || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex flex-col">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Description:</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+          {product.product_description || "N/A"}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Quantity:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {product.quantity || 0}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Unit Price:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {product.unit_price ? `$${formatValue(product.unit_price)}` : "N/A"}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Amount:</span>
+        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+          {product.total_amount ? `$${formatValue(product.total_amount)}` : "N/A"}
+        </span>
+      </div>
+    </div>
+  );
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
@@ -246,151 +343,101 @@ const TopProductsTable = () => {
             sortable
             className="app-table-content"
             body={(rowData) => formatValue(rowData.units_sold)}
-            style={{ minWidth: "100px"}}
+            style={{ minWidth: "100px" }}
           />
           <Column
             field="total_sales"
             header="Total Sales ($)"
             sortable
             className="app-table-content"
-            body={(rowData) =>
-              `$${formatValue(convertToUSD(rowData.total_sales))}`
-            }
+            body={(rowData) => `$${formatValue(convertToUSD(rowData.total_sales))}`}
             style={{ minWidth: "150px" }}
           />
         </DataTable>
       </div>
 
-      {/* Mobile-friendly stacked cards */}
-      <div className="block sm:hidden space-y-4 px-4 pt-2 pb-6">
-        {paginatedProducts.map((product, index) => (
-          <div
-            key={index}
-            className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
-          >
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                Products:
-              </span>
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-                {product.product_name}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Units Sold:
-              </span>
-              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                {formatValue(product.units_sold)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Total Sales:
-              </span>
-              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                ${formatValue(convertToUSD(product.total_sales))}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 🟣 ADDED: Mobile paginator for screens < sm */}
-      <div className="mt-4 text-sm text-gray-800 dark:text-gray-100 sm:hidden px-4 pb-6">
-        <div className="flex flex-col gap-2 mb-2">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="mobileRows" className="whitespace-nowrap">
-              Rows per page:
-            </label>
-            <select
-              id="mobileRows"
-              value={rows}
-              onChange={(e) => {
-                setRows(Number(e.target.value));
-                setFirst(0);
-              }}
-              className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
-            >
-              {[5, 10, 20, 50, 100].map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            Page {Math.floor(first / rows) + 1} of{" "}
-            {Math.ceil(sortedProducts.length / rows)}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap justify-between gap-2">
-          <button
-            onClick={() => onPageChange({ first: 0, rows })}
-            disabled={first === 0}
-            className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-          >
-            ⏮ First
-          </button>
-
-          <button
-            onClick={() =>
-              onPageChange({ first: Math.max(0, first - rows), rows })
-            }
-            disabled={first === 0}
-            className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-          >
-            Prev
-          </button>
-
-          <button
-            onClick={() =>
-              onPageChange({
-                first:
-                  first + rows < sortedProducts.length ? first + rows : first,
-                rows,
-              })
-            }
-            disabled={first + rows >= sortedProducts.length}
-            className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-          >
-            Next
-          </button>
-
-          <button
-            onClick={() =>
-              onPageChange({
-                first: (Math.ceil(sortedProducts.length / rows) - 1) * rows,
-                rows,
-              })
-            }
-            disabled={first + rows >= sortedProducts.length}
-            className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
-          >
-            ⏭ Last
-          </button>
-        </div>
-      </div>
-
-      {/* Chart */}
-      <div className="relative px-4 overflow-visible">
-        <h3 className="text-md app-subheading font-semibold text-gray-700 dark:text-gray-300 mb-4 ">
-          Top 10 Products Visualization
-        </h3>
-        {topProducts.length > 0 ? (
-          <Chart
-            options={chartOptions}
-            series={chartSeries}
-            type="bar"
-            height={topProducts.length * 30 + 100}
+      {/* Mobile Table */}
+      <div className="block sm:hidden p-4 pb-8">
+        <DataTable
+          value={paginatedProducts}
+          paginator
+          paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+          rows={rows}
+          first={first}
+          onPage={onPageChange}
+          rowsPerPageOptions={[5, 10, 25]}
+          emptyMessage="No products found for the selected filters"
+          className="app-table-content"
+          scrollable
+          scrollHeight="320px"
+        >
+          <Column
+            field="product_name"
+            header="Product Name"
+            body={(rowData) => (
+              <div className="truncate max-w-[220px]" title={rowData.product_name}>
+                {rowData.product_name}
+              </div>
+            )}
+            style={{ minWidth: "160px" }}
           />
-        ) : (
-          <div className="text-center text-gray-500 dark:text-gray-400 h-[280px] flex items-center justify-center">
-            No product data available for visualization
-          </div>
-        )}
+          <Column
+            field="units_sold"
+            header="Units Sold"
+            body={(rowData) => formatValue(rowData.units_sold)}
+            style={{ minWidth: "100px" }}
+          />
+          <Column
+            field="total_sales"
+            header="Total Sales ($)"
+            body={(rowData) => `$${formatValue(convertToUSD(rowData.total_sales))}`}
+            style={{ minWidth: "140px" }}
+          />
+        </DataTable>
       </div>
+
+      {/* Chart with button next to title */}
+      <div className="px-4 pb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="app-subheading text-lg font-semibold">
+            Top 10 Products Visualization
+          </h3>
+          <button
+            className="text-purple-500 hover:text-purple-700"
+            onClick={() => {
+              setDialogFilter(null); // no filter means all products in dialog
+              setDialogVisible(true);
+            }}
+            aria-label="Open product details"
+          >
+            <FaTable size={18} />
+          </button>
+        </div>
+        <Chart
+          options={chartOptions}
+          series={chartSeries}
+          type="bar"
+          height={320}
+          width="100%"
+        />
+      </div>
+
+      {/* FilteredDataDialog for detailed product info */}
+      <FilteredDataDialog
+        visible={dialogVisible}
+        onHide={() => setDialogVisible(false)}
+        header="Product Details"
+        fetchData={dialogFetchData}
+        columns={[
+          { field: "product_name", header: "Product Name", sortable: true, filter: true },
+          { field: "product_description", header: "Description", sortable: true, filter: true },
+          { field: "quantity", header: "Quantity", sortable: true, filter: true },
+          { field: "unit_price", header: "Unit Price", sortable: true, filter: true },
+          { field: "total_amount", header: "Total Amount", sortable: true, filter: true },
+        ]}
+        mobileCardRender={productDialogMobileCardRender}
+      />
+
     </Card>
   );
 };

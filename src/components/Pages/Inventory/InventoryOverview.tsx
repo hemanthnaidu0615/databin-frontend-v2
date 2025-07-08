@@ -4,7 +4,15 @@ import ReactApexChart from "react-apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { formatDateTime } from "../../utils/kpiUtils";
-import { getBaseToolTip, getBaseTooltip, percentageTooltip, turnoverRateTooltip } from "../../modularity/graphs/graphWidget";
+import {
+  getBaseToolTip,
+  getBaseTooltip,
+  percentageTooltip,
+  turnoverRateTooltip,
+} from "../../modularity/graphs/graphWidget";
+
+import { FaTable } from "react-icons/fa";
+import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
 
 interface Filters {
   selectedRegion: string;
@@ -41,6 +49,18 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   const [turnoverCategories, setTurnoverCategories] = useState<string[]>([]);
   const [restockSchedule, setRestockSchedule] = useState<any[]>([]);
 
+  const [openWarehouseDialog, setOpenWarehouseDialog] = useState(false);
+  const [openTurnoverDialog, setOpenTurnoverDialog] = useState(false);
+  const [filterParams, setFilterParams] = useState<any>({});
+
+  useEffect(() => {
+    if (filterParams.region) {
+      setOpenWarehouseDialog(true);
+    }
+  }, [filterParams]);
+
+
+
   const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
@@ -60,6 +80,62 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     },
   };
 
+  const fetchWarehouseData = (params?: any) => async (tableParams: any) => {
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const response = await axiosInstance.get("/inventory/details-grid", {
+      params: {
+        startDate: formattedStart,
+        endDate: formattedEnd,
+        ...params,
+        ...tableParams,
+      },
+    });
+
+    return {
+      data: response.data.data, // Assuming response contains { data, count }
+      count: response.data.count,
+    };
+  };
+
+  const fetchTurnoverData = (params?: any) => async (tableParams: any) => {
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const response = await axiosInstance.get("/inventory/details-grid-turnover", {
+      params: {
+        startDate: formattedStart,
+        endDate: formattedEnd,
+        ...params,
+        ...tableParams,
+      },
+    });
+
+    return {
+      data: response.data.data,
+      count: response.data.count,
+    };
+  };
+
+
+  const warehouseColumns = [
+    { field: "inventory_id", header: "Inventory ID", sortable: true, filter: true },
+    { field: "product_id", header: "Product ID", sortable: true, filter: true },
+    { field: "region", header: "Region", sortable: true, filter: true },
+    { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
+    { field: "reserved_quantity", header: "Reserved Quantity", sortable: true, filter: true },
+  ];
+
+
+  const turnoverColumns = [
+    { field: "product_id", header: "Product ID", sortable: true, filter: true },
+    { field: "name", header: "Product Name", sortable: true, filter: true },
+    { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
+    { field: "restock_date", header: "Restock Date", sortable: true, filter: true },
+    { field: "status", header: "Status", sortable: true, filter: true },
+  ];
+
   useEffect(() => {
     const fetchRegionData = async () => {
       if (!startDate || !endDate) return;
@@ -75,7 +151,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
           }
         );
         const data = response.data;
-
         const topFour = data
           .sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage))
           .slice(0, 4);
@@ -97,54 +172,41 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
       const formattedEnd = formatDateTime(endDate);
 
       try {
-        const response = await axiosInstance.get(
-          "/inventory/turnover-and-alerts",
-          {
-            params: { startDate: formattedStart, endDate: formattedEnd },
-          }
-        );
+        const response = await axiosInstance.get("/inventory/turnover-and-alerts", {
+          params: { startDate: formattedStart, endDate: formattedEnd },
+        });
         const data = response.data as {
           turnover_rates: { turnover_rate: number }[];
           low_stock_alerts: any[];
         };
 
-        const rates = data.turnover_rates.map(
-          (item: any) => item.turnover_rate
-        );
+        const rates = data.turnover_rates.map((item) => item.turnover_rate);
         setTurnoverRates(rates);
 
         const start = new Date(startDate);
         const end = new Date(endDate);
-        const daysDiff =
-          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        const daysDiff = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+
         let labels: string[] = [];
 
         if (daysDiff > 360) {
-          const startYear = start.getFullYear();
-          const endYear = end.getFullYear();
-          for (let y = startYear; y <= endYear; y++) {
+          for (let y = start.getFullYear(); y <= end.getFullYear(); y++) {
             labels.push(`${y}`);
           }
         } else if (daysDiff > 60) {
           const date = new Date(start);
           while (date <= end) {
-            labels.push(
-              `${date.getFullYear()}-${(date.getMonth() + 1)
-                .toString()
-                .padStart(2, "0")}`
-            );
+            labels.push(`${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`);
             date.setMonth(date.getMonth() + 1);
           }
         } else {
           const date = new Date(start);
           while (date <= end) {
             labels.push(
-              `${date.getFullYear()}-${(date.getMonth() + 1)
+              `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date
+                .getDate()
                 .toString()
-                .padStart(2, "0")}-${date
-                  .getDate()
-                  .toString()
-                  .padStart(2, "0")}`
+                .padStart(2, "0")}`
             );
             date.setDate(date.getDate() + 1);
           }
@@ -202,7 +264,25 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   }, [startDate, endDate]);
 
   const warehouseChartOptions = {
-    chart: { id: "warehouse-chart", type: "bar", toolbar: { show: false } },
+
+    chart: {
+      id: "warehouse-chart",
+      type: "bar",
+      toolbar: { show: false },
+      events: {
+        dataPointSelection: (_event: any, _chartContext: any, config: any) => {
+          const clickedIndex = config.dataPointIndex;
+          const regionClicked = warehouseData[clickedIndex]?.region;
+          if (regionClicked) {
+            setFilterParams({
+              "region.value": regionClicked,
+              "region.matchMode": "equals"
+            });
+            setOpenWarehouseDialog(true);
+          }
+        }
+      }
+    },
     colors: ["#a855f7"],
     plotOptions: { bar: { borderRadius: 6, columnWidth: "50%" } },
     dataLabels: { enabled: false },
@@ -213,19 +293,12 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         text: "Region",
         style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
       },
-      crosshairs: {
-        show: false,
-      },
     },
-
     yaxis: {
       labels: { style: { colors: isDark ? "#ccc" : "#333" } },
       title: {
         text: "Inventory %",
         style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
-      },
-      crosshairs: {
-        show: false,
       },
     },
     tooltip: warehouseTooltip,
@@ -239,7 +312,24 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   ];
 
   const turnoverChartOptions = {
-    chart: { id: "turnover-chart", type: "line", toolbar: { show: false } },
+    chart: {
+      id: "turnover-chart",
+      type: "line",
+      toolbar: { show: false },
+      events: {
+        dataPointSelection: (_event: any, _chartContext: any, config: any) => {
+          const clickedIndex = config.dataPointIndex;
+          const clickedDate = turnoverCategories[clickedIndex];
+          if (clickedDate) {
+            setFilterParams({
+              "restock_date.value": clickedDate,
+              "restock_date.matchMode": "equals",
+            });
+            setOpenTurnoverDialog(true);
+          }
+        }
+      }
+    },
     colors: ["#a855f7"],
     stroke: { curve: "smooth", width: 3 },
     markers: {
@@ -260,9 +350,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
               : "Date",
         style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
       },
-      crosshairs: {
-        show: false,
-      },
     },
     yaxis: {
       labels: { style: { colors: isDark ? "#ccc" : "#333" } },
@@ -272,9 +359,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
       },
     },
     tooltip: turnoverTooltip,
-    crosshairs: {
-      show: false,
-    },
   };
 
   const turnoverChartSeries = [
@@ -292,100 +376,196 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     stock: item.stock_quantity,
     date: item.restock_date,
   }));
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 transition-all duration-500 ease-in-out">
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
-        <h3 className="app-subheading mb-1">Warehouse Inventory</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          Regional Performance
-        </p>
-
-        <div className="space-y-3 mb-6">
-          {warehouseData.map((item, idx) => (
-            <div key={idx} className="flex justify-between text-sm">
-              <span className="app-table-content">{item.region}</span>
-              <span className="font-medium text-indigo-600 dark:text-indigo-400 app-table-content">
-                {item.percentage}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="w-full h-65 overflow-hidden">
-          <ReactApexChart
-            options={warehouseChartOptions as any}
-            series={warehouseChartSeries}
-            type="bar"
-            height="100%"
-          />
-        </div>
+  const renderWarehouseMobileCard = (item: any, index: number) => (
+    <div
+      key={index}
+      className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700"
+    >
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Inventory ID: <span className="font-semibold">{item.inventory_id}</span>
       </div>
-
-      <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md">
-        <h3 className="app-subheading mb-4 text-gray-800 dark:text-white">
-          Inventory Turnover & Alerts
-        </h3>
-
-        <div className="grid grid-cols-3 gap-3 text-center mb-4">
-          {alertsData.map((item, i) => (
-            <div key={i}>
-              <p className="app-widget-label text-gray-500 dark:text-gray-400">
-                {item.label}
-              </p>
-              <p className={`app-widget-value ${item.color}`}>{item.value}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                {item.count} products
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="h-40 mb-6">
-          <ReactApexChart
-            options={turnoverChartOptions as any}
-            series={turnoverChartSeries}
-            type="line"
-            height="100%"
-          />
-        </div>
-
-        <div className="text-sm">
-          <h4 className="mb-2 font-medium text-gray-800 dark:text-white app-widget-label">
-            Restock Schedule
-          </h4>
-          <table className="w-full text-left text-sm">
-            <thead className="text-gray-500 dark:text-gray-400">
-              <tr>
-                <th className="py-1.5 app-table-heading">Product</th>
-                <th className="py-1.5 app-table-heading">Stock</th>
-                <th className="py-1.5 app-table-heading">Restock</th>
-              </tr>
-            </thead>
-            <tbody>
-              {restockTable
-                .sort((a, b) => a.stock - b.stock)
-                .map((item, i) => (
-                  <tr
-                    key={i}
-                    className="border-t border-gray-200 dark:border-gray-700"
-                  >
-                    <td className="py-2 text-gray-800 dark:text-gray-100 app-table-content">
-                      {item.product}
-                    </td>
-                    <td className="py-2 text-gray-700 dark:text-gray-300 app-table-content">
-                      {item.stock}
-                    </td>
-                    <td className="py-2 text-gray-700 dark:text-gray-300 app-table-content">
-                      {item.date}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Product ID: <span className="font-semibold">{item.product_id}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Region: <span className="font-semibold">{item.region}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Stock Quantity: <span className="font-semibold">{item.stock_quantity}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300">
+        Reserved Quantity: <span className="font-semibold">{item.reserved_quantity}</span>
       </div>
     </div>
+  );
+
+  const renderTurnoverMobileCard = (item: any, index: number) => (
+    <div
+      key={index}
+      className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700"
+    >
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Product ID: <span className="font-semibold">{item.product_id}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Product Name: <span className="font-semibold">{item.name}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Stock Quantity: <span className="font-semibold">{item.stock_quantity}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Restock Date: <span className="font-semibold">{item.restock_date}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300">
+        Status: <span className="font-semibold">{item.status}</span>
+      </div>
+    </div>
+  );
+
+
+  return (
+    <>
+      <FilteredDataDialog
+        visible={openWarehouseDialog}
+        onHide={() => setOpenWarehouseDialog(false)}
+        fetchData={() => fetchWarehouseData(filterParams)}
+        columns={warehouseColumns}
+        header={
+          filterParams.region
+            ? `Inventory Details for ${filterParams.region}`
+            : "Warehouse Inventory Details"
+        }
+        mobileCardRender={renderWarehouseMobileCard}
+      />
+
+      <FilteredDataDialog
+        visible={openTurnoverDialog}
+        onHide={() => setOpenTurnoverDialog(false)}
+        fetchData={() => fetchTurnoverData(filterParams)}
+        columns={turnoverColumns}
+        header="Inventory Turnover & Restock Details"
+        mobileCardRender={renderTurnoverMobileCard}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md relative">
+          <div className="absolute top-4 right-4 cursor-pointer">
+            <FaTable
+              onClick={() => {
+                setFilterParams({}); // Clear previous region filter
+                setOpenWarehouseDialog(true);
+              }}
+              className="text-purple-500 hover:text-purple-700"
+              title="View Table"
+            />
+          </div>
+
+          <h3 className="app-subheading mb-1">Warehouse Inventory</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Regional Performance</p>
+
+          <div className="space-y-3 mb-6">
+            {warehouseData.map((item, idx) => (
+              <div key={idx} className="flex justify-between text-sm">
+                <span className="app-table-content">{item.region}</span>
+                <span className="font-medium text-indigo-600 dark:text-indigo-400 app-table-content">
+                  {item.percentage}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="w-full h-65 overflow-hidden">
+            <ReactApexChart
+              options={warehouseChartOptions as any}
+              series={warehouseChartSeries}
+              type="bar"
+              height="100%"
+            />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md relative">
+          <div className="absolute top-4 right-4 cursor-pointer">
+            <FaTable
+              onClick={() => {
+                setFilterParams({}); // Clear previous filters
+                setOpenTurnoverDialog(true);
+              }}
+              className="text-purple-500 hover:text-purple-700"
+              title="View Table"
+            />
+          </div>
+
+          <h3 className="app-subheading mb-4 text-gray-800 dark:text-white">
+            Inventory Turnover & Alerts
+          </h3>
+
+          <div className="grid grid-cols-3 gap-3 text-center mb-4">
+            {alertsData.map((item, i) => (
+              <div
+                key={i}
+                className="cursor-pointer"
+                onClick={() => {
+                  setFilterParams({
+                    "status.value": item.label,
+                    "status.matchMode": "equals",
+                  });
+                  setOpenTurnoverDialog(true);
+                }}
+              >
+                <p className="app-widget-label text-gray-500 dark:text-gray-400">{item.label}</p>
+                <p className={`app-widget-value ${item.color}`}>{item.value}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{item.count} products</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="h-40 mb-6">
+            <ReactApexChart
+              options={turnoverChartOptions as any}
+              series={turnoverChartSeries}
+              type="line"
+              height="100%"
+            />
+          </div>
+
+          <div className="text-sm">
+            <h4 className="mb-2 font-medium text-gray-800 dark:text-white app-widget-label">
+              Restock Schedule
+            </h4>
+            <table className="w-full text-left text-sm">
+              <thead className="text-gray-500 dark:text-gray-400">
+                <tr>
+                  <th className="py-1.5 app-table-heading">Product</th>
+                  <th className="py-1.5 app-table-heading">Stock</th>
+                  <th className="py-1.5 app-table-heading">Restock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {restockTable
+                  .sort((a, b) => a.stock - b.stock)
+                  .map((item, i) => (
+                    <tr
+                      key={i}
+                      className="border-t border-gray-200 dark:border-gray-700"
+                    >
+                      <td className="py-2 text-gray-800 dark:text-gray-100 app-table-content">
+                        {item.product}
+                      </td>
+                      <td className="py-2 text-gray-700 dark:text-gray-300 app-table-content">
+                        {item.stock}
+                      </td>
+                      <td className="py-2 text-gray-700 dark:text-gray-300 app-table-content">
+                        {item.date}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

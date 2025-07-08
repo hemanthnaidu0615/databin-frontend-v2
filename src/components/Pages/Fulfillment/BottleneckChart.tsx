@@ -6,6 +6,9 @@ import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { formatDateTime } from "../../utils/kpiUtils";
 import { getBaseTooltip, avgTimeTooltip } from "../../modularity/graphs/graphWidget";
+import { TableColumn } from "../../modularity/tables/BaseDataTable";
+import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
+import { FaTable } from "react-icons/fa";
 
 const BottleneckChart = () => {
   const { theme } = useTheme();
@@ -28,6 +31,15 @@ const BottleneckChart = () => {
       toolbar: { show: false },
       background: "transparent",
       foreColor: isDark ? "#d1d5db" : "#333",
+      events: {
+        dataPointSelection: (_event, _chartContext, config) => {
+          const category = chartOptions.xaxis?.categories?.[config.dataPointIndex];
+          if (category) {
+            setFilterParams({ eventType: category });
+            setShowFilteredDialog(true);
+          }
+        },
+      },
     },
     tooltip: tooltipWithoutDollar,
     plotOptions: {
@@ -92,6 +104,54 @@ const BottleneckChart = () => {
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
+  const [showAllDialog, setShowAllDialog] = useState(false);
+  const [showFilteredDialog, setShowFilteredDialog] = useState(false);
+  const [filterParams, setFilterParams] = useState<{ eventType?: string }>({});
+
+  const bottleneckTableColumns: TableColumn<any>[] = [
+    { field: "order_id", header: "Order ID", sortable: true, filter: true },
+    { field: "event_id", header: "Event ID", sortable: true, filter: true },
+    { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
+    { field: "event_type", header: "Event Type", sortable: true, filter: true },
+    { field: "order_date", header: "Order Date", sortable: true, filter: true },
+    { field: "event_time", header: "Event Time", sortable: true, filter: true },
+    { field: "fulfillment_city", header: "City", sortable: true, filter: true },
+  ];
+
+  const fetchGridData = (customFilters: any = {}) => async (params: any) => {
+    const p: any = {
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      enterpriseKey: enterpriseKey || undefined,
+      ...customFilters,
+      ...params,
+    };
+
+    const res = await axiosInstance.get("/fulfillment/details-grid", { params: p });
+    const responseData = res.data as { data: any[]; count: number };
+    return { data: responseData.data, count: responseData.count };
+  };
+
+  const renderMobileCard = (item: any, index: number) => (
+    <div
+      key={index}
+      className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700"
+    >
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Order ID: <span className="font-semibold">{item.order_id}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Event Type: <span className="font-semibold">{item.event_type}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+        Event Time: <span className="font-semibold">{formatDateTime(item.event_time)}</span>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-300">
+        City: <span className="font-semibold">{item.fulfillment_city}</span>
+      </div>
+    </div>
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       if (!startDate || !endDate) return;
@@ -109,12 +169,9 @@ const BottleneckChart = () => {
       }
 
       try {
-        const response = await axiosInstance.get(
-          `/fulfillment/bottleneck-analysis`,
-          {
-            params,
-          }
-        );
+        const response = await axiosInstance.get(`/fulfillment/bottleneck-analysis`, {
+          params,
+        });
         const data = response.data as Array<{
           process_stage: string;
           avg_time: number;
@@ -170,7 +227,17 @@ const BottleneckChart = () => {
 
   return (
     <div className="mt-6">
-      <h2 className="app-subheading">Bottleneck Analysis</h2>
+      <div className="flex justify-between items-center px-4 mb-2">
+        <h2 className="app-subheading">Bottleneck Analysis</h2>
+        <button
+          onClick={() => setShowAllDialog(true)}
+          title="View Data Grid"
+          className="text-purple-500 hover:text-purple-700"
+        >
+          <FaTable size={18} />
+        </button>
+      </div>
+
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 pt-6 overflow-hidden">
         <div className="relative z-10 overflow-visible">
           <ReactApexChart
@@ -182,6 +249,30 @@ const BottleneckChart = () => {
           />
         </div>
       </div>
+
+      {/* All Data Grid */}
+      <FilteredDataDialog
+        visible={showAllDialog}
+        onHide={() => setShowAllDialog(false)}
+        header="All Bottleneck Events"
+        columns={bottleneckTableColumns}
+        fetchData={fetchGridData}
+        mobileCardRender={renderMobileCard}
+      />
+
+      {/* Filtered Grid */}
+      <FilteredDataDialog
+        visible={showFilteredDialog}
+        onHide={() => {
+          setShowFilteredDialog(false);
+          setFilterParams({});
+        }}
+        header={`Filtered: ${filterParams.eventType}`}
+        columns={bottleneckTableColumns}
+        fetchData={fetchGridData}
+        filterParams={filterParams}
+        mobileCardRender={renderMobileCard}
+      />
     </div>
   );
 };
