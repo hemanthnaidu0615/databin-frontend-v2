@@ -148,8 +148,6 @@ const RevenuePerCustomer: React.FC = () => {
       body: (row: any) => formatValue(row.revenue),
     },
   ];
-
-  // ✅ Mobile card renderer
   const renderMobileCard = (item: any, index: number) => (
     <div key={index} className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 bg-white dark:bg-gray-800">
       <div className="text-sm text-gray-500 dark:text-gray-400">Customer ID</div>
