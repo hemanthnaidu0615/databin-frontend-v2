@@ -129,10 +129,13 @@ export function BaseDataTable<T extends DataTableValue>({
   };
 
   const onSort = (e: DataTableSortEvent) => {
-    setSortField(e.sortField ?? initialSortField);
-    setSortOrder(e.sortOrder === -1 ? -1 : 1);
+    if (e.sortField === sortField) {
+      setSortOrder((prevOrder) => (prevOrder === 1 ? -1 : 1));
+    } else {
+      setSortField(e.sortField ?? initialSortField);
+      setSortOrder(1);
+    }
   };
-
   const onFilter = (e: DataTableFilterEvent) => {
     setFilters(e.filters);
     setPage(0);

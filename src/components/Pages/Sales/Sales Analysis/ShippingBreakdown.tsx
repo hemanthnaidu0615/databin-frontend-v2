@@ -28,12 +28,8 @@ const ShippingBreakdown: React.FC = () => {
   const isDark = theme === "dark";
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [allData, setAllData] = useState<Shipment[]>([]);
-
-  // State for carrier filtered dialog (filtered by carrier)
   const [showCarrierDialog, setShowCarrierDialog] = useState(false);
   const [carrierFilter, setCarrierFilter] = useState<string | null>(null);
-
-  // State for unfiltered full data dialog (grid icon)
   const [showUnfilteredDialog, setShowUnfilteredDialog] = useState(false);
 
   const fetchData = async (params: any) => {
@@ -164,7 +160,6 @@ const ShippingBreakdown: React.FC = () => {
       }, {} as Record<string, number>);
   }, [allData]);
 
-  // Columns for dialog
   const dialogColumns: TableColumn<any>[] = [
     { field: "shipment_id", header: "Shipment ID", sortable: true, filter: true },
     { field: "order_id", header: "Order ID", sortable: true, filter: true },
@@ -226,7 +221,6 @@ const ShippingBreakdown: React.FC = () => {
       data: Object.values(carrierTotals),
     },
   ];
-
 
   const dialogMobileCardRender = (shipment: any, index: number) => (
     <div
@@ -298,8 +292,6 @@ const ShippingBreakdown: React.FC = () => {
       <div className="mt-8">
         <div className="flex justify-between items-center mb-6">
           <h3 className="app-subheading">Top 10 Carriers by Total Cost</h3>
-
-          {/* Grid icon button on the right side above the chart */}
           <button
             onClick={() => setShowUnfilteredDialog(true)}
             title="Show full shipment data"
@@ -317,7 +309,6 @@ const ShippingBreakdown: React.FC = () => {
         )}
       </div>
 
-      {/* Carrier Filtered Dialog */}
       <FilteredDataDialog
         visible={showCarrierDialog}
         onHide={() => setShowCarrierDialog(false)}
@@ -339,8 +330,6 @@ const ShippingBreakdown: React.FC = () => {
         }}
         mobileCardRender={dialogMobileCardRender}
       />
-
-      {/* Unfiltered Full Data Dialog */}
       <FilteredDataDialog
         visible={showUnfilteredDialog}
         onHide={() => setShowUnfilteredDialog(false)}

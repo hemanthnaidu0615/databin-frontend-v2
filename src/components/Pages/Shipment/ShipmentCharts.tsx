@@ -257,7 +257,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
         ...(enterpriseKey && { enterpriseKey }),
         ...(selectedCarrier && { carrier: selectedCarrier }),
         ...(selectedMethod && { shippingMethod: selectedMethod }),
-        ...(statusFilter && { shipment_status: statusFilter }), // <-- THIS IS NOW CORRECTLY INCLUDED
+        ...(statusFilter && { shipment_status: statusFilter }),
       },
     });
     return { data: response.data.data, count: response.data.count };

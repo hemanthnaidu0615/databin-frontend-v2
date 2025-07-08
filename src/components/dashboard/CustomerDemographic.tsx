@@ -15,7 +15,7 @@ import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { formatDateTime } from "../utils/kpiUtils";
 import { FaTable } from "react-icons/fa";
- 
+
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
  
@@ -43,14 +43,14 @@ const formatValue = (value: number) => {
   if (usd >= 1_000) return `$${(usd / 1_000).toFixed(1)}K`;
   return `$${usd.toFixed(0)}`;
 };
- 
+
 interface SalesRegionData {
   state_name: string;
   state_revenue: number;
   state_quantity: number;
   revenue_percentage: number;
 }
- 
+
 const DemographicCard = () => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -77,9 +77,9 @@ const DemographicCard = () => {
     avgOrderValue: 0,
     highSpenders: 0,
   });
- 
+
+
   const [showDataDialog, setShowDataDialog] = useState(false);
- 
   type MetricsData = {
     new_customers?: number;
     returning_customers?: number;
@@ -119,7 +119,7 @@ const DemographicCard = () => {
           string,
           { customers: number; revenue: number; avgRevenue: number }
         > = {};
- 
+
         if (Array.isArray(mapData)) {
           mapData.forEach((row) => {
             const raw = row.state?.trim().toLowerCase();
@@ -139,7 +139,7 @@ const DemographicCard = () => {
             };
           });
         }
- 
+
         const missingStates = CANONICAL_STATES.filter(
           (state) => !formatted[state]
         );
@@ -172,7 +172,7 @@ const DemographicCard = () => {
         });
  
         setStateData(formatted);
- 
+
         if (metricsData) {
           setMetrics({
             newCustomers: metricsData.new_customers || 0,
@@ -193,11 +193,11 @@ const DemographicCard = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales-region");
   };
- 
+
   const handleGridClick = () => {
     setShowDataDialog(true);
   };
- 
+
   const columns: TableColumn<SalesRegionData>[] = [
     {
       field: "state_name",
@@ -227,12 +227,12 @@ const DemographicCard = () => {
       body: (rowData: any) => `${rowData.revenue_percentage?.toFixed(2) ?? 0}%`,
     },
   ];
- 
+
   const fetchGridData = (customFilters: any = {}) => {
     return async (tableParams: any) => {
       const formattedStart = formatDateTime(startDate);
       const formattedEnd = formatDateTime(endDate);
- 
+
       const requestParams = {
         startDate: formattedStart,
         endDate: formattedEnd,
@@ -240,7 +240,7 @@ const DemographicCard = () => {
         ...customFilters,
         ...tableParams,
       };
- 
+
       try {
         const response = await axiosInstance.get("/sales-by-region", { params: requestParams });
         const respData = response.data as { data?: any[]; count?: number };
@@ -257,7 +257,7 @@ const DemographicCard = () => {
       }
     };
   };
- 
+
   const renderStateCard = (item: SalesRegionData, index: number) => (
     <div key={index} className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700">
       <div className="text-sm font-semibold mb-2">{item.state_name}</div>
@@ -272,12 +272,12 @@ const DemographicCard = () => {
       </div>
     </div>
   );
- 
+
   return (
     <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
       <div className="flex justify-between items-center">
         <h2 className="app-subheading">Customer Demographic</h2>
- 
+
         <div className="flex items-center">
           <CommonButton
             variant="responsive"
@@ -340,7 +340,7 @@ const DemographicCard = () => {
               })
             }
           </Geographies>
- 
+
           {allStates.map(({ name, abbreviation, coordinates }) => (
             <Annotation
               key={name}
@@ -410,7 +410,7 @@ const DemographicCard = () => {
           </p>
         </div>
       </div>
- 
+
       <FilteredDataDialog
         visible={showDataDialog}
         onHide={() => setShowDataDialog(false)}
@@ -423,5 +423,4 @@ const DemographicCard = () => {
     </div>
   );
 };
- 
 export default DemographicCard;

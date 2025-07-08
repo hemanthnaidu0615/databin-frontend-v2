@@ -84,9 +84,11 @@ const RevenuePerCustomer: React.FC = () => {
 
     const response = await axiosInstance.get("/revenue/top-customers", { params: queryParams });
 
+    const responseData = response.data as { data: any[]; count: number };
+
     return {
-      data: response.data.data,
-      count: response.data.count,
+      data: responseData.data,
+      count: responseData.count,
     };
   };
 
@@ -142,12 +144,10 @@ const RevenuePerCustomer: React.FC = () => {
       field: "revenue",
       header: "Revenue",
       sortable: true,
-      // filter: true,
+      filter: true,
       body: (row: any) => formatValue(row.revenue),
     },
   ];
-
-  // ✅ Mobile card renderer
   const renderMobileCard = (item: any, index: number) => (
     <div key={index} className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 bg-white dark:bg-gray-800">
       <div className="text-sm text-gray-500 dark:text-gray-400">Customer ID</div>

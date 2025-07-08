@@ -67,8 +67,8 @@ const TopProductsTable = () => {
 
           // Map your response here
           return {
-            data: response.data.products || [],   // note 'products' here
-            count: response.data.count || 0,
+            data: (response.data as { products?: any[] }).products || [],   // note 'products' here
+            count: (response.data as { count?: number }).count || 0,
           };
         } catch (error) {
           console.error("Failed to fetch filtered data:", error);
