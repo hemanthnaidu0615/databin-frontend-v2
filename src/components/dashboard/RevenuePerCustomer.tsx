@@ -52,7 +52,7 @@ const RevenuePerCustomer: React.FC = () => {
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
-  const fetchGridData = (params?: any) => async (tableParams: any = {}) => {
+  const fetchGridData = () => async (tableParams: any = {}) => {
     const {
       page = 0,
       rows = 10,
