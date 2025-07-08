@@ -154,7 +154,7 @@ const TopProductsTable = () => {
         toolbar: { show: false },
         foreColor: isDark ? "#CBD5E1" : "#334155",
         events: {
-          dataPointSelection: (event, chartContext, config) => {
+          dataPointSelection: (_: any, _chartContext, config) => {
             const index = config.dataPointIndex;
             const selectedProduct = topProducts[index]?.product_name;
             if (selectedProduct) {

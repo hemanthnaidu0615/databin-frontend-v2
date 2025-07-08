@@ -184,7 +184,7 @@ const ShippingBreakdown: React.FC = () => {
         toolbar: { show: false },
         foreColor: isDark ? "#CBD5E1" : "#334155",
         events: {
-          dataPointSelection: (event, chartContext, config) => {
+          dataPointSelection: (_: any, _unused: any, config) => {
             const clickedCarrier = Object.keys(carrierTotals)[config.dataPointIndex];
             if (clickedCarrier) {
               setCarrierFilter(clickedCarrier);
@@ -226,7 +226,7 @@ const ShippingBreakdown: React.FC = () => {
       data: Object.values(carrierTotals),
     },
   ];
-  // Reuse your existing mobileCardRender or create a slightly modified version if needed
+
 
   const dialogMobileCardRender = (shipment: any, index: number) => (
     <div
