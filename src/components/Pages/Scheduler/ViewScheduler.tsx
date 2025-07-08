@@ -99,7 +99,7 @@ const columns: TableColumn<Scheduler>[] = [
   { field: "title", header: "Title", sortable: true, filter: true },
   { field: "description", header: "Description", sortable: true, filter: true },
   { field: "email", header: "Email", sortable: true, filter: true },
-  { field: "created_by", header: "Created By", sortable: true, filter: true }, // 👈 New column
+  { field: "created_by", header: "Created By", sortable: true, filter: true }, 
   { field: "recurrence_pattern", header: "Recurrence", sortable: true, filter: true },
   {
     field: "start_date",
