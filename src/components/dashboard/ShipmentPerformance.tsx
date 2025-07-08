@@ -134,7 +134,7 @@ const ShipmentPerformance: React.FC<{
     { field: "order_id", header: "Order ID", sortable: true, filter: true },
     { field: "carrier", header: "Carrier", sortable: true, filter: true },
     { field: "shipping_method", header: "Method", sortable: true, filter: true },
-    { field: "actual_shipment_date", header: "Ship Date", sortable: true, body: row => formatDateTime(row.actual_shipment_date) },
+    { field: "actual_shipment_date", header: "Ship Date", sortable: true, filter: true, body: row => formatDateTime(row.actual_shipment_date) },
     { field: "shipment_status", header: "Status", sortable: true, filter: true }
   ];
 

@@ -10,19 +10,19 @@ import CommonButton from "../modularity/buttons/Button";
 import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { FaTable } from "react-icons/fa";
- 
+
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
   onViewMore?: () => void;
   onRemove?: () => void;
 };
- 
+
 type TrendItem = {
   month: string;
   category: string;
   sales: number;
 };
- 
+
 const renderMobileCard = (item: TrendItem, index: number) => (
   <div key={index} className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700">
     <div className="text-sm font-semibold mb-2">Month: {item.month}</div>
@@ -34,7 +34,7 @@ const renderMobileCard = (item: TrendItem, index: number) => (
     </div>
   </div>
 );
- 
+
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
   size = "full",
 }) => {
@@ -44,12 +44,12 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     categories: string[];
     series: { name: string; data: number[] }[];
   }>({ categories: [], series: [] });
- 
+
   const [dialogVisible, setDialogVisible] = useState(false);
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
- 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,18 +64,18 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
- 
+
+
         const response = await axiosInstance.get(`/order-trends-by-category?${params.toString()}`);
         const data = (response.data as { data: TrendItem[] }).data;
- 
+
         const trendsByMonth: Record<string, Record<string, number>> = {};
- 
         for (const item of data) {
           const { month, category, sales } = item;
           if (!trendsByMonth[month]) trendsByMonth[month] = {};
           trendsByMonth[month][category] = sales;
         }
- 
+
         const months = Object.keys(trendsByMonth).sort();
         const categoryTotals: Record<string, number> = {};
  
@@ -95,7 +95,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           name: category,
           data: months.map((month) => trendsByMonth[month]?.[category] || 0),
         }));
- 
+
         setChartData({ categories: months, series });
       } catch (error) {
         console.error("Failed to fetch order trends:", error);
@@ -106,7 +106,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       fetchData();
     }
   }, [startDate, endDate, enterpriseKey]);
- 
+
   const options: ApexOptions = {
     chart: {
       type: "line",
@@ -140,7 +140,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
   };
- 
+
   const columns: TableColumn<TrendItem>[] = [
     { field: "month", header: "Month", sortable: true, filter: true },
     { field: "category", header: "Category", sortable: true, filter: true },
@@ -152,7 +152,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       body: (row) => <span>{formatVal(row.sales)}</span>,
     },
   ];
- 
+
   const fetchData = () => async (params: any) => {
     const query = new URLSearchParams({
       startDate: formatDateTime(startDate),
@@ -163,7 +163,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       sortOrder: params.sortOrder || "asc",
       ...(enterpriseKey ? { enterpriseKey } : {}),
     });
- 
+
     for (const key in params) {
       if (key.endsWith("Filter")) {
         const field = key.replace("Filter", "");
@@ -171,7 +171,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         query.append(`${field}.matchMode`, "contains");
       }
     }
- 
+
     const res = await axiosInstance.get(`/order-trends-by-category?${query.toString()}`);
     const responseData = res.data as { data?: TrendItem[]; count?: number };
     return {
@@ -179,7 +179,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       count: responseData.count || 0,
     };
   };
- 
+
   return (
     <>
       <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
@@ -203,12 +203,12 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
             </div>
           </div>
         )}
- 
+
         <div className="h-[420px] sm:h-[490px]">
           <Chart options={options} series={chartData.series} type="line" height="100%" />
         </div>
       </div>
- 
+
       <FilteredDataDialog
         visible={dialogVisible}
         onHide={() => setDialogVisible(false)}
@@ -218,8 +218,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         width="90vw"
         mobileCardRender={renderMobileCard}
       />
- 
- 
     </>
   );
 };
