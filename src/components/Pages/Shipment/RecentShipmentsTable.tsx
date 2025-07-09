@@ -39,7 +39,7 @@ const RecentShipmentsTable: React.FC = () => {
       ...params,
     };
 
-    const response = await axiosInstance.get("/recent-shipments", { params: queryParams });
+    const response = await axiosInstance.get<{ data: Shipment[]; count: number }>("/recent-shipments", { params: queryParams });
     const { data: shipmentData, count } = response.data;
 
     return {
@@ -57,13 +57,27 @@ const RecentShipmentsTable: React.FC = () => {
     }
   };
 
+  interface ShipmentDetails {
+    order_id: string;
+    customer: string;
+    carrier: string;
+    shipping_method: string;
+    status: string;
+    ship_date: string;
+    estimated_delivery: string;
+    origin: string;
+    destination: string;
+    cost?: number;
+    [key: string]: any; // For any additional properties
+  }
+
   const showDetails = async (shipment: Shipment) => {
     try {
       const response = await axiosInstance.get("/recent-shipments/details", {
         params: { shipmentId: shipment.shipment_id },
       });
 
-      const detailed = response.data;
+      const detailed = response.data as ShipmentDetails;
       if (detailed?.cost) {
         detailed.cost = convertToUSD(detailed.cost);
       }

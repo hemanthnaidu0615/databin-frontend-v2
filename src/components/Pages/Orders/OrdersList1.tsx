@@ -3,8 +3,10 @@ import { Order } from "./ordersData";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { axiosInstance } from "../../../axios";
 import { Paginator } from "primereact/paginator";
+import { ProgressSpinner } from "primereact/progressspinner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatDate } from "../../utils/kpiUtils";
 
 (jsPDF as any).API.autoTable = autoTable;
 
@@ -82,12 +84,72 @@ type ExpandedSection =
   | { title: "Fulfillment Timeline"; timeline: any[] }
   | { title: "Actions" };
 
-const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
+interface OrderList1Props {
+  fetchData: (params: any) => Promise<{ data: Order[]; count: number }>;
+}
+
+const OrderList1: React.FC<OrderList1Props> = ({
+  fetchData,
+}) => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([]);
   const [orderDetails, setOrderDetails] = useState<Map<string, any>>(new Map());
-  const [loadingOrderDetails, setLoadingOrderDetails] = useState<
-    Map<string, boolean>
-  >(new Map());
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState<Map<string, boolean>>(new Map());
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth < 640 ? 20 : 10
+  );
+  const [isManualRowsChange, setIsManualRowsChange] = useState(false);
+  const options = [10, 20, 50, 100];
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: Math.floor(first / rows),
+        size: rows,
+      };
+
+      const response = await fetchData(params);
+
+      const transformedData = response.data.map((apiOrder: any) => ({
+        id: apiOrder.order_id,
+        date: apiOrder.order_date,
+        customer: apiOrder.customer_name,
+        product: apiOrder.product_name,
+        total: apiOrder.total,
+        status: apiOrder.shipment_status,
+        paymentMethod: apiOrder.payment_method,
+        products: apiOrder.products || []
+      }));
+
+      setOrders(transformedData || []);
+      setTotalRecords(response.count || 0);
+    } catch (error) {
+      console.error("Error loading orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [first, rows, fetchData]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 640;
+      if (!isManualRowsChange) {
+        setRows(isMobile ? 20 : 10);
+        setFirst(0);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isManualRowsChange]);
 
   const fetchAndSetDetails = useCallback(
     (orderId: string) => {
@@ -112,25 +174,6 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
       fetchAndSetDetails(order.id);
     }
   };
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(() =>
-    typeof window !== "undefined" && window.innerWidth < 640 ? 10 : 20
-  );
-  const [isManualRowsChange, setIsManualRowsChange] = useState(false);
-  const options = [10, 20, 50, 100];
-
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 640;
-      if (!isManualRowsChange) {
-        setRows(isMobile ? 10 : 20);
-        setFirst(0);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isManualRowsChange]);
 
   const onPageChange = (e: { first: number; rows: number }) => {
     setFirst(e.first);
@@ -187,20 +230,18 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
     );
     y += 6;
     doc.text(
-      `ETA: ${
-        details.order_summary?.eta
-          ? new Date(details.order_summary.eta).toLocaleString()
-          : "N/A"
+      `ETA: ${details.order_summary?.eta
+        ? new Date(details.order_summary.eta).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       y
     );
     y += 6;
     doc.text(
-      `Delivered: ${
-        details.order_summary?.delivered
-          ? new Date(details.order_summary.delivered).toLocaleString()
-          : "N/A"
+      `Delivered: ${details.order_summary?.delivered
+        ? new Date(details.order_summary.delivered).toLocaleString()
+        : "N/A"
       }`,
       marginLeft,
       y
@@ -326,8 +367,8 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             label: "Order Placed",
             date: details.fulfillment_timeline?.order_placed
               ? new Date(
-                  details.fulfillment_timeline.order_placed
-                ).toLocaleString()
+                details.fulfillment_timeline.order_placed
+              ).toLocaleString()
               : "N/A",
             complete: true,
           },
@@ -335,21 +376,21 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             label: "Payment Confirmed",
             date: details.fulfillment_timeline?.payment_confirmed
               ? new Date(
-                  details.fulfillment_timeline.payment_confirmed
-                ).toLocaleString()
+                details.fulfillment_timeline.payment_confirmed
+              ).toLocaleString()
               : "N/A",
             complete: true,
           },
           order.status === "Delivered"
             ? {
-                label: "Delivered",
-                date: details.order_summary?.delivered
-                  ? new Date(details.order_summary.delivered).toLocaleString()
-                  : "N/A",
-                complete: true,
-              }
+              label: "Delivered",
+              date: details.order_summary?.delivered
+                ? new Date(details.order_summary.delivered).toLocaleString()
+                : "N/A",
+              complete: true,
+            }
             : order.status === "Delayed"
-            ? {
+              ? {
                 label: "Delayed",
                 date: details.order_summary?.eta
                   ? new Date(details.order_summary.eta).toLocaleString()
@@ -357,7 +398,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                 complete: false,
                 Delayed: true,
               }
-            : {
+              : {
                 label: "Delivered",
                 date: details.order_summary?.eta
                   ? new Date(details.order_summary.eta).toLocaleString()
@@ -374,6 +415,12 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
 
   return (
     <div className="overflow-x-auto">
+      {loading && (
+        <div className="flex justify-center my-4">
+          <ProgressSpinner />
+        </div>
+      )}
+
       <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-left app-table-heading">
         <thead className="bg-gray-100 dark:bg-gray-900">
           <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
@@ -387,8 +434,9 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             <th className="py-3 px-4 hidden md:table-cell">Payment Method</th>
           </tr>
         </thead>
+
         <tbody className="text-sm text-gray-800 dark:text-gray-200">
-          {orders.slice(first, first + rows).map((order) => (
+          {orders.map((order) => (
             <React.Fragment key={order.id}>
               <tr
                 className="hover:bg-gray-50 hover:dark:bg-white/[0.05] transition-colors cursor-pointer"
@@ -402,7 +450,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
                   )}
                 </td>
                 <td className="py-3 px-4">{order.id}</td>
-                <td className="py-3 px-4 hidden md:table-cell">{order.date}</td>
+                <td className="py-3 px-4 hidden md:table-cell">{formatDate(order.date)}</td>
                 <td className="py-3 px-4 hidden md:table-cell">
                   {order.customer}
                 </td>
@@ -646,7 +694,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
           <Paginator
             first={first}
             rows={rows}
-            totalRecords={orders.length}
+            totalRecords={totalRecords}
             onPageChange={onPageChange}
             rowsPerPageOptions={options}
             template="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
@@ -680,7 +728,7 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             </div>
             <div>
               Page {Math.floor(first / rows) + 1} of{" "}
-              {Math.ceil(orders.length / rows)}
+              {Math.ceil(totalRecords / rows)}
             </div>
           </div>
 
@@ -704,11 +752,11 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             <button
               onClick={() =>
                 onPageChange({
-                  first: first + rows < orders.length ? first + rows : first,
+                  first: first + rows < totalRecords ? first + rows : first,
                   rows,
                 })
               }
-              disabled={first + rows >= orders.length}
+              disabled={first + rows >= totalRecords}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Next
@@ -716,11 +764,11 @@ const OrderList1: React.FC<{ orders?: Order[] }> = ({ orders = [] }) => {
             <button
               onClick={() =>
                 onPageChange({
-                  first: (Math.ceil(orders.length / rows) - 1) * rows,
+                  first: (Math.ceil(totalRecords / rows) - 1) * rows,
                   rows,
                 })
               }
-              disabled={first + rows >= orders.length}
+              disabled={first + rows >= totalRecords}
               className="flex-1 px-2 py-1 text-xs rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Last ⏭
