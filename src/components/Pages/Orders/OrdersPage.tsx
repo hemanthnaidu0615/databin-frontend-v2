@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
 import OrderFilters from "./OrderFilters";
 import OrderList1 from "./OrdersList1";
-import { fetchOrders } from "./ordersData";
-import { Order } from "./ordersData";
 import { axiosInstance } from "../../../axios";
 import * as XLSX from "xlsx";
- 
+import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+
 const defaultFilterValues = {
   status: "All statuses",
   orderType: "All types",
@@ -16,210 +14,70 @@ const defaultFilterValues = {
   customer: "",
   orderId: "",
 };
- 
-function convertToUSD(rupees: number): number {
-  return rupees * 0.012;
-}
- 
-const priceRangeMatch = (
-  orderTotal: number,
-  selectedRange: string
-): boolean => {
-  const orderTotalUSD = convertToUSD(orderTotal);
- 
-  switch (selectedRange) {
-    case "Under $50":
-      return orderTotalUSD < 50;
-    case "$50 - $200":
-      return orderTotalUSD >= 50 && orderTotalUSD <= 200;
-    case "$200 - $500":
-      return orderTotalUSD > 200 && orderTotalUSD <= 500;
-    case "Over $500":
-      return orderTotalUSD > 500;
-    case "All prices":
-    default:
-      return true;
-  }
-};
- 
+
 const OrdersPage: React.FC = () => {
   const [filters, setFilters] = useState(defaultFilterValues);
   const [tempFilters, setTempFilters] = useState(defaultFilterValues);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
- 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
- 
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
- 
-  useEffect(() => {
-    loadOrders();
-  }, [filters, startDate, endDate, enterpriseKey]);
- 
+
   const exportOrders = async () => {
     try {
-      const params = new URLSearchParams();
- 
-      if (startDate) params.append("startDate", startDate);
-      if (endDate) params.append("endDate", endDate);
-      if (filters.status !== "All statuses")
-        params.append("status", filters.status);
-      if (filters.orderType !== "All types")
-        params.append("orderType", filters.orderType);
-      if (filters.paymentMethod !== "All methods")
-        params.append("paymentMethod", filters.paymentMethod);
-      if (filters.carrier !== "All carriers")
-        params.append("carrier", filters.carrier);
-      if (filters.customer) params.append("searchCustomer", filters.customer);
-      if (filters.orderId) params.append("searchOrderId", filters.orderId);
-      if (enterpriseKey && enterpriseKey !== "All")
-        params.append("enterpriseKey", enterpriseKey);
- 
+      const params = {
+        startDate,
+        endDate,
+        status: filters.status !== "All statuses" ? filters.status : undefined,
+        orderType: filters.orderType !== "All types" ? filters.orderType : undefined,
+        paymentMethod: filters.paymentMethod !== "All methods" ? filters.paymentMethod : undefined,
+        carrier: filters.carrier !== "All carriers" ? filters.carrier : undefined,
+        searchCustomer: filters.customer || undefined,
+        searchOrderId: filters.orderId || undefined,
+        enterpriseKey: enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined,
+        size: 1000
+      };
+
       const response = await axiosInstance.get(`/orders/filtered`, { params });
-      const fetchedOrders = response.data;
- 
-      if (!Array.isArray(fetchedOrders)) {
-        console.error("Unexpected data format for fetched orders.");
-        alert("Failed to export orders: Invalid data received.");
-        return;
-      }
- 
-      console.log("Raw fetched orders:", fetchedOrders[0]);
- 
-      const filteredForPrice = fetchedOrders.filter((order: any) =>
-        priceRangeMatch(order.total, filters.priceRange)
-      );
- 
-      const renamedData = filteredForPrice.map((order: any) => ({
+      const data = response.data as { data?: any[] };
+      const fetchedOrders = data.data || [];
+
+      const renamedData = fetchedOrders.map((order: any) => ({
         "Order ID": order.order_id,
         "Order Date": order.order_date,
         "Customer Name": order.customer_name,
         "Product Name": order.product_name,
-        Total: order.total,
-        "Shipment Status": order.shipment_status,
+        "Total Amount": order.total,
+        "Status": order.shipment_status,
         "Payment Method": order.payment_method,
       }));
- 
-      console.log("Renamed data:", renamedData[0]);
- 
+
       const worksheet = XLSX.utils.json_to_sheet(renamedData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Orders");
- 
-      XLSX.writeFile(workbook, "filtered_orders.xlsx");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+      XLSX.writeFile(workbook, "orders_export.xlsx");
     } catch (error) {
       console.error("Export failed:", error);
       alert("Failed to export orders.");
     }
   };
- 
-  const loadOrders = async () => {
-    try {
-      setLoading(true);
-      const fetchedOrders = await fetchOrders(
-        startDate,
-        endDate,
-        filters.status !== "All statuses" ? filters.status : undefined,
-        filters.orderType !== "All types" ? filters.orderType : undefined,
-        filters.paymentMethod !== "All methods"
-          ? filters.paymentMethod
-          : undefined,
-        filters.carrier !== "All carriers" ? filters.carrier : undefined,
-        filters.customer !== "" ? filters.customer : undefined,
-        filters.orderId !== "" ? filters.orderId : undefined,
-        enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined
-      );
-      setOrders(fetchedOrders);
-    } catch (error) {
-      console.error("Error loading orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
- 
+
   const handleFilterChange = (field: string, value: string) => {
     setTempFilters((prev) => ({ ...prev, [field]: value }));
   };
- 
+
   const handleApplyFilters = () => {
     setFilters(tempFilters);
   };
- 
+
   const handleResetFilters = () => {
     setTempFilters(defaultFilterValues);
     setFilters(defaultFilterValues);
   };
- 
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      const match = (field: string, filterKey: string) => {
-        const filterValue =
-          filters[filterKey as keyof typeof filters].toLowerCase();
-        if (filterValue === "" || filterValue.startsWith("all")) return true;
- 
-        const fieldValue = order[field as keyof typeof order];
- 
-        if (typeof fieldValue === "string") {
-          return fieldValue.toLowerCase().includes(filterValue);
-        }
- 
-        if (field === "status") {
-          return order.products?.some((p) =>
-            p.status.toLowerCase().includes(filterValue)
-          );
-        }
- 
-        if (field === "product") {
-          return order.products?.some((p) =>
-            p.name.toLowerCase().includes(filterValue)
-          );
-        }
- 
-        return false;
-      };
- 
-      return (
-        match("status", "status") &&
-        match("paymentMethod", "paymentMethod") &&
-        match("customer", "customer") &&
-        match("id", "orderId") &&
-        priceRangeMatch(order.total, filters.priceRange)
-      );
-    });
-  }, [orders, filters]);
- 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh] text-center dark:text-white/80">
-        <svg
-          className="animate-spin h-10 w-10 text-purple-500 mb-4"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 01-8 8z"
-          ></path>
-        </svg>
-        <p className="text-sm">Loading orders from the server...</p>
-      </div>
-    );
-  }
- 
+
   return (
     <div className="p-6 dark:bg-white/[0.03] dark:text-white/90">
       <div className="flex justify-between items-center mb-6">
@@ -233,21 +91,52 @@ const OrdersPage: React.FC = () => {
           </button>
         </div>
       </div>
- 
+
       <OrderFilters
         filters={tempFilters}
         onFilterChange={handleFilterChange}
         onReset={handleResetFilters}
         onApply={handleApplyFilters}
       />
- 
+
       <div className="mt-6">
-        <OrderList1 orders={filteredOrders} />
+        <OrderList1
+          fetchData={async (params) => {
+            try {
+              const apiParams = {
+                ...params,
+                startDate,
+                endDate,
+                status: filters.status !== "All statuses" ? filters.status : undefined,
+                orderType: filters.orderType !== "All types" ? filters.orderType : undefined,
+                paymentMethod: filters.paymentMethod !== "All methods" ? filters.paymentMethod : undefined,
+                carrier: filters.carrier !== "All carriers" ? filters.carrier : undefined,
+                searchCustomer: filters.customer || undefined,
+                searchOrderId: filters.orderId || undefined,
+                enterpriseKey: enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined
+              };
+
+              const response = await axiosInstance.get('/orders/filtered', {
+                params: apiParams
+              });
+
+              const data = response.data as { data?: any[]; count?: number };
+              return {
+                data: data.data || [],
+                count: data.count || 0
+              };
+            } catch (error) {
+              console.error("Error fetching orders:", error);
+              return {
+                data: [],
+                count: 0
+              };
+            }
+          }}
+        />
       </div>
     </div>
   );
 };
- 
+
 export default OrdersPage;
- 
- 

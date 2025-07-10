@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
@@ -131,9 +131,10 @@ export default function RecentOrders() {
       const response = await axiosInstance.get(
         `/orders/recent-orders?${searchParams.toString()}`
       );
+      const resData = response.data as { data?: any[]; count?: number };
       return {
-        data: response.data.data || [],
-        count: response.data.count || 0,
+        data: resData.data || [],
+        count: resData.count || 0,
       };
     } catch (error) {
       console.error("Failed to load recent orders", error);
