@@ -22,6 +22,35 @@ interface Customer {
 
 const convertToUSD = (rupees: number): number => rupees * 0.012;
 
+const customerDialogMobileCardRender = (row: any) => (
+  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700 mb-2">
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+        Name:
+      </span>
+      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+        {row.first_name} {row.last_name}
+      </span>
+    </div>
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+        Email:
+      </span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
+        {row.email}
+      </span>
+    </div>
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+        Total Spent:
+      </span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        ${formatValue(convertToUSD(row.total_spent))}
+      </span>
+    </div>
+  </div>
+);
+
 const TopCustomersTable = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -31,11 +60,13 @@ const TopCustomersTable = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
-  const [startDate, endDate] = dateRange || [];
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  const [startDate, endDate] = dateRange || [];
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -60,10 +91,7 @@ const TopCustomersTable = () => {
         const response = await axiosInstance.get(
           `analysis/customer-order-summary?${params.toString()}`
         );
-        const data = response.data as {
-          customers?: Customer[];
-        };
-
+        const data = response.data as { customers?: Customer[] };
         setCustomers(data.customers || []);
       } catch (err) {
         console.error("Error fetching customers:", err);
@@ -77,11 +105,17 @@ const TopCustomersTable = () => {
   }, [startDate, endDate, enterpriseKey]);
 
   const filteredCustomers = useMemo(() => {
+    setCurrentPage(0); // Reset pagination on search
     if (!searchTerm) return customers;
     return customers.filter((c) =>
       c.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [customers, searchTerm]);
+
+  const paginatedCustomers = useMemo(() => {
+    const start = currentPage * rowsPerPage;
+    return filteredCustomers.slice(start, start + rowsPerPage);
+  }, [filteredCustomers, currentPage, rowsPerPage]);
 
   const topCustomers = useMemo(() => {
     return [...filteredCustomers]
@@ -98,7 +132,7 @@ const TopCustomersTable = () => {
       chart: {
         type: "bar",
         toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#334155",
+        foreColor: isDark ? "#CBD5E1" : "#334155",
         events: {
           dataPointSelection: (_event, _chartContext, config) => {
             const customerName = topCustomers[config.dataPointIndex]?.customer_name;
@@ -114,18 +148,17 @@ const TopCustomersTable = () => {
         labels: {
           style: {
             fontSize: "12px",
-            colors: theme === "dark" ? "#CBD5E1" : "#334155",
+            colors: isDark ? "#CBD5E1" : "#334155",
           },
-          formatter: (value: string) =>
-            value.length > 20 ? value.substring(0, 20) + "..." : value,
+          formatter: (val: string) =>
+            val.length > 20 ? val.substring(0, 20) + "..." : val,
         },
-        crosshairs: { show: false },
         title: {
           text: "Customers",
           style: {
             fontSize: "14px",
             fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+            color: isDark ? "#CBD5E1" : "#64748B",
           },
         },
       },
@@ -135,7 +168,7 @@ const TopCustomersTable = () => {
           style: {
             fontSize: "14px",
             fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+            color: isDark ? "#CBD5E1" : "#64748B",
           },
         },
         labels: {
@@ -145,12 +178,12 @@ const TopCustomersTable = () => {
       },
       dataLabels: { enabled: false },
       plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-      grid: { borderColor: theme === "dark" ? "#334155" : "#E5E7EB" },
+      grid: { borderColor: isDark ? "#334155" : "#E5E7EB" },
       colors: ["#a855f7"],
       legend: { show: false },
       tooltip: getBaseTooltip(isDark, revenueTooltip),
     }),
-    [theme, viewMode, topCustomers]
+    [isDark, viewMode, topCustomers]
   );
 
   const chartSeries = [
@@ -162,6 +195,7 @@ const TopCustomersTable = () => {
           : topCustomers.map((c) => c.total_orders),
     },
   ];
+
   const dialogFetchData = (params?: any) => async (tableParams: any) => {
     const query = new URLSearchParams({
       startDate: formatDateTime(startDate),
@@ -195,8 +229,6 @@ const TopCustomersTable = () => {
     };
   };
 
-
-
   if (!startDate || !endDate) {
     return (
       <Card className="...">
@@ -225,41 +257,6 @@ const TopCustomersTable = () => {
       </Card>
     );
   }
-  const customerDialogMobileCardRender = (customer: any, index: number) => (
-    <div
-      key={index}
-      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
-        } mb-3`}
-    >
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">First Name:</span>
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {customer.first_name || "N/A"}
-        </span>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Last Name:</span>
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {customer.last_name || "N/A"}
-        </span>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Email:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200 break-words">
-          {customer.email || "N/A"}
-        </span>
-      </div>
-
-      <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Spent:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          ${formatValue(convertToUSD(customer.total_spent))}
-        </span>
-      </div>
-    </div>
-  );
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
@@ -270,16 +267,14 @@ const TopCustomersTable = () => {
             type="text"
             placeholder="Search customers..."
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="app-search-input w-full max-w-full"
           />
           <PrimeSelectFilter<"revenue" | "orders">
             value={viewMode}
             options={[
-              { label: "By Revenue", value: "revenue" as "revenue" },
-              { label: "By Orders", value: "orders" as "orders" },
+              { label: "By Revenue", value: "revenue" },
+              { label: "By Orders", value: "orders" },
             ]}
             onChange={setViewMode}
             className="w-full sm:w-64 h-10 leading-[0.9rem]"
@@ -317,8 +312,10 @@ const TopCustomersTable = () => {
             />
           </DataTable>
         </div>
+
+        {/* Mobile Card View */}
         <div className="block sm:hidden space-y-4 mt-4">
-          {filteredCustomers.map((customer, index) => (
+          {paginatedCustomers.map((customer, index) => (
             <div
               key={index}
               className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700"
@@ -349,9 +346,81 @@ const TopCustomersTable = () => {
               </div>
             </div>
           ))}
+
+          {/* Mobile Pagination */}
+          {filteredCustomers.length > rowsPerPage && (
+            <div className="flex flex-col text-sm text-gray-700 dark:text-gray-100 mt-4">
+              <div className="flex flex-col gap-2 mb-2 w-full">
+                <label htmlFor="mobileRows" className="whitespace-nowrap">
+                  Rows per page:
+                </label>
+                <select
+                  id="mobileRows"
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setCurrentPage(0);
+                    setRowsPerPage(Number(e.target.value));
+                  }}
+                  className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
+                >
+                  {[5, 10, 20].map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="text-black dark:text-white font-medium">
+                Page {currentPage + 1} of{" "}
+                {Math.ceil(filteredCustomers.length / rowsPerPage)}
+              </div>
+
+              <div className="flex flex-wrap justify-between gap-2 w-full mt-2">
+                <button
+                  onClick={() => setCurrentPage(0)}
+                  disabled={currentPage === 0}
+                  className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                >
+                  ⏮ First
+                </button>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+                  disabled={currentPage === 0}
+                  className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) =>
+                      Math.min(
+                        prev + 1,
+                        Math.ceil(filteredCustomers.length / rowsPerPage) - 1
+                      )
+                    )
+                  }
+                  disabled={(currentPage + 1) * rowsPerPage >= filteredCustomers.length}
+                  className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                >
+                  Next
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage(Math.ceil(filteredCustomers.length / rowsPerPage) - 1)
+                  }
+                  disabled={(currentPage + 1) * rowsPerPage >= filteredCustomers.length}
+                  className="flex-1 px-2 py-1 text-xs rounded-md font-medium bg-gray-100 dark:bg-gray-800 text-black dark:text-white disabled:opacity-40"
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Chart Section */}
       <div className="px-4">
         <div className="flex justify-between items-center mb-2">
           <h3 className="app-subheading mb-2">Top 10 Customers Visualization</h3>
@@ -377,11 +446,12 @@ const TopCustomersTable = () => {
           </div>
         )}
       </div>
+
       <FilteredDataDialog
         visible={dialogVisible}
         onHide={() => {
           setDialogVisible(false);
-          setSelectedCustomer(null); 
+          setSelectedCustomer(null);
         }}
         header={
           selectedCustomer
@@ -403,9 +473,6 @@ const TopCustomersTable = () => {
         ]}
         mobileCardRender={customerDialogMobileCardRender}
       />
-
-
-
     </Card>
   );
 };

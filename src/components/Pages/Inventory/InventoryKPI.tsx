@@ -84,7 +84,7 @@ const InventoryKPI = () => {
   }, [startDate, endDate]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 px-2 gap-4 mb-4">
       {stats.map((stat, index) => (
         <KPIWidget key={index} {...stat} />
       ))}

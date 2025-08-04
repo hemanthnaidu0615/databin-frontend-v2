@@ -1,254 +1,153 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { axiosInstance } from "../../../../axios";
+"use client";
 
-type ApiRow = {
+import React from "react";
+import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataTable";
+import { axiosInstance } from "../../../../axios";
+import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { formatDateTime } from "../../../utils/kpiUtils";
+
+interface ProductRow {
   productId: string;
-  category: string;
   brand: string;
+  category: string;
   totalQuantity: number;
   totalAmountUSD: number;
-};
-type VolumeValueApiResponse = {
-  data: {
-    product_id: number;
-    product_name: string;
-    category: string;
-    total_amount: number;
-    total_quantity: number;
-  }[];
-  page: number;
-  size: number;
-  count: number;
-};
-
-
-function convertToUSD(rupees: number): number {
-  const exchangeRate = 0.012;
-  return rupees * exchangeRate;
 }
 
-const formatValue = (value: number) => {
+const convertToUSD = (rupees: number): number => rupees * 0.012;
+
+const formatValue = (value: number): string => {
   if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + "M";
   if (value >= 1_000) return (value / 1_000).toFixed(1) + "K";
   return value.toFixed(0);
 };
 
 const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
-  const [data, setData] = useState<ApiRow[]>([]);
-  const [viewMode, setViewMode] = useState<"card" | "grid">("card");
-  const [searchTerm, setSearchTerm] = useState("");
+  const fieldMap: Record<string, string> = {
+    productId: "product_id",
+    brand: "product_name",
+    category: "category",
+    totalQuantity: "total_quantity",
+    totalAmountUSD: "total_amount"
+  };
 
-  useEffect(() => {
-    if (!startDate || !endDate) return;
+  const fetchData = async (params: any) => {
+    if (!startDate || !endDate) return { data: [], count: 0 };
 
-    const formattedStartDate = new Date(startDate).toISOString();
-    const formattedEndDate = new Date(endDate).toISOString();
+    const queryParams = new URLSearchParams({
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      page: params.page,
+      size: params.size,
+    });
 
-    const companyKey = company.toLowerCase();
+    // Append sort params
+    if (params.sortField) {
+      queryParams.append("sortField", fieldMap[params.sortField] || params.sortField);
+      queryParams.append("sortOrder", params.sortOrder);
+    }
 
-    axiosInstance
-      .get(`sales/volume-value/${companyKey}`, {
-        params: {
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-        },
-      })
-      .then((res) => {
-        const apiRes = res.data as VolumeValueApiResponse;
-        const formattedData: ApiRow[] = apiRes.data.map((item) => ({
-          productId: item.product_id.toString(),
-          category: item.category,
-          brand: item.product_name,
-          totalQuantity: item.total_quantity,
-          totalAmountUSD: convertToUSD(item.total_amount),
-        }));
+    // Append filters
+    Object.entries(params).forEach(([key, value]) => {
+      if (key.endsWith(".value") || key.endsWith(".matchMode")) {
+        const [field, suffix] = key.split(".");
+        const backendField = fieldMap[field] || field;
+        queryParams.append(`${backendField}.${suffix}`, String(value));
+      }
+    });
 
-        setData(formattedData);
-      })
-      .catch((err) => {
-        console.error("Error fetching data:", err);
-        setData([]);
-      });
-  }, [startDate, endDate, company]);
+    try {
+      const response = await axiosInstance.get(
+        `/sales/volume-value/${company.toLowerCase()}?${queryParams.toString()}`
+      );
+      const apiData = response.data.data || [];
+      const count = response.data.count || 0;
 
-  const filteredData = data.filter(
-    (item) =>
-      item.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.productId.toLowerCase().includes(searchTerm.toLowerCase())
+      const formattedData: ProductRow[] = apiData.map((item: any) => ({
+        productId: item.product_id.toString(),
+        brand: item.product_name,
+        category: item.category,
+        totalQuantity: item.total_quantity,
+        totalAmountUSD: convertToUSD(item.total_amount),
+      }));
+
+      return { data: formattedData, count };
+    } catch (error) {
+      console.error("Error fetching volume/value data:", error);
+      return { data: [], count: 0 };
+    }
+  };
+
+
+  const columns: TableColumn<ProductRow>[] = [
+    {
+      field: "productId",
+      header: "Product ID",
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: "category",
+      header: "Category",
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: "brand",
+      header: "Brand",
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: "totalQuantity",
+      header: "Quantity",
+      sortable: true,
+      filter: false,
+    },
+    {
+      field: "totalAmountUSD",
+      header: "Total (USD)",
+      sortable: true,
+      filter: false,
+      body: (row: ProductRow) => (
+        <span className="font-semibold text-gray-800 dark:text-gray-100">${formatValue(row.totalAmountUSD)}</span>
+      ),
+    },
+  ];
+
+  const renderMobileCard = (item: ProductRow, index: number) => (
+    <div
+      key={index}
+      className="p-4 rounded-md border bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-2 shadow-sm"
+    >
+      <div className="font-semibold text-sm mb-1">{item.brand}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-300">ID: {item.productId}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-300">Category: {item.category}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-300">Qty: {item.totalQuantity.toLocaleString()}</div>
+      <div className="text-sm font-medium mt-1 text-violet-700 dark:text-violet-400">
+        ${formatValue(item.totalAmountUSD)}
+      </div>
+    </div>
   );
 
   return (
-    <div className="border rounded-xl shadow-sm overflow-hidden border-gray-200 dark:border-gray-700">
-      <div
-        className="px-4 py-2 font-semibold flex justify-between items-center"
-        style={{ backgroundColor: "#a855f7", color: "#fff" }}
-      >
-        <span className="font-semibold text-sm sm:text-base truncate  rounded-xl shadow-sm overflow-hidden  flex flex-col">
-          Sales Data
-        </span>
-        {/* View toggle only on mobile */}
-        <button
-          onClick={() => setViewMode(viewMode === "card" ? "grid" : "card")}
-          className="sm:hidden bg-violet-500 text-white px-3 py-1 text-xs rounded hover:bg-violet-600"
-        >
-          {viewMode === "card" ? "Grid View" : "Card View"}
-        </button>
-      </div>
-
-      {/* Mobile View: Card/Grid layout */}
-      <div className="sm:hidden">
-        {/* Search bar */}
-        <div className="px-4 py-2">
-          <input
-            type="text"
-            placeholder="Search by brand or ID."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-2 py-1 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-          />
-        </div>
-
-        {filteredData.length === 0 ? (
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 p-4">
-            No data found for the selected dates or search term.
-          </p>
-        ) : viewMode === "card" ? (
-          <div className="max-h-[320px] overflow-y-auto p-2 space-y-2">
-            {filteredData.map((row, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 space-y-1 border border-gray-200 dark:border-gray-700"
-              >
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Item ID:
-                  </span>{" "}
-                  {row.productId}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Category:
-                  </span>{" "}
-                  {row.category}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Brand:
-                  </span>{" "}
-                  {row.brand}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Quantity:
-                  </span>{" "}
-                  {row.totalQuantity.toLocaleString()}
-                </p>
-                <p>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Total Amount:
-                  </span>{" "}
-                  ${formatValue(row.totalAmountUSD)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="max-h-[320px] overflow-y-auto p-2 grid grid-cols-2 gap-2">
-            {filteredData.map((row, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow p-2 border border-gray-200 dark:border-gray-700 text-xs"
-              >
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    ID:
-                  </span>{" "}
-                  {row.productId}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Cat:
-                  </span>{" "}
-                  {row.category}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Brand:
-                  </span>{" "}
-                  {row.brand}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Qty:
-                  </span>{" "}
-                  {row.totalQuantity.toLocaleString()}
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    Amount:
-                  </span>{" "}
-                  ${formatValue(row.totalAmountUSD)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Tablet/Laptop View */}
-      <div className="hidden sm:block">
-        {/* Search bar */}
-        <div className="p-4">
-          <input
-            type="text"
-            placeholder="Search by brand or ID."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-1/3 px-3 py-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
-          />
-        </div>
-
-        {/* Table */}
-        <div className="max-h-[320px] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left bg-white dark:bg-gray-800 sticky top-0">
-                <th className="px-4 py-2 app-table-heading">Item ID</th>
-                <th className="px-4 py-2 app-table-heading">Web Category</th>
-                <th className="px-4 py-2 app-table-heading">Brand Name</th>
-                <th className="px-4 py-2 app-table-heading">Quantity</th>
-                <th className="px-4 py-2 app-table-heading">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((row, idx) => (
-                <tr
-                  key={idx}
-                  className="border-t border-gray-100 dark:border-gray-700 even:bg-gray-50 dark:even:bg-gray-800"
-                >
-                  <td className="px-4 py-2 app-table-content">
-                    {row.productId}
-                  </td>
-                  <td className="px-4 py-2 app-table-content">
-                    {row.category}
-                  </td>
-                  <td className="px-4 py-2 app-table-content">{row.brand}</td>
-                  <td className="px-4 py-2 app-table-content">
-                    {row.totalQuantity.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 app-table-content">
-                    ${formatValue(row.totalAmountUSD)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div className="card p-4">
+      <BaseDataTable<ProductRow>
+        columns={columns}
+        fetchData={fetchData}
+        title="Volume / Value Summary"
+        initialSortField="totalAmountUSD"
+        initialSortOrder={-1}
+        initialRows={10}
+        mobileCardRender={renderMobileCard}
+        globalFilterFields={["productId", "brand", "category"]}
+        rowsPerPageOptions={[10, 20, 50]}
+        field={"brand"}
+        header={""}
+      />
     </div>
   );
 };

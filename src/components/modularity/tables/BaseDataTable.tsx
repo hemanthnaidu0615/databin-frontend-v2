@@ -13,6 +13,7 @@ import { InputText } from "primereact/inputtext";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useIsMobile } from "./useIsMobile";
 
+
 interface BaseDataTableProps<T extends DataTableValue> {
   field: keyof T;
   header: string;
@@ -241,6 +242,8 @@ export function BaseDataTable<T extends DataTableValue>({
                 value={data}
                 lazy
                 paginator
+                scrollable  
+                scrollHeight="400px"
                 first={page * rows}
                 paginatorTemplate="RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                 currentPageReportTemplate={`Showing ${firstRecord} to ${lastRecord} of ${totalRecords} orders`}

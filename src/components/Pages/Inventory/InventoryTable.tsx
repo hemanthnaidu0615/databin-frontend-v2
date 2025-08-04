@@ -41,9 +41,33 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
     const queryParams = new URLSearchParams({
       startDate: formatDateTime(startDate),
       endDate: formatDateTime(endDate),
-      ...params,
     });
 
+    // 👇 Add your custom frontend-to-backend field mapping
+    const fieldMap: Record<string, string> = {
+      name: "product_name",
+      category: "category_name",
+      warehouse: "warehouse_name",
+      source: "warehouse_function",
+      states: "warehouse_state",
+      status: "inventory_status",
+    };
+
+    // 👇 Remap filters
+    Object.keys(params).forEach((key) => {
+      const match = key.match(/^(.+)\.(value|matchMode)$/);
+      if (match) {
+        const [_, frontendField, suffix] = match;
+        const backendField = fieldMap[frontendField];
+        if (backendField) {
+          queryParams.append(`${backendField}.${suffix}`, params[key]);
+        }
+      } else {
+        queryParams.append(key, params[key]);
+      }
+    });
+
+    // Add extra filters
     if (filters.selectedRegion) queryParams.append("regionFilter", filters.selectedRegion);
     if (filters.selectedSource) queryParams.append("sourceFilter", filters.selectedSource);
     if (filters.selectedLocation) queryParams.append("locationFilter", filters.selectedLocation);
@@ -63,6 +87,7 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       count: resData.count || 0,
     };
   };
+
 
   const renderStatus = (status: string) => (
     <span className={statusColors[status] ?? ""}>{status}</span>
