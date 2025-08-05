@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { axiosInstance } from "../../../axios";
-import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
-import { formatDateTime } from "../../utils/kpiUtils";
-import { getBaseTooltip, avgTimeTooltip } from "../../modularity/graphs/graphWidget";
-import { TableColumn } from "../../modularity/tables/BaseDataTable";
-import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
-import { FaTable } from "react-icons/fa";
+import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import ReactApexChart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
+import { axiosInstance } from '../../../axios';
+import { useDateRangeEnterprise } from '../../utils/useGlobalFilters';
+import { formatDateTime } from '../../utils/kpiUtils';
+import {
+  getBaseTooltip,
+  avgTimeTooltip,
+} from '../../modularity/graphs/graphWidget';
+import { TableColumn } from '../../modularity/tables/BaseDataTable';
+import FilteredDataDialog from '../../modularity/tables/FilteredDataDialog';
+import { FaTable } from 'react-icons/fa';
 
 const BottleneckChart = () => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
   const baseTooltip = getBaseTooltip(isDark, avgTimeTooltip);
 
   const tooltipWithoutDollar = {
@@ -25,15 +28,16 @@ const BottleneckChart = () => {
 
   const [chartOptions, setChartOptions] = useState<ApexOptions>({
     chart: {
-      type: "bar",
+      type: 'bar',
       height: 320,
-      width: "100%",
+      width: '100%',
       toolbar: { show: false },
-      background: "transparent",
-      foreColor: isDark ? "#d1d5db" : "#333",
+      background: 'transparent',
+      foreColor: isDark ? '#d1d5db' : '#333',
       events: {
         dataPointSelection: (_event, _chartContext, config) => {
-          const category = chartOptions.xaxis?.categories?.[config.dataPointIndex];
+          const category =
+            chartOptions.xaxis?.categories?.[config.dataPointIndex];
           if (category) {
             setFilterParams({ eventType: category });
             setShowFilteredDialog(true);
@@ -46,28 +50,28 @@ const BottleneckChart = () => {
       bar: {
         horizontal: true,
         borderRadius: 4,
-        barHeight: "60%",
+        barHeight: '60%',
       },
     },
     dataLabels: {
       enabled: true,
       style: {
-        colors: ["#fff"],
+        colors: ['#fff'],
       },
     },
-    colors: ["#a855f7"],
+    colors: ['#a855f7'],
     xaxis: {
       categories: [],
       title: {
-        text: "Process Stage",
+        text: 'Process Stage',
         style: {
-          color: "#a855f7",
+          color: '#a855f7',
           fontWeight: 600,
         },
       },
       labels: {
         style: {
-          colors: "#a855f7",
+          colors: '#a855f7',
         },
       },
     },
@@ -77,26 +81,26 @@ const BottleneckChart = () => {
       },
       labels: {
         style: {
-          colors: "#a855f7",
-          fontSize: "12px",
+          colors: '#a855f7',
+          fontSize: '12px',
         },
       },
     },
     grid: {
       show: true,
-      borderColor: isDark ? "#3f3f46" : "#e5e7eb",
+      borderColor: isDark ? '#3f3f46' : '#e5e7eb',
       row: {
-        colors: ["transparent"],
+        colors: ['transparent'],
       },
     },
     theme: {
-      mode: isDark ? "dark" : "light",
+      mode: isDark ? 'dark' : 'light',
     },
   });
 
   const [series, setSeries] = useState<{ name: string; data: number[] }[]>([
     {
-      name: "Avg Time (hrs)",
+      name: 'Avg Time (hrs)',
       data: [],
     },
   ]);
@@ -109,28 +113,37 @@ const BottleneckChart = () => {
   const [filterParams, setFilterParams] = useState<{ eventType?: string }>({});
 
   const bottleneckTableColumns: TableColumn<any>[] = [
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "event_id", header: "Event ID", sortable: true, filter: true },
-    { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
-    { field: "event_type", header: "Event Type", sortable: true, filter: true },
-    { field: "order_date", header: "Order Date", sortable: true, filter: true },
-    { field: "event_time", header: "Event Time", sortable: true, filter: true },
-    { field: "fulfillment_city", header: "City", sortable: true, filter: true },
+    { field: 'order_id', header: 'Order ID', sortable: true, filter: true },
+    { field: 'event_id', header: 'Event ID', sortable: true, filter: true },
+    {
+      field: 'enterprise_key',
+      header: 'Enterprise',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'event_type', header: 'Event Type', sortable: true, filter: true },
+    { field: 'order_date', header: 'Order Date', sortable: true, filter: true },
+    { field: 'event_time', header: 'Event Time', sortable: true, filter: true },
+    { field: 'fulfillment_city', header: 'City', sortable: true, filter: true },
   ];
 
-  const fetchGridData = (customFilters: any = {}) => async (params: any) => {
-    const p: any = {
-      startDate: formatDateTime(startDate),
-      endDate: formatDateTime(endDate),
-      enterpriseKey: enterpriseKey || undefined,
-      ...customFilters,
-      ...params,
-    };
+  const fetchGridData =
+    (customFilters: any = {}) =>
+    async (params: any) => {
+      const p: any = {
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        enterpriseKey: enterpriseKey || undefined,
+        ...customFilters,
+        ...params,
+      };
 
-    const res = await axiosInstance.get("/fulfillment/details-grid", { params: p });
-    const responseData = res.data as { data: any[]; count: number };
-    return { data: responseData.data, count: responseData.count };
-  };
+      const res = await axiosInstance.get('/fulfillment/details-grid', {
+        params: p,
+      });
+      const responseData = res.data as { data: any[]; count: number };
+      return { data: responseData.data, count: responseData.count };
+    };
 
   const renderMobileCard = (item: any, index: number) => (
     <div
@@ -144,7 +157,8 @@ const BottleneckChart = () => {
         Event Type: <span className="font-semibold">{item.event_type}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Event Time: <span className="font-semibold">{formatDateTime(item.event_time)}</span>
+        Event Time:{' '}
+        <span className="font-semibold">{formatDateTime(item.event_time)}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300">
         City: <span className="font-semibold">{item.fulfillment_city}</span>
@@ -165,29 +179,32 @@ const BottleneckChart = () => {
       });
 
       if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
+        params.append('enterpriseKey', enterpriseKey);
       }
 
       try {
-        const response = await axiosInstance.get(`/fulfillment/bottleneck-analysis`, {
-          params,
-        });
+        const response = await axiosInstance.get(
+          `/fulfillment/bottleneck-analysis`,
+          {
+            params,
+          }
+        );
         const data = response.data as Array<{
           process_stage: string;
           avg_time: number;
         }>;
 
         const defaultStagesOrder = [
-          "Order Placed",
-          "Processing",
-          "Distribution Center",
-          "Warehouse",
-          "Store Pickup",
-          "Ship to Home",
-          "Vendor Drop Shipping",
-          "Locker Pickup",
-          "Same-Day Delivery",
-          "Curbside Pickup",
+          'Order Placed',
+          'Processing',
+          'Distribution Center',
+          'Warehouse',
+          'Store Pickup',
+          'Ship to Home',
+          'Vendor Drop Shipping',
+          'Locker Pickup',
+          'Same-Day Delivery',
+          'Curbside Pickup',
         ];
 
         const stageMap: Record<string, number> = {};
@@ -213,12 +230,12 @@ const BottleneckChart = () => {
 
         setSeries([
           {
-            name: "Avg Time (hrs)",
+            name: 'Avg Time (hrs)',
             data: values,
           },
         ]);
       } catch (error) {
-        console.error("Failed to fetch bottleneck analysis data:", error);
+        console.error('Failed to fetch bottleneck analysis data:', error);
       }
     };
 
@@ -232,7 +249,7 @@ const BottleneckChart = () => {
         <button
           onClick={() => setShowAllDialog(true)}
           title="View Data Grid"
-          className="text-purple-500 hover:text-purple-700"
+          className="hover:text-purple-700"
         >
           <FaTable size={18} />
         </button>

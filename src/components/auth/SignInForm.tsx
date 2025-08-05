@@ -79,6 +79,8 @@ function Signin() {
     }
   };
 
+  console.log("showing password", showPassword)
+
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row  dark:to-[#2a2a2a] transition-all duration-500 text-gray-800 dark:text-gray-100">
       {/* Theme toggle button */}

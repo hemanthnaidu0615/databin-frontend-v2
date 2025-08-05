@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import {
   DataTable,
   DataTablePageEvent,
   DataTableSortEvent,
   DataTableFilterEvent,
   DataTableValue,
-} from "primereact/datatable";
-import { Column } from "primereact/column";
-import { InputText } from "primereact/inputtext";
-import { ProgressSpinner } from "primereact/progressspinner";
-import { useIsMobile } from "./useIsMobile";
+} from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { InputText } from 'primereact/inputtext';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { useIsMobile } from './useIsMobile';
 
 interface BaseDataTableProps<T extends DataTableValue> {
   field: keyof T;
@@ -54,13 +54,13 @@ const BaseDataTableContext = createContext<BaseDataTableContextProps<any>>({
 export function BaseDataTable<T extends DataTableValue>({
   columns,
   fetchData,
-  initialSortField = "",
+  initialSortField = '',
   initialRows = 10,
   mobileCardRender,
   mobilePagination = true,
   title,
   globalFilterFields = [],
-  emptyMessage = "No records found",
+  emptyMessage = 'No records found',
   rowsPerPageOptions = [10, 20, 50],
 }: BaseDataTableProps<T>) {
   const [data, setData] = useState<T[]>([]);
@@ -71,10 +71,10 @@ export function BaseDataTable<T extends DataTableValue>({
   const [sortField, setSortField] = useState(initialSortField);
   const [sortOrder, setSortOrder] = useState<1 | -1>(1);
   const [filters, setFilters] = useState<any>({
-    global: { value: null, matchMode: "contains" },
+    global: { value: null, matchMode: 'contains' },
     ...columns.reduce((acc, column) => {
       if (column.filter) {
-        acc[column.field as string] = { value: null, matchMode: "contains" };
+        acc[column.field as string] = { value: null, matchMode: 'contains' };
       }
       return acc;
     }, {} as Record<string, any>),
@@ -89,31 +89,29 @@ export function BaseDataTable<T extends DataTableValue>({
         page,
         size: rows,
         sortField: sortField || undefined,
-        sortOrder: sortOrder === 1 ? "asc" : "desc",
+        sortOrder: sortOrder === 1 ? 'asc' : 'desc',
         ...Object.entries(filters).reduce((acc, [key, filterObj]) => {
           const f = filterObj as { value: string | null; matchMode?: string };
           if (
-            key !== "global" &&
+            key !== 'global' &&
             f &&
-            typeof f === "object" &&
+            typeof f === 'object' &&
             f.value !== null &&
             f.value !== undefined &&
-            f.value !== ""
+            f.value !== ''
           ) {
             acc[`${key}.value`] = f.value;
-            acc[`${key}.matchMode`] = f.matchMode || "contains";
+            acc[`${key}.matchMode`] = f.matchMode || 'contains';
           }
           return acc;
         }, {} as Record<string, any>),
-
-
       };
 
       const response = await fetchData(params);
       setData(response.data || []);
       setTotalRecords(response.count || 0);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -141,12 +139,11 @@ export function BaseDataTable<T extends DataTableValue>({
     setPage(0);
   };
 
-  const renderFilterInput = (placeholder = "Search") => {
+  const renderFilterInput = (placeholder = 'Search') => {
     return (options: any) => (
       <InputText
-        value={options.value || ""}
+        value={options.value || ''}
         onChange={(e) => options.filterCallback(e.target.value)}
-        
         placeholder={placeholder}
         className="p-column-filter"
       />
@@ -157,20 +154,24 @@ export function BaseDataTable<T extends DataTableValue>({
     if (!mobilePagination) return null;
 
     const totalPages = Math.ceil(totalRecords / rows);
+    // Use a unique id for the select and associate the label
+    const selectId = 'mobileRowsSelect';
     return (
       <div className="flex flex-col text-sm text-gray-700 dark:text-gray-100 mt-4">
         <div className="flex flex-col gap-2 mb-2 w-full">
-          <label htmlFor="mobileRows" className="whitespace-nowrap">
+          <label htmlFor={selectId} className="whitespace-nowrap">
             Rows per page:
           </label>
           <select
-            id="mobileRows"
+            id={selectId}
+            name="rowsPerPage"
             value={rows}
             onChange={(e) => {
               setRows(Number(e.target.value));
               setPage(0);
             }}
             className="px-2 py-1 rounded dark:bg-gray-800 bg-gray-100 dark:text-white text-gray-800 w-full border"
+            autoComplete="off"
           >
             {rowsPerPageOptions.map((option) => (
               <option key={option} value={option}>
@@ -229,7 +230,21 @@ export function BaseDataTable<T extends DataTableValue>({
           </div>
         ) : isMobile && mobileCardRender ? (
           <>
-            <div>{data.map((item, index) => mobileCardRender(item, index))}</div>
+            <div>
+              {data.map((item, index) => (
+                <React.Fragment
+                  key={
+                    typeof item === 'object' &&
+                    item &&
+                    (item.id || item.key || item._id)
+                      ? item.id || item.key || item._id
+                      : index
+                  }
+                >
+                  {mobileCardRender(item, index)}
+                </React.Fragment>
+              ))}
+            </div>
             {renderMobilePagination()}
           </>
         ) : (

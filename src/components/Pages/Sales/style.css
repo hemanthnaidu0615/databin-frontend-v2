@@ -1,3 +1,8 @@
+body.modal-open {
+  overflow: hidden !important;
+}
+
+
 .vertical-layout .p-organizationchart .p-organizationchart-node-content {
   display: flex;
   flex-direction: column;

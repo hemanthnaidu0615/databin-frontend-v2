@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import ReactApexChart from "react-apexcharts";
-import { axiosInstance } from "../../../axios";
-import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
-import { formatDateTime } from "../../utils/kpiUtils";
+import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import ReactApexChart from 'react-apexcharts';
+import { axiosInstance } from '../../../axios';
+import { useDateRangeEnterprise } from '../../utils/useGlobalFilters';
+import { formatDateTime } from '../../utils/kpiUtils';
 import {
   getBaseToolTip,
   getBaseTooltip,
   percentageTooltip,
   turnoverRateTooltip,
-} from "../../modularity/graphs/graphWidget";
+} from '../../modularity/graphs/graphWidget';
 
-import { FaTable } from "react-icons/fa";
-import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
+import { FaTable } from 'react-icons/fa';
+import FilteredDataDialog from '../../modularity/tables/FilteredDataDialog';
 
 interface Filters {
   selectedRegion: string;
@@ -35,15 +35,18 @@ interface AlertAPIResponse {
   available: number;
 }
 
-const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }> = () => {
+const InventoryOverview: React.FC<{
+  filters: Filters;
+  isSidebarOpen?: boolean;
+}> = () => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
 
   const [warehouseData, setWarehouseData] = useState<RegionData[]>([]);
   const [alertsData, setAlertsData] = useState([
-    { label: "Available", value: "0%", count: 0, color: "text-green-500" },
-    { label: "Low Stock", value: "0%", count: 0, color: "text-yellow-500" },
-    { label: "Out of Stock", value: "0%", count: 0, color: "text-red-500" },
+    { label: 'Available', value: '0%', count: 0, color: 'text-green-500' },
+    { label: 'Low Stock', value: '0%', count: 0, color: 'text-yellow-500' },
+    { label: 'Out of Stock', value: '0%', count: 0, color: 'text-red-500' },
   ]);
   const [turnoverRates, setTurnoverRates] = useState<number[]>([]);
   const [turnoverCategories, setTurnoverCategories] = useState<string[]>([]);
@@ -58,8 +61,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
       setOpenWarehouseDialog(true);
     }
   }, [filterParams]);
-
-
 
   const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
@@ -84,7 +85,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     const formattedStart = formatDateTime(startDate);
     const formattedEnd = formatDateTime(endDate);
 
-    const response = await axiosInstance.get("/inventory/details-grid", {
+    const response = await axiosInstance.get('/inventory/details-grid', {
       params: {
         startDate: formattedStart,
         endDate: formattedEnd,
@@ -103,14 +104,17 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     const formattedStart = formatDateTime(startDate);
     const formattedEnd = formatDateTime(endDate);
 
-    const response = await axiosInstance.get("/inventory/details-grid-turnover", {
-      params: {
-        startDate: formattedStart,
-        endDate: formattedEnd,
-        ...params,
-        ...tableParams,
-      },
-    });
+    const response = await axiosInstance.get(
+      '/inventory/details-grid-turnover',
+      {
+        params: {
+          startDate: formattedStart,
+          endDate: formattedEnd,
+          ...params,
+          ...tableParams,
+        },
+      }
+    );
 
     return {
       data: response.data.data,
@@ -118,22 +122,45 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     };
   };
 
-
   const warehouseColumns = [
-    { field: "inventory_id", header: "Inventory ID", sortable: true, filter: true },
-    { field: "product_id", header: "Product ID", sortable: true, filter: true },
-    { field: "region", header: "Region", sortable: true, filter: true },
-    { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
-    { field: "reserved_quantity", header: "Reserved Quantity", sortable: true, filter: true },
+    {
+      field: 'inventory_id',
+      header: 'Inventory ID',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'product_id', header: 'Product ID', sortable: true, filter: true },
+    { field: 'region', header: 'Region', sortable: true, filter: true },
+    {
+      field: 'stock_quantity',
+      header: 'Stock Quantity',
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: 'reserved_quantity',
+      header: 'Reserved Quantity',
+      sortable: true,
+      filter: true,
+    },
   ];
 
-
   const turnoverColumns = [
-    { field: "product_id", header: "Product ID", sortable: true, filter: true },
-    { field: "name", header: "Product Name", sortable: true, filter: true },
-    { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
-    { field: "restock_date", header: "Restock Date", sortable: true, filter: true },
-    { field: "status", header: "Status", sortable: true, filter: true },
+    { field: 'product_id', header: 'Product ID', sortable: true, filter: true },
+    { field: 'name', header: 'Product Name', sortable: true, filter: true },
+    {
+      field: 'stock_quantity',
+      header: 'Stock Quantity',
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: 'restock_date',
+      header: 'Restock Date',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'status', header: 'Status', sortable: true, filter: true },
   ];
 
   useEffect(() => {
@@ -145,7 +172,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
       try {
         const response = await axiosInstance.get<RegionData[]>(
-          "/inventory/region-distribution",
+          '/inventory/region-distribution',
           {
             params: { startDate: formattedStart, endDate: formattedEnd },
           }
@@ -157,7 +184,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
         setWarehouseData(topFour);
       } catch (error) {
-        console.error("Failed to fetch region distribution data:", error);
+        console.error('Failed to fetch region distribution data:', error);
       }
     };
 
@@ -172,9 +199,12 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
       const formattedEnd = formatDateTime(endDate);
 
       try {
-        const response = await axiosInstance.get("/inventory/turnover-and-alerts", {
-          params: { startDate: formattedStart, endDate: formattedEnd },
-        });
+        const response = await axiosInstance.get(
+          '/inventory/turnover-and-alerts',
+          {
+            params: { startDate: formattedStart, endDate: formattedEnd },
+          }
+        );
         const data = response.data as {
           turnover_rates: { turnover_rate: number }[];
           low_stock_alerts: any[];
@@ -185,7 +215,8 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
         const start = new Date(startDate);
         const end = new Date(endDate);
-        const daysDiff = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+        const daysDiff =
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
 
         let labels: string[] = [];
 
@@ -196,17 +227,23 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         } else if (daysDiff > 60) {
           const date = new Date(start);
           while (date <= end) {
-            labels.push(`${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`);
+            labels.push(
+              `${date.getFullYear()}-${(date.getMonth() + 1)
+                .toString()
+                .padStart(2, '0')}`
+            );
             date.setMonth(date.getMonth() + 1);
           }
         } else {
           const date = new Date(start);
           while (date <= end) {
             labels.push(
-              `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date
+              `${date.getFullYear()}-${(date.getMonth() + 1)
+                .toString()
+                .padStart(2, '0')}-${date
                 .getDate()
                 .toString()
-                .padStart(2, "0")}`
+                .padStart(2, '0')}`
             );
             date.setDate(date.getDate() + 1);
           }
@@ -215,7 +252,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         setTurnoverCategories(labels);
         setRestockSchedule(data.low_stock_alerts);
       } catch (error) {
-        console.error("Failed to fetch turnover and alerts data:", error);
+        console.error('Failed to fetch turnover and alerts data:', error);
       }
     };
 
@@ -230,33 +267,33 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
       const formattedEnd = formatDateTime(endDate);
 
       try {
-        const res = await axiosInstance.get("/inventory/turnover-alerts", {
+        const res = await axiosInstance.get('/inventory/turnover-alerts', {
           params: { startDate: formattedStart, endDate: formattedEnd },
         });
         const data = res.data as AlertAPIResponse;
 
         setAlertsData([
           {
-            label: "Available",
+            label: 'Available',
             value: data.available_percentage,
             count: data.available,
-            color: "text-green-500",
+            color: 'text-green-500',
           },
           {
-            label: "Low Stock",
+            label: 'Low Stock',
             value: data.low_stock_percentage,
             count: data.low_stock,
-            color: "text-yellow-500",
+            color: 'text-yellow-500',
           },
           {
-            label: "Out of Stock",
+            label: 'Out of Stock',
             value: data.out_of_stock_percentage,
             count: data.out_of_stock,
-            color: "text-red-500",
+            color: 'text-red-500',
           },
         ]);
       } catch (err) {
-        console.error("Failed to fetch alert data:", err);
+        console.error('Failed to fetch alert data:', err);
       }
     };
 
@@ -264,10 +301,9 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   }, [startDate, endDate]);
 
   const warehouseChartOptions = {
-
     chart: {
-      id: "warehouse-chart",
-      type: "bar",
+      id: 'warehouse-chart',
+      type: 'bar',
       toolbar: { show: false },
       events: {
         dataPointSelection: (_event: any, _chartContext: any, config: any) => {
@@ -275,30 +311,30 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
           const regionClicked = warehouseData[clickedIndex]?.region;
           if (regionClicked) {
             setFilterParams({
-              "region.value": regionClicked,
-              "region.matchMode": "equals"
+              'region.value': regionClicked,
+              'region.matchMode': 'equals',
             });
             setOpenWarehouseDialog(true);
           }
-        }
-      }
+        },
+      },
     },
-    colors: ["#a855f7"],
-    plotOptions: { bar: { borderRadius: 6, columnWidth: "50%" } },
+    colors: ['#a855f7'],
+    plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
     dataLabels: { enabled: false },
     xaxis: {
       categories: warehouseData.map((d) => d.region),
-      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? '#ccc' : '#333' } },
       title: {
-        text: "Region",
-        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
+        text: 'Region',
+        style: { color: isDark ? '#ccc' : '#333', fontWeight: 600 },
       },
     },
     yaxis: {
-      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? '#ccc' : '#333' } },
       title: {
-        text: "Inventory %",
-        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
+        text: 'Inventory %',
+        style: { color: isDark ? '#ccc' : '#333', fontWeight: 600 },
       },
     },
     tooltip: warehouseTooltip,
@@ -306,15 +342,15 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
   const warehouseChartSeries = [
     {
-      name: "Percentage",
+      name: 'Percentage',
       data: warehouseData.map((d) => parseFloat(d.percentage)),
     },
   ];
 
   const turnoverChartOptions = {
     chart: {
-      id: "turnover-chart",
-      type: "line",
+      id: 'turnover-chart',
+      type: 'line',
       toolbar: { show: false },
       events: {
         dataPointSelection: (_event: any, _chartContext: any, config: any) => {
@@ -322,40 +358,40 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
           const clickedDate = turnoverCategories[clickedIndex];
           if (clickedDate) {
             setFilterParams({
-              "restock_date.value": clickedDate,
-              "restock_date.matchMode": "equals",
+              'restock_date.value': clickedDate,
+              'restock_date.matchMode': 'equals',
             });
             setOpenTurnoverDialog(true);
           }
-        }
-      }
+        },
+      },
     },
-    colors: ["#a855f7"],
-    stroke: { curve: "smooth", width: 3 },
+    colors: ['#a855f7'],
+    stroke: { curve: 'smooth', width: 3 },
     markers: {
       size: 4,
-      colors: ["#fff"],
-      strokeColors: "#a855f7",
+      colors: ['#fff'],
+      strokeColors: '#a855f7',
       strokeWidth: 2,
     },
     xaxis: {
       categories: turnoverCategories,
-      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? '#ccc' : '#333' } },
       title: {
         text:
           turnoverCategories.length > 0 && turnoverCategories[0].length === 4
-            ? "Year"
+            ? 'Year'
             : turnoverCategories[0]?.length <= 7
-              ? "Month"
-              : "Date",
-        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
+            ? 'Month'
+            : 'Date',
+        style: { color: isDark ? '#ccc' : '#333', fontWeight: 600 },
       },
     },
     yaxis: {
-      labels: { style: { colors: isDark ? "#ccc" : "#333" } },
+      labels: { style: { colors: isDark ? '#ccc' : '#333' } },
       title: {
-        text: "Turnover Rate",
-        style: { color: isDark ? "#ccc" : "#333", fontWeight: 600 },
+        text: 'Turnover Rate',
+        style: { color: isDark ? '#ccc' : '#333', fontWeight: 600 },
       },
     },
     tooltip: turnoverTooltip,
@@ -363,7 +399,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
   const turnoverChartSeries = [
     {
-      name: "Turnover Rate",
+      name: 'Turnover Rate',
       data: turnoverRates.map((rate, i) => ({
         x: turnoverCategories[i] ?? `Point ${i + 1}`,
         y: rate,
@@ -391,10 +427,12 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         Region: <span className="font-semibold">{item.region}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Stock Quantity: <span className="font-semibold">{item.stock_quantity}</span>
+        Stock Quantity:{' '}
+        <span className="font-semibold">{item.stock_quantity}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300">
-        Reserved Quantity: <span className="font-semibold">{item.reserved_quantity}</span>
+        Reserved Quantity:{' '}
+        <span className="font-semibold">{item.reserved_quantity}</span>
       </div>
     </div>
   );
@@ -411,7 +449,8 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         Product Name: <span className="font-semibold">{item.name}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Stock Quantity: <span className="font-semibold">{item.stock_quantity}</span>
+        Stock Quantity:{' '}
+        <span className="font-semibold">{item.stock_quantity}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
         Restock Date: <span className="font-semibold">{item.restock_date}</span>
@@ -421,7 +460,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
       </div>
     </div>
   );
-
 
   return (
     <>
@@ -433,7 +471,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         header={
           filterParams.region
             ? `Inventory Details for ${filterParams.region}`
-            : "Warehouse Inventory Details"
+            : 'Warehouse Inventory Details'
         }
         mobileCardRender={renderWarehouseMobileCard}
       />
@@ -455,13 +493,15 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
                 setFilterParams({}); // Clear previous region filter
                 setOpenWarehouseDialog(true);
               }}
-              className="text-purple-500 hover:text-purple-700"
+              className="hover:text-purple-700"
               title="View Table"
             />
           </div>
 
           <h3 className="app-subheading mb-1">Warehouse Inventory</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Regional Performance</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Regional Performance
+          </p>
 
           <div className="space-y-3 mb-6">
             {warehouseData.map((item, idx) => (
@@ -491,7 +531,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
                 setFilterParams({}); // Clear previous filters
                 setOpenTurnoverDialog(true);
               }}
-              className="text-purple-500 hover:text-purple-700"
+              className="hover:text-purple-700"
               title="View Table"
             />
           </div>
@@ -507,15 +547,19 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
                 className="cursor-pointer"
                 onClick={() => {
                   setFilterParams({
-                    "status.value": item.label,
-                    "status.matchMode": "equals",
+                    'status.value': item.label,
+                    'status.matchMode': 'equals',
                   });
                   setOpenTurnoverDialog(true);
                 }}
               >
-                <p className="app-widget-label text-gray-500 dark:text-gray-400">{item.label}</p>
+                <p className="app-widget-label text-gray-500 dark:text-gray-400">
+                  {item.label}
+                </p>
                 <p className={`app-widget-value ${item.color}`}>{item.value}</p>
-                <p className="text-xs text-gray-400 dark:text-gray-500">{item.count} products</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  {item.count} products
+                </p>
               </div>
             ))}
           </div>

@@ -73,7 +73,10 @@ const VolumeValueSection: React.FC<{ company: string }> = ({ company }) => {
         console.error("Error fetching data:", err);
         setData([]);
       });
+
+
   }, [startDate, endDate, company]);
+
 
   const filteredData = data.filter(
     (item) =>

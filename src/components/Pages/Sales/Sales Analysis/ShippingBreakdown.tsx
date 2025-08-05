@@ -1,17 +1,23 @@
-"use client";
+'use client';
 
-import React, { useMemo, useState } from "react";
-import Chart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { useTheme } from "next-themes";
+import React, { useMemo, useState } from 'react';
+import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
+import { useTheme } from 'next-themes';
 
-import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
-import { axiosInstance } from "../../../../axios";
-import { getBaseTooltip, costTooltip } from "../../../modularity/graphs/graphWidget";
-import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataTable";
-import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
-import { FaTable } from "react-icons/fa";
+import { useDateRangeEnterprise } from '../../../utils/useGlobalFilters';
+import { formatDateTime, formatValue } from '../../../utils/kpiUtils';
+import { axiosInstance } from '../../../../axios';
+import {
+  getBaseTooltip,
+  costTooltip,
+} from '../../../modularity/graphs/graphWidget';
+import {
+  BaseDataTable,
+  TableColumn,
+} from '../../../modularity/tables/BaseDataTable';
+import FilteredDataDialog from '../../../modularity/tables/FilteredDataDialog';
+import { FaTable } from 'react-icons/fa';
 
 interface Shipment {
   carrier: string;
@@ -25,7 +31,7 @@ const convertToUSD = (rupees: number) => rupees * 0.012;
 
 const ShippingBreakdown: React.FC = () => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [allData, setAllData] = useState<Shipment[]>([]);
   const [showCarrierDialog, setShowCarrierDialog] = useState(false);
@@ -46,22 +52,27 @@ const ShippingBreakdown: React.FC = () => {
     });
 
     if (enterpriseKey?.trim()) {
-      queryParams.append("enterpriseKey", enterpriseKey);
+      queryParams.append('enterpriseKey', enterpriseKey);
     }
 
     if (params.sortField) {
-      queryParams.append("sortField", params.sortField);
-      queryParams.append("sortOrder", params.sortOrder === "asc" ? "asc" : "desc");
+      queryParams.append('sortField', params.sortField);
+      queryParams.append(
+        'sortOrder',
+        params.sortOrder === 'asc' ? 'asc' : 'desc'
+      );
     }
 
     for (const key in params) {
-      if (key.endsWith("Filter") && params[key] != null && params[key] !== "") {
+      if (key.endsWith('Filter') && params[key] != null && params[key] !== '') {
         queryParams.append(key, params[key]);
       }
     }
 
     try {
-      const res = await axiosInstance.get(`/analysis/shipment-summary?${queryParams.toString()}`);
+      const res = await axiosInstance.get(
+        `/analysis/shipment-summary?${queryParams.toString()}`
+      );
       const data = res.data as { shipments?: Shipment[]; count?: number };
       const shipments = data.shipments || [];
       const shipmentsWithUSD = shipments.map((s: Shipment) => ({
@@ -76,70 +87,84 @@ const ShippingBreakdown: React.FC = () => {
         count: data.count || 0,
       };
     } catch (err) {
-      console.error("❌ Fetch error:", err);
+      console.error('❌ Fetch error:', err);
       return { data: [], count: 0 };
     }
   };
 
   const columns: TableColumn<Shipment>[] = [
     {
-      field: "carrier",
-      header: "Carrier",
+      field: 'carrier',
+      header: 'Carrier',
       sortable: true,
       filter: true,
-      filterPlaceholder: "Search carriers",
+      filterPlaceholder: 'Search carriers',
     },
     {
-      field: "shipping_method",
-      header: "Shipping Method",
+      field: 'shipping_method',
+      header: 'Shipping Method',
       sortable: true,
       filter: true,
-      filterPlaceholder: "Search methods",
+      filterPlaceholder: 'Search methods',
     },
     {
-      field: "shipment_status",
-      header: "Status",
+      field: 'shipment_status',
+      header: 'Status',
       sortable: true,
       filter: true,
-      filterPlaceholder: "Search statuses",
+      filterPlaceholder: 'Search statuses',
     },
     {
-      field: "shipment_cost_usd",
-      header: "Cost (USD)",
+      field: 'shipment_cost_usd',
+      header: 'Cost (USD)',
       sortable: true,
       body: (rowData: Shipment) =>
-        `$${rowData.shipment_cost_usd ? formatValue(rowData.shipment_cost_usd) : "0"}`,
+        `$${
+          rowData.shipment_cost_usd
+            ? formatValue(rowData.shipment_cost_usd)
+            : '0'
+        }`,
     },
   ];
 
   const mobileCardRender = (shipment: Shipment, index: number) => (
     <div
       key={`${shipment.carrier}-${shipment.shipping_method}-${index}`}
-      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
-        } mb-3`}
+      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } mb-3`}
     >
       <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Carrier:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Carrier:
+        </span>
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {shipment.carrier || "Unknown"}
+          {shipment.carrier || 'Unknown'}
         </span>
       </div>
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Method:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Method:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipping_method || "N/A"}
+          {shipment.shipping_method || 'N/A'}
         </span>
       </div>
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Status:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipment_status || "Unknown"}
+          {shipment.shipment_status || 'Unknown'}
         </span>
       </div>
       <div className="flex justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400">Cost:</span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          ${shipment.shipment_cost_usd ? formatValue(shipment.shipment_cost_usd) : "0"}
+          $
+          {shipment.shipment_cost_usd
+            ? formatValue(shipment.shipment_cost_usd)
+            : '0'}
         </span>
       </div>
     </div>
@@ -148,8 +173,9 @@ const ShippingBreakdown: React.FC = () => {
   const carrierTotals = useMemo(() => {
     const totals: Record<string, number> = {};
     allData.forEach((shipment) => {
-      const carrier = shipment.carrier || "Unknown";
-      totals[carrier] = (totals[carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
+      const carrier = shipment.carrier || 'Unknown';
+      totals[carrier] =
+        (totals[carrier] || 0) + (shipment.shipment_cost_usd ?? 0);
     });
     return Object.entries(totals)
       .sort(([, a], [, b]) => b - a)
@@ -161,26 +187,57 @@ const ShippingBreakdown: React.FC = () => {
   }, [allData]);
 
   const dialogColumns: TableColumn<any>[] = [
-    { field: "shipment_id", header: "Shipment ID", sortable: true, filter: true },
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "carrier", header: "Carrier", sortable: true, filter: true },
-    { field: "tracking_number", header: "Tracking #", sortable: true, filter: true },
-    { field: "shipment_status", header: "Status", sortable: true, filter: true },
-    { field: "shipment_cost", header: "Cost", sortable: true, filter: true },
-    { field: "shipping_method", header: "Method", sortable: true, filter: true },
-    { field: "estimated_shipment_date", header: "Estimated Date", sortable: true, filter: true },
-    { field: "actual_shipment_date", header: "Actual Date", sortable: true, filter: true },
+    {
+      field: 'shipment_id',
+      header: 'Shipment ID',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'order_id', header: 'Order ID', sortable: true, filter: true },
+    { field: 'carrier', header: 'Carrier', sortable: true, filter: true },
+    {
+      field: 'tracking_number',
+      header: 'Tracking #',
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: 'shipment_status',
+      header: 'Status',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'shipment_cost', header: 'Cost', sortable: true, filter: true },
+    {
+      field: 'shipping_method',
+      header: 'Method',
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: 'estimated_shipment_date',
+      header: 'Estimated Date',
+      sortable: true,
+      filter: true,
+    },
+    {
+      field: 'actual_shipment_date',
+      header: 'Actual Date',
+      sortable: true,
+      filter: true,
+    },
   ];
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
       chart: {
-        type: "bar",
+        type: 'bar',
         toolbar: { show: false },
-        foreColor: isDark ? "#CBD5E1" : "#334155",
+        foreColor: isDark ? '#CBD5E1' : '#334155',
         events: {
           dataPointSelection: (_: any, _unused: any, config) => {
-            const clickedCarrier = Object.keys(carrierTotals)[config.dataPointIndex];
+            const clickedCarrier =
+              Object.keys(carrierTotals)[config.dataPointIndex];
             if (clickedCarrier) {
               setCarrierFilter(clickedCarrier);
               setShowCarrierDialog(true);
@@ -191,25 +248,33 @@ const ShippingBreakdown: React.FC = () => {
       xaxis: {
         categories: Object.keys(carrierTotals),
         labels: {
-          style: { fontSize: "12px", colors: isDark ? "#CBD5E1" : "#334155" },
+          style: { fontSize: '12px', colors: isDark ? '#CBD5E1' : '#334155' },
         },
         crosshairs: { show: false },
         title: {
-          text: "Carriers",
-          style: { fontSize: "14px", fontWeight: "normal", color: isDark ? "#CBD5E1" : "#64748B" },
+          text: 'Carriers',
+          style: {
+            fontSize: '14px',
+            fontWeight: 'normal',
+            color: isDark ? '#CBD5E1' : '#64748B',
+          },
         },
       },
       yaxis: {
         title: {
-          text: "Total Cost ($)",
-          style: { fontSize: "14px", fontWeight: "normal", color: isDark ? "#CBD5E1" : "#64748B" },
+          text: 'Total Cost ($)',
+          style: {
+            fontSize: '14px',
+            fontWeight: 'normal',
+            color: isDark ? '#CBD5E1' : '#64748B',
+          },
         },
         labels: { formatter: (val: number) => `$${formatValue(val)}` },
       },
       dataLabels: { enabled: false },
-      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-      grid: { borderColor: isDark ? "#334155" : "#E5E7EB" },
-      colors: ["#a855f7"],
+      plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+      grid: { borderColor: isDark ? '#334155' : '#E5E7EB' },
+      colors: ['#a855f7'],
       tooltip: getBaseTooltip(isDark, costTooltip),
     }),
     [carrierTotals, isDark]
@@ -217,42 +282,51 @@ const ShippingBreakdown: React.FC = () => {
 
   const chartSeries = [
     {
-      name: "Shipping Cost (USD)",
+      name: 'Shipping Cost (USD)',
       data: Object.values(carrierTotals),
     },
   ];
 
   const dialogMobileCardRender = (shipment: any, index: number) => (
     <div
-      key={`${shipment.shipment_id || index}-${shipment.carrier || "unknown"}`}
-      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
-        } mb-3`}
+      key={`${shipment.shipment_id || index}-${shipment.carrier || 'unknown'}`}
+      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } mb-3`}
     >
       <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Shipment ID:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Shipment ID:
+        </span>
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {shipment.shipment_id || "N/A"}
+          {shipment.shipment_id || 'N/A'}
         </span>
       </div>
 
       <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Carrier:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Carrier:
+        </span>
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {shipment.carrier || "Unknown"}
+          {shipment.carrier || 'Unknown'}
         </span>
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Method:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Method:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipping_method || "N/A"}
+          {shipment.shipping_method || 'N/A'}
         </span>
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Status:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipment_status || "Unknown"}
+          {shipment.shipment_status || 'Unknown'}
         </span>
       </div>
 
@@ -262,19 +336,16 @@ const ShippingBreakdown: React.FC = () => {
           {shipment.shipment_cost_usd !== undefined
             ? `$${formatValue(shipment.shipment_cost_usd)}`
             : shipment.shipment_cost !== undefined
-              ? `$${formatValue(shipment.shipment_cost)}`
-              : "N/A"}
+            ? `$${formatValue(shipment.shipment_cost)}`
+            : 'N/A'}
         </span>
       </div>
     </div>
   );
 
-
   return (
     <div className="card p-4">
-      <h2 className="app-subheading">
-        Shipping Breakdown
-      </h2>
+      <h2 className="app-subheading">Shipping Breakdown</h2>
 
       <BaseDataTable<Shipment>
         columns={columns}
@@ -283,7 +354,7 @@ const ShippingBreakdown: React.FC = () => {
         initialSortOrder={-1}
         mobileCardRender={mobileCardRender}
         title=""
-        globalFilterFields={["carrier", "shipping_method", "shipment_status"]}
+        globalFilterFields={['carrier', 'shipping_method', 'shipment_status']}
         emptyMessage="No shipments found"
         field="carrier"
         header=""
@@ -295,7 +366,7 @@ const ShippingBreakdown: React.FC = () => {
           <button
             onClick={() => setShowUnfilteredDialog(true)}
             title="Show full shipment data"
-            className="text-purple-500 hover:text-purple-700"
+            className="hover:text-purple-700"
             aria-label="Open full shipment data table"
           >
             <FaTable size={18} />
@@ -303,9 +374,16 @@ const ShippingBreakdown: React.FC = () => {
         </div>
 
         {Object.keys(carrierTotals).length > 0 ? (
-          <Chart options={chartOptions} series={chartSeries} type="bar" height={350} />
+          <Chart
+            options={chartOptions}
+            series={chartSeries}
+            type="bar"
+            height={350}
+          />
         ) : (
-          <p className="text-center text-gray-500">No shipment data available for visualization.</p>
+          <p className="text-center text-gray-500">
+            No shipment data available for visualization.
+          </p>
         )}
       </div>
 
@@ -316,16 +394,19 @@ const ShippingBreakdown: React.FC = () => {
         columns={dialogColumns}
         fetchData={(params?: any) => async (tableParams: any) => {
           const [startDate, endDate] = dateRange || [];
-          const response = await axiosInstance.get("carrier-performance/carrier-details", {
-            params: {
-              ...params,
-              ...tableParams,
-              startDate: formatDateTime(startDate),
-              endDate: formatDateTime(endDate),
-              ...(enterpriseKey && { enterpriseKey }),
-              ...(carrierFilter && { carrier: carrierFilter }),
-            },
-          });
+          const response = await axiosInstance.get(
+            'carrier-performance/carrier-details',
+            {
+              params: {
+                ...params,
+                ...tableParams,
+                startDate: formatDateTime(startDate),
+                endDate: formatDateTime(endDate),
+                ...(enterpriseKey && { enterpriseKey }),
+                ...(carrierFilter && { carrier: carrierFilter }),
+              },
+            }
+          );
           return { data: response.data.data, count: response.data.count };
         }}
         mobileCardRender={dialogMobileCardRender}
@@ -337,16 +418,19 @@ const ShippingBreakdown: React.FC = () => {
         columns={dialogColumns}
         fetchData={(params?: any) => async (tableParams: any) => {
           const [startDate, endDate] = dateRange || [];
-          const response = await axiosInstance.get("carrier-performance/carrier-details", {
-            params: {
-              ...params,
-              ...tableParams,
-              startDate: formatDateTime(startDate),
-              endDate: formatDateTime(endDate),
-              ...(enterpriseKey && { enterpriseKey }),
-              // No carrier filter here
-            },
-          });
+          const response = await axiosInstance.get(
+            'carrier-performance/carrier-details',
+            {
+              params: {
+                ...params,
+                ...tableParams,
+                startDate: formatDateTime(startDate),
+                endDate: formatDateTime(endDate),
+                ...(enterpriseKey && { enterpriseKey }),
+                // No carrier filter here
+              },
+            }
+          );
           return { data: response.data.data, count: response.data.count };
         }}
         mobileCardRender={dialogMobileCardRender}

@@ -7,7 +7,7 @@ const companies: Array<'AWD' | 'AWW'> = ['AWD', 'AWW'];
 
 const DummyDashboard: React.FC = () => {
   useEffect(() => {
-    window.scrollTo(0, 0);  
+    window.scrollTo(0, 0);
   }, []);
 
   return (

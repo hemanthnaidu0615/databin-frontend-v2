@@ -1,22 +1,25 @@
-import { useState, useMemo, useEffect } from "react";
-import { Card } from "primereact/card";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import Chart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { useTheme } from "next-themes";
-import { Skeleton } from "primereact/skeleton";
-import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
-import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
-import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
-import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
-import { FaTable } from "react-icons/fa";
-import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
-import { useCallback } from "react";
+import { useState, useMemo, useEffect } from 'react';
+import { Card } from 'primereact/card';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
+import { useTheme } from 'next-themes';
+import { Skeleton } from 'primereact/skeleton';
+import { axiosInstance } from '../../../../axios';
+import { formatDateTime, formatValue } from '../../../utils/kpiUtils';
+import { useDateRangeEnterprise } from '../../../utils/useGlobalFilters';
+import {
+  getBaseTooltip,
+  revenueTooltip,
+} from '../../../modularity/graphs/graphWidget';
+import FilteredDataDialog from '../../../modularity/tables/FilteredDataDialog';
+import { FaTable } from 'react-icons/fa';
+import { PrimeSelectFilter } from '../../../modularity/dropdowns/Dropdown';
+import { useCallback } from 'react';
 const viewOptions = [
-  { label: "By Revenue", value: "revenue" as "revenue" },
-  { label: "By Units", value: "units" as "units" },
+  { label: 'By Revenue', value: 'revenue' as 'revenue' },
+  { label: 'By Units', value: 'units' as 'units' },
 ];
 
 interface Product {
@@ -32,8 +35,8 @@ const convertToUSD = (rupees: number): number => {
 
 const TopProductsTable = () => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const [viewMode, setViewMode] = useState<"revenue" | "units">("revenue");
+  const isDark = theme === 'dark';
+  const [viewMode, setViewMode] = useState<'revenue' | 'units'>('revenue');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,14 +45,17 @@ const TopProductsTable = () => {
 
   const [rows, setRows] = useState(5);
   const [first, setFirst] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Dialog state & filter (productName)
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogFilter, setDialogFilter] = useState<string | null>(null);
 
   // Factory function to create fetchData for FilteredDataDialog
-  const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
+  const createFetchData = (
+    endpoint: string,
+    baseParams: Record<string, any>
+  ) => {
     return (params = {}) => {
       return async (tableParams: any) => {
         const combinedParams = {
@@ -63,21 +69,22 @@ const TopProductsTable = () => {
         };
 
         try {
-          const response = await axiosInstance.get(endpoint, { params: combinedParams });
+          const response = await axiosInstance.get(endpoint, {
+            params: combinedParams,
+          });
 
           // Map your response here
           return {
-            data: (response.data as { products?: any[] }).products || [],   // note 'products' here
+            data: (response.data as { products?: any[] }).products || [], // note 'products' here
             count: (response.data as { count?: number }).count || 0,
           };
         } catch (error) {
-          console.error("Failed to fetch filtered data:", error);
+          console.error('Failed to fetch filtered data:', error);
           return { data: [], count: 0 };
         }
       };
     };
   };
-
 
   const onPageChange = (event: { first: number; rows: number }) => {
     setFirst(event.first);
@@ -100,7 +107,7 @@ const TopProductsTable = () => {
       });
 
       if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
+        params.append('enterpriseKey', enterpriseKey);
       }
 
       try {
@@ -110,8 +117,8 @@ const TopProductsTable = () => {
         const data = response.data as { products?: Product[] };
         setProducts(data.products || []);
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Failed to load products data");
+        console.error('Error fetching products:', err);
+        setError('Failed to load products data');
       } finally {
         setLoading(false);
       }
@@ -129,15 +136,18 @@ const TopProductsTable = () => {
 
   const sortedProducts = useMemo(() => {
     return [...filteredProducts].sort((a, b) =>
-      viewMode === "revenue"
+      viewMode === 'revenue'
         ? b.total_sales - a.total_sales
         : b.units_sold - a.units_sold
     );
   }, [viewMode, filteredProducts]);
 
-  const topProducts = useMemo(() => sortedProducts.slice(0, 10), [sortedProducts]);
+  const topProducts = useMemo(
+    () => sortedProducts.slice(0, 10),
+    [sortedProducts]
+  );
   const dialogFetchData = useCallback(
-    createFetchData("analysis/details-products-grid", {
+    createFetchData('analysis/details-products-grid', {
       startDate: startDate ? formatDateTime(startDate) : undefined,
       endDate: endDate ? formatDateTime(endDate) : undefined,
       enterpriseKey,
@@ -146,13 +156,12 @@ const TopProductsTable = () => {
     [startDate, endDate, enterpriseKey, dialogFilter]
   );
 
-
   const chartOptions: ApexOptions = useMemo(
     () => ({
       chart: {
-        type: "bar",
+        type: 'bar',
         toolbar: { show: false },
-        foreColor: isDark ? "#CBD5E1" : "#334155",
+        foreColor: isDark ? '#CBD5E1' : '#334155',
         events: {
           dataPointSelection: (_: any, _chartContext, config) => {
             const index = config.dataPointIndex;
@@ -169,40 +178,40 @@ const TopProductsTable = () => {
         categories: topProducts.map((p) => p.product_name),
         labels: {
           style: {
-            fontSize: "12px",
-            colors: isDark ? "#CBD5E1" : "#334155",
+            fontSize: '12px',
+            colors: isDark ? '#CBD5E1' : '#334155',
           },
           formatter: (value: string) =>
-            value.length > 20 ? value.substring(0, 20) + "..." : value,
+            value.length > 20 ? value.substring(0, 20) + '...' : value,
         },
         crosshairs: { show: false },
         title: {
-          text: "Products",
+          text: 'Products',
           style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: isDark ? "#CBD5E1" : "#64748B",
+            fontSize: '14px',
+            fontWeight: 'normal',
+            color: isDark ? '#CBD5E1' : '#64748B',
           },
         },
       },
       yaxis: {
         title: {
-          text: viewMode === "revenue" ? "Total Sales ($)" : "Units Sold",
+          text: viewMode === 'revenue' ? 'Total Sales ($)' : 'Units Sold',
           style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: isDark ? "#CBD5E1" : "#64748B",
+            fontSize: '14px',
+            fontWeight: 'normal',
+            color: isDark ? '#CBD5E1' : '#64748B',
           },
         },
         labels: {
           formatter: (val: number) =>
-            viewMode === "revenue" ? `$${formatValue(val)}` : formatValue(val),
+            viewMode === 'revenue' ? `$${formatValue(val)}` : formatValue(val),
         },
       },
       dataLabels: { enabled: false },
-      plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
-      grid: { borderColor: isDark ? "#334155" : "#E5E7EB" },
-      colors: ["#a855f7"],
+      plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+      grid: { borderColor: isDark ? '#334155' : '#E5E7EB' },
+      colors: ['#a855f7'],
       legend: { show: false },
       tooltip: getBaseTooltip(isDark, revenueTooltip),
     }),
@@ -211,9 +220,9 @@ const TopProductsTable = () => {
 
   const chartSeries = [
     {
-      name: viewMode === "revenue" ? "Rev" : "Units Sold",
+      name: viewMode === 'revenue' ? 'Rev' : 'Units Sold',
       data:
-        viewMode === "revenue"
+        viewMode === 'revenue'
           ? topProducts.map((p) => convertToUSD(p.total_sales))
           : topProducts.map((p) => p.units_sold),
     },
@@ -254,41 +263,54 @@ const TopProductsTable = () => {
   const productDialogMobileCardRender = (product: any, index: number) => (
     <div
       key={`${product.product_name || index}`}
-      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
-        } mb-3`}
+      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${
+        isDark ? 'border-gray-700' : 'border-gray-200'
+      } mb-3`}
     >
       <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Product Name:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Product Name:
+        </span>
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {product.product_name || "N/A"}
+          {product.product_name || 'N/A'}
         </span>
       </div>
 
       <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Description:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Description:
+        </span>
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {product.product_description || "N/A"}
+          {product.product_description || 'N/A'}
         </span>
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Quantity:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Quantity:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
           {product.quantity || 0}
         </span>
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Unit Price:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Unit Price:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {product.unit_price ? `$${formatValue(product.unit_price)}` : "N/A"}
+          {product.unit_price ? `$${formatValue(product.unit_price)}` : 'N/A'}
         </span>
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Amount:</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+          Total Amount:
+        </span>
         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {product.total_amount ? `$${formatValue(product.total_amount)}` : "N/A"}
+          {product.total_amount
+            ? `$${formatValue(product.total_amount)}`
+            : 'N/A'}
         </span>
       </div>
     </div>
@@ -309,7 +331,7 @@ const TopProductsTable = () => {
             }}
             className="app-search-input w-full max-w-full"
           />
-          <PrimeSelectFilter<"revenue" | "units">
+          <PrimeSelectFilter<'revenue' | 'units'>
             value={viewMode}
             options={viewOptions}
             onChange={setViewMode}
@@ -335,7 +357,7 @@ const TopProductsTable = () => {
             header="Product Name"
             sortable
             className="app-table-content"
-            style={{ minWidth: "200px" }}
+            style={{ minWidth: '200px' }}
           />
           <Column
             field="units_sold"
@@ -343,15 +365,17 @@ const TopProductsTable = () => {
             sortable
             className="app-table-content"
             body={(rowData) => formatValue(rowData.units_sold)}
-            style={{ minWidth: "100px" }}
+            style={{ minWidth: '100px' }}
           />
           <Column
             field="total_sales"
             header="Total Sales ($)"
             sortable
             className="app-table-content"
-            body={(rowData) => `$${formatValue(convertToUSD(rowData.total_sales))}`}
-            style={{ minWidth: "150px" }}
+            body={(rowData) =>
+              `$${formatValue(convertToUSD(rowData.total_sales))}`
+            }
+            style={{ minWidth: '150px' }}
           />
         </DataTable>
       </div>
@@ -375,23 +399,28 @@ const TopProductsTable = () => {
             field="product_name"
             header="Product Name"
             body={(rowData) => (
-              <div className="truncate max-w-[220px]" title={rowData.product_name}>
+              <div
+                className="truncate max-w-[220px]"
+                title={rowData.product_name}
+              >
                 {rowData.product_name}
               </div>
             )}
-            style={{ minWidth: "160px" }}
+            style={{ minWidth: '160px' }}
           />
           <Column
             field="units_sold"
             header="Units Sold"
             body={(rowData) => formatValue(rowData.units_sold)}
-            style={{ minWidth: "100px" }}
+            style={{ minWidth: '100px' }}
           />
           <Column
             field="total_sales"
             header="Total Sales ($)"
-            body={(rowData) => `$${formatValue(convertToUSD(rowData.total_sales))}`}
-            style={{ minWidth: "140px" }}
+            body={(rowData) =>
+              `$${formatValue(convertToUSD(rowData.total_sales))}`
+            }
+            style={{ minWidth: '140px' }}
           />
         </DataTable>
       </div>
@@ -403,7 +432,7 @@ const TopProductsTable = () => {
             Top 10 Products Visualization
           </h3>
           <button
-            className="text-purple-500 hover:text-purple-700"
+            className="hover:text-purple-700"
             onClick={() => {
               setDialogFilter(null); // no filter means all products in dialog
               setDialogVisible(true);
@@ -429,15 +458,39 @@ const TopProductsTable = () => {
         header="Product Details"
         fetchData={dialogFetchData}
         columns={[
-          { field: "product_name", header: "Product Name", sortable: true, filter: true },
-          { field: "product_description", header: "Description", sortable: true, filter: true },
-          { field: "quantity", header: "Quantity", sortable: true, filter: true },
-          { field: "unit_price", header: "Unit Price", sortable: true, filter: true },
-          { field: "total_amount", header: "Total Amount", sortable: true, filter: true },
+          {
+            field: 'product_name',
+            header: 'Product Name',
+            sortable: true,
+            filter: true,
+          },
+          {
+            field: 'product_description',
+            header: 'Description',
+            sortable: true,
+            filter: true,
+          },
+          {
+            field: 'quantity',
+            header: 'Quantity',
+            sortable: true,
+            filter: true,
+          },
+          {
+            field: 'unit_price',
+            header: 'Unit Price',
+            sortable: true,
+            filter: true,
+          },
+          {
+            field: 'total_amount',
+            header: 'Total Amount',
+            sortable: true,
+            filter: true,
+          },
         ]}
         mobileCardRender={productDialogMobileCardRender}
       />
-
     </Card>
   );
 };

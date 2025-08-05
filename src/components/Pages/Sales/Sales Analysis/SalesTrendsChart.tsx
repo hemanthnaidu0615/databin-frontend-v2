@@ -1,38 +1,44 @@
-import { useEffect, useMemo, useState } from "react";
-import Chart from "react-apexcharts";
-import { Dropdown } from "primereact/dropdown";
-import { ApexOptions } from "apexcharts";
-import dayjs from "dayjs";
-import { useTheme } from "next-themes";
-import { axiosInstance } from "../../../../axios";
-import { formatDate } from "../../../utils/kpiUtils";
-import { getBaseToolTip, salesTooltip } from "../../../modularity/graphs/graphWidget";
-import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
+import { useEffect, useMemo, useState } from 'react';
+import Chart from 'react-apexcharts';
+import { Dropdown } from 'primereact/dropdown';
+import { ApexOptions } from 'apexcharts';
+import dayjs from 'dayjs';
+import { useTheme } from 'next-themes';
+import { axiosInstance } from '../../../../axios';
+import { formatDate } from '../../../utils/kpiUtils';
+import {
+  getBaseToolTip,
+  salesTooltip,
+} from '../../../modularity/graphs/graphWidget';
+import { useDateRangeEnterprise } from '../../../utils/useGlobalFilters';
 
-import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
-import { FaTable } from "react-icons/fa";
-import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
-import { TableColumn } from "../../../modularity/tables/BaseDataTable";
+import { PrimeSelectFilter } from '../../../modularity/dropdowns/Dropdown';
+import { FaTable } from 'react-icons/fa';
+import FilteredDataDialog from '../../../modularity/tables/FilteredDataDialog';
+import { TableColumn } from '../../../modularity/tables/BaseDataTable';
 
 const SalesTrendsChart = () => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const [chartType, setChartType] = useState<"bar" | "line">("line");
+  const isDark = theme === 'dark';
+  const [chartType, setChartType] = useState<'bar' | 'line'>('line');
   const [channels, setChannels] = useState<string[]>([]);
-  const [selectedChannel, setSelectedChannel] = useState<string>("all");
+  const [selectedChannel, setSelectedChannel] = useState<string>('all');
   const [salesData, setSalesData] = useState<
     { period: string; total_amount: number }[]
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [aggregationLevel, setAggregationLevel] = useState<string>("day");
+  const [aggregationLevel, setAggregationLevel] = useState<string>('day');
 
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
 
   const [startDate, endDate] = dateRange || [];
 
   const [showDialog, setShowDialog] = useState(false);
-  const [filteredParams, setFilteredParams] = useState<{ period?: string; channel?: string }>({});
+  const [filteredParams, setFilteredParams] = useState<{
+    period?: string;
+    channel?: string;
+  }>({});
 
   useEffect(() => {
     const fetchSalesData = async () => {
@@ -50,11 +56,11 @@ const SalesTrendsChart = () => {
       });
 
       if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
+        params.append('enterpriseKey', enterpriseKey);
       }
 
-      if (selectedChannel && selectedChannel !== "all") {
-        params.append("fulfillmentChannel", selectedChannel);
+      if (selectedChannel && selectedChannel !== 'all') {
+        params.append('fulfillmentChannel', selectedChannel);
       }
 
       try {
@@ -67,10 +73,10 @@ const SalesTrendsChart = () => {
         };
 
         setSalesData(data.sales || []);
-        setAggregationLevel(data.aggregation_level || "day");
+        setAggregationLevel(data.aggregation_level || 'day');
       } catch (err) {
-        console.error("Error fetching sales data", err);
-        setError("Failed to load sales data. Please try again.");
+        console.error('Error fetching sales data', err);
+        setError('Failed to load sales data. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -82,12 +88,12 @@ const SalesTrendsChart = () => {
   useEffect(() => {
     const fetchChannels = async () => {
       try {
-        const res = await axiosInstance.get("analysis/channels");
+        const res = await axiosInstance.get('analysis/channels');
         const data = res.data as { channels?: string[] };
         setChannels(data.channels || []);
       } catch (err) {
-        console.error("Error fetching channels", err);
-        setError("Failed to load channel options. Using default channels.");
+        console.error('Error fetching channels', err);
+        setError('Failed to load channel options. Using default channels.');
       }
     };
 
@@ -100,15 +106,15 @@ const SalesTrendsChart = () => {
     const categories = salesData.map((entry) => {
       const date = dayjs(entry.period);
       switch (aggregationLevel) {
-        case "week":
-          return `${date.format("MMM D")}`;
-        case "month":
-          return date.format("MMMM YYYY");
-        case "year":
-          return date.format("YYYY");
-        case "day":
+        case 'week':
+          return `${date.format('MMM D')}`;
+        case 'month':
+          return date.format('MMMM YYYY');
+        case 'year':
+          return date.format('YYYY');
+        case 'day':
         default:
-          return date.format("MMM D, YYYY");
+          return date.format('MMM D, YYYY');
       }
     });
 
@@ -122,7 +128,7 @@ const SalesTrendsChart = () => {
       chart: {
         type: chartType,
         toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
+        foreColor: theme === 'dark' ? '#CBD5E1' : '#374151',
         zoom: { enabled: false },
 
         // NEW EVENT: open dialog on chart point click
@@ -130,7 +136,10 @@ const SalesTrendsChart = () => {
           dataPointSelection: (_event, _chartContext, config) => {
             const clickedPeriod = salesData[config.dataPointIndex]?.period;
             if (clickedPeriod) {
-              setFilteredParams({ period: clickedPeriod, channel: selectedChannel });
+              setFilteredParams({
+                period: clickedPeriod,
+                channel: selectedChannel,
+              });
               setShowDialog(true);
             }
           },
@@ -140,37 +149,37 @@ const SalesTrendsChart = () => {
       tooltip: getBaseToolTip(isDark, salesTooltip),
 
       xaxis: {
-        type: "category",
+        type: 'category',
         categories: categories,
         labels: {
           rotate: -45,
           style: {
-            colors: theme === "dark" ? "#CBD5E1" : "#374151",
+            colors: theme === 'dark' ? '#CBD5E1' : '#374151',
           },
         },
         title: {
           text:
-            aggregationLevel === "day"
-              ? "Date"
-              : aggregationLevel === "week"
-                ? "Week"
-                : aggregationLevel === "month"
-                  ? "Month"
-                  : "Year",
+            aggregationLevel === 'day'
+              ? 'Date'
+              : aggregationLevel === 'week'
+              ? 'Week'
+              : aggregationLevel === 'month'
+              ? 'Month'
+              : 'Year',
           style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+            fontSize: '14px',
+            fontWeight: 'normal',
+            color: theme === 'dark' ? '#CBD5E1' : '#64748B',
           },
         },
       },
       yaxis: {
         title: {
-          text: "Sales ($)",
+          text: 'Sales ($)',
           style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+            fontSize: '14px',
+            fontWeight: 'normal',
+            color: theme === 'dark' ? '#CBD5E1' : '#64748B',
           },
         },
         labels: {
@@ -182,63 +191,109 @@ const SalesTrendsChart = () => {
         },
       },
       stroke: {
-        curve: "smooth",
-        width: chartType === "line" ? 2 : 0,
+        curve: 'smooth',
+        width: chartType === 'line' ? 2 : 0,
       },
       markers: {
         size: 5,
-        colors: ["#ffffff"],
-        strokeColors: "#a855f7",
+        colors: ['#ffffff'],
+        strokeColors: '#a855f7',
         strokeWidth: 3,
         hover: { size: 7 },
       },
       dataLabels: { enabled: false },
-      colors: ["#a855f7"],
+      colors: ['#a855f7'],
       grid: {
-        borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
+        borderColor: theme === 'dark' ? '#334155' : '#e5e7eb',
       },
       legend: { show: false },
     }),
-    [chartType, theme, categories, aggregationLevel, salesData, selectedChannel, isDark]
+    [
+      chartType,
+      theme,
+      categories,
+      aggregationLevel,
+      salesData,
+      selectedChannel,
+      isDark,
+    ]
   );
-  
+
   const columns: TableColumn<any>[] = [
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "fulfillment_channel", header: "Channel", sortable: true, filter: true },
-    { field: "subtotal", header: "Subtotal", sortable: true, filter: true },
-    { field: "shipping_fee", header: "Shipping Fee", sortable: true, filter: true },
-    { field: "tax_amount", header: "Tax", sortable: true, filter: true },
-    { field: "discount_amount", header: "Discount", sortable: true, filter: true },
-    { field: "total_amount", header: "Total", sortable: true, filter: true },
+    { field: 'order_id', header: 'Order ID', sortable: true, filter: true },
+    {
+      field: 'fulfillment_channel',
+      header: 'Channel',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'subtotal', header: 'Subtotal', sortable: true, filter: true },
+    {
+      field: 'shipping_fee',
+      header: 'Shipping Fee',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'tax_amount', header: 'Tax', sortable: true, filter: true },
+    {
+      field: 'discount_amount',
+      header: 'Discount',
+      sortable: true,
+      filter: true,
+    },
+    { field: 'total_amount', header: 'Total', sortable: true, filter: true },
   ];
 
-  const fetchTableData = (extraFilters: any = {}) => async (tableParams: any) => {
-    const response = await axiosInstance.get("/analysis/details-sales-trends-grid", {
-      params: {
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-        enterpriseKey,
-        fulfillmentChannel: extraFilters.channel !== "all" ? extraFilters.channel : undefined,
-        period: extraFilters.period,
-        ...tableParams,
-      },
-    });
+  const fetchTableData =
+    (extraFilters: any = {}) =>
+    async (tableParams: any) => {
+      const response = await axiosInstance.get(
+        '/analysis/details-sales-trends-grid',
+        {
+          params: {
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate),
+            enterpriseKey,
+            fulfillmentChannel:
+              extraFilters.channel !== 'all' ? extraFilters.channel : undefined,
+            period: extraFilters.period,
+            ...tableParams,
+          },
+        }
+      );
 
-    return {
-      data: response.data.data,
-      count: response.data.totalRecords,
+      return {
+        data: response.data.data,
+        count: response.data.totalRecords,
+      };
     };
-  };
 
   const renderMobileCard = (item: any, index: number) => (
-    <div key={index} className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800">
-      <div><b>Order ID:</b> {item.order_id}</div>
-      <div><b>Channel:</b> {item.fulfillment_channel}</div>
-      <div><b>Subtotal:</b> ${item.subtotal}</div>
-      <div><b>Shipping:</b> ${item.shipping_fee}</div>
-      <div><b>Tax:</b> ${item.tax_amount}</div>
-      <div><b>Discount:</b> ${item.discount_amount}</div>
-      <div><b>Total:</b> ${item.total_amount}</div>
+    <div
+      key={index}
+      className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800"
+    >
+      <div>
+        <b>Order ID:</b> {item.order_id}
+      </div>
+      <div>
+        <b>Channel:</b> {item.fulfillment_channel}
+      </div>
+      <div>
+        <b>Subtotal:</b> ${item.subtotal}
+      </div>
+      <div>
+        <b>Shipping:</b> ${item.shipping_fee}
+      </div>
+      <div>
+        <b>Tax:</b> ${item.tax_amount}
+      </div>
+      <div>
+        <b>Discount:</b> ${item.discount_amount}
+      </div>
+      <div>
+        <b>Total:</b> ${item.total_amount}
+      </div>
     </div>
   );
 
@@ -275,11 +330,11 @@ const SalesTrendsChart = () => {
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
       <div className="flex gap-2 flex-wrap mb-4">
-        <PrimeSelectFilter<"line" | "bar">
+        <PrimeSelectFilter<'line' | 'bar'>
           value={chartType}
           options={[
-            { label: "Line", value: "line" as "line" },
-            { label: "Bar", value: "bar" as "bar" },
+            { label: 'Line', value: 'line' as 'line' },
+            { label: 'Bar', value: 'bar' as 'bar' },
           ]}
           onChange={setChartType}
           className="w-46"
@@ -287,7 +342,7 @@ const SalesTrendsChart = () => {
         <Dropdown
           value={selectedChannel}
           options={[
-            { label: "Sales Channel", value: "all" },
+            { label: 'Sales Channel', value: 'all' },
             ...channels.map((ch) => ({
               label: ch,
               value: ch,
@@ -301,7 +356,7 @@ const SalesTrendsChart = () => {
       </div>
       <div className="absolute top-4 right-4">
         <button
-          className="text-purple-500 hover:text-purple-700 p-2 rounded"
+          className="hover:text-purple-700 p-2 rounded"
           title="View All"
           onClick={() => {
             setFilteredParams({ channel: selectedChannel });
@@ -317,7 +372,7 @@ const SalesTrendsChart = () => {
           options={chartOptions}
           series={[
             {
-              name: "Sales",
+              name: 'Sales',
               data: values,
             },
           ]}
@@ -333,7 +388,9 @@ const SalesTrendsChart = () => {
         visible={showDialog}
         onHide={() => setShowDialog(false)}
         header="Sales Trends – Detailed View"
-        fetchData={(params?: any) => fetchTableData({ ...filteredParams, ...params })}
+        fetchData={(params?: any) =>
+          fetchTableData({ ...filteredParams, ...params })
+        }
         columns={columns}
         mobileCardRender={renderMobileCard}
       />
