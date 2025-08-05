@@ -55,12 +55,13 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       try {
         const formattedStartDate = formatDateTime(startDate);
         const formattedEndDate = formatDateTime(endDate);
- 
+
         const params = new URLSearchParams({
           startDate: formattedStartDate,
           endDate: formattedEndDate,
+          size: "1000",
         });
- 
+
         if (enterpriseKey) {
           params.append("enterpriseKey", enterpriseKey);
         }
@@ -78,19 +79,19 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
         const months = Object.keys(trendsByMonth).sort();
         const categoryTotals: Record<string, number> = {};
- 
+
         for (const month of months) {
           const monthData = trendsByMonth[month];
           for (const [category, sales] of Object.entries(monthData)) {
             categoryTotals[category] = (categoryTotals[category] || 0) + sales;
           }
         }
- 
+
         const topCategories = Object.entries(categoryTotals)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
           .map(([category]) => category);
- 
+
         const series = topCategories.map((category) => ({
           name: category,
           data: months.map((month) => trendsByMonth[month]?.[category] || 0),
@@ -101,7 +102,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         console.error("Failed to fetch order trends:", error);
       }
     };
- 
+
     if (startDate && endDate) {
       fetchData();
     }
@@ -135,7 +136,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       labels: { colors: isDark ? "#d1d5db" : "#a855f7" },
     },
   };
- 
+
   const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/orders");
@@ -164,21 +165,22 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       ...(enterpriseKey ? { enterpriseKey } : {}),
     });
 
-    for (const key in params) {
-      if (key.endsWith("Filter")) {
-        const field = key.replace("Filter", "");
-        query.append(`${field}.value`, params[key]);
-        query.append(`${field}.matchMode`, "contains");
+    
+    Object.keys(params).forEach((key) => {
+      if (key.includes(".value") || key.includes(".matchMode")) {
+        query.append(key, params[key]);
       }
-    }
+    });
 
     const res = await axiosInstance.get(`/order-trends-by-category?${query.toString()}`);
     const responseData = res.data as { data?: TrendItem[]; count?: number };
+
     return {
       data: responseData.data || [],
       count: responseData.count || 0,
     };
   };
+
 
   return (
     <>
@@ -221,7 +223,6 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
     </>
   );
 };
- 
+
 export default OrderTrendsCategory;
- 
- 
+

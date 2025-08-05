@@ -55,10 +55,15 @@ const ShippingBreakdown: React.FC = () => {
     }
 
     for (const key in params) {
-      if (key.endsWith("Filter") && params[key] != null && params[key] !== "") {
+      if (
+        (key.includes(".value") || key.includes(".matchMode")) &&
+        params[key] != null &&
+        params[key] !== ""
+      ) {
         queryParams.append(key, params[key]);
       }
     }
+
 
     try {
       const res = await axiosInstance.get(`/analysis/shipment-summary?${queryParams.toString()}`);

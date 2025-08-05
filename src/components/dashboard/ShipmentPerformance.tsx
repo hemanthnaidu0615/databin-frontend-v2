@@ -107,7 +107,8 @@ const ShipmentPerformance: React.FC<{
     xaxis: {
       categories: data.carriers,
       title: { text: "Carriers", style: { fontWeight: "400", fontSize: "14px", color: isDark ? "#c084fc" : "#a855f7" } },
-      labels: { style: { fontSize: "12px", colors: isDark ? "#c084fc" : "#a855f7" } }
+      labels: { style: { fontSize: "12px", colors: isDark ? "#c084fc" : "#a855f7" } },
+      crosshairs: { show: false },
     },
     yaxis: {
       title: { text: "Number of Shipments", style: { fontWeight: "400", fontSize: "14px", color: isDark ? "#c084fc" : "#a855f7" } },

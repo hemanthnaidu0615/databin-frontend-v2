@@ -98,7 +98,7 @@ const FulfillmentKPI = () => {
   }, [dateRange, enterpriseKey]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-outfit">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-2 font-outfit">
       {stats.map((stat, index) => (
         <KPIWidget key={index} {...stat} />
       ))}

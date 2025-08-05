@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -18,7 +18,7 @@ import { FaTable } from "react-icons/fa";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
- 
+
 const CANONICAL_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
   "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
@@ -31,12 +31,12 @@ const CANONICAL_STATES = [
   "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
   "West Virginia", "Wisconsin", "Wyoming"
 ];
- 
+
 const STATE_NAME_MAP = CANONICAL_STATES.reduce((acc, name) => {
   acc[name.toLowerCase()] = name;
   return acc;
 }, {} as Record<string, string>);
- 
+
 const formatValue = (value: number) => {
   const usd = value * INR_TO_USD;
   if (usd >= 1_000_000) return `$${(usd / 1_000_000).toFixed(1)}M`;
@@ -57,7 +57,9 @@ const DemographicCard = () => {
   const navigate = useNavigate();
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange;
- 
+
+  const mapRef = useRef<HTMLDivElement>(null);
+
   const [tooltip, setTooltip] = useState<{
     name: string;
     customers: number;
@@ -66,11 +68,11 @@ const DemographicCard = () => {
     x: number;
     y: number;
   } | null>(null);
- 
+
   const [stateData, setStateData] = useState<
     Record<string, { customers: number; revenue: number; avgRevenue: number }>
   >({});
- 
+
   const [metrics, setMetrics] = useState({
     newCustomers: 0,
     returningCustomers: 0,
@@ -78,16 +80,8 @@ const DemographicCard = () => {
     highSpenders: 0,
   });
 
-
   const [showDataDialog, setShowDataDialog] = useState(false);
-  type MetricsData = {
-    new_customers?: number;
-    returning_customers?: number;
-    avg_order_value?: number;
-    high_spenders?: number;
-    [key: string]: any;
-  };
- 
+
   useEffect(() => {
     const savedScroll = sessionStorage.getItem("scrollPosition");
     if (savedScroll !== null) {
@@ -95,7 +89,7 @@ const DemographicCard = () => {
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
- 
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -106,15 +100,15 @@ const DemographicCard = () => {
           endDate: formattedEnd,
         });
         if (enterpriseKey) params.append("enterpriseKey", enterpriseKey);
- 
+
         const [mapRes, metricRes] = await Promise.all([
           axiosInstance.get(`/sales/map-metrics?${params.toString()}`),
           axiosInstance.get(`/sales/metrics?${params.toString()}`),
         ]);
- 
+
         const mapData = mapRes.data;
-        const metricsData: MetricsData = metricRes.data as MetricsData;
- 
+        const metricsData = metricRes.data;
+
         const formatted: Record<
           string,
           { customers: number; revenue: number; avgRevenue: number }
@@ -131,7 +125,7 @@ const DemographicCard = () => {
             const customers = row.total_customers || 0;
             const avgRevenue = row.average_revenue || 0;
             const revenue = customers * avgRevenue;
- 
+
             formatted[canonicalName] = {
               customers,
               revenue,
@@ -143,7 +137,7 @@ const DemographicCard = () => {
         const missingStates = CANONICAL_STATES.filter(
           (state) => !formatted[state]
         );
- 
+
         const donorStates = allStates
           .filter(({ name }) => formatted[name])
           .sort((a, b) => {
@@ -151,9 +145,9 @@ const DemographicCard = () => {
             const [bx, by] = b.coordinates;
             return ay - by || ax - bx;
           });
- 
+
         const donorPool = donorStates.map(({ name }) => formatted[name]);
- 
+
         missingStates.forEach((missingState) => {
           if (donorPool.length > 0) {
             const asciiSum = missingState
@@ -170,7 +164,7 @@ const DemographicCard = () => {
             };
           }
         });
- 
+
         setStateData(formatted);
 
         if (metricsData) {
@@ -185,10 +179,10 @@ const DemographicCard = () => {
         console.error("Failed to load sales data:", err);
       }
     }
- 
+
     if (startDate && endDate) fetchData();
   }, [startDate, endDate, enterpriseKey]);
- 
+
   const handleViewMore = () => {
     sessionStorage.setItem("scrollPosition", window.scrollY.toString());
     navigate("/sales-region");
@@ -294,8 +288,8 @@ const DemographicCard = () => {
           </button>
         </div>
       </div>
- 
-      <div className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
+
+      <div ref={mapRef} className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
         <ComposableMap
           projection="geoAlbersUsa"
           width={980}
@@ -311,7 +305,7 @@ const DemographicCard = () => {
                   revenue: 0,
                   avgRevenue: 0,
                 };
- 
+
                 return (
                   <Geography
                     key={geo.rsmKey}
@@ -319,16 +313,21 @@ const DemographicCard = () => {
                     fill={isDark ? "#ffffff" : "#e0e0e0"}
                     stroke="#473838"
                     strokeWidth={0.5}
-                    onMouseEnter={(e) =>
+                    onMouseEnter={(e) => {
+                      if (!mapRef.current) return;
+                      const rect = mapRef.current.getBoundingClientRect();
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+
                       setTooltip({
                         name: stateName,
                         customers: data.customers,
                         revenue: data.revenue,
                         avgRevenue: data.avgRevenue,
-                        x: e.clientX,
-                        y: e.clientY,
-                      })
-                    }
+                        x,
+                        y,
+                      });
+                    }}
                     onMouseLeave={() => setTooltip(null)}
                     style={{
                       default: { outline: "none" },
@@ -363,13 +362,19 @@ const DemographicCard = () => {
             </Annotation>
           ))}
         </ComposableMap>
- 
+
         {tooltip && (
           <div
-            className="fixed z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
+            className="absolute z-50 text-xs rounded shadow px-3 py-2 whitespace-pre-line"
             style={{
-              top: tooltip.y + 10,
-              left: tooltip.x + 10,
+              left: Math.min(
+                Math.max(tooltip.x + 10, 0),
+                mapRef.current?.offsetWidth! - 160
+              ),
+              top: Math.min(
+                Math.max(tooltip.y + 10, 0),
+                mapRef.current?.offsetHeight! - 100
+              ),
               backgroundColor: isDark ? "#2d2d2d" : "#ffffff",
               color: isDark ? "#ffffff" : "#000000",
               border: `1px solid ${isDark ? "#444" : "#ccc"}`,
@@ -383,7 +388,7 @@ const DemographicCard = () => {
           </div>
         )}
       </div>
- 
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
         <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -423,4 +428,5 @@ const DemographicCard = () => {
     </div>
   );
 };
+
 export default DemographicCard;

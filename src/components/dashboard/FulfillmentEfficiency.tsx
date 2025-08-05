@@ -173,6 +173,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
       categories: chartData.categories,
       title: { text: "Stage", style: { fontWeight: "400", fontSize: "14px", color: "#a855f7" } },
       labels: { style: { fontSize: "12px", colors: "#a855f7" } },
+      crosshairs: { show: false },
     },
     yaxis: {
       title: { text: "Orders", style: { fontWeight: "400", fontSize: "14px", color: "#a855f7" } },

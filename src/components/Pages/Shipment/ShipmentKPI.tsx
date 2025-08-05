@@ -119,7 +119,7 @@ const ShipmentKPI: React.FC<ShipmentStatsProps> = ({
   }, [startDate, endDate, enterpriseKey, selectedCarrier, selectedMethod]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4 font-outfit">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4 px-2 font-outfit">
       {stats.map((stat, index) => (
         <KPIWidget key={index} {...stat} />
       ))}

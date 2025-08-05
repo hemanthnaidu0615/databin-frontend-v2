@@ -117,28 +117,28 @@ const ChartSection: React.FC<Props> = ({ company }) => {
           : "/sales/charts/details-grid/awd";
 
       const filterQuery: Record<string, string> = {};
-if (tableParams.filters) {
-  Object.entries(tableParams.filters).forEach(([field, filter]) => {
-    const value = (filter as any)?.value;
-    const matchMode = (filter as any)?.matchMode ?? "contains";
+      if (tableParams.filters) {
+        Object.entries(tableParams.filters).forEach(([field, filter]) => {
+          const value = (filter as any)?.value;
+          const matchMode = (filter as any)?.matchMode ?? "contains";
 
-    if (value !== undefined && value !== null && value !== "") {
-      filterQuery[`${field}.value`] = value;
-      filterQuery[`${field}.matchMode`] = matchMode;
-    }
-  });
-}
+          if (value !== undefined && value !== null && value !== "") {
+            filterQuery[`${field}.value`] = value;
+            filterQuery[`${field}.matchMode`] = matchMode;
+          }
+        });
+      }
 
-const params = {
-  startDate: formatDateTime(startDate),
-  endDate: formatDateTime(endDate),
-  ...customFilters,
-  ...filterQuery,
-  page: tableParams.page,
-  size: tableParams.size,
-  sortField: tableParams.sortField,
-  sortOrder: tableParams.sortOrder,
-};
+      const params = {
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        ...customFilters,
+        ...filterQuery,
+        page: tableParams.page,
+        size: tableParams.size,
+        sortField: tableParams.sortField,
+        sortOrder: tableParams.sortOrder,
+      };
 
 
       try {
@@ -160,84 +160,122 @@ const params = {
 
   const baseTooltip = getBaseTooltip(isDark, salesTooltip);
 
-  const chartOpts: ApexOptions = {
+  const chartOpts: ApexOptions = useMemo(() => {
+  const base: ApexOptions = {
     chart: {
-      type: selectedChart === "Pie" ? "pie" : "bar",
+      type: selectedChart.toLowerCase() as any,
       background: "transparent",
       foreColor: labelColor,
       toolbar: { show: false },
       events: {
   dataPointSelection: (_e, _ctx, cfg) => {
-    const seriesIdx = cfg.seriesIndex ?? 0;
-    if (selectedChart === "Pie") {
-      // For pie, get label from labels array instead of series
-      const labels = ["Online", "Retail Store", "Warehouse"];
-      const selectedChannel = labels[seriesIdx];
-      if (selectedChannel) {
-        setFilterParams({
-          "fulfilment_channel.value": selectedChannel,
-          "fulfilment_channel.matchMode": "equals",
-        });
-        setShowFilteredDialog(true);
-      }
-    } else {
-      // For Bar/Line
-      const selectedChannel = series[seriesIdx]?.name;
-      if (selectedChannel) {
-        setFilterParams({
-          "fulfilment_channel.value": selectedChannel,
-          "fulfilment_channel.matchMode": "equals",
-        });
-        setShowFilteredDialog(true);
-      }
-    }
-  },
-},
+    const idx = cfg.seriesIndex ?? 0;
+    let selectedChannel = "";
 
+    if (selectedChart === "Pie") {
+      // Channels and pie values aligned by index
+      const channels = ["Online", "Retail Store", "Warehouse"];
+      // Build array of visible slices
+      const visible = channels
+        .map((name, i) => ({ name, value: pieSeries[i] }))
+        .filter(x => x.value > 0);
+      selectedChannel = visible[idx]?.name ?? "";
+    } else {
+      selectedChannel = series[idx]?.name ?? "";
+    }
+
+    if (selectedChannel) {
+      setFilterParams({
+        "fulfilment_channel.value": selectedChannel,
+        "fulfilment_channel.matchMode": "equals",
+      });
+      setShowFilteredDialog(true);
+    }
+  }
+}
 
     },
     theme: { mode: isDark ? "dark" : "light" },
     legend: { labels: { colors: labelColor }, position: "bottom" },
     grid: { borderColor: gridColor },
     colors: ["#14b8a6", "#a855f7", "#db2777"],
-    tooltip: { ...baseTooltip, y: { formatter: (v) => `$${v.toFixed(2)}` } },
-    xaxis:
-      selectedChart !== "Pie"
-        ? {
-            categories,
-            labels: {
-              style: { colors: Array(categories.length).fill(labelColor) },
-              rotate: -45,
-              rotateAlways: true,
-            },
-            title: {
-              text: getXAxisTitle(categories),
-              style: { color: labelColor },
-              offsetY: -15,
-            },
-            crosshairs: { show: false },
-          }
-        : undefined,
-    yaxis:
-      selectedChart !== "Pie"
-        ? {
-            labels: { style: { colors: labelColor }, formatter: formatValue },
-            title: { text: "Order Amount ($)", style: { color: labelColor } },
-          }
-        : undefined,
-    plotOptions: { bar: { horizontal: false, columnWidth: "60%" } },
-    stroke: { show: true, width: 3, curve: "smooth" },
-    dataLabels: { enabled: false },
-    ...(selectedChart === "Pie" && {
+  };
+
+  if (selectedChart === "Pie") {
+    return {
+      ...base,
       labels: ["Online", "Retail Store", "Warehouse"],
       dataLabels: {
         enabled: true,
-        style: { fontSize: "14px", fontWeight: "bold", colors: [isDark ? "#FFFFFF" : "#1e293b"] },
+        style: {
+          fontSize: "14px",
+          fontWeight: "bold",
+          colors: [isDark ? "#FFFFFF" : "#1e293b"],
+        },
         formatter: (val: number) => `${val.toFixed(1)}%`,
       },
-      tooltip: { enabled: true, y: { formatter: (v) => `$${v.toFixed(2)}` } },
-    }),
+      tooltip: {
+        marker: { show: true },
+        y: {
+          formatter: (val: number) => `$${val.toFixed(2)}`,
+        },
+      },
+    };
+  }
+
+  // Bar or Line
+  return {
+    ...base,
+    tooltip: {
+      ...baseTooltip,
+      marker: { show: true },
+      y: {
+        formatter: (val: number) => `$${val.toFixed(2)}`,
+      },
+    },
+    xaxis: {
+      categories,
+      labels: {
+        style: {
+          colors: Array(categories.length).fill(labelColor),
+        },
+        rotate: -45,
+        rotateAlways: true,
+      },
+      title: {
+        text: getXAxisTitle(categories),
+        style: { color: labelColor },
+        offsetY: -15,
+      },
+      crosshairs: { show: false },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: labelColor },
+        formatter: formatValue,
+      },
+      title: {
+        text: "Order Amount ($)",
+        style: { color: labelColor },
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "60%",
+      },
+    },
+    stroke: {
+      show: true,
+      width: 3,
+      curve: "smooth",
+    },
+    dataLabels: {
+      enabled: false,
+    },
   };
+}, [selectedChart, isDark, labelColor, gridColor, baseTooltip, categories, series]);
+
 
   useEffect(() => {
     if (filterParams["fulfilment_channel.value"]) {
