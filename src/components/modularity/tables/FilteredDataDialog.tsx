@@ -42,6 +42,7 @@ const FilteredDataDialog: React.FC<FilteredDataDialogProps> = ({
       visible={visible}
       onHide={onHide}
       style={{ width, maxWidth: "1300px" }}
+      contentStyle={{ overflow: 'visible' }} // <- Add this line
       dismissableMask
     >
       <BaseDataTable
