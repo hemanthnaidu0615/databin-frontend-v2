@@ -283,6 +283,20 @@ const ChartSection: React.FC<Props> = ({ company }) => {
     }
   }, [filterParams]);
 
+  // Lock body scroll when any dialog is open (robust)
+  useEffect(() => {
+    const className = 'no-scroll';
+    const shouldLock = showAllDialog || showFilteredDialog;
+    if (shouldLock) {
+      document.body.classList.add(className);
+    } else {
+      document.body.classList.remove(className);
+    }
+    return () => {
+      document.body.classList.remove(className);
+    };
+  }, [showAllDialog, showFilteredDialog]);
+
   const dynamicChartWidth = useMemo(() => {
     const calc = categories.length * 40 + 100;
     return `clamp(320px, ${calc}px, 1400px)`;

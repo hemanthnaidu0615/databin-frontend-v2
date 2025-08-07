@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Dialog } from "primereact/dialog";
 import { BaseDataTable, TableColumn } from "../tables/BaseDataTable";
 
@@ -23,6 +23,19 @@ const FilteredDataDialog: React.FC<FilteredDataDialogProps> = ({
   mobileCardRender,
   width = "1000vw"
 }) => {
+
+  useEffect(() => {
+    
+    if (visible) {
+      document.body.style.overflow = "hidden";  // Disable page scroll on open
+    } else {
+      document.body.style.overflow = "";        // Enable page scroll on close
+    }
+    return () => {
+      document.body.style.overflow = "";        // Clean up
+    };
+  }, [visible]);
+
   return (
     <Dialog
       header={header}
