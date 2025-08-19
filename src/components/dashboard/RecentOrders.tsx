@@ -69,6 +69,18 @@ export default function RecentOrders() {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
+  //fix for the background scrolling issue.
+useEffect(() => {
+  if (showDialog) {
+    document.documentElement.classList.add("modal-open");
+  } else {
+    document.documentElement.classList.remove("modal-open");
+  }
+  return () => {
+    document.documentElement.classList.remove("modal-open");
+  };
+}, [showDialog]);
+
   // Main table fetch
   const fetchOrders = async ({
     page,
@@ -314,6 +326,7 @@ export default function RecentOrders() {
           responsiveLayout="scroll"
           size="small"
           className="text-xs [&_.p-datatable-tbody_td]:py-0.5 [&_.p-datatable-thead_th]:py-1"
+          key={`main-datatable-${sortField}-${sortOrder}-${JSON.stringify(filters)}`}
         >
           <Column
             field="product_name"
@@ -373,6 +386,7 @@ export default function RecentOrders() {
         ) : (
           <>
             <DataTable
+              key={`dialog-datatable-${dialogSortField}-${dialogSortOrder}-${JSON.stringify(dialogFilters)}`}
               value={dialogOrders}
               paginator={false}
               rows={dialogRows}

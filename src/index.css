@@ -944,3 +944,6 @@ html:not(.dark) .apexcharts-tooltip-series-group .apexcharts-tooltip-text {
     padding-top: 0% !important;
   }
 }
+html.modal-open {
+  overflow: hidden !important;
+}
