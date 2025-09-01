@@ -20,7 +20,13 @@ const tableColumns: TableColumn<ProductData>[] = [
   { field: "product_name", header: "Product", filter: true, sortable: true },
   { field: "description", header: "Description", filter: true, sortable: true },
   { field: "quantity", header: "Qty Sold", filter: true, sortable: true },
-  { field: "price", header: "Price", filter: true, sortable: true },
+  {
+    field: "price",
+    header: "Price (USD)",
+    filter: true,
+    sortable: true,
+    body: (row: ProductData) => <span>{formatUSD(convertToUSD(row.price))}</span>,
+  },
 ];
 
 
@@ -358,6 +364,7 @@ const ProfitabilityTable: React.FC = () => {
                     <p className="text-xs text-gray-700 dark:text-gray-400">
                       Price: {formatUSD(convertToUSD(product.price))}
                     </p>
+
                   </div>
                 </div>
               );

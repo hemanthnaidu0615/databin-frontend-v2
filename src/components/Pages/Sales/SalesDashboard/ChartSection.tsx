@@ -5,13 +5,13 @@ import Chart from "react-apexcharts";
 import { useTheme } from "next-themes";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { getBaseTooltip, salesTooltip } from "../../../modularity/graphs/graphWidget";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../../modularity/tables/BaseDataTable";
+import { formatDateTime, formatValue, formatDateMDY } from "../../../utils/kpiUtils";
 
 interface Props {
   company: "AWW" | "AWD";
@@ -54,7 +54,7 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   const [filterParams, setFilterParams] = useState<Record<string, any>>({});
 
   const columns: TableColumn<any>[] = [
-    { field: "order_date", header: "Order Date", sortable: true, filter: true },
+    { field: "order_date", header: "Order Date", sortable: true, filter: true,body: (rowData: any) => formatDateMDY(rowData.order_date) },
     { field: "fulfilment_channel", header: "Channel", sortable: true, filter: true },
     { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
     { field: "quantity", header: "Qty", sortable: true },

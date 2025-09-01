@@ -3,7 +3,7 @@ import { useTheme } from "next-themes";
 import ReactApexChart from "react-apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
-import { formatDateTime } from "../../utils/kpiUtils";
+import { formatDateTime, formatDateMDY } from "../../utils/kpiUtils";
 import {
   getBaseToolTip,
   getBaseTooltip,
@@ -129,12 +129,20 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
 
   const turnoverColumns = [
-    { field: "product_id", header: "Product ID", sortable: true, filter: true },
-    { field: "name", header: "Product Name", sortable: true, filter: true },
-    { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
-    { field: "restock_date", header: "Restock Date", sortable: true, filter: true },
-    { field: "status", header: "Status", sortable: true, filter: true },
-  ];
+  { field: "product_id", header: "Product ID", sortable: true, filter: true },
+  { field: "name", header: "Product Name", sortable: true, filter: true },
+  { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
+  {
+    field: "restock_date",
+    header: "Restock Date",
+    sortable: true,
+    filter: true,
+    body: (rowData: any) =>
+      rowData?.restock_date ? formatDateMDY(rowData.restock_date) : "N/A",
+  },
+  { field: "status", header: "Status", sortable: true, filter: true },
+];
+
 
   useEffect(() => {
     const fetchRegionData = async () => {
@@ -372,10 +380,11 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   ];
 
   const restockTable = restockSchedule.map((item) => ({
-    product: item.product_name,
-    stock: item.stock_quantity,
-    date: item.restock_date,
-  }));
+  product: item.product_name,
+  stock: item.stock_quantity,
+  date: item?.restock_date ? formatDateMDY(item.restock_date) : "N/A",
+}));
+
   const renderWarehouseMobileCard = (item: any, index: number) => (
     <div
       key={index}
@@ -414,8 +423,8 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         Stock Quantity: <span className="font-semibold">{item.stock_quantity}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Restock Date: <span className="font-semibold">{item.restock_date}</span>
-      </div>
+  Restock Date: <span className="font-semibold">{item?.restock_date ? formatDateMDY(item.restock_date) : "N/A"}</span>
+</div>
       <div className="text-sm text-gray-500 dark:text-gray-300">
         Status: <span className="font-semibold">{item.status}</span>
       </div>

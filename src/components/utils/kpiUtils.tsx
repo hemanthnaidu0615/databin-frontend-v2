@@ -28,4 +28,15 @@ export const formatVal = (value: number) => {
   return `$${usd.toFixed(0)}`;
 };
 
+// In src/app/utils/kpiUtils.ts
+
+export const formatDateMDY = (isoString: string): string => {
+  if (!isoString) return '';
+  const date = new Date(isoString.split('T')[0]); // Split and take only the date part
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${month}-${day}-${year}`;
+};
+
 

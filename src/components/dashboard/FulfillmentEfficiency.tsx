@@ -6,7 +6,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "../../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../axios";
-import { formatDateTime, formatValue } from "../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import { getBaseTooltip, ordersTooltip } from "../modularity/graphs/graphWidget";
 import CommonButton from "../modularity/buttons/Button";
@@ -27,7 +27,8 @@ const fulfillmentColumns: TableColumn<any>[] = [
     field: "event_time",
     header: "Timestamp",
     sortable: true,
-    body: (row) => formatDateTime(row.event_time),
+    // Change this line to use formatDateMDY
+    body: (row) => formatDateMDY(row.event_time),
   },
   { field: "handler_name", header: "Handler", filter: true },
 ];
@@ -184,26 +185,26 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   };
 
   const mobileCardRender = (item: any, index: number) => (
-    <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-md font-semibold text-gray-900 dark:text-gray-100">
-          Order ID: {item.order_id}
-        </h3>
-        <span
-          className={`px-2 py-1 text-xs font-medium rounded ${item.event_type === "Completed"
-            ? "bg-green-100 text-green-800"
-            : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-            }`}
-        >
-          {item.event_type}
-        </span>
-      </div>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1"><strong>Category:</strong> {item.category}</p>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1"><strong>Description:</strong> {item.event_description}</p>
-      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1"><strong>Handler:</strong> {item.handler_name}</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400"><strong>Timestamp:</strong> {formatDateTime(item.event_time)}</p>
+  <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
+    <div className="flex justify-between items-center mb-2">
+      <h3 className="text-md font-semibold text-gray-900 dark:text-gray-100">
+        Order ID: {item.order_id}
+      </h3>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded ${item.event_type === "Completed"
+          ? "bg-green-100 text-green-800"
+          : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+          }`}
+      >
+        {item.event_type}
+      </span>
     </div>
-  );
+    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1"><strong>Category:</strong> {item.category}</p>
+    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1"><strong>Description:</strong> {item.event_description}</p>
+    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1"><strong>Handler:</strong> {item.handler_name}</p>
+    <p className="text-xs text-gray-500 dark:text-gray-400"><strong>Timestamp:</strong> {formatDateMDY(item.event_time)}</p>
+  </div>
+);
 
   return (
     <div className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`} style={{ padding: "1rem" }}>

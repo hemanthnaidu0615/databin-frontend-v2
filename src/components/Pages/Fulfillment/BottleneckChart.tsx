@@ -4,7 +4,7 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
-import { formatDateTime } from "../../utils/kpiUtils";
+import { formatDateTime, formatDateMDY } from "../../utils/kpiUtils";
 import { getBaseTooltip, avgTimeTooltip } from "../../modularity/graphs/graphWidget";
 import { TableColumn } from "../../modularity/tables/BaseDataTable";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
@@ -109,14 +109,29 @@ const BottleneckChart = () => {
   const [filterParams, setFilterParams] = useState<{ eventType?: string }>({});
 
   const bottleneckTableColumns: TableColumn<any>[] = [
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "event_id", header: "Event ID", sortable: true, filter: true },
-    { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
-    { field: "event_type", header: "Event Type", sortable: true, filter: true },
-    { field: "order_date", header: "Order Date", sortable: true, filter: true },
-    { field: "event_time", header: "Event Time", sortable: true, filter: true },
-    { field: "fulfillment_city", header: "City", sortable: true, filter: true },
-  ];
+  { field: "order_id", header: "Order ID", sortable: true, filter: true },
+  { field: "event_id", header: "Event ID", sortable: true, filter: true },
+  { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
+  { field: "event_type", header: "Event Type", sortable: true, filter: true },
+  {
+    field: "order_date",
+    header: "Order Date",
+    sortable: true,
+    filter: true,
+    body: (rowData: any) =>
+      rowData?.order_date ? formatDateMDY(rowData.order_date) : "N/A",
+  },
+  {
+    field: "event_time",
+    header: "Event Time",
+    sortable: true,
+    filter: true,
+    body: (rowData: any) =>
+      rowData?.event_time ? formatDateMDY(rowData.event_time) : "N/A",
+  },
+  { field: "fulfillment_city", header: "City", sortable: true, filter: true },
+];
+
 
   const fetchGridData = (customFilters: any = {}) => async (params: any) => {
     const p: any = {
@@ -133,24 +148,38 @@ const BottleneckChart = () => {
   };
 
   const renderMobileCard = (item: any, index: number) => (
-    <div
-      key={index}
-      className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700"
-    >
-      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Order ID: <span className="font-semibold">{item.order_id}</span>
-      </div>
-      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Event Type: <span className="font-semibold">{item.event_type}</span>
-      </div>
-      <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-        Event Time: <span className="font-semibold">{formatDateTime(item.event_time)}</span>
-      </div>
-      <div className="text-sm text-gray-500 dark:text-gray-300">
-        City: <span className="font-semibold">{item.fulfillment_city}</span>
-      </div>
+  <div
+    key={index}
+    className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700"
+  >
+    <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+      Order ID: <span className="font-semibold">{item.order_id ?? "N/A"}</span>
     </div>
-  );
+
+    <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+      Event Type: <span className="font-semibold">{item.event_type ?? "N/A"}</span>
+    </div>
+
+    <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+      Order Date:{" "}
+      <span className="font-semibold">
+        {item?.order_date ? formatDateMDY(item.order_date) : "N/A"}
+      </span>
+    </div>
+
+    <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
+      Event Time:{" "}
+      <span className="font-semibold">
+        {item?.event_time ? formatDateMDY(item.event_time) : "N/A"}
+      </span>
+    </div>
+
+    <div className="text-sm text-gray-500 dark:text-gray-300">
+      City: <span className="font-semibold">{item.fulfillment_city ?? "N/A"}</span>
+    </div>
+  </div>
+);
+
 
   useEffect(() => {
     const fetchData = async () => {
