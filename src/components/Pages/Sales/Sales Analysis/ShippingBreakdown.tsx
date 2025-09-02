@@ -6,7 +6,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
-import { formatDateTime, formatValue, formatDateMDY } from "../../../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY, formatUSD  } from "../../../utils/kpiUtils";
 import { axiosInstance } from "../../../../axios";
 import { getBaseTooltip, costTooltip } from "../../../modularity/graphs/graphWidget";
 import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataTable";
@@ -171,7 +171,7 @@ const dialogColumns: TableColumn<any>[] = [
   { field: "carrier", header: "Carrier", sortable: true, filter: true },
   { field: "tracking_number", header: "Tracking #", sortable: true, filter: true },
   { field: "shipment_status", header: "Status", sortable: true, filter: true },
-  { field: "shipment_cost", header: "Cost", sortable: true, filter: true },
+  { field: "shipment_cost", header: "Cost", sortable: true, filter: false, body: (rowData: any) => formatUSD(rowData.shipment_cost) },
   { field: "shipping_method", header: "Method", sortable: true, filter: true },
 
   // Estimated Date (formatted)
@@ -298,11 +298,7 @@ const dialogMobileCardRender = (shipment: any, index: number) => (
     <div className="flex justify-between">
       <span className="text-sm text-gray-500 dark:text-gray-400">Cost:</span>
       <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-        {shipment.shipment_cost_usd !== undefined
-          ? `$${formatValue(shipment.shipment_cost_usd)}`
-          : shipment.shipment_cost !== undefined
-            ? `$${formatValue(shipment.shipment_cost)}`
-            : "N/A"}
+        {formatUSD(shipment.shipment_cost)}
       </span>
     </div>
   </div>

@@ -3,7 +3,7 @@ import { useTheme } from "next-themes";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../axios";
-import { formatDateTime, formatValue, formatDateMDY } from "../../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY, formatUSD  } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { getBaseTooltip, shipmentsTooltip } from "../../modularity/graphs/graphWidget";
 import { FaTable } from "react-icons/fa";
@@ -33,17 +33,23 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [carrierFilter, setCarrierFilter] = useState<string | null>(null);
 
-  const commonColumns: TableColumn<any>[] = [
-    { field: "shipment_id", header: "Shipment ID", sortable: true, filter: true },
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "carrier", header: "Carrier", sortable: true, filter: true },
-    { field: "tracking_number", header: "Tracking #", sortable: true, filter: true },
-    { field: "shipment_status", header: "Status", sortable: true, filter: true },
-    { field: "shipment_cost", header: "Cost", sortable: true, filter: true },
-    { field: "shipping_method", header: "Method", sortable: true, filter: true },
-    { field: "estimated_shipment_date", header: "Estimated Date", sortable: true, filter: true, body: (row: any) => formatDateMDY(row.estimated_shipment_date),},
-    { field: "actual_shipment_date", header: "Actual Date", sortable: true, filter: true,body: (row: any) => formatDateMDY(row.actual_shipment_date), },
-  ];
+ const commonColumns: TableColumn<any>[] = [
+  { field: "shipment_id", header: "Shipment ID", sortable: true, filter: true },
+  { field: "order_id", header: "Order ID", sortable: true, filter: true },
+  { field: "carrier", header: "Carrier", sortable: true, filter: true },
+  { field: "tracking_number", header: "Tracking #", sortable: true, filter: true },
+  { field: "shipment_status", header: "Status", sortable: true, filter: true },
+  { 
+    field: "shipment_cost", 
+    header: "Cost", 
+    sortable: true, 
+    filter: false, // This removes the filter icon
+    body: (rowData: any) => formatUSD(rowData.shipment_cost) 
+  },
+  { field: "shipping_method", header: "Method", sortable: true, filter: true },
+  { field: "estimated_shipment_date", header: "Estimated Date", sortable: true, filter: true, body: (row: any) => formatDateMDY(row.estimated_shipment_date),},
+  { field: "actual_shipment_date", header: "Actual Date", sortable: true, filter: true,body: (row: any) => formatDateMDY(row.actual_shipment_date), },
+];
 
   const baseTooltip = getBaseTooltip(isDark, shipmentsTooltip);
   const tooltipWithoutDollar = {
@@ -201,11 +207,11 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Cost:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          ${formatValue(shipment.shipment_cost || 0)}
-        </span>
-      </div>
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Cost:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {formatUSD(shipment.shipment_cost)}
+      </span>
+    </div>
 
       <div className="flex justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Tracking #:</span>

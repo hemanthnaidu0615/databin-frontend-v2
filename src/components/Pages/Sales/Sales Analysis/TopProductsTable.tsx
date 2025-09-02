@@ -7,7 +7,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 import { Skeleton } from "primereact/skeleton";
 import { axiosInstance } from "../../../../axios";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { formatDateTime, formatValue , formatUSD } from "../../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graphWidget";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
@@ -279,18 +279,18 @@ const TopProductsTable = () => {
       </div>
 
       <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Unit Price:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {product.unit_price ? `$${formatValue(product.unit_price)}` : "N/A"}
-        </span>
-      </div>
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Unit Price:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {formatUSD(product.unit_price)}
+      </span>
+    </div>
 
-      <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Amount:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {product.total_amount ? `$${formatValue(product.total_amount)}` : "N/A"}
-        </span>
-      </div>
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Amount:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {formatUSD(product.total_amount)}
+      </span>
+    </div>
     </div>
   );
 
@@ -428,14 +428,14 @@ const TopProductsTable = () => {
         onHide={() => setDialogVisible(false)}
         header="Product Details"
         fetchData={dialogFetchData}
-        columns={[
-          { field: "product_name", header: "Product Name", sortable: true, filter: true },
-          { field: "product_description", header: "Description", sortable: true, filter: true },
-          { field: "quantity", header: "Quantity", sortable: true, filter: true },
-          { field: "unit_price", header: "Unit Price", sortable: true, filter: true },
-          { field: "total_amount", header: "Total Amount", sortable: true, filter: true },
-        ]}
-        mobileCardRender={productDialogMobileCardRender}
+  columns={[
+    { field: "product_name", header: "Product Name", sortable: true, filter: true },
+    { field: "product_description", header: "Description", sortable: true, filter: true },
+    { field: "quantity", header: "Quantity", sortable: true, filter: true }, 
+    { field: "unit_price", header: "Unit Price", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.unit_price) },
+    { field: "total_amount", header: "Total Amount", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.total_amount) },
+  ]}
+  mobileCardRender={productDialogMobileCardRender}
       />
 
     </Card>

@@ -5,7 +5,7 @@ import { ApexOptions } from "apexcharts";
 import dayjs from "dayjs";
 import { useTheme } from "next-themes";
 import { axiosInstance } from "../../../../axios";
-import { formatDate } from "../../../utils/kpiUtils";
+import { formatDate , formatUSD} from "../../../utils/kpiUtils";
 import { getBaseToolTip, salesTooltip } from "../../../modularity/graphs/graphWidget";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
 
@@ -203,14 +203,14 @@ const SalesTrendsChart = () => {
   );
   
   const columns: TableColumn<any>[] = [
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "fulfillment_channel", header: "Channel", sortable: true, filter: true },
-    { field: "subtotal", header: "Subtotal", sortable: true, filter: true },
-    { field: "shipping_fee", header: "Shipping Fee", sortable: true, filter: true },
-    { field: "tax_amount", header: "Tax", sortable: true, filter: true },
-    { field: "discount_amount", header: "Discount", sortable: true, filter: true },
-    { field: "total_amount", header: "Total", sortable: true, filter: true },
-  ];
+  { field: "order_id", header: "Order ID", sortable: true, filter: true },
+  { field: "fulfillment_channel", header: "Channel", sortable: true, filter: true },
+  { field: "subtotal", header: "Subtotal", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.subtotal) },
+  { field: "shipping_fee", header: "Shipping Fee", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.shipping_fee) },
+  { field: "tax_amount", header: "Tax", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.tax_amount) },
+  { field: "discount_amount", header: "Discount", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.discount_amount) },
+  { field: "total_amount", header: "Total", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.total_amount) },
+];
 
   const fetchTableData = (extraFilters: any = {}) => async (tableParams: any) => {
     const response = await axiosInstance.get("/analysis/details-sales-trends-grid", {
@@ -231,16 +231,16 @@ const SalesTrendsChart = () => {
   };
 
   const renderMobileCard = (item: any, index: number) => (
-    <div key={index} className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800">
-      <div><b>Order ID:</b> {item.order_id}</div>
-      <div><b>Channel:</b> {item.fulfillment_channel}</div>
-      <div><b>Subtotal:</b> ${item.subtotal}</div>
-      <div><b>Shipping:</b> ${item.shipping_fee}</div>
-      <div><b>Tax:</b> ${item.tax_amount}</div>
-      <div><b>Discount:</b> ${item.discount_amount}</div>
-      <div><b>Total:</b> ${item.total_amount}</div>
-    </div>
-  );
+  <div key={index} className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800">
+    <div><b>Order ID:</b> {item.order_id}</div>
+    <div><b>Channel:</b> {item.fulfillment_channel}</div>
+    <div><b>Subtotal:</b> {formatUSD(item.subtotal)}</div>
+    <div><b>Shipping:</b> {formatUSD(item.shipping_fee)}</div>
+    <div><b>Tax:</b> {formatUSD(item.tax_amount)}</div>
+    <div><b>Discount:</b> {formatUSD(item.discount_amount)}</div>
+    <div><b>Total:</b> {formatUSD(item.total_amount)}</div>
+  </div>
+);
 
   if (!startDate || !endDate) {
     return (
