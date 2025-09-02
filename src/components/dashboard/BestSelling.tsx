@@ -23,7 +23,7 @@ const tableColumns: TableColumn<ProductData>[] = [
 {
   field: "price",
   header: "Price (USD)",
-  filter: false,         // <-- turned off
+  filter: false,        
   sortable: true,
   body: (row: ProductData) => <span>{formatUSD(convertToUSD(row.price))}</span>,
 },
