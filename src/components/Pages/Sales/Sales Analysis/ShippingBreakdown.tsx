@@ -6,7 +6,7 @@ import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
 
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
-import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY } from "../../../utils/kpiUtils";
 import { axiosInstance } from "../../../../axios";
 import { getBaseTooltip, costTooltip } from "../../../modularity/graphs/graphWidget";
 import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataTable";
@@ -165,17 +165,35 @@ const ShippingBreakdown: React.FC = () => {
       }, {} as Record<string, number>);
   }, [allData]);
 
-  const dialogColumns: TableColumn<any>[] = [
-    { field: "shipment_id", header: "Shipment ID", sortable: true, filter: true },
-    { field: "order_id", header: "Order ID", sortable: true, filter: true },
-    { field: "carrier", header: "Carrier", sortable: true, filter: true },
-    { field: "tracking_number", header: "Tracking #", sortable: true, filter: true },
-    { field: "shipment_status", header: "Status", sortable: true, filter: true },
-    { field: "shipment_cost", header: "Cost", sortable: true, filter: true },
-    { field: "shipping_method", header: "Method", sortable: true, filter: true },
-    { field: "estimated_shipment_date", header: "Estimated Date", sortable: true, filter: true },
-    { field: "actual_shipment_date", header: "Actual Date", sortable: true, filter: true },
-  ];
+const dialogColumns: TableColumn<any>[] = [
+  { field: "shipment_id", header: "Shipment ID", sortable: true, filter: true },
+  { field: "order_id", header: "Order ID", sortable: true, filter: true },
+  { field: "carrier", header: "Carrier", sortable: true, filter: true },
+  { field: "tracking_number", header: "Tracking #", sortable: true, filter: true },
+  { field: "shipment_status", header: "Status", sortable: true, filter: true },
+  { field: "shipment_cost", header: "Cost", sortable: true, filter: true },
+  { field: "shipping_method", header: "Method", sortable: true, filter: true },
+
+  // Estimated Date (formatted)
+  {
+    field: "estimated_shipment_date",
+    header: "Estimated Date",
+    sortable: true,
+    filter: true,
+    body: (rowData: any) =>
+      rowData?.estimated_shipment_date ? formatDateMDY(rowData.estimated_shipment_date) : "N/A",
+  },
+
+  // Actual Date (formatted)
+  {
+    field: "actual_shipment_date",
+    header: "Actual Date",
+    sortable: true,
+    filter: true,
+    body: (rowData: any) =>
+      rowData?.actual_shipment_date ? formatDateMDY(rowData.actual_shipment_date) : "N/A",
+  },
+];
 
   const chartOptions: ApexOptions = useMemo(
     () => ({
@@ -227,53 +245,68 @@ const ShippingBreakdown: React.FC = () => {
     },
   ];
 
-  const dialogMobileCardRender = (shipment: any, index: number) => (
-    <div
-      key={`${shipment.shipment_id || index}-${shipment.carrier || "unknown"}`}
-      className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
-        } mb-3`}
-    >
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Shipment ID:</span>
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {shipment.shipment_id || "N/A"}
-        </span>
-      </div>
-
-      <div className="flex flex-col">
-        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Carrier:</span>
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
-          {shipment.carrier || "Unknown"}
-        </span>
-      </div>
-
-      <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Method:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipping_method || "N/A"}
-        </span>
-      </div>
-
-      <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipment_status || "Unknown"}
-        </span>
-      </div>
-
-      <div className="flex justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400">Cost:</span>
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-          {shipment.shipment_cost_usd !== undefined
-            ? `$${formatValue(shipment.shipment_cost_usd)}`
-            : shipment.shipment_cost !== undefined
-              ? `$${formatValue(shipment.shipment_cost)}`
-              : "N/A"}
-        </span>
-      </div>
+const dialogMobileCardRender = (shipment: any, index: number) => (
+  <div
+    key={`${shipment.shipment_id || index}-${shipment.carrier || "unknown"}`}
+    className={`bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2 shadow-sm border ${isDark ? "border-gray-700" : "border-gray-200"
+      } mb-3`}
+  >
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Shipment ID:</span>
+      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+        {shipment.shipment_id || "N/A"}
+      </span>
     </div>
-  );
 
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Carrier:</span>
+      <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 break-words">
+        {shipment.carrier || "Unknown"}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Method:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.shipping_method || "N/A"}
+      </span>
+    </div>
+
+    {/* --- INSERTED: Estimated Date --- */}
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Estimated Date:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment?.estimated_shipment_date ? formatDateMDY(shipment.estimated_shipment_date) : "N/A"}
+      </span>
+    </div>
+
+    {/* --- INSERTED: Actual Date --- */}
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Actual Date:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment?.actual_shipment_date ? formatDateMDY(shipment.actual_shipment_date) : "N/A"}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.shipment_status || "Unknown"}
+      </span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-sm text-gray-500 dark:text-gray-400">Cost:</span>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        {shipment.shipment_cost_usd !== undefined
+          ? `$${formatValue(shipment.shipment_cost_usd)}`
+          : shipment.shipment_cost !== undefined
+            ? `$${formatValue(shipment.shipment_cost)}`
+            : "N/A"}
+      </span>
+    </div>
+  </div>
+);
 
   return (
     <div className="card p-4">

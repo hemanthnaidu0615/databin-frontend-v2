@@ -6,7 +6,7 @@ import { ApexOptions } from "apexcharts";
 import { Button } from "primereact/button";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { axiosInstance } from "../../axios";
-import { formatDateTime, formatValue } from "../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import CommonButton from "../modularity/buttons/Button";
 import { FaTable } from "react-icons/fa";
@@ -49,11 +49,12 @@ const ShipmentPerformance: React.FC<{
     }
   }, []);
 
-  useEffect(() => {
-    if (filterParams.carrier && filterParams.method) {
-      setShowFilteredDialog(true);
-    }
-  }, [filterParams]);
+  // Remove this useEffect hook
+  // useEffect(() => {
+  //   if (filterParams.carrier && filterParams.method) {
+  //     setShowFilteredDialog(true);
+  //   }
+  // }, [filterParams]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,7 +94,10 @@ const ShipmentPerformance: React.FC<{
           const carrier = data.carriers[config.dataPointIndex];
           const key = ["standard", "expedited", "same_day"][config.seriesIndex];
           const method = shippingMethodMap[key];
+          
+          // Set filter params and show dialog directly
           setFilterParams({ carrier, method });
+          setShowFilteredDialog(true);
         }
       }
     },
@@ -135,7 +139,13 @@ const ShipmentPerformance: React.FC<{
     { field: "order_id", header: "Order ID", sortable: true, filter: true },
     { field: "carrier", header: "Carrier", sortable: true, filter: true },
     { field: "shipping_method", header: "Method", sortable: true, filter: true },
-    { field: "actual_shipment_date", header: "Ship Date", sortable: true, filter: true, body: row => formatDateTime(row.actual_shipment_date) },
+    { 
+      field: "actual_shipment_date", 
+      header: "Ship Date", 
+      sortable: true, 
+      filter: true, 
+      body: (rowData: any) => formatDateMDY(rowData.actual_shipment_date) 
+    },    
     { field: "shipment_status", header: "Status", sortable: true, filter: true }
   ];
 

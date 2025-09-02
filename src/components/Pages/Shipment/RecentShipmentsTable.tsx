@@ -5,7 +5,7 @@ import { Tag } from "primereact/tag";
 import { Dialog } from "primereact/dialog";
 import { BaseDataTable, TableColumn } from "../../modularity/tables/BaseDataTable";
 import { axiosInstance } from "../../../axios";
-import { formatDateTime } from "../../utils/kpiUtils";
+import { formatDateTime, formatDateMDY } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 
 interface Shipment {
@@ -96,7 +96,7 @@ const RecentShipmentsTable: React.FC = () => {
       <div className="text-sm mb-1"><strong>Shipment ID:</strong> {item.shipment_id}</div>
       <div className="text-sm mb-1"><strong>Customer:</strong> {item.customer_name}</div>
       <div className="text-sm mb-1"><strong>Carrier:</strong> {item.carrier}</div>
-      <div className="text-sm mb-1"><strong>Ship Date:</strong> {formatDateTime(item.actual_shipment_date)}</div>
+      <div className="text-sm mb-1"><strong>Ship Date:</strong> {formatDateMDY(item.actual_shipment_date)}</div>
       <div className="text-sm mb-2 flex items-center gap-2">
         <strong>Status:</strong>
         <Tag value={item.shipment_status} severity={getStatusSeverity(item.shipment_status)} />
@@ -118,7 +118,7 @@ const RecentShipmentsTable: React.FC = () => {
       field: "actual_shipment_date",
       header: "Ship Date",
       sortable: true,
-      body: (rowData: Shipment) => formatDateTime(rowData.actual_shipment_date)
+      body: (rowData: Shipment) => formatDateMDY(rowData.actual_shipment_date)
     },
     {
       field: "shipment_status",
@@ -172,8 +172,8 @@ const RecentShipmentsTable: React.FC = () => {
               <strong>Status:</strong>{" "}
               <Tag value={selectedShipment.status} severity={getStatusSeverity(selectedShipment.status)} />
             </div>
-            <div><strong>Ship Date:</strong> {formatDateTime(selectedShipment.ship_date)}</div>
-            <div><strong>Estimated Delivery:</strong> {formatDateTime(selectedShipment.estimated_delivery)}</div>
+            <div><strong>Ship Date:</strong> {formatDateMDY(selectedShipment.ship_date)}</div>
+            <div><strong>Estimated Delivery:</strong> {formatDateMDY(selectedShipment.estimated_delivery)}</div>
             <div><strong>Origin:</strong> {selectedShipment.origin}</div>
             <div><strong>Destination:</strong> {selectedShipment.destination}</div>
             <div><strong>Cost:</strong> ${selectedShipment.cost ? formatValue(selectedShipment.cost) : "0"}</div>

@@ -3,7 +3,7 @@ import { useTheme } from "next-themes";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../axios";
-import { formatDateTime, formatValue } from "../../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { getBaseTooltip, shipmentsTooltip } from "../../modularity/graphs/graphWidget";
 import { FaTable } from "react-icons/fa";
@@ -41,8 +41,8 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
     { field: "shipment_status", header: "Status", sortable: true, filter: true },
     { field: "shipment_cost", header: "Cost", sortable: true, filter: true },
     { field: "shipping_method", header: "Method", sortable: true, filter: true },
-    { field: "estimated_shipment_date", header: "Estimated Date", sortable: true, filter: true },
-    { field: "actual_shipment_date", header: "Actual Date", sortable: true, filter: true },
+    { field: "estimated_shipment_date", header: "Estimated Date", sortable: true, filter: true, body: (row: any) => formatDateMDY(row.estimated_shipment_date),},
+    { field: "actual_shipment_date", header: "Actual Date", sortable: true, filter: true,body: (row: any) => formatDateMDY(row.actual_shipment_date), },
   ];
 
   const baseTooltip = getBaseTooltip(isDark, shipmentsTooltip);
