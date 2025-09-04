@@ -149,7 +149,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
       field: "sales",
       header: "Sales",
       sortable: true,
-      filter: true,
+      filter: false,
       body: (row) => <span>{formatVal(row.sales)}</span>,
     },
   ];

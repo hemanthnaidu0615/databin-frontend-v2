@@ -39,4 +39,13 @@ export const formatDateMDY = (isoString: string): string => {
   return `${month}-${day}-${year}`;
 };
 
+const INR_TO_USD_RATE = 83.3; // 1 USD = ~₹83.3
+
+// Converts INR → USD and formats with $ prefix (no K/M abbreviations)
+export const formatUSD = (value: number): string => {
+  if (value == null || isNaN(value)) return "$0.00";
+  const usd = value / INR_TO_USD_RATE;
+  return `$${usd.toFixed(2)}`;
+};
+
 

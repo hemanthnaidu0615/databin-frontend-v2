@@ -11,7 +11,7 @@ import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../../modularity/tables/BaseDataTable";
-import { formatDateTime, formatValue, formatDateMDY } from "../../../utils/kpiUtils";
+import { formatDateTime, formatValue, formatDateMDY,  formatUSD } from "../../../utils/kpiUtils";
 
 interface Props {
   company: "AWW" | "AWD";
@@ -54,17 +54,17 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   const [filterParams, setFilterParams] = useState<Record<string, any>>({});
 
   const columns: TableColumn<any>[] = [
-    { field: "order_date", header: "Order Date", sortable: true, filter: true,body: (rowData: any) => formatDateMDY(rowData.order_date) },
-    { field: "fulfilment_channel", header: "Channel", sortable: true, filter: true },
-    { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
-    { field: "quantity", header: "Qty", sortable: true },
-    { field: "unit_price", header: "Unit Price", sortable: true },
-    { field: "subtotal", header: "Subtotal", sortable: true },
-    { field: "shipping_fee", header: "Shipping", sortable: true },
-    { field: "tax_amount", header: "Tax", sortable: true },
-    { field: "discount_amount", header: "Discount", sortable: true },
-    { field: "total_amount", header: "Total", sortable: true },
-  ];
+    { field: "order_date", header: "Order Date", sortable: true, filter: true, body: (rowData: any) => formatDateMDY(rowData.order_date) },
+    { field: "fulfilment_channel", header: "Channel", sortable: true, filter: true },
+    { field: "enterprise_key", header: "Enterprise", sortable: true, filter: true },
+    { field: "quantity", header: "Qty", sortable: true },
+    { field: "unit_price", header: "Unit Price", sortable: true, body: (rowData) => formatUSD(rowData.unit_price) },
+    { field: "subtotal", header: "Subtotal", sortable: true, body: (rowData) => formatUSD(rowData.subtotal) },
+    { field: "shipping_fee", header: "Shipping", sortable: true, body: (rowData) => formatUSD(rowData.shipping_fee) },
+    { field: "tax_amount", header: "Tax", sortable: true, body: (rowData) => formatUSD(rowData.tax_amount) },
+    { field: "discount_amount", header: "Discount", sortable: true, body: (rowData) => formatUSD(rowData.discount_amount) },
+    { field: "total_amount", header: "Total", sortable: true, body: (rowData) => formatUSD(rowData.total_amount) },
+];
 
   useEffect(() => {
     const fetchData = async () => {

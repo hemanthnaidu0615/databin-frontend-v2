@@ -467,7 +467,7 @@ const TopCustomersTable = () => {
             field: "total_spent",
             header: "Total Spent ($)",
             sortable: true,
-            filter: true,
+            filter: false,
             body: (row: any) => `$${formatValue(convertToUSD(row.total_spent))}`,
           },
         ]}

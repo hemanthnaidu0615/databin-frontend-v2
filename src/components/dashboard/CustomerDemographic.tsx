@@ -204,7 +204,7 @@ const DemographicCard = () => {
       field: "state_revenue",
       header: "Revenue",
       sortable: true,
-      filter: true,
+      filter: false,
       body: (rowData: any) => formatValue(rowData.state_revenue),
     },
     {
@@ -217,7 +217,7 @@ const DemographicCard = () => {
       field: "revenue_percentage",
       header: "Revenue %",
       sortable: true,
-      filter: true,
+      filter: false,
       body: (rowData: any) => `${rowData.revenue_percentage?.toFixed(2) ?? 0}%`,
     },
   ];
