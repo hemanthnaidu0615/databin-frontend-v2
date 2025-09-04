@@ -3,7 +3,7 @@ import { useTheme } from "next-themes";
 import ApexCharts from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../axios";
-import { formatDateTime, formatValue } from "../utils/kpiUtils";
+import { formatDateTime, formatValue, formatUSD } from "../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
@@ -144,22 +144,25 @@ const RevenuePerCustomer: React.FC = () => {
       field: "revenue",
       header: "Revenue",
       sortable: true,
-      filter: true,
-      body: (row: any) => formatValue(row.revenue),
+      filter: false,
+      body: (row: any) => formatUSD(row.revenue),
     },
   ];
   const renderMobileCard = (item: any, index: number) => (
-    <div key={index} className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 bg-white dark:bg-gray-800">
-      <div className="text-sm text-gray-500 dark:text-gray-400">Customer ID</div>
-      <div className="font-medium text-gray-800 dark:text-white mb-2">{item.customer_id}</div>
+  <div key={index} className="p-4 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 bg-white dark:bg-gray-800">
+    <div className="text-sm text-gray-500 dark:text-gray-400">Customer ID</div>
+    <div className="font-medium text-gray-800 dark:text-white mb-2">{item.customer_id}</div>
 
-      <div className="text-sm text-gray-500 dark:text-gray-400">Name</div>
-      <div className="font-medium text-gray-800 dark:text-white mb-2">{item.customer_name}</div>
+    <div className="text-sm text-gray-500 dark:text-gray-400">Name</div>
+    <div className="font-medium text-gray-800 dark:text-white mb-2">{item.customer_name}</div>
 
-      <div className="text-sm text-gray-500 dark:text-gray-400">Revenue</div>
-      <div className="font-semibold text-green-600 dark:text-green-400">{formatValue(item.revenue)}</div>
+    <div className="text-sm text-gray-500 dark:text-gray-400">Revenue</div>
+    <div className="font-semibold text-green-600 dark:text-green-400">
+      {formatUSD(item.revenue)}
     </div>
-  );
+  </div>
+);
+
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">

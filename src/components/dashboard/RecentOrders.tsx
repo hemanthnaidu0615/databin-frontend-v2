@@ -1,38 +1,38 @@
-import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "../../axios";
-import CommonButton from "../modularity/buttons/Button";
-import Badge from "../ui/badge/Badge";
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { axiosInstance } from '../../axios';
+import CommonButton from '../modularity/buttons/Button';
+import Badge from '../ui/badge/Badge';
 import {
   DataTable,
   DataTablePageEvent,
   DataTableSortEvent,
   DataTableFilterEvent,
-} from "primereact/datatable";
-import { Column } from "primereact/column";
-import { InputText } from "primereact/inputtext";
-import { ProgressSpinner } from "primereact/progressspinner";
-import { Dialog } from "primereact/dialog";
-import { FaTable } from "react-icons/fa";
-import { useIsMobile } from "../modularity/tables/useIsMobile";
+} from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { InputText } from 'primereact/inputtext';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import { Dialog } from 'primereact/dialog';
+import { FaTable } from 'react-icons/fa';
+import { useIsMobile } from '../modularity/tables/useIsMobile';
 
-import "primereact/resources/themes/lara-light-blue/theme.css";
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
+import 'primereact/resources/themes/lara-light-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
 const formatDate = (date: string) => {
   const d = new Date(date);
   return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+    .padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
 };
 
 const convertToUSD = (rupees: number) => rupees * 0.012;
 const formatUSD = (amount: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(convertToUSD(amount));
@@ -42,17 +42,17 @@ export default function RecentOrders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<any>({
-    global: { value: null, matchMode: "contains" },
-    product_name: { value: null, matchMode: "contains" },
-    category_name: { value: null, matchMode: "contains" },
-    shipment_status: { value: null, matchMode: "contains" },
-    order_type: { value: null, matchMode: "contains" },
+    global: { value: null, matchMode: 'contains' },
+    product_name: { value: null, matchMode: 'contains' },
+    category_name: { value: null, matchMode: 'contains' },
+    shipment_status: { value: null, matchMode: 'contains' },
+    order_type: { value: null, matchMode: 'contains' },
   });
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(5);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [sortField, setSortField] = useState("order_date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [sortField, setSortField] = useState('order_date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Dialog-specific states:
   const [showDialog, setShowDialog] = useState(false);
@@ -70,16 +70,16 @@ export default function RecentOrders() {
   const navigate = useNavigate();
 
   //fix for the background scrolling issue.
-useEffect(() => {
-  if (showDialog) {
-    document.documentElement.classList.add("modal-open");
-  } else {
-    document.documentElement.classList.remove("modal-open");
-  }
-  return () => {
-    document.documentElement.classList.remove("modal-open");
-  };
-}, [showDialog]);
+  useEffect(() => {
+    if (showDialog) {
+      document.documentElement.classList.add('modal-open');
+    } else {
+      document.documentElement.classList.remove('modal-open');
+    }
+    return () => {
+      document.documentElement.classList.remove('modal-open');
+    };
+  }, [showDialog]);
 
   // Main table fetch
   const fetchOrders = async ({
@@ -105,12 +105,12 @@ useEffect(() => {
       sortField,
       sortOrder,
     });
-    if (enterpriseKey && enterpriseKey !== "All") {
-      params.append("enterpriseKey", enterpriseKey);
+    if (enterpriseKey && enterpriseKey !== 'All') {
+      params.append('enterpriseKey', enterpriseKey);
     }
     Object.keys(filters).forEach((key) => {
       const f = filters[key];
-      if (key !== "global" && f?.value) {
+      if (key !== 'global' && f?.value) {
         params.append(`${key}.value`, f.value);
         params.append(`${key}.matchMode`, f.matchMode);
       }
@@ -122,7 +122,7 @@ useEffect(() => {
       setOrders(res.data.data || []);
       setTotalRecords(res.data.count || 0);
     } catch (err) {
-      console.error("Failed loading orders", err);
+      console.error('Failed loading orders', err);
       setOrders([]);
     } finally {
       setLoading(false);
@@ -153,12 +153,12 @@ useEffect(() => {
       sortField,
       sortOrder,
     });
-    if (enterpriseKey && enterpriseKey !== "All") {
-      params.append("enterpriseKey", enterpriseKey);
+    if (enterpriseKey && enterpriseKey !== 'All') {
+      params.append('enterpriseKey', enterpriseKey);
     }
     Object.keys(filters).forEach((key) => {
       const f = filters[key];
-      if (key !== "global" && f?.value) {
+      if (key !== 'global' && f?.value) {
         params.append(`${key}.value`, f.value);
         params.append(`${key}.matchMode`, f.matchMode);
       }
@@ -170,7 +170,7 @@ useEffect(() => {
       setDialogOrders(res.data.data || []);
       setDialogTotalRecords(res.data.count || 0);
     } catch (err) {
-      console.error("Failed loading dialog orders", err);
+      console.error('Failed loading dialog orders', err);
       setDialogOrders([]);
     } finally {
       setDialogLoading(false);
@@ -212,10 +212,10 @@ useEffect(() => {
     enterpriseKey,
   ]);
 
-  const renderFilterInput = (placeholder = "Search") => {
+  const renderFilterInput = (placeholder = 'Search') => {
     return (options: any) => (
       <InputText
-        value={options.value || ""}
+        value={options.value || ''}
         onChange={(e) => options.filterCallback(e.target.value)}
         placeholder={placeholder}
         className="p-column-filter"
@@ -226,11 +226,11 @@ useEffect(() => {
   const shipmentStatusBody = (row: any) => (
     <Badge
       color={
-        row.shipment_status === "Delivered"
-          ? "success"
-          : row.shipment_status === "Pending"
-          ? "warning"
-          : "error"
+        row.shipment_status === 'Delivered'
+          ? 'success'
+          : row.shipment_status === 'Pending'
+          ? 'warning'
+          : 'error'
       }
     >
       {row.shipment_status}
@@ -238,8 +238,8 @@ useEffect(() => {
   );
 
   const handleViewMore = () => {
-    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-    navigate("/orders");
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+    navigate('/orders');
   };
 
   const mobileCardRender = (item: any, idx: number) => (
@@ -251,20 +251,15 @@ useEffect(() => {
       <div className="text-xs text-gray-500 dark:text-gray-400">
         <div>Category: {item.category_name}</div>
         <div>Price: {formatUSD(item.unit_price)}</div>
-        <div>
-          Status:{" "}
-          {shipmentStatusBody(item)}
-        </div>
+        <div>Status: {shipmentStatusBody(item)}</div>
         <div>Type: {item.order_type}</div>
       </div>
     </div>
   );
 
   // Main Table pagination helpers
-  const getFirstRecord = () =>
-    totalRecords === 0 ? 0 : page * rows + 1;
-  const getLastRecord = () =>
-    Math.min(totalRecords, (page + 1) * rows);
+  const getFirstRecord = () => (totalRecords === 0 ? 0 : page * rows + 1);
+  const getLastRecord = () => Math.min(totalRecords, (page + 1) * rows);
 
   // Dialog pagination helpers
   const getDialogFirstRecord = () =>
@@ -277,7 +272,7 @@ useEffect(() => {
       {/* Header */}
       <div className="flex justify-between items-start sm:items-center flex-wrap gap-2 mb-4">
         <h2 className="app-subheading flex-1">Recent Orders</h2>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center  ">
           <CommonButton
             variant="responsive"
             onClick={handleViewMore}
@@ -305,19 +300,17 @@ useEffect(() => {
           <ProgressSpinner />
         </div>
       ) : isMobile ? (
-        <>
-          {mobileCardRender && orders.map(mobileCardRender)}
-        </>
+        <>{mobileCardRender && orders.map(mobileCardRender)}</>
       ) : (
         <DataTable
           value={orders}
           rows={5}
           paginator={false}
           sortField={sortField}
-          sortOrder={sortOrder === "asc" ? 1 : -1}
+          sortOrder={sortOrder === 'asc' ? 1 : -1}
           onSort={(e: DataTableSortEvent) => {
             setSortField(e.sortField || sortField);
-            setSortOrder(e.sortOrder === 1 ? "asc" : "desc");
+            setSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
           }}
           filters={filters}
           filterDisplay="menu"
@@ -326,47 +319,49 @@ useEffect(() => {
           responsiveLayout="scroll"
           size="small"
           className="text-xs [&_.p-datatable-tbody_td]:py-0.5 [&_.p-datatable-thead_th]:py-1"
-          key={`main-datatable-${sortField}-${sortOrder}-${JSON.stringify(filters)}`}
+          key={`main-datatable-${sortField}-${sortOrder}-${JSON.stringify(
+            filters
+          )}`}
         >
           <Column
             field="product_name"
             header="Product Name"
             sortable
             filter
-            filterElement={renderFilterInput("Search Product")}
-            style={{ minWidth: "10rem" }}
+            filterElement={renderFilterInput('Search Product')}
+            style={{ minWidth: '10rem' }}
           />
           <Column
             field="category_name"
             header="Category"
             sortable
             filter
-            filterElement={renderFilterInput("Search Category")}
-            style={{ minWidth: "8rem" }}
+            filterElement={renderFilterInput('Search Category')}
+            style={{ minWidth: '8rem' }}
           />
           <Column
             field="unit_price"
             header="Price (USD)"
             body={(row) => formatUSD(row.unit_price)}
             sortable
-            style={{ minWidth: "7rem" }}
+            style={{ minWidth: '7rem' }}
           />
           <Column
             field="shipment_status"
             header="Shipment Status"
             sortable
             filter
-            filterElement={renderFilterInput("Search Status")}
+            filterElement={renderFilterInput('Search Status')}
             body={shipmentStatusBody}
-            style={{ minWidth: "9rem" }}
+            style={{ minWidth: '9rem' }}
           />
           <Column
             field="order_type"
             header="Order Type"
             sortable
             filter
-            filterElement={renderFilterInput("Search Type")}
-            style={{ minWidth: "8rem" }}
+            filterElement={renderFilterInput('Search Type')}
+            style={{ minWidth: '8rem' }}
           />
         </DataTable>
       )}
@@ -375,7 +370,7 @@ useEffect(() => {
       <Dialog
         visible={showDialog}
         onHide={() => setShowDialog(false)}
-        style={{ width: "90vw", maxWidth: "1100px" }}
+        style={{ width: '90vw', maxWidth: '1100px' }}
         header="All Recent Orders"
         modal
       >
@@ -386,19 +381,23 @@ useEffect(() => {
         ) : (
           <>
             <DataTable
-              key={`dialog-datatable-${dialogSortField}-${dialogSortOrder}-${JSON.stringify(dialogFilters)}`}
+              key={`dialog-datatable-${dialogSortField}-${dialogSortOrder}-${JSON.stringify(
+                dialogFilters
+              )}`}
               value={dialogOrders}
               paginator={false}
               rows={dialogRows}
               sortField={dialogSortField}
-              sortOrder={dialogSortOrder === "asc" ? 1 : -1}
+              sortOrder={dialogSortOrder === 'asc' ? 1 : -1}
               onSort={(e: DataTableSortEvent) => {
                 setDialogSortField(e.sortField || dialogSortField);
-                setDialogSortOrder(e.sortOrder === 1 ? "asc" : "desc");
+                setDialogSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
               }}
               filters={dialogFilters}
               filterDisplay="menu"
-              onFilter={(e: DataTableFilterEvent) => setDialogFilters(e.filters)}
+              onFilter={(e: DataTableFilterEvent) =>
+                setDialogFilters(e.filters)
+              }
               emptyMessage="No orders found."
               responsiveLayout="scroll"
               size="small"
@@ -409,47 +408,47 @@ useEffect(() => {
                 header="Product Name"
                 sortable
                 filter
-                filterElement={renderFilterInput("Search Product")}
-                style={{ minWidth: "10rem" }}
+                filterElement={renderFilterInput('Search Product')}
+                style={{ minWidth: '10rem' }}
               />
               <Column
                 field="category_name"
                 header="Category"
                 sortable
                 filter
-                filterElement={renderFilterInput("Search Category")}
-                style={{ minWidth: "8rem" }}
+                filterElement={renderFilterInput('Search Category')}
+                style={{ minWidth: '8rem' }}
               />
               <Column
                 field="unit_price"
                 header="Price (USD)"
                 body={(row) => formatUSD(row.unit_price)}
                 sortable
-                style={{ minWidth: "7rem" }}
+                style={{ minWidth: '7rem' }}
               />
               <Column
                 field="shipment_status"
                 header="Shipment Status"
                 sortable
                 filter
-                filterElement={renderFilterInput("Search Status")}
+                filterElement={renderFilterInput('Search Status')}
                 body={shipmentStatusBody}
-                style={{ minWidth: "9rem" }}
+                style={{ minWidth: '9rem' }}
               />
               <Column
                 field="order_type"
                 header="Order Type"
                 sortable
                 filter
-                filterElement={renderFilterInput("Search Type")}
-                style={{ minWidth: "8rem" }}
+                filterElement={renderFilterInput('Search Type')}
+                style={{ minWidth: '8rem' }}
               />
             </DataTable>
 
             {/* Dialog Pagination */}
             <div className="flex justify-between items-center text-sm mt-3 text-gray-600 dark:text-gray-400">
               <div>
-                Showing {getDialogFirstRecord()} - {getDialogLastRecord()} of{" "}
+                Showing {getDialogFirstRecord()} - {getDialogLastRecord()} of{' '}
                 {dialogTotalRecords}
               </div>
               <div className="flex gap-2">
@@ -484,7 +483,9 @@ useEffect(() => {
                 </button>
                 <button
                   onClick={() =>
-                    setDialogPage(Math.ceil(dialogTotalRecords / dialogRows) - 1)
+                    setDialogPage(
+                      Math.ceil(dialogTotalRecords / dialogRows) - 1
+                    )
                   }
                   disabled={
                     dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)

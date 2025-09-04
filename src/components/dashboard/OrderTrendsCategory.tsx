@@ -217,7 +217,7 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
         header="Order Trends by Product Category"
         columns={columns}
         fetchData={fetchData}
-        width="90vw"
+        width="80vw"
         mobileCardRender={renderMobileCard}
       />
     </>
