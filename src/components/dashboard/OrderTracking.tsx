@@ -110,14 +110,14 @@ export default function OrderTracking(_: OrderTrackingProps) {
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "radialBar",
-      height: 260,
+      height: 320,
       sparkline: { enabled: true },
     },
     plotOptions: {
       radialBar: {
         startAngle: -85,
         endAngle: 85,
-        hollow: { size: "70%" },
+        hollow: { size: "68%" },
         track: {
           background: "#E4E7EC",
           strokeWidth: "100%",
@@ -126,9 +126,9 @@ export default function OrderTracking(_: OrderTrackingProps) {
         dataLabels: {
           name: { show: false },
           value: {
-            fontSize: "24px",
-            fontWeight: "600",
-            offsetY: -25,
+            fontSize: "32px",
+            fontWeight: "700",
+            offsetY: -20,
             color: "#1D2939",
             formatter: (val) => val.toFixed(1) + "%",
           },
@@ -168,10 +168,10 @@ export default function OrderTracking(_: OrderTrackingProps) {
 
       {isVisible && (
         <>
-          <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-6 dark:bg-gray-900 sm:px-5 sm:pt-5">
-            <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 md:mb-30">
+          <div className="px-4 pt-4 bg-white shadow-default rounded-xl pb-16 dark:bg-gray-900 sm:px-2 sm:pt-2">
+            <div className="flex justify-between items-start sm:items-center flex-wrap sm:flex-nowrap gap-2 md:mb-15">
               <div className="flex items-start justify-between w-full sm:w-auto">
-                <h2 className="app-subheading flex-1 mr-2">Order Tracking</h2>
+                <h2 className="app-subheading  ">Order Tracking</h2>
 
                 {/* Mobile arrow (→) aligned right */}
                  <CommonButton variant="responsive" onClick={handleViewMore}  showDesktop={false}/>
@@ -182,20 +182,21 @@ export default function OrderTracking(_: OrderTrackingProps) {
             </div>
 
             <div className="flex justify-center mt-13">
-              <div className="max-h-[260px]" id="chartDarkStyle">
+              <div id="chartDarkStyle">
                 {isVisible && progressPercentage > 0 && (
                   <Chart
                     options={options}
                     series={series}
                     type="radialBar"
-                    height={260}
+                    height={300}
                   />
                 )}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 px-5 py-3 sm:gap-4 sm:py-4">
+          <div className="grid grid-cols-3 gap-3 px-5 py-5 sm:gap-4 sm:py-6 bg-gray-50 dark:bg-gray-800/30 rounded-b-xl">
+
             {[
               {
                 label: "Shipped",
@@ -214,8 +215,8 @@ export default function OrderTracking(_: OrderTrackingProps) {
               },
             ].map((item, index) => (
               <div key={index} className="flex flex-col items-center">
-                <p className={`mb-1 text-xs ${item.color}`}>{item.label}</p>
-                <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
+                <p className={`mb-1 text-base font-semibold ${item.color}`}>{item.label}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
                   {formatValue(item.count)}
                 </p>
               </div>

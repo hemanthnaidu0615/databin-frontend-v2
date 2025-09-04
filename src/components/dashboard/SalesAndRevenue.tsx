@@ -162,10 +162,12 @@ export default function StatisticsChart({ }: StatisticsChartProps) {
     },
   };
 
-  const handleViewMore = () => {
-    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-    navigate("/sales/dashboard");
-  };
+  
+
+const handleViewMore = () => {
+  sessionStorage.setItem("scrollPosition", window.scrollY.toString());
+  navigate("/sales-dashboard");
+};
 
   const series = [
     { name: "Sales", data: salesByMonth },

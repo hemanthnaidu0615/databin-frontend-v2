@@ -21,7 +21,7 @@ const FilteredDataDialog: React.FC<FilteredDataDialogProps> = ({
   fetchData,
   filterParams = {},
   mobileCardRender,
-  width = "1000vw"
+  width = "80%",
 }) => {
 
   useEffect(() => {
@@ -41,8 +41,9 @@ const FilteredDataDialog: React.FC<FilteredDataDialogProps> = ({
       header={header}
       visible={visible}
       onHide={onHide}
-      style={{ width, maxWidth: "1300px" }}
-      contentStyle={{ overflow: 'visible' }} // <- Add this line
+
+      style={{ width, maxWidth: "1440px" }}  
+      contentStyle={{ overflow: "auto" }} 
       dismissableMask
     >
       <BaseDataTable
