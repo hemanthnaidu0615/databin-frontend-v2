@@ -32,10 +32,22 @@ import Scheduler from "./components/Pages/Scheduler/Scheduler";
 import FulfillmentPage from "./components/Pages/Fulfillment/FulfillmentPage";
 import { UserManagement } from "./components/Pages/user Management/UserManagement";
 import { ThemeProvider } from "./context/ThemeContext"; 
+import { PrimeReactProvider } from "primereact/api"; 
 
 export default function App() {
+  const primeReactConfig = {
+    zIndex: {
+    modal: 1100,   
+    overlay: 40,   
+    menu: 40,      
+    tooltip: 1100,
+    toast: 1200
+  },
+  hideOverlaysOnDocumentScrolling: true
+  };
   return (
     <ThemeProvider> 
+      <PrimeReactProvider value ={primeReactConfig}>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -74,6 +86,7 @@ export default function App() {
           </Route>
         </Routes>
       </Router>
+    </PrimeReactProvider>
     </ThemeProvider>
   );
 }

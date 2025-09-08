@@ -268,7 +268,7 @@ const DemographicCard = () => {
   );
 
   return (
-    <div className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
+    <div className="w-full p-4 sm:p-7 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
       <div className="flex justify-between items-center">
         <h2 className="app-subheading">Customer Demographic</h2>
 
