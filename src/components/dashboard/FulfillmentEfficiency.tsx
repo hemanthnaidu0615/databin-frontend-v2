@@ -208,7 +208,7 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
 
   return (
     <div className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`} style={{ padding: "1rem" }}>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-14">
         <h2 className="app-subheading">Fulfillment Efficiency Summary</h2>
         <div className="flex gap-2 items-center">
           <CommonButton variant="responsive" onClick={handleViewMore} text="View More" showMobile={true} showDesktop={true} />
