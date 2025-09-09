@@ -44,40 +44,55 @@ const TopProductsTable = () => {
   const [first, setFirst] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Dialog state & filter (productName)
+
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogFilter, setDialogFilter] = useState<string | null>(null);
 
-  // Factory function to create fetchData for FilteredDataDialog
-  const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
-    return (params = {}) => {
-      return async (tableParams: any) => {
-        const combinedParams = {
-          ...baseParams,
-          ...params,
-          page: tableParams.page,
-          size: tableParams.pageSize,
-          sortField: tableParams.sortField,
-          sortOrder: tableParams.sortOrder,
-          filters: tableParams.filters,
-        };
-
-        try {
-          const response = await axiosInstance.get(endpoint, { params: combinedParams });
-
-          // Map your response here
-          return {
-            data: (response.data as { products?: any[] }).products || [],   // note 'products' here
-            count: (response.data as { count?: number }).count || 0,
-          };
-        } catch (error) {
-          console.error("Failed to fetch filtered data:", error);
-          return { data: [], count: 0 };
-        }
+const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
+  return (params = {}) => {
+    return async (tableParams: any = {}) => {
+      const queryParams: Record<string, any> = {
+        ...baseParams,
+        ...params,
+        page: tableParams.page ?? 0,
+        size: tableParams.size ?? tableParams.rows ?? 10,
+        sortField: tableParams.sortField,
+        sortOrder: tableParams.sortOrder,
       };
+
+      if (tableParams && typeof tableParams === "object") {
+        Object.entries(tableParams).forEach(([k, v]) => {
+          if (["page", "size", "rows", "first", "sortField", "sortOrder"].includes(k)) return;
+          if (k.endsWith(".value") || k.endsWith(".matchMode") || !k.includes("filters")) {
+            queryParams[k] = v;
+          }
+        });
+      }
+
+      if (tableParams && tableParams.filters && typeof tableParams.filters === "object") {
+        Object.entries(tableParams.filters).forEach(([field, filterObj]: any) => {
+          if (filterObj == null) return;
+          if (filterObj.value !== undefined && filterObj.value !== null && filterObj.value !== "") {
+            queryParams[`${field}.value`] = filterObj.value;
+          }
+          if (filterObj.matchMode !== undefined && filterObj.matchMode !== null) {
+            queryParams[`${field}.matchMode`] = filterObj.matchMode;
+          }
+        });
+      }
+      try {
+        const response = await axiosInstance.get(endpoint, { params: queryParams });
+        return {
+          data: (response.data as { products?: any[] }).products || [],
+          count: (response.data as { count?: number }).count || 0,
+        };
+      } catch (err) {
+        console.error("Failed to fetch filtered data:", err);
+        return { data: [], count: 0 };
+      }
     };
   };
-
+};
 
   const onPageChange = (event: { first: number; rows: number }) => {
     setFirst(event.first);
