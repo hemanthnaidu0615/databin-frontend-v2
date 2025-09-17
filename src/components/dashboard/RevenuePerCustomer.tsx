@@ -8,12 +8,47 @@ import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
 import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
 import { getBaseTooltip, revenueTooltip } from "../modularity/graphs/graphWidget";
+import * as XLSX from "xlsx";
 
 const RevenuePerCustomer: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   const [data, setData] = useState<{ customer: string; revenue: number }[]>([]);
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map(item => ({
+    "Customer ID": item.customer_id,
+    "Customer Name": item.customer_name,
+    "Revenue": formatUSD(item.revenue),
+  }));
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Top Customers");
+  XLSX.writeFile(workbook, "top_customers_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const params = {
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      enterpriseKey: enterpriseKey || undefined,
+      size: '100000', 
+    };
+
+    const response = await axiosInstance.get("/revenue/top-customers", { params });
+    const dataToExport = response.data.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showGridDialog, setShowGridDialog] = useState(false);
@@ -166,17 +201,23 @@ const RevenuePerCustomer: React.FC = () => {
 
   return (
     <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
-      <div className="flex justify-between items-start sm:items-center mb-4">
-        <h2 className="app-subheading">Revenue Per Customer</h2>
-        <button
-          onClick={() => setShowGridDialog(true)}
-          className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-600"
-          title="View Grid"
-        >
-          <FaTable size={18} />
-        </button>
-      </div>
-
+      <div className="flex justify-between items-center mb-4">
+  <h2 className="app-subheading">Revenue Per Customer</h2>
+  <div className="flex items-center gap-2">
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+    <FaTable
+      onClick={() => setShowGridDialog(true)}
+      className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-600"
+      title="View Grid"
+      size={18}
+    />
+  </div>
+</div>
       {isLoading ? (
         <p className="text-gray-600 dark:text-gray-300">Loading data...</p>
       ) : error ? (

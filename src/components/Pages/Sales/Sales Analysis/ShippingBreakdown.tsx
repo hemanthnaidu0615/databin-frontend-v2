@@ -12,6 +12,7 @@ import { getBaseTooltip, costTooltip } from "../../../modularity/graphs/graphWid
 import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataTable";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 interface Shipment {
   carrier: string;
@@ -28,6 +29,54 @@ const ShippingBreakdown: React.FC = () => {
   const isDark = theme === "dark";
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [allData, setAllData] = useState<Shipment[]>([]);
+
+const exportToXLSX = (data: any[]) => {
+  
+  const renamedData = data.map((item) => ({
+    "Carrier": item.carrier,
+    "Shipping Method": item.shipping_method,
+    "Shipment Status": item.shipment_status,
+    "Cost (USD)": convertToUSD(item.shipment_cost),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Shipping Data");
+  XLSX.writeFile(workbook, "shipping_data_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    const [startDate, endDate] = dateRange || [];
+
+    if (!startDate || !endDate) {
+      alert("Date range not available. Please select a date range.");
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      enterpriseKey: enterpriseKey || undefined,
+      size: "100000",
+    };
+
+    const response = await axiosInstance.get(
+      `/analysis/shipment-summary`,
+      { params }
+    );
+    const dataToExport = (response.data as { shipments?: any[] }).shipments || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
+// END of corrected code block
   const [showCarrierDialog, setShowCarrierDialog] = useState(false);
   const [carrierFilter, setCarrierFilter] = useState<string | null>(null);
   const [showUnfilteredDialog, setShowUnfilteredDialog] = useState(false);
@@ -306,9 +355,17 @@ const dialogMobileCardRender = (shipment: any, index: number) => (
 
   return (
     <div className="card p-4">
-      <h2 className="app-subheading">
-        Shipping Breakdown
-      </h2>
+       <div className="flex justify-between items-center mb-4">
+    <h2 className="app-subheading">
+      Shipping Breakdown
+    </h2>
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+  </div>
 
       <BaseDataTable<Shipment>
         columns={columns}
@@ -326,6 +383,13 @@ const dialogMobileCardRender = (shipment: any, index: number) => (
       <div className="mt-8">
         <div className="flex justify-between items-center mb-6">
           <h3 className="app-subheading">Top 10 Carriers by Total Cost</h3>
+          <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
           <button
             onClick={() => setShowUnfilteredDialog(true)}
             title="Show full shipment data"
@@ -334,6 +398,7 @@ const dialogMobileCardRender = (shipment: any, index: number) => (
           >
             <FaTable size={18} />
           </button>
+        </div>
         </div>
 
         {Object.keys(carrierTotals).length > 0 ? (

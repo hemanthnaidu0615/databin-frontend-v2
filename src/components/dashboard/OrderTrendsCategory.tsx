@@ -10,6 +10,7 @@ import CommonButton from "../modularity/buttons/Button";
 import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { FaTable } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
@@ -47,6 +48,42 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map(item => ({
+    "Month": item.month,
+    "Category": item.category,
+    "Sales": item.sales,
+  }));
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Order Trends");
+  XLSX.writeFile(workbook, "order_trends_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const query = new URLSearchParams({
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      size: '100000', // A large size to get all data
+    });
+    if (enterpriseKey) {
+      query.append("enterpriseKey", enterpriseKey);
+    }
+
+    const res = await axiosInstance.get(`/order-trends-by-category?${query.toString()}`);
+    const dataToExport = res.data.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
 
@@ -189,12 +226,13 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
           <div className="flex justify-between items-center mb-8">
             <h2 className="app-subheading">Order Trends By Product Category</h2>
             <div className="flex items-center ">
-              <CommonButton
-                variant="responsive"
-                onClick={handleViewMore}
-                text="View more"
-                className="h-9 flex items-center"
-              />
+              {/* The new Export button */}
+    <button 
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
               <button
                 onClick={() => setDialogVisible(true)}
                 className="h-9 w-9 flex items-center justify-center text-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
@@ -202,6 +240,12 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
               >
                 <FaTable size={18} />
               </button>
+              <CommonButton
+                variant="responsive"
+                onClick={handleViewMore}
+                text="View more"
+                className="h-9 flex items-center"
+              />
             </div>
           </div>
         )}

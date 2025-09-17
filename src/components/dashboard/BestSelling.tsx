@@ -8,6 +8,7 @@ import CommonButton from "../modularity/buttons/Button";
 import { FaTable } from "react-icons/fa";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
+import * as XLSX from "xlsx";
 
 interface ProductData {
   id: number;
@@ -61,6 +62,41 @@ const ProfitabilityTable: React.FC = () => {
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const navigate = useNavigate();
 
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map(item => ({
+    "Product": item.product_name,
+    "Description": item.description,
+    "Qty Sold": item.quantity,
+    "Price (USD)": formatUSD(convertToUSD(item.price)),
+  }));
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Top Selling Products");
+  XLSX.writeFile(workbook, "top_selling_products_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const params = {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      enterpriseKey: enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined,
+      size: '100000',
+    };
+
+    const response = await axiosInstance.get("/top-sellers/top-products", { params });
+    const dataToExport = response.data.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [showGridModal, setShowGridModal] = useState(false);
   const [, setGridTotalRecords] = useState(0);
   const [gridPage] = useState(0);
@@ -188,7 +224,6 @@ const ProfitabilityTable: React.FC = () => {
       sessionStorage.removeItem("scrollPosition");
     }
   }, []);
-  // Add a type for filter objects
   type FilterObj = { value?: any; matchMode?: string };
 
   const fetchTopSellingProducts = async ({
@@ -263,14 +298,14 @@ const ProfitabilityTable: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Desktop & tablet "View More" */}
-          <CommonButton
-            variant="responsive"
-            onClick={handleViewMore}
-            showMobile={false}
-            text="View more"
-          />
 
+          {/* The new Export button */}
+    <button 
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
           {/* Grid view button */}
           <button
             onClick={() => setShowGridModal(true)}
@@ -280,6 +315,16 @@ const ProfitabilityTable: React.FC = () => {
           >
             <FaTable size={18} />
           </button>
+          
+          {/* Desktop & tablet "View More" */}
+          <CommonButton
+            variant="responsive"
+            onClick={handleViewMore}
+            showMobile={false}
+            text="View more"
+          />
+
+          
         </div>
       </div>
 
