@@ -5,6 +5,7 @@ import { BaseDataTable, TableColumn } from "../../modularity/tables/BaseDataTabl
 import { axiosInstance } from "../../../axios";
 import { formatDateTime } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import * as XLSX from "xlsx";
 
 interface Filters {
   selectedRegion: string;
@@ -35,6 +36,51 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
+  const exportToXLSX = (data: any[]) => {
+    const renamedData = data.map(item => ({
+      "Product Name": item.name,
+      "Category": item.category,
+      "Warehouse": item.warehouse,
+      "Source": item.source,
+      "State": item.states,
+      "Status": item.status,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(renamedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory List");
+    XLSX.writeFile(workbook, "inventory_list_export.xlsx");
+  };
+
+  const exportData = async () => {
+    try {
+      if (!startDate || !endDate) {
+        alert('Date range not available. Please select a date range.');
+        return;
+      }
+
+      const queryParams = new URLSearchParams({
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        size: '100000',
+      });
+
+      const response = await axiosInstance.get(`/inventory/widget-data?${queryParams}`);
+      const resData = response.data as { data: any[]; count: number };
+      const dataToExport = (resData.data || []).map((item: any) => ({
+        name: item.product_name,
+        category: item.category_name,
+        warehouse: item.warehouse_name,
+        source: item.warehouse_function,
+        states: item.warehouse_state,
+        status: item.inventory_status,
+      }));
+      exportToXLSX(dataToExport);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export data.");
+    }
+  };
+
   const fetchData = async (params: any) => {
     if (!startDate || !endDate) return { data: [], count: 0 };
 
@@ -43,7 +89,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       endDate: formatDateTime(endDate),
     });
 
-    // 👇 Add your custom frontend-to-backend field mapping
     const fieldMap: Record<string, string> = {
       name: "product_name",
       category: "category_name",
@@ -53,7 +98,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       status: "inventory_status",
     };
 
-    // 👇 Remap filters
     Object.keys(params).forEach((key) => {
       const match = key.match(/^(.+)\.(value|matchMode)$/);
       if (match) {
@@ -67,7 +111,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       }
     });
 
-    // Add extra filters
     if (filters.selectedRegion) queryParams.append("regionFilter", filters.selectedRegion);
     if (filters.selectedSource) queryParams.append("sourceFilter", filters.selectedSource);
     if (filters.selectedLocation) queryParams.append("locationFilter", filters.selectedLocation);
@@ -87,7 +130,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       count: resData.count || 0,
     };
   };
-
 
   const renderStatus = (status: string) => (
     <span className={statusColors[status] ?? ""}>{status}</span>
@@ -125,12 +167,26 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
   ];
 
   return (
-    <BaseDataTable<InventoryItem>
-      columns={columns}
-      fetchData={fetchData}
-      title="Inventory List"
-      mobileCardRender={renderMobileCard}
-      globalFilterFields={["name", "category", "warehouse", "source", "states", "status"]} field={"name"} header={""} />
+    <div className="card p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="app-subheading">Inventory List</h2>
+        <button
+          className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+          onClick={exportData}
+        >
+          Export
+        </button>
+      </div>
+      <BaseDataTable<InventoryItem>
+        columns={columns}
+        fetchData={fetchData}
+        mobileCardRender={renderMobileCard}
+        globalFilterFields={["name", "category", "warehouse", "source", "states", "status"]}
+        initialSortField="name"
+        initialRows={10}
+        rowsPerPageOptions={[10, 20, 50, 100]}
+      />
+    </div>
   );
 };
 

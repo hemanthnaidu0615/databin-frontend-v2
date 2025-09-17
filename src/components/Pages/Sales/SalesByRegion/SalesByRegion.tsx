@@ -9,6 +9,7 @@ import {
   TableColumn,
 } from '../../../modularity/tables/BaseDataTable';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import * as XLSX from "xlsx";
 
 interface StateData {
   state_name: string;
@@ -36,6 +37,49 @@ export const SalesByRegion: React.FC = () => {
   const dateRange = useSelector((state: any) => state.dateRange.dates);
   const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
   const [startDate, endDate] = dateRange || [];
+  
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map((item) => ({
+    "State": item.state_name,
+    "Total Value (USD)": convertToUSD(item.state_revenue),
+    "Quantity": item.state_quantity,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Sales by Region");
+  XLSX.writeFile(workbook, "sales_by_region_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert("Date range not available. Please select a date range.");
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      enterpriseKey: enterpriseKey || undefined,
+      
+      size: "100000",
+    };
+
+    const response = await axiosInstance.get(
+      `/sales-by-region`,
+      { params }
+    );
+    const dataToExport = (response.data as { data?: any[] }).data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
 
   useEffect(() => {
     const fetchTopStates = async () => {
@@ -210,7 +254,16 @@ export const SalesByRegion: React.FC = () => {
 
         {/* Table */}
         <div className="w-full lg:w-1/2 mt-6 lg:mt-0 lg:mr-4 md:mr-4">
-          <h3 className="app-subheading">Revenues by State</h3>
+          
+<div className="flex justify-between items-center mb-4">
+  <h3 className="app-subheading">Revenues by State</h3>
+  <button
+    className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+    onClick={exportData}
+  >
+    Export
+  </button>
+</div>
           <BaseDataTable<StateData>
             fetchData={fetchData}
             columns={columns}

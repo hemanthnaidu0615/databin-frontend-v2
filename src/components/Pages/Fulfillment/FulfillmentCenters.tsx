@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tag } from "primereact/tag";
 import { BaseDataTable, TableColumn } from "../../modularity/tables/BaseDataTable";
 import { axiosInstance } from "../../../axios";
@@ -8,6 +8,7 @@ import { formatDateTime } from "../../utils/kpiUtils";
 import { useTheme } from "next-themes";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 interface CenterData {
   center: string;
@@ -22,6 +23,42 @@ const FulfillmentCenters: React.FC = () => {
   const [expandedCenter, setExpandedCenter] = useState<string | null>(null);
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
+
+  const exportToXLSX = (data: any[]) => {
+    const renamedData = data.map(item => ({
+      "Center": item.center,
+      "Orders": item.orders,
+      "Avg Time (days)": item.avg_time_days,
+      "On-Time Rate (%)": item.on_time_rate,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(renamedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fulfillment Centers");
+    XLSX.writeFile(workbook, "fulfillment_centers_export.xlsx");
+  };
+
+  const exportData = async () => {
+    try {
+      if (!startDate || !endDate) {
+        alert('Date range not available. Please select a date range.');
+        return;
+      }
+
+      const params = {
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        enterpriseKey: enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined,
+        size: '100000',
+      };
+
+      const response = await axiosInstance.get("/fulfillment/fulfillment-performance", { params });
+      const dataToExport = response.data.data || [];
+      exportToXLSX(dataToExport);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export data.");
+    }
+  };
 
   const getRateSeverity = (rate: number): "success" | "info" | "warning" | "danger" => {
     if (rate >= 95) return "success";
@@ -109,19 +146,40 @@ const FulfillmentCenters: React.FC = () => {
     },
   ];
 
-  return (
-    <div className="card p-4">
-      <BaseDataTable<CenterData>
-        columns={columns}
-        fetchData={fetchData}
-        title="Fulfillment Center Performance"
-        mobileCardRender={renderMobileCard}
-        initialSortField="center"
-        initialRows={10}
-        globalFilterFields={["center"]}
-        rowsPerPageOptions={[10, 20, 50, 100]} field={"center"} header={""} />
+  const renderHeader = () => (
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="app-subheading">Fulfillment Center Performance</h2>
+      <button 
+        className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+        onClick={exportData}
+      >
+        Export
+      </button>
     </div>
   );
+
+  return (
+  <div className="card p-4">
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="app-subheading">Fulfillment Center Performance</h2>
+      <button 
+        className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+        onClick={exportData}
+      >
+        Export
+      </button>
+    </div>
+    <BaseDataTable<CenterData>
+      columns={columns}
+      fetchData={fetchData}
+      mobileCardRender={renderMobileCard}
+      initialSortField="center"
+      initialRows={10}
+      globalFilterFields={["center"]}
+      rowsPerPageOptions={[10, 20, 50, 100]}
+    />
+  </div>
+);
 };
 
 export default FulfillmentCenters;

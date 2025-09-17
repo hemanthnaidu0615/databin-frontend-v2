@@ -15,6 +15,7 @@ import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { formatDateTime } from "../utils/kpiUtils";
 import { FaTable } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
@@ -79,6 +80,44 @@ const DemographicCard = () => {
     avgOrderValue: 0,
     highSpenders: 0,
   });
+
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map(item => ({
+    "State": item.state_name,
+    "Revenue": item.state_revenue,
+    "Quantity": item.state_quantity,
+    "Revenue %": `${(item.revenue_percentage || 0).toFixed(2)}%`,
+  }));
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Sales by Region");
+  XLSX.writeFile(workbook, "sales_by_region_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      enterpriseKey: enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined,
+      size: '100000',
+    };
+
+    const response = await axiosInstance.get("/sales-by-region", { params });
+    const dataToExport = response.data.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
 
   const [showDataDialog, setShowDataDialog] = useState(false);
 
@@ -270,24 +309,30 @@ const DemographicCard = () => {
   return (
     <div className="w-full p-4 sm:p-7 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-md relative">
       <div className="flex justify-between items-center">
-        <h2 className="app-subheading">Customer Demographic</h2>
-
-        <div className="flex items-center">
-          <CommonButton
-            variant="responsive"
-            onClick={handleViewMore}
-            text="View more"
-            className="h-9 flex items-center"
-          />
-          <button
-            onClick={handleGridClick}
-            className="h-9 w-9 flex items-center justify-center text-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
-            aria-label="View data in table"
-          >
-            <FaTable size={18} />
-          </button>
-        </div>
-      </div>
+  <h2 className="app-subheading">Customer Demographic</h2>
+  <div className="flex items-center gap-2">
+    {/* The new Export button */}
+    <button 
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+    <button
+      onClick={handleGridClick}
+      className="h-9 w-9 flex items-center justify-center text-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
+      aria-label="View data in table"
+    >
+      <FaTable size={18} />
+    </button>
+    <CommonButton
+      variant="responsive"
+      onClick={handleViewMore}
+      text="View more"
+      className="h-9 flex items-center"
+    />
+  </div>
+</div>
 
       <div ref={mapRef} className="relative w-full h-[min(400px,40vw)] bg-white dark:bg-gray-900">
         <ComposableMap

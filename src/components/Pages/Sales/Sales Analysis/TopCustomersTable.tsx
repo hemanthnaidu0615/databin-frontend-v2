@@ -13,6 +13,7 @@ import { getBaseTooltip, revenueTooltip } from "../../../modularity/graphs/graph
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
+import * as XLSX from "xlsx";
 
 interface Customer {
   customer_name: string;
@@ -57,6 +58,47 @@ const TopCustomersTable = () => {
   const [viewMode, setViewMode] = useState<"revenue" | "orders">("revenue");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map((item) => ({
+    "Customer Name": item.customer_name,
+    "Total Orders": item.total_orders,
+    "Total Spent (USD)": convertToUSD(item.total_spent),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Top Customers");
+  XLSX.writeFile(workbook, "top_customers_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert("Date range not available. Please select a date range.");
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      enterpriseKey: enterpriseKey || undefined,
+      size: "100000",
+    };
+
+    const response = await axiosInstance.get(
+      `analysis/customer-order-summary`,
+      { params }
+    );
+    const dataToExport = (response.data as { customers?: any[] }).customers || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
@@ -105,7 +147,7 @@ const TopCustomersTable = () => {
   }, [startDate, endDate, enterpriseKey]);
 
   const filteredCustomers = useMemo(() => {
-    setCurrentPage(0); // Reset pagination on search
+    setCurrentPage(0); 
     if (!searchTerm) return customers;
     return customers.filter((c) =>
       c.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -260,7 +302,16 @@ const TopCustomersTable = () => {
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
       <div className="flex flex-col gap-4 px-4 pt-4">
-        <h2 className="app-subheading">Customer Orders</h2>
+  {/* The new container for the heading and button */}
+  <div className="flex justify-between items-center mb-2">
+    <h2 className="app-subheading">Customer Orders</h2>
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+  </div>
         <div className="flex flex-col gap-2 w-full">
           <input
             type="text"
@@ -423,6 +474,13 @@ const TopCustomersTable = () => {
       <div className="px-4">
         <div className="flex justify-between items-center mb-2">
           <h3 className="app-subheading mb-2">Top 10 Customers Visualization</h3>
+          <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
           <button
             onClick={() => setDialogVisible(true)}
             className="text-purple-500 hover:text-purple-700"
@@ -430,6 +488,7 @@ const TopCustomersTable = () => {
           >
             <FaTable className="text-xl" />
           </button>
+        </div>
         </div>
 
         {topCustomers.length > 0 ? (

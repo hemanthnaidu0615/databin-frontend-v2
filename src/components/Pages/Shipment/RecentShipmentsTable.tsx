@@ -7,6 +7,7 @@ import { BaseDataTable, TableColumn } from "../../modularity/tables/BaseDataTabl
 import { axiosInstance } from "../../../axios";
 import { formatDateTime, formatDateMDY } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import * as XLSX from "xlsx";
 
 interface Shipment {
   shipment_id: string;
@@ -19,6 +20,42 @@ interface Shipment {
 const RecentShipmentsTable: React.FC = () => {
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map(item => ({
+    "Shipment ID": item.shipment_id,
+    "Customer": item.customer_name,
+    "Carrier": item.carrier,
+    "Ship Date": formatDateMDY(item.actual_shipment_date),
+    "Status": item.shipment_status,
+  }));
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Recent Shipments");
+  XLSX.writeFile(workbook, "recent_shipments_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const queryParams = {
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      enterpriseKey: enterpriseKey?.trim() || undefined,
+      size: '100000',
+    };
+
+    const response = await axiosInstance.get<{ data: Shipment[]; count: number }>("/recent-shipments", { params: queryParams });
+    const dataToExport = response.data.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [visible, setVisible] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState<any>(null);
 
@@ -142,48 +179,57 @@ const RecentShipmentsTable: React.FC = () => {
     }
   ];
 
-  return (
-    <>
-      <BaseDataTable<Shipment>
-        columns={columns}
-        fetchData={fetchData}
-        title="Recent Shipments"
-        mobileCardRender={renderMobileCard}
-        globalFilterFields={["shipment_id", "customer_name", "carrier", "actual_shipment_date", "shipment_status"]}
-        field={"shipment_id"}
-        header={""}
-      />
-
-      <Dialog
-        header="Shipment Details"
-        visible={visible}
-        onHide={() => setVisible(false)}
-        style={{ width: "90vw", maxWidth: "600px" }}
-        dismissableMask
-        draggable={false}
+return (
+  <>
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="app-subheading">Recent Shipments</h2>
+      <button
+        className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+        onClick={exportData}
       >
-        {selectedShipment ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
-            <div><strong>Order ID:</strong> {selectedShipment.order_id}</div>
-            <div><strong>Customer:</strong> {selectedShipment.customer}</div>
-            <div><strong>Carrier:</strong> {selectedShipment.carrier}</div>
-            <div><strong>Shipping Method:</strong> {selectedShipment.shipping_method}</div>
-            <div>
-              <strong>Status:</strong>{" "}
-              <Tag value={selectedShipment.status} severity={getStatusSeverity(selectedShipment.status)} />
-            </div>
-            <div><strong>Ship Date:</strong> {formatDateMDY(selectedShipment.ship_date)}</div>
-            <div><strong>Estimated Delivery:</strong> {formatDateMDY(selectedShipment.estimated_delivery)}</div>
-            <div><strong>Origin:</strong> {selectedShipment.origin}</div>
-            <div><strong>Destination:</strong> {selectedShipment.destination}</div>
-            <div><strong>Cost:</strong> ${selectedShipment.cost ? formatValue(selectedShipment.cost) : "0"}</div>
+        Export
+      </button>
+    </div>
+    <BaseDataTable<Shipment>
+      columns={columns}
+      fetchData={fetchData}
+      mobileCardRender={renderMobileCard}
+      globalFilterFields={["shipment_id", "customer_name", "carrier", "actual_shipment_date", "shipment_status"]}
+      field={"shipment_id"}
+      header={""}
+    />
+    
+    {/* Details Dialog */}
+    <Dialog
+      header="Shipment Details"
+      visible={visible}
+      onHide={() => setVisible(false)}
+      style={{ width: "90vw", maxWidth: "600px" }}
+      dismissableMask
+      draggable={false}
+    >
+      {selectedShipment ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 dark:text-gray-200">
+          <div><strong>Order ID:</strong> {selectedShipment.order_id}</div>
+          <div><strong>Customer:</strong> {selectedShipment.customer}</div>
+          <div><strong>Carrier:</strong> {selectedShipment.carrier}</div>
+          <div><strong>Shipping Method:</strong> {selectedShipment.shipping_method}</div>
+          <div>
+            <strong>Status:</strong>{" "}
+            <Tag value={selectedShipment.status} severity={getStatusSeverity(selectedShipment.status)} />
           </div>
-        ) : (
-          <p>No data found</p>
-        )}
-      </Dialog>
-    </>
-  );
+          <div><strong>Ship Date:</strong> {formatDateMDY(selectedShipment.ship_date)}</div>
+          <div><strong>Estimated Delivery:</strong> {formatDateMDY(selectedShipment.estimated_delivery)}</div>
+          <div><strong>Origin:</strong> {selectedShipment.origin}</div>
+          <div><strong>Destination:</strong> {selectedShipment.destination}</div>
+          <div><strong>Cost:</strong> ${selectedShipment.cost ? formatValue(selectedShipment.cost) : "0"}</div>
+        </div>
+      ) : (
+        <p>No data found</p>
+      )}
+    </Dialog>
+  </>
+);
 };
 
 export default RecentShipmentsTable;

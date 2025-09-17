@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { formatDateTime, formatDateMDY } from "../../utils/kpiUtils";
@@ -13,6 +14,7 @@ import {
 
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
+import * as XLSX from "xlsx";
 
 interface Filters {
   selectedRegion: string;
@@ -59,10 +61,77 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     }
   }, [filterParams]);
 
-
-
   const { dateRange } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
+
+  const exportToXLSX = (data: any[], fileName: string, sheetName: string) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  const exportWarehouseData = async () => {
+    try {
+      if (!startDate || !endDate) {
+        alert('Date range not available. Please select a date range.');
+        return;
+      }
+
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
+
+      const response = await axiosInstance.get("/inventory/details-grid", {
+        params: {
+          startDate: formattedStart,
+          endDate: formattedEnd,
+          size: 100000,
+        },
+      });
+      const dataToExport = response.data.data.map((item: any) => ({
+        "Inventory ID": item.inventory_id,
+        "Product ID": item.product_id,
+        "Region": item.region,
+        "Stock Quantity": item.stock_quantity,
+        "Reserved Quantity": item.reserved_quantity,
+      }));
+      exportToXLSX(dataToExport, "warehouse_inventory_export.xlsx", "Warehouse Inventory");
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export data.");
+    }
+  };
+
+  const exportTurnoverData = async () => {
+    try {
+      if (!startDate || !endDate) {
+        alert('Date range not available. Please select a date range.');
+        return;
+      }
+
+      const formattedStart = formatDateTime(startDate);
+      const formattedEnd = formatDateTime(endDate);
+
+      const response = await axiosInstance.get("/inventory/details-grid-turnover", {
+        params: {
+          startDate: formattedStart,
+          endDate: formattedEnd,
+          size: 100000,
+        },
+      });
+      const dataToExport = response.data.data.map((item: any) => ({
+        "Product ID": item.product_id,
+        "Product Name": item.name,
+        "Stock Quantity": item.stock_quantity,
+        "Restock Date": item?.restock_date ? formatDateMDY(item.restock_date) : "N/A",
+        "Status": item.status,
+      }));
+      exportToXLSX(dataToExport, "inventory_turnover_export.xlsx", "Inventory Turnover");
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export data.");
+    }
+  };
 
   const warehouseTooltip = {
     ...getBaseTooltip(isDark, percentageTooltip),
@@ -94,7 +163,7 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     });
 
     return {
-      data: response.data.data, // Assuming response contains { data, count }
+      data: response.data.data,
       count: response.data.count,
     };
   };
@@ -118,7 +187,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     };
   };
 
-
   const warehouseColumns = [
     { field: "inventory_id", header: "Inventory ID", sortable: true, filter: true },
     { field: "product_id", header: "Product ID", sortable: true, filter: true },
@@ -127,22 +195,20 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
     { field: "reserved_quantity", header: "Reserved Quantity", sortable: true, filter: true },
   ];
 
-
   const turnoverColumns = [
-  { field: "product_id", header: "Product ID", sortable: true, filter: true },
-  { field: "name", header: "Product Name", sortable: true, filter: true },
-  { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
-  {
-    field: "restock_date",
-    header: "Restock Date",
-    sortable: true,
-    filter: true,
-    body: (rowData: any) =>
-      rowData?.restock_date ? formatDateMDY(rowData.restock_date) : "N/A",
-  },
-  { field: "status", header: "Status", sortable: true, filter: true },
-];
-
+    { field: "product_id", header: "Product ID", sortable: true, filter: true },
+    { field: "name", header: "Product Name", sortable: true, filter: true },
+    { field: "stock_quantity", header: "Stock Quantity", sortable: true, filter: true },
+    {
+      field: "restock_date",
+      header: "Restock Date",
+      sortable: true,
+      filter: true,
+      body: (rowData: any) =>
+        rowData?.restock_date ? formatDateMDY(rowData.restock_date) : "N/A",
+    },
+    { field: "status", header: "Status", sortable: true, filter: true },
+  ];
 
   useEffect(() => {
     const fetchRegionData = async () => {
@@ -272,7 +338,6 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   }, [startDate, endDate]);
 
   const warehouseChartOptions = {
-
     chart: {
       id: "warehouse-chart",
       type: "bar",
@@ -380,10 +445,10 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
   ];
 
   const restockTable = restockSchedule.map((item) => ({
-  product: item.product_name,
-  stock: item.stock_quantity,
-  date: item?.restock_date ? formatDateMDY(item.restock_date) : "N/A",
-}));
+    product: item.product_name,
+    stock: item.stock_quantity,
+    date: item?.restock_date ? formatDateMDY(item.restock_date) : "N/A",
+  }));
 
   const renderWarehouseMobileCard = (item: any, index: number) => (
     <div
@@ -423,14 +488,13 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         Stock Quantity: <span className="font-semibold">{item.stock_quantity}</span>
       </div>
       <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
-  Restock Date: <span className="font-semibold">{item?.restock_date ? formatDateMDY(item.restock_date) : "N/A"}</span>
-</div>
+        Restock Date: <span className="font-semibold">{item?.restock_date ? formatDateMDY(item.restock_date) : "N/A"}</span>
+      </div>
       <div className="text-sm text-gray-500 dark:text-gray-300">
         Status: <span className="font-semibold">{item.status}</span>
       </div>
     </div>
   );
-
 
   return (
     <>
@@ -458,18 +522,25 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md relative">
-          <div className="absolute top-4 right-4 cursor-pointer">
-            <FaTable
-              onClick={() => {
-                setFilterParams({}); // Clear previous region filter
-                setOpenWarehouseDialog(true);
-              }}
-              className="text-purple-500 hover:text-purple-700"
-              title="View Table"
-            />
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="app-subheading">Warehouse Inventory</h3>
+            <div className="flex items-center gap-2">
+              <button
+                className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+                onClick={exportWarehouseData}
+              >
+                Export
+              </button>
+              <FaTable
+                onClick={() => {
+                  setFilterParams({});
+                  setOpenWarehouseDialog(true);
+                }}
+                className="text-purple-500 hover:text-purple-700"
+                title="View Table"
+              />
+            </div>
           </div>
-
-          <h3 className="app-subheading mb-1">Warehouse Inventory</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Regional Performance</p>
 
           <div className="space-y-3 mb-6">
@@ -494,21 +565,27 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
         </div>
 
         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md relative">
-          <div className="absolute top-4 right-4 cursor-pointer">
-            <FaTable
-              onClick={() => {
-                setFilterParams({}); // Clear previous filters
-                setOpenTurnoverDialog(true);
-              }}
-              className="text-purple-500 hover:text-purple-700"
-              title="View Table"
-            />
+          <div className="flex justify-between items-center">
+            <h3 className="app-subheading mb-4 text-gray-800 dark:text-white">
+              Inventory Turnover & Alerts
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+                onClick={exportTurnoverData}
+              >
+                Export
+              </button>
+              <FaTable
+                onClick={() => {
+                  setFilterParams({});
+                  setOpenTurnoverDialog(true);
+                }}
+                className="text-purple-500 hover:text-purple-700"
+                title="View Table"
+              />
+            </div>
           </div>
-
-          <h3 className="app-subheading mb-4 text-gray-800 dark:text-white">
-            Inventory Turnover & Alerts
-          </h3>
-
           <div className="grid grid-cols-3 gap-3 text-center mb-4">
             {alertsData.map((item, i) => (
               <div
