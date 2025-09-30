@@ -13,9 +13,11 @@ import {
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { Dialog } from 'primereact/dialog';
 import { FaTable } from 'react-icons/fa';
 import { useIsMobile } from '../modularity/tables/useIsMobile';
+// Import the shared dialog and table components
+import FilteredDataDialog from '../modularity/tables/FilteredDataDialog';
+import { TableColumn } from '../modularity/tables/BaseDataTable';
 
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';

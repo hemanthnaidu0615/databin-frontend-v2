@@ -86,7 +86,6 @@ const exportData = async () => {
   const [rows, setRows] = useState(5);
   const [first, setFirst] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-
  
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogFilter, setDialogFilter] = useState<string | null>(null);
@@ -117,9 +116,40 @@ const exportData = async () => {
           return { data: [], count: 0 };
         }
       };
+
+      if (tableParams && typeof tableParams === "object") {
+        Object.entries(tableParams).forEach(([k, v]) => {
+          if (["page", "size", "rows", "first", "sortField", "sortOrder"].includes(k)) return;
+          if (k.endsWith(".value") || k.endsWith(".matchMode") || !k.includes("filters")) {
+            queryParams[k] = v;
+          }
+        });
+      }
+
+      if (tableParams && tableParams.filters && typeof tableParams.filters === "object") {
+        Object.entries(tableParams.filters).forEach(([field, filterObj]: any) => {
+          if (filterObj == null) return;
+          if (filterObj.value !== undefined && filterObj.value !== null && filterObj.value !== "") {
+            queryParams[`${field}.value`] = filterObj.value;
+          }
+          if (filterObj.matchMode !== undefined && filterObj.matchMode !== null) {
+            queryParams[`${field}.matchMode`] = filterObj.matchMode;
+          }
+        });
+      }
+      try {
+        const response = await axiosInstance.get(endpoint, { params: queryParams });
+        return {
+          data: (response.data as { products?: any[] }).products || [],
+          count: (response.data as { count?: number }).count || 0,
+        };
+      } catch (err) {
+        console.error("Failed to fetch filtered data:", err);
+        return { data: [], count: 0 };
+      }
     };
   };
-
+};
 
   const onPageChange = (event: { first: number; rows: number }) => {
     setFirst(event.first);
