@@ -9,6 +9,7 @@ import { getBaseTooltip, shipmentsTooltip } from "../../modularity/graphs/graphW
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../modularity/tables/BaseDataTable";
+import * as XLSX from "xlsx";
 
 interface ShipmentChartsProps {
   selectedCarrier: string | null;
@@ -24,6 +25,79 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
   const [startDate, endDate] = dateRange || [];
 
   const [carrierSeries, setCarrierSeries] = useState<any[]>([]);
+
+const exportToXLSX = (data: any[], fileName: string, sheetName: string) => {
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.writeFile(workbook, fileName);
+};
+
+const exportShipmentStatusData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const response = await axiosInstance.get("shipment-status/details-grid", {
+      params: {
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        enterpriseKey: enterpriseKey || undefined,
+        size: '100000', 
+      },
+    });
+    const dataToExport = response.data.data.map((item: any) => ({
+      "Shipment ID": item.shipment_id,
+      "Order ID": item.order_id,
+      "Carrier": item.carrier,
+      "Tracking #": item.tracking_number,
+      "Status": item.shipment_status,
+      "Cost": formatUSD(item.shipment_cost),
+      "Method": item.shipping_method,
+      "Estimated Date": formatDateMDY(item.estimated_shipment_date),
+      "Actual Date": formatDateMDY(item.actual_shipment_date),
+    }));
+    exportToXLSX(dataToExport, "shipment_status_details_export.xlsx", "Shipment Status Details");
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
+
+const exportCarrierPerformanceData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const response = await axiosInstance.get("carrier-performance/carrier-details", {
+      params: {
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        enterpriseKey: enterpriseKey || undefined,
+        size: '100000',
+      },
+    });
+    const dataToExport = response.data.data.map((item: any) => ({
+      "Shipment ID": item.shipment_id,
+      "Order ID": item.order_id,
+      "Carrier": item.carrier,
+      "Tracking #": item.tracking_number,
+      "Status": item.shipment_status,
+      "Cost": formatUSD(item.shipment_cost),
+      "Method": item.shipping_method,
+      "Estimated Date": formatDateMDY(item.estimated_shipment_date),
+      "Actual Date": formatDateMDY(item.actual_shipment_date),
+    }));
+    exportToXLSX(dataToExport, "carrier_performance_details_export.xlsx", "Carrier Performance Details");
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [carrierCategories, setCarrierCategories] = useState<string[]>([]);
   const [statusSeries, setStatusSeries] = useState<number[]>([]);
 
@@ -43,7 +117,7 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
     field: "shipment_cost", 
     header: "Cost", 
     sortable: true, 
-    filter: false, // This removes the filter icon
+    filter: false, 
     body: (rowData: any) => formatUSD(rowData.shipment_cost) 
   },
   { field: "shipping_method", header: "Method", sortable: true, filter: true },
@@ -228,9 +302,17 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
         {/* Shipment Status Chart */}
         <div className="relative bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border dark:border-gray-800">
           <h3 className="app-subheading flex items-center justify-between">
-            Shipment Status
-            <FaTable className="cursor-pointer text-purple-500" size={20} onClick={() => openStatusDialog()} />
-          </h3>
+  Shipment Status
+  <div className="flex items-center gap-2">
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportShipmentStatusData}
+    >
+      Export
+    </button>
+    <FaTable className="cursor-pointer text-purple-500" size={20} onClick={() => openStatusDialog()} />
+  </div>
+</h3>
           {statusSeries.length === 0 || statusSeries.every(v => v === 0) ? (
             <div className="text-center text-sm text-gray-400 py-12">No shipment status data available</div>
           ) : (
@@ -241,9 +323,17 @@ const ShipmentCharts: React.FC<ShipmentChartsProps> = ({ selectedCarrier, select
         {/* Carrier Performance Chart */}
         <div className="relative bg-white dark:bg-gray-900 p-6 rounded-xl shadow-md border dark:border-gray-800">
           <h3 className="app-subheading flex items-center justify-between">
-            Carrier Performance
-            <FaTable className="cursor-pointer text-purple-500" size={20} onClick={() => openCarrierDialog()} />
-          </h3>
+  Carrier Performance
+  <div className="flex items-center gap-2">
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportCarrierPerformanceData}
+    >
+      Export
+    </button>
+    <FaTable className="cursor-pointer text-purple-500" size={20} onClick={() => openCarrierDialog()} />
+  </div>
+</h3>
           <Chart options={carrierOptions} series={carrierSeries} type="bar" height={300} />
         </div>
       </div>

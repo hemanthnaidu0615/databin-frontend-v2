@@ -14,6 +14,7 @@ import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
 import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 import { useCallback } from "react";
+import * as XLSX from "xlsx";
 const viewOptions = [
   { label: "By Revenue", value: "revenue" as "revenue" },
   { label: "By Units", value: "units" as "units" },
@@ -40,24 +41,80 @@ const TopProductsTable = () => {
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [startDate, endDate] = dateRange || [];
 
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map((item) => ({
+    "Product Name": item.product_name,
+    "Units Sold": item.units_sold,
+    "Total Sales (USD)": formatUSD(convertToUSD(item.total_sales)),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Product Sales");
+  XLSX.writeFile(workbook, "product_sales_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert("Date range not available. Please select a date range.");
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      enterpriseKey: enterpriseKey || undefined,
+      
+      size: "100000",
+    };
+
+    const response = await axiosInstance.get(
+      `/analysis/product-sales-summary`,
+      { params }
+    );
+    const dataToExport = (response.data as { products?: any[] }).products || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [rows, setRows] = useState(5);
   const [first, setFirst] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-
-
+ 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogFilter, setDialogFilter] = useState<string | null>(null);
 
-const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
-  return (params = {}) => {
-    return async (tableParams: any = {}) => {
-      const queryParams: Record<string, any> = {
-        ...baseParams,
-        ...params,
-        page: tableParams.page ?? 0,
-        size: tableParams.size ?? tableParams.rows ?? 10,
-        sortField: tableParams.sortField,
-        sortOrder: tableParams.sortOrder,
+  const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
+    return (params = {}) => {
+      return async (tableParams: any) => {
+        const combinedParams = {
+          ...baseParams,
+          ...params,
+          page: tableParams.page,
+          size: tableParams.pageSize,
+          sortField: tableParams.sortField,
+          sortOrder: tableParams.sortOrder,
+          filters: tableParams.filters,
+        };
+
+        try {
+          const response = await axiosInstance.get(endpoint, { params: combinedParams });
+
+          
+          return {
+            data: (response.data as { products?: any[] }).products || [],   
+            count: (response.data as { count?: number }).count || 0,
+          };
+        } catch (error) {
+          console.error("Failed to fetch filtered data:", error);
+          return { data: [], count: 0 };
+        }
       };
 
       if (tableParams && typeof tableParams === "object") {
@@ -312,7 +369,16 @@ const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">
       <div className="flex flex-col gap-4 px-4 pt-4">
-        <h2 className="app-subheading">Product Sales</h2>
+     {/* The new container for the heading and button */}
+  <div className="flex justify-between items-center mb-2">
+    <h2 className="app-subheading">Product Sales</h2>
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+  </div>
         <div className="flex flex-col gap-2 w-full">
           <input
             type="text"
@@ -417,16 +483,24 @@ const createFetchData = (endpoint: string, baseParams: Record<string, any>) => {
           <h3 className="app-subheading text-lg font-semibold">
             Top 10 Products Visualization
           </h3>
+          <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
+          <button
+        className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+        onClick={exportData}
+      >
+        Export
+      </button>
           <button
             className="text-purple-500 hover:text-purple-700"
             onClick={() => {
-              setDialogFilter(null); // no filter means all products in dialog
+              setDialogFilter(null); 
               setDialogVisible(true);
             }}
             aria-label="Open product details"
           >
             <FaTable size={18} />
           </button>
+        </div>
         </div>
         <Chart
           options={chartOptions}

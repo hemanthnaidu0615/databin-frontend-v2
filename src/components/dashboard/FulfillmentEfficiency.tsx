@@ -13,6 +13,7 @@ import CommonButton from "../modularity/buttons/Button";
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
+import * as XLSX from "xlsx";
 
 type FulfillmentEfficiencyProps = {
   size?: "small" | "full";
@@ -53,7 +54,46 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   const [showAllDialog, setShowAllDialog] = useState(false);
   const [showFilteredDialog, setShowFilteredDialog] = useState(false);
   const [filterParams, setFilterParams] = useState<Record<string, any>>({});
+  
+  // START of new code block to be added
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map(item => ({
+    "Order ID": item.order_id,
+    "Category": item.category,
+    "Event Type": item.event_type,
+    "Description": item.event_description,
+    "Timestamp": formatDateMDY(item.event_time),
+    "Handler": item.handler_name,
+  }));
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Fulfillment Events");
+  XLSX.writeFile(workbook, "fulfillment_events_export.xlsx");
+};
 
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert('Date range not available. Please select a date range.');
+      return;
+    }
+
+    const params = {
+      startDate: formatDateTime(startDate),
+      endDate: formatDateTime(endDate),
+      enterpriseKey: enterpriseKey && enterpriseKey !== "All" ? enterpriseKey : undefined,
+      ...filterParams,
+      size: '100000',
+    };
+
+    const res = await axiosInstance.get("/fulfillment-efficiency/details-grid", { params });
+    const dataToExport = res.data.fulfillment_details || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   
 
   const baseTooltip = getBaseTooltip(isDark, ordersTooltip);
@@ -209,14 +249,22 @@ const FulfillmentEfficiency: React.FC<FulfillmentEfficiencyProps> = ({
   return (
     <div className={`overflow-hidden rounded-2xl shadow-md border ${theme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-white"}`} style={{ padding: "1rem" }}>
       <div className="flex justify-between items-center mb-14">
-        <h2 className="app-subheading">Fulfillment Efficiency Summary</h2>
-        <div className="flex gap-2 items-center">
-          <CommonButton variant="responsive" onClick={handleViewMore} text="View More" showMobile={true} showDesktop={true} />
-          <button onClick={() => setShowAllDialog(true)} className="text-purple-500" title="View all data">
-            <FaTable size={18} />
-          </button>
-        </div>
-      </div>
+  <h2 className="app-subheading">Fulfillment Efficiency Summary</h2>
+  <div className="flex gap-2 items-center">
+    {/* The new Export button */}
+    <button 
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+    
+    <button onClick={() => setShowAllDialog(true)} className="text-purple-500" title="View all data">
+      <FaTable size={18} />
+    </button>
+    <CommonButton variant="responsive" onClick={handleViewMore} text="View More" showMobile={true} showDesktop={true} /> 
+  </div>
+</div>
 
       <div style={{ height: size === "small" ? 220 : 400 }}>
         {isLoading ? (

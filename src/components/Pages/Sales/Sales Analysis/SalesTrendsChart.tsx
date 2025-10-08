@@ -13,332 +13,378 @@ import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../../modularity/tables/BaseDataTable";
+import * as XLSX from "xlsx";
 
 const SalesTrendsChart = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  const [chartType, setChartType] = useState<"bar" | "line">("line");
-  const [channels, setChannels] = useState<string[]>([]);
-  const [selectedChannel, setSelectedChannel] = useState<string>("all");
-  const [salesData, setSalesData] = useState<
-    { period: string; total_amount: number }[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [aggregationLevel, setAggregationLevel] = useState<string>("day");
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const [chartType, setChartType] = useState<"bar" | "line">("line");
+  const [channels, setChannels] = useState<string[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<string>("all");
+  const [salesData, setSalesData] = useState<
+    { period: string; total_amount: number }[]
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [aggregationLevel, setAggregationLevel] = useState<string>("day");
 
-  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
+  const { dateRange, enterpriseKey } = useDateRangeEnterprise();
 
-  const [startDate, endDate] = dateRange || [];
+  const [startDate, endDate] = dateRange || [];
 
-  const [showDialog, setShowDialog] = useState(false);
-  const [filteredParams, setFilteredParams] = useState<{ period?: string; channel?: string }>({});
+  const [showDialog, setShowDialog] = useState(false);
+  const [filteredParams, setFilteredParams] = useState<{ period?: string; channel?: string }>({});
 
-  useEffect(() => {
-    const fetchSalesData = async () => {
-      if (!startDate || !endDate) return;
+  const exportToXLSX = (data: any[]) => {
+    const renamedData = data.map(item => ({
+      "Order ID": item.order_id,
+      "Channel": item.fulfillment_channel,
+      "Subtotal": item.subtotal,
+      "Shipping Fee": item.shipping_fee,
+      "Tax": item.tax_amount,
+      "Discount": item.discount_amount,
+      "Total": item.total_amount,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(renamedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Trends");
+    XLSX.writeFile(workbook, "sales_trends_export.xlsx");
+  };
 
-      setLoading(true);
-      setError(null);
+  const exportData = async () => {
+    try {
+      if (!startDate || !endDate) {
+        alert('Date range not available. Please select a date range.');
+        return;
+      }
 
-      const formattedStart = formatDate(startDate);
-      const formattedEnd = formatDate(endDate);
+      const params = {
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+        enterpriseKey: enterpriseKey || undefined,
+        fulfillmentChannel: selectedChannel !== "all" ? selectedChannel : undefined,
+        size: '100000',
+      };
 
-      const params = new URLSearchParams({
-        startDate: formattedStart,
-        endDate: formattedEnd,
-      });
+      const response = await axiosInstance.get("/analysis/details-sales-trends-grid", { params });
+      const dataToExport = response.data.data || [];
+      exportToXLSX(dataToExport);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export data.");
+    }
+  };
 
-      if (enterpriseKey) {
-        params.append("enterpriseKey", enterpriseKey);
-      }
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      if (!startDate || !endDate) return;
 
-      if (selectedChannel && selectedChannel !== "all") {
-        params.append("fulfillmentChannel", selectedChannel);
-      }
+      setLoading(true);
+      setError(null);
 
-      try {
-        const res = await axiosInstance.get(
-          `analysis/sales-by-date?${params.toString()}`
-        );
-        const data = res.data as {
-          sales?: { period: string; total_amount: number }[];
-          aggregation_level?: string;
-        };
+      const formattedStart = formatDate(startDate);
+      const formattedEnd = formatDate(endDate);
 
-        setSalesData(data.sales || []);
-        setAggregationLevel(data.aggregation_level || "day");
-      } catch (err) {
-        console.error("Error fetching sales data", err);
-        setError("Failed to load sales data. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const params = new URLSearchParams({
+        startDate: formattedStart,
+        endDate: formattedEnd,
+      });
 
-    fetchSalesData();
-  }, [startDate, endDate, enterpriseKey, selectedChannel]);
+      if (enterpriseKey) {
+        params.append("enterpriseKey", enterpriseKey);
+      }
 
-  useEffect(() => {
-    const fetchChannels = async () => {
-      try {
-        const res = await axiosInstance.get("analysis/channels");
-        const data = res.data as { channels?: string[] };
-        setChannels(data.channels || []);
-      } catch (err) {
-        console.error("Error fetching channels", err);
-        setError("Failed to load channel options. Using default channels.");
-      }
-    };
+      if (selectedChannel && selectedChannel !== "all") {
+        params.append("fulfillmentChannel", selectedChannel);
+      }
 
-    fetchChannels();
-  }, []);
+      try {
+        const res = await axiosInstance.get(
+          `analysis/sales-by-date?${params.toString()}`
+        );
+        const data = res.data as {
+          sales?: { period: string; total_amount: number }[];
+          aggregation_level?: string;
+        };
 
-  const { categories, values } = useMemo(() => {
-    if (!salesData.length) return { categories: [], values: [] };
+        setSalesData(data.sales || []);
+        setAggregationLevel(data.aggregation_level || "day");
+      } catch (err) {
+        console.error("Error fetching sales data", err);
+        setError("Failed to load sales data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const categories = salesData.map((entry) => {
-      const date = dayjs(entry.period);
-      switch (aggregationLevel) {
-        case "week":
-          return `${date.format("MMM D")}`;
-        case "month":
-          return date.format("MMMM YYYY");
-        case "year":
-          return date.format("YYYY");
-        case "day":
-        default:
-          return date.format("MMM D, YYYY");
-      }
-    });
+    fetchSalesData();
+  }, [startDate, endDate, enterpriseKey, selectedChannel]);
 
-    const values = salesData.map((entry) => entry.total_amount);
+  useEffect(() => {
+    const fetchChannels = async () => {
+      try {
+        const res = await axiosInstance.get("analysis/channels");
+        const data = res.data as { channels?: string[] };
+        setChannels(data.channels || []);
+      } catch (err) {
+        console.error("Error fetching channels", err);
+        setError("Failed to load channel options. Using default channels.");
+      }
+    };
 
-    return { categories, values };
-  }, [salesData, aggregationLevel]);
+    fetchChannels();
+  }, []);
 
-  const chartOptions: ApexOptions = useMemo(
-    () => ({
-      chart: {
-        type: chartType,
-        toolbar: { show: false },
-        foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
-        zoom: { enabled: false },
+  const { categories, values } = useMemo(() => {
+    if (!salesData.length) return { categories: [], values: [] };
 
-        // NEW EVENT: open dialog on chart point click
-        events: {
-          dataPointSelection: (_event, _chartContext, config) => {
-            const clickedPeriod = salesData[config.dataPointIndex]?.period;
-            if (clickedPeriod) {
-              setFilteredParams({ period: clickedPeriod, channel: selectedChannel });
-              setShowDialog(true);
-            }
-          },
-        },
-      },
+    const categories = salesData.map((entry) => {
+      const date = dayjs(entry.period);
+      switch (aggregationLevel) {
+        case "week":
+          return `${date.format("MMM D")}`;
+        case "month":
+          return date.format("MMMM YYYY");
+        case "year":
+          return date.format("YYYY");
+        case "day":
+        default:
+          return date.format("MMM D, YYYY");
+      }
+    });
 
-      tooltip: getBaseToolTip(isDark, salesTooltip),
+    const values = salesData.map((entry) => entry.total_amount);
 
-      xaxis: {
-        type: "category",
-        categories: categories,
-        labels: {
-          rotate: -45,
-          style: {
-            colors: theme === "dark" ? "#CBD5E1" : "#374151",
-          },
-        },
-        title: {
-          text:
-            aggregationLevel === "day"
-              ? "Date"
-              : aggregationLevel === "week"
-                ? "Week"
-                : aggregationLevel === "month"
-                  ? "Month"
-                  : "Year",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
-        },
-      },
-      yaxis: {
-        title: {
-          text: "Sales ($)",
-          style: {
-            fontSize: "14px",
-            fontWeight: "normal",
-            color: theme === "dark" ? "#CBD5E1" : "#64748B",
-          },
-        },
-        labels: {
-          formatter: (val: number) => {
-            if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
-            if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
-            return `$${val}`;
-          },
-        },
-      },
-      stroke: {
-        curve: "smooth",
-        width: chartType === "line" ? 2 : 0,
-      },
-      markers: {
-        size: 5,
-        colors: ["#ffffff"],
-        strokeColors: "#a855f7",
-        strokeWidth: 3,
-        hover: { size: 7 },
-      },
-      dataLabels: { enabled: false },
-      colors: ["#a855f7"],
-      grid: {
-        borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
-      },
-      legend: { show: false },
-    }),
-    [chartType, theme, categories, aggregationLevel, salesData, selectedChannel, isDark]
-  );
-  
-  const columns: TableColumn<any>[] = [
-  { field: "order_id", header: "Order ID", sortable: true, filter: true },
-  { field: "fulfillment_channel", header: "Channel", sortable: true, filter: true },
-  { field: "subtotal", header: "Subtotal", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.subtotal) },
-  { field: "shipping_fee", header: "Shipping Fee", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.shipping_fee) },
-  { field: "tax_amount", header: "Tax", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.tax_amount) },
-  { field: "discount_amount", header: "Discount", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.discount_amount) },
-  { field: "total_amount", header: "Total", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.total_amount) },
+    return { categories, values };
+  }, [salesData, aggregationLevel]);
+
+  const chartOptions: ApexOptions = useMemo(
+    () => ({
+      chart: {
+        type: chartType,
+        toolbar: { show: false },
+        foreColor: theme === "dark" ? "#CBD5E1" : "#374151",
+        zoom: { enabled: false },
+
+        events: {
+          dataPointSelection: (_event, _chartContext, config) => {
+            const clickedPeriod = salesData[config.dataPointIndex]?.period;
+            if (clickedPeriod) {
+              setFilteredParams({ period: clickedPeriod, channel: selectedChannel });
+              setShowDialog(true);
+            }
+          },
+        },
+      },
+
+      tooltip: getBaseToolTip(isDark, salesTooltip),
+
+      xaxis: {
+        type: "category",
+        categories: categories,
+        labels: {
+          rotate: -45,
+          style: {
+            colors: theme === "dark" ? "#CBD5E1" : "#374151",
+          },
+        },
+        title: {
+          text:
+            aggregationLevel === "day"
+              ? "Date"
+              : aggregationLevel === "week"
+                ? "Week"
+                : aggregationLevel === "month"
+                  ? "Month"
+                  : "Year",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
+        },
+      },
+      yaxis: {
+        title: {
+          text: "Sales ($)",
+          style: {
+            fontSize: "14px",
+            fontWeight: "normal",
+            color: theme === "dark" ? "#CBD5E1" : "#64748B",
+          },
+        },
+        labels: {
+          formatter: (val: number) => {
+            if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `$${(val / 1_000).toFixed(0)}K`;
+            return `$${val}`;
+          },
+        },
+      },
+      stroke: {
+        curve: "smooth",
+        width: chartType === "line" ? 2 : 0,
+      },
+      markers: {
+        size: 5,
+        colors: ["#ffffff"],
+        strokeColors: "#a855f7",
+        strokeWidth: 3,
+        hover: { size: 7 },
+      },
+      dataLabels: { enabled: false },
+      colors: ["#a855f7"],
+      grid: {
+        borderColor: theme === "dark" ? "#334155" : "#e5e7eb",
+      },
+      legend: { show: false },
+    }),
+    [chartType, theme, categories, aggregationLevel, salesData, selectedChannel, isDark]
+  );
+  
+  const columns: TableColumn<any>[] = [
+  { field: "order_id", header: "Order ID", sortable: true, filter: true },
+  { field: "fulfillment_channel", header: "Channel", sortable: true, filter: true },
+  { field: "subtotal", header: "Subtotal", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.subtotal) },
+  { field: "shipping_fee", header: "Shipping Fee", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.shipping_fee) },
+  { field: "tax_amount", header: "Tax", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.tax_amount) },
+  { field: "discount_amount", header: "Discount", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.discount_amount) },
+  { field: "total_amount", header: "Total", sortable: true, filter: false, body: (rowData) => formatUSD(rowData.total_amount) },
 ];
 
-  const fetchTableData = (extraFilters: any = {}) => async (tableParams: any) => {
-    const response = await axiosInstance.get("/analysis/details-sales-trends-grid", {
-      params: {
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-        enterpriseKey,
-        fulfillmentChannel: extraFilters.channel !== "all" ? extraFilters.channel : undefined,
-        period: extraFilters.period,
-        ...tableParams,
-      },
-    });
+  const fetchTableData = (extraFilters: any = {}) => async (tableParams: any) => {
+    const response = await axiosInstance.get("/analysis/details-sales-trends-grid", {
+      params: {
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+        enterpriseKey,
+        fulfillmentChannel: extraFilters.channel !== "all" ? extraFilters.channel : undefined,
+        period: extraFilters.period,
+        ...tableParams,
+      },
+    });
 
-    return {
-      data: response.data.data,
-      count: response.data.totalRecords,
-    };
-  };
+    return {
+      data: response.data.data,
+      count: response.data.totalRecords,
+    };
+  };
 
-  const renderMobileCard = (item: any, index: number) => (
-  <div key={index} className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800">
-    <div><b>Order ID:</b> {item.order_id}</div>
-    <div><b>Channel:</b> {item.fulfillment_channel}</div>
-    <div><b>Subtotal:</b> {formatUSD(item.subtotal)}</div>
-    <div><b>Shipping:</b> {formatUSD(item.shipping_fee)}</div>
-    <div><b>Tax:</b> {formatUSD(item.tax_amount)}</div>
-    <div><b>Discount:</b> {formatUSD(item.discount_amount)}</div>
-    <div><b>Total:</b> {formatUSD(item.total_amount)}</div>
-  </div>
+  const renderMobileCard = (item: any, index: number) => (
+  <div key={index} className="p-4 mb-3 border rounded shadow-sm bg-white dark:bg-gray-800">
+    <div><b>Order ID:</b> {item.order_id}</div>
+    <div><b>Channel:</b> {item.fulfillment_channel}</div>
+    <div><b>Subtotal:</b> {formatUSD(item.subtotal)}</div>
+    <div><b>Shipping:</b> {formatUSD(item.shipping_fee)}</div>
+    <div><b>Tax:</b> {formatUSD(item.tax_amount)}</div>
+    <div><b>Discount:</b> {formatUSD(item.discount_amount)}</div>
+    <div><b>Total:</b> {formatUSD(item.total_amount)}</div>
+  </div>
 );
 
-  if (!startDate || !endDate) {
-    return (
-      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          Please select a date range to view sales trends
-        </div>
-      </div>
-    );
-  }
+  if (!startDate || !endDate) {
+    return (
+      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          Please select a date range to view sales trends
+        </div>
+      </div>
+    );
+  }
 
-  if (loading) {
-    return (
-      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          Loading sales data...
-        </div>
-      </div>
-    );
-  }
+  if (loading) {
+    return (
+      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          Loading sales data...
+        </div>
+      </div>
+    );
+  }
 
-  if (error) {
-    return (
-      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
-        <div className="text-center text-red-500 dark:text-red-400">
-          {error}
-        </div>
-      </div>
-    );
-  }
+  if (error) {
+    return (
+      <div className="border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+        <div className="text-center text-red-500 dark:text-red-400">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
-      <div className="flex gap-2 flex-wrap mb-4">
-        <PrimeSelectFilter<"line" | "bar">
-          value={chartType}
-          options={[
-            { label: "Line", value: "line" as "line" },
-            { label: "Bar", value: "bar" as "bar" },
-          ]}
-          onChange={setChartType}
-          className="w-46"
-        />
-        <Dropdown
-          value={selectedChannel}
-          options={[
-            { label: "Sales Channel", value: "all" },
-            ...channels.map((ch) => ({
-              label: ch,
-              value: ch,
-            })),
-          ]}
-          onChange={(e) => setSelectedChannel(e.value)}
-          placeholder="Select Channel"
-          className="w-46"
-          disabled={channels.length === 0}
-        />
-      </div>
-      <div className="absolute top-4 right-4">
-        <button
-          className="text-purple-500 hover:text-purple-700 p-2 rounded"
-          title="View All"
-          onClick={() => {
-            setFilteredParams({ channel: selectedChannel });
-            setShowDialog(true);
-          }}
-          aria-label="View All"
-        >
-          <FaTable size={18} />
-        </button>
-      </div>
-      {categories.length > 0 ? (
-        <Chart
-          options={chartOptions}
-          series={[
-            {
-              name: "Sales",
-              data: values,
-            },
-          ]}
-          type={chartType}
-          height={350}
-        />
-      ) : (
-        <div className="text-center text-gray-500 dark:text-gray-400 h-[350px] flex items-center justify-center">
-          No sales data available for the selected filters
-        </div>
-      )}
-      <FilteredDataDialog
-        visible={showDialog}
-        onHide={() => setShowDialog(false)}
-        header="Sales Trends – Detailed View"
-        fetchData={(params?: any) => fetchTableData({ ...filteredParams, ...params })}
-        columns={columns}
-        mobileCardRender={renderMobileCard}
-      />
-    </div>
-  );
+  return (
+    <div className="relative border border-gray-200 dark:border-gray-800 p-4 sm:p-5 shadow-md bg-white dark:bg-gray-900 rounded-xl">
+      <div className="flex gap-2 flex-wrap mb-4">
+        <PrimeSelectFilter<"line" | "bar">
+          value={chartType}
+          options={[
+            { label: "Line", value: "line" as "line" },
+            { label: "Bar", value: "bar" as "bar" },
+          ]}
+          onChange={setChartType}
+          className="w-46"
+        />
+        <Dropdown
+          value={selectedChannel}
+          options={[
+            { label: "Sales Channel", value: "all" },
+            ...channels.map((ch) => ({
+              label: ch,
+              value: ch,
+            })),
+          ]}
+          onChange={(e) => setSelectedChannel(e.value)}
+          placeholder="Select Channel"
+          className="w-46"
+          disabled={channels.length === 0}
+        />
+      </div>
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+  <button
+    className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+    onClick={exportData}
+  >
+    Export
+  </button>
+  <button
+    className="text-purple-500 hover:text-purple-700 p-2 rounded"
+    title="View All"
+    onClick={() => {
+      setFilteredParams({ channel: selectedChannel });
+      setShowDialog(true); 
+    }}
+    aria-label="View All"
+  >
+    <FaTable size={18} />
+  </button>
+</div>
+      {categories.length > 0 ? (
+        <Chart
+          options={chartOptions}
+          series={[
+            {
+              name: "Sales",
+              data: values,
+            },
+          ]}
+          type={chartType}
+          height={350}
+        />
+      ) : (
+        <div className="text-center text-gray-500 dark:text-gray-400 h-[350px] flex items-center justify-center">
+          No sales data available for the selected filters
+        </div>
+      )}
+      <FilteredDataDialog
+        visible={showDialog}
+        onHide={() => setShowDialog(false)}
+        header="Sales Trends – Detailed View"
+        fetchData={(params?: any) => fetchTableData({ ...filteredParams, ...params })}
+        columns={columns}
+        mobileCardRender={renderMobileCard}
+      />
+    </div>
+  );
 };
 
 export default SalesTrendsChart;
