@@ -12,6 +12,7 @@ import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../../modularity/tables/BaseDataTable";
 import { formatDateTime, formatValue, formatDateMDY,  formatUSD } from "../../../utils/kpiUtils";
+import * as XLSX from "xlsx";
 
 interface Props {
   company: "AWW" | "AWD";
@@ -45,6 +46,56 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
   const { dateRange } = useDateRangeEnterprise();
+  
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map((item) => ({
+    "Order Date": item.order_date,
+    "Fulfillment Channel": item.fulfilment_channel,
+    "Enterprise Key": item.enterprise_key,
+    "Quantity": item.quantity,
+    "Unit Price (USD)": item.unit_price,
+    "Subtotal (USD)": item.subtotal,
+    "Shipping Fee (USD)": item.shipping_fee,
+    "Tax Amount (USD)": item.tax_amount,
+    "Discount Amount (USD)": item.discount_amount,
+    "Total Amount (USD)": item.total_amount,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, `${company} Orders`);
+  XLSX.writeFile(workbook, `${company}_orders_export.xlsx`);
+};
+
+const exportData = async () => {
+  try {
+    if (!startDate || !endDate) {
+      alert("Date range not available. Please select a date range.");
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const url = company === "AWW"
+      ? "/sales/charts/details-grid/aww"
+      : "/sales/charts/details-grid/awd";
+
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      size: "100000", 
+    };
+
+    const response = await axiosInstance.get(url, { params });
+    const dataToExport = response.data.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
+// END of new code block for export functionality
   const [startDate, endDate] = dateRange;
   const labelColor = isDark ? "#f1f5f9" : "#1e293b";
   const gridColor = isDark ? "#334155" : "#e2e8f0";
@@ -310,17 +361,25 @@ const ChartSection: React.FC<Props> = ({ company }) => {
   return (
     <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-5 py-5 shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <PrimeSelectFilter
-          value={selectedChart}
-          onChange={setSelectedChart}
-          options={chartOptionsList}
-          placeholder="Select Chart Type"
-          className="w-29 text-sm h-[35px] text-xs leading-[0.6]"
-        />
-        <button onClick={() => setShowAllDialog(true)} title="View all data">
-          <FaTable size={18} className="text-purple-500" />
-        </button>
-      </div>
+        <PrimeSelectFilter
+          value={selectedChart}
+          onChange={setSelectedChart}
+          options={chartOptionsList}
+          placeholder="Select Chart Type"
+          className="w-29 text-sm h-[35px] text-xs leading-[0.6]"
+        />
+        <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
+          <button
+            className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+            onClick={exportData}
+          >
+            Export
+          </button>
+          <button onClick={() => setShowAllDialog(true)} title="View all data">
+            <FaTable size={18} className="text-purple-500" />
+          </button>
+        </div>
+      </div>
 
       {["Bar", "Line", "Pie"].includes(selectedChart) && (
         <div className="flex justify-center bg-gray-100 dark:bg-gray-800 rounded-lg p-2 overflow-visible">

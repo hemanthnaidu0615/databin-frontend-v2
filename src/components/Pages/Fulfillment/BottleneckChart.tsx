@@ -9,6 +9,7 @@ import { getBaseTooltip, avgTimeTooltip } from "../../modularity/graphs/graphWid
 import { TableColumn } from "../../modularity/tables/BaseDataTable";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const BottleneckChart = () => {
   const { theme } = useTheme();
@@ -106,6 +107,49 @@ const BottleneckChart = () => {
 
   const [showAllDialog, setShowAllDialog] = useState(false);
   const [showFilteredDialog, setShowFilteredDialog] = useState(false);
+  
+const exportToXLSX = (data: any[]) => {
+  const renamedData = data.map((item) => ({
+    "Process Stage": item.process_stage,
+    "Average Time (hrs)": item.avg_time,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(renamedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Bottleneck Analysis");
+  XLSX.writeFile(workbook, "bottleneck_analysis_export.xlsx");
+};
+
+const exportData = async () => {
+  try {
+    const [startDate, endDate] = dateRange || [];
+
+    if (!startDate || !endDate) {
+      alert("Date range not available. Please select a date range.");
+      return;
+    }
+
+    const formattedStart = formatDateTime(startDate);
+    const formattedEnd = formatDateTime(endDate);
+
+    const params = {
+      startDate: formattedStart,
+      endDate: formattedEnd,
+      enterpriseKey: enterpriseKey || undefined,
+      size: "100000",
+    };
+
+    const response = await axiosInstance.get(
+      `/fulfillment/bottleneck-analysis`,
+      { params }
+    );
+    const dataToExport = response.data || [];
+    exportToXLSX(dataToExport);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert("Failed to export data.");
+  }
+};
   const [filterParams, setFilterParams] = useState<{ eventType?: string }>({});
 
   const bottleneckTableColumns: TableColumn<any>[] = [
@@ -257,15 +301,23 @@ const BottleneckChart = () => {
   return (
     <div className="mt-6">
       <div className="flex justify-between items-center px-4 mb-2">
-        <h2 className="app-subheading">Bottleneck Analysis</h2>
-        <button
-          onClick={() => setShowAllDialog(true)}
-          title="View Data Grid"
-          className="text-purple-500 hover:text-purple-700"
-        >
-          <FaTable size={18} />
-        </button>
-      </div>
+  <h2 className="app-subheading">Bottleneck Analysis</h2>
+  <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
+    <button
+      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+      onClick={exportData}
+    >
+      Export
+    </button>
+    <button
+      onClick={() => setShowAllDialog(true)}
+      title="View Data Grid"
+      className="text-purple-500 hover:text-purple-700"
+    >
+      <FaTable size={18} />
+    </button>
+  </div>
+</div>
 
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-2 pt-6 overflow-hidden">
         <div className="relative z-10 overflow-visible">
