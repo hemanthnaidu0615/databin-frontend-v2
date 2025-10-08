@@ -5,7 +5,6 @@ import { Column } from "primereact/column";
 import Chart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { useTheme } from "next-themes";
-import { Skeleton } from "primereact/skeleton";
 import { axiosInstance } from "../../../../axios";
 import { formatDateTime, formatValue } from "../../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../../utils/useGlobalFilters";
@@ -100,7 +99,7 @@ const exportData = async () => {
     alert("Failed to export data.");
   }
 };
-  const [error, setError] = useState<string | null>(null);
+  const [_, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
   const [dialogVisible, setDialogVisible] = useState(false);

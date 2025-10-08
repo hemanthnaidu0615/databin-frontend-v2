@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import ReactApexChart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
 import { axiosInstance } from "../../../axios";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { formatDateTime, formatDateMDY } from "../../utils/kpiUtils";

@@ -150,7 +150,7 @@ const exportCarrierPerformanceData = async () => {
       background: "transparent",
       fontFamily: "Inter, sans-serif",
       events: {
-        dataPointSelection: (event, chartContext, config) => {
+        dataPointSelection: (config) => {
           const status = statusLabels[config.dataPointIndex];
           openStatusDialog(status);
         },
@@ -183,7 +183,7 @@ const exportCarrierPerformanceData = async () => {
       stacked: false,
       toolbar: { show: false },
       events: {
-        dataPointSelection: (event, chartContext, config) => {
+        dataPointSelection: (config) => {
           const carrier = carrierCategories[config.dataPointIndex];
           openCarrierDialog(carrier);
         },

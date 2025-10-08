@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import { Tag } from "primereact/tag";
 import { BaseDataTable, TableColumn } from "../../modularity/tables/BaseDataTable";
 import { axiosInstance } from "../../../axios";
