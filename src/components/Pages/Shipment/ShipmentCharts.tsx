@@ -150,7 +150,7 @@ const exportCarrierPerformanceData = async () => {
       background: "transparent",
       fontFamily: "Inter, sans-serif",
       events: {
-        dataPointSelection: (event, chartContext, config) => {
+        dataPointSelection: (config) => {
           const status = statusLabels[config.dataPointIndex];
           openStatusDialog(status);
         },
@@ -183,7 +183,7 @@ const exportCarrierPerformanceData = async () => {
       stacked: false,
       toolbar: { show: false },
       events: {
-        dataPointSelection: (event, chartContext, config) => {
+        dataPointSelection: (config) => {
           const carrier = carrierCategories[config.dataPointIndex];
           openCarrierDialog(carrier);
         },
@@ -327,7 +327,6 @@ const exportCarrierPerformanceData = async () => {
   Carrier Performance
   <div className="flex items-center gap-2">
     <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportCarrierPerformanceData}
     >
     <img src={ExportIcon} alt="Export" className="w-6" />
