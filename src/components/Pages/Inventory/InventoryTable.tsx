@@ -172,7 +172,6 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="app-subheading">Inventory List</h2>
         <button
-          className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
           onClick={exportData}
         >
         <img src={ExportIcon} alt="Export" className="w-6" />
