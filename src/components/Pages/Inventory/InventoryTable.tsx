@@ -6,6 +6,7 @@ import { axiosInstance } from "../../../axios";
 import { formatDateTime } from "../../utils/kpiUtils";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../images/export.png';
 
 interface Filters {
   selectedRegion: string;
@@ -174,7 +175,8 @@ const InventoryTable: React.FC<InventoryTableProps> = ({ filters }) => {
           className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
           onClick={exportData}
         >
-          Export
+        <img src={ExportIcon} alt="Export" className="w-6" />
+
         </button>
       </div>
       <BaseDataTable<InventoryItem>

@@ -18,8 +18,8 @@ import { useIsMobile } from '../modularity/tables/useIsMobile';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-
 import * as XLSX from 'xlsx';
+import ExportIcon from './../../images/export.png';
 
 const formatDate = (date: string) => {
   const d = new Date(date);
@@ -318,10 +318,11 @@ export default function RecentOrders() {
         <div className="flex gap-2 items-center">
   {/* The 'Export' button */}
   <button
-    className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
     onClick={exportData}
   >
-    Export
+{/*     Export */}
+                    <img src={ExportIcon} alt="Export" className="w-6" />
+
   </button>
   {/* The full table icon */}
   <button

@@ -9,6 +9,7 @@ import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
 import { getBaseTooltip, revenueTooltip } from "../modularity/graphs/graphWidget";
 import * as XLSX from "xlsx";
+import ExportIcon from './../../images/export.png';
 
 const RevenuePerCustomer: React.FC = () => {
   const { theme } = useTheme();
@@ -211,10 +212,11 @@ const fetchGridData = (extraFilters: Record<string, any> = {}) => async (tablePa
   <h2 className="app-subheading">Revenue Per Customer</h2>
   <div className="flex items-center gap-2">
     <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportData}
     >
-      Export
+      {/* Export */}
+                    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
     <FaTable
       onClick={() => setShowGridDialog(true)}

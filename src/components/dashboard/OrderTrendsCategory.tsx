@@ -11,6 +11,7 @@ import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { FaTable } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import ExportIcon from './../../images/export.png';
 
 type OrderTrendsCategoryProps = {
   size?: "small" | "full";
@@ -228,10 +229,10 @@ const exportData = async () => {
             <div className="flex items-center ">
               {/* The new Export button */}
     <button 
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
               <button
                 onClick={() => setDialogVisible(true)}

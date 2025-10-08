@@ -13,6 +13,7 @@ import { BaseDataTable, TableColumn } from "../../../modularity/tables/BaseDataT
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../../images/export.png';
 
 interface Shipment {
   carrier: string;
@@ -359,11 +360,11 @@ const dialogMobileCardRender = (shipment: any, index: number) => (
     <h2 className="app-subheading">
       Shipping Breakdown
     </h2>
-    <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
-      onClick={exportData}
+    <button      
+    onClick={exportData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
   </div>
 
@@ -384,11 +385,11 @@ const dialogMobileCardRender = (shipment: any, index: number) => (
         <div className="flex justify-between items-center mb-6">
           <h3 className="app-subheading">Top 10 Carriers by Total Cost</h3>
           <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
-    <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
-      onClick={exportData}
+    <button      
+    onClick={exportData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
           <button
             onClick={() => setShowUnfilteredDialog(true)}

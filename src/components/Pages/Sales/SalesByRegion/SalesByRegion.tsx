@@ -10,6 +10,7 @@ import {
 } from '../../../modularity/tables/BaseDataTable';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../../images/export.png';
 
 interface StateData {
   state_name: string;
@@ -257,11 +258,11 @@ const exportData = async () => {
           
 <div className="flex justify-between items-center mb-4">
   <h3 className="app-subheading">Revenues by State</h3>
-  <button
-    className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
-    onClick={exportData}
+  <button    
+  onClick={exportData}
   >
-    Export
+  <img src={ExportIcon} alt="Export" className="w-6" />
+
   </button>
 </div>
           <BaseDataTable<StateData>

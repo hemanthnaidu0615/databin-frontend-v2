@@ -10,6 +10,7 @@ import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../modularity/tables/BaseDataTable";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../images/export.png';
 
 interface ShipmentChartsProps {
   selectedCarrier: string | null;
@@ -305,10 +306,10 @@ const exportCarrierPerformanceData = async () => {
   Shipment Status
   <div className="flex items-center gap-2">
     <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportShipmentStatusData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
     <FaTable className="cursor-pointer text-purple-500" size={20} onClick={() => openStatusDialog()} />
   </div>
@@ -329,7 +330,8 @@ const exportCarrierPerformanceData = async () => {
       className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportCarrierPerformanceData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
     <FaTable className="cursor-pointer text-purple-500" size={20} onClick={() => openCarrierDialog()} />
   </div>

@@ -14,6 +14,7 @@ import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../../modularity/tables/BaseDataTable";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../../images/export.png';
 
 const SalesTrendsChart = () => {
   const { theme } = useTheme();
@@ -341,10 +342,10 @@ const SalesTrendsChart = () => {
       </div>
       <div className="absolute top-4 right-4 flex items-center gap-2">
   <button
-    className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
     onClick={exportData}
   >
-    Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
   </button>
   <button
     className="text-purple-500 hover:text-purple-700 p-2 rounded"

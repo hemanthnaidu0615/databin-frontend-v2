@@ -4,6 +4,7 @@ import OrderList1 from "./OrdersList1";
 import { axiosInstance } from "../../../axios";
 import * as XLSX from "xlsx";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
+import ExportIcon from '../../../images/export.png';
 
 const defaultFilterValues = {
   status: "All statuses",
@@ -84,10 +85,10 @@ const OrdersPage: React.FC = () => {
         <h1 className="app-section-title">Orders</h1>
         <div className="flex gap-2">
           <button
-            className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10"
-            onClick={exportOrders}
+          onClick={exportOrders}
           >
-            Export
+          <img src={ExportIcon} alt="Export" className="w-6" />
+
           </button>
         </div>
       </div>

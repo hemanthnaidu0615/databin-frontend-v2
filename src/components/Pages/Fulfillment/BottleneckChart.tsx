@@ -10,6 +10,7 @@ import { TableColumn } from "../../modularity/tables/BaseDataTable";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
 import { FaTable } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../images/export.png';
 
 const BottleneckChart = () => {
   const { theme } = useTheme();
@@ -304,10 +305,9 @@ const exportData = async () => {
   <h2 className="app-subheading">Bottleneck Analysis</h2>
   <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
     <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportData}
     >
-      Export
+     <img src={ExportIcon} alt="Export" className="w-6" />
     </button>
     <button
       onClick={() => setShowAllDialog(true)}
