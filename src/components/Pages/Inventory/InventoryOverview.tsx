@@ -15,6 +15,7 @@ import {
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../modularity/tables/FilteredDataDialog";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../images/export.png';
 
 interface Filters {
   selectedRegion: string;
@@ -525,11 +526,11 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
           <div className="flex justify-between items-center mb-4">
             <h3 className="app-subheading">Warehouse Inventory</h3>
             <div className="flex items-center gap-2">
-              <button
-                className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
-                onClick={exportWarehouseData}
+              <button                
+              onClick={exportWarehouseData}
               >
-                Export
+              <img src={ExportIcon} alt="Export" className="w-6" />
+
               </button>
               <FaTable
                 onClick={() => {
@@ -571,10 +572,10 @@ const InventoryOverview: React.FC<{ filters: Filters; isSidebarOpen?: boolean }>
             </h3>
             <div className="flex items-center gap-2">
               <button
-                className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
                 onClick={exportTurnoverData}
               >
-                Export
+              <img src={ExportIcon} alt="Export" className="w-6" />
+
               </button>
               <FaTable
                 onClick={() => {

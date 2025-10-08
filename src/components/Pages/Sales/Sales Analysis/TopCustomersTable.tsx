@@ -14,6 +14,7 @@ import { PrimeSelectFilter } from "../../../modularity/dropdowns/Dropdown";
 import { FaTable } from "react-icons/fa";
 import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../../images/export.png';
 
 interface Customer {
   customer_name: string;
@@ -306,10 +307,10 @@ const exportData = async () => {
   <div className="flex justify-between items-center mb-2">
     <h2 className="app-subheading">Customer Orders</h2>
     <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
   </div>
         <div className="flex flex-col gap-2 w-full">
@@ -476,10 +477,10 @@ const exportData = async () => {
           <h3 className="app-subheading mb-2">Top 10 Customers Visualization</h3>
           <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
     <button
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportData}
     >
-      Export
+    <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
           <button
             onClick={() => setDialogVisible(true)}

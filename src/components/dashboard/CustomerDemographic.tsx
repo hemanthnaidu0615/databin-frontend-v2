@@ -16,6 +16,7 @@ import { TableColumn } from "../modularity/tables/BaseDataTable";
 import { formatDateTime } from "../utils/kpiUtils";
 import { FaTable } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import ExportIcon from './../../images/export.png';
 
 const US_TOPO_JSON = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const INR_TO_USD = 1 / 83.3;
@@ -313,10 +314,10 @@ const exportData = async () => {
   <div className="flex items-center gap-2">
     {/* The new Export button */}
     <button 
-      className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
       onClick={exportData}
     >
-      Export
+      <img src={ExportIcon} alt="Export" className="w-6" />
+
     </button>
     <button
       onClick={handleGridClick}

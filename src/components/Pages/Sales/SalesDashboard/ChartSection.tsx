@@ -13,7 +13,7 @@ import FilteredDataDialog from "../../../modularity/tables/FilteredDataDialog";
 import { TableColumn } from "../../../modularity/tables/BaseDataTable";
 import { formatDateTime, formatValue, formatDateMDY,  formatUSD } from "../../../utils/kpiUtils";
 import * as XLSX from "xlsx";
-
+import ExportIcon from '../../../../images/export.png';
 interface Props {
   company: "AWW" | "AWD";
 }
@@ -369,11 +369,11 @@ const exportData = async () => {
           className="w-29 text-sm h-[35px] text-xs leading-[0.6]"
         />
         <div className="flex items-center gap-2"> {/* New wrapper for buttons */}
-          <button
-            className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
-            onClick={exportData}
+          <button            
+          onClick={exportData}
           >
-            Export
+          <img src={ExportIcon} alt="Export" className="w-6" />
+
           </button>
           <button onClick={() => setShowAllDialog(true)} title="View all data">
             <FaTable size={18} className="text-purple-500" />

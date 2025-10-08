@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import { useDateRangeEnterprise } from "../../utils/useGlobalFilters";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import ExportIcon from '../../../images/export.png';
 
 interface CenterData {
   center: string;
@@ -163,10 +164,10 @@ const FulfillmentCenters: React.FC = () => {
     <div className="flex justify-between items-center mb-4">
       <h2 className="app-subheading">Fulfillment Center Performance</h2>
       <button 
-        className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
         onClick={exportData}
       >
-        Export
+        <img src={ExportIcon} alt="Export" className="w-6" />
+
       </button>
     </div>
     <BaseDataTable<CenterData>
