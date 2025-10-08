@@ -238,67 +238,66 @@ const exportData = async () => {
     },
   ];
 
-  const dialogFetchData = (params?: any) => async (tableParams: any) => {
-    const query = new URLSearchParams({
-      startDate: formatDateTime(startDate),
-      endDate: formatDateTime(endDate),
-      page: tableParams.page?.toString() ?? "0",
-      size: tableParams.rows?.toString() ?? "10",
-      ...params,
-      ...tableParams.filters,
-    });
-
-    if (tableParams.sortField) {
-      query.append("sortField", tableParams.sortField);
-      query.append("sortOrder", tableParams.sortOrder?.toString() ?? "1");
-    }
-
-    if (enterpriseKey) {
-      query.append("enterpriseKey", enterpriseKey);
-    }
-
-    if (selectedCustomer) {
-      query.append("customer_name", selectedCustomer);
-    }
-
-    const response = await axiosInstance.get(
-      `/analysis/details-customers-grid?${query.toString()}`
-    );
-
-    return {
-      data: response.data.customers,
-      count: response.data.count,
-    };
+  const dialogFetchData = (params?: any) => async (tableParams: any = {}) => {
+  const queryParams: Record<string, any> = {
+    startDate: formatDateTime(startDate),
+    endDate: formatDateTime(endDate),
+    page: tableParams.page ?? 0,
+    size: tableParams.rows ?? tableParams.size ?? 10,
+    ...params, 
   };
 
-  if (!startDate || !endDate) {
-    return (
-      <Card className="...">
-        <div className="text-center text-gray-500 dark:text-gray-400 p-4">
-          Please select a date range to view top customers
-        </div>
-      </Card>
-    );
+  if (tableParams.sortField) {
+    queryParams.sortField = tableParams.sortField;
+    queryParams.sortOrder = tableParams.sortOrder ?? "desc";
   }
 
-  if (loading) {
-    return (
-      <Card className="...">
-        <div className="p-4">
-          <Skeleton width="150px" height="30px" className="mb-4" />
-          <Skeleton width="100%" height="300px" />
-        </div>
-      </Card>
-    );
+  if (enterpriseKey) {
+    queryParams.enterpriseKey = enterpriseKey;
   }
 
-  if (error) {
-    return (
-      <Card className="...">
-        <div className="p-4 text-red-500 dark:text-red-400">{error}</div>
-      </Card>
-    );
+  if (tableParams && typeof tableParams === "object") {
+    Object.entries(tableParams).forEach(([k, v]) => {
+      if (k.endsWith(".value") || k.endsWith(".matchMode")) {
+        queryParams[k] = v;
+      }
+    });
   }
+
+  if (tableParams && tableParams.filters && typeof tableParams.filters === "object") {
+    Object.entries(tableParams.filters).forEach(([field, filterObj]: any) => {
+      if (!filterObj) return;
+      if (filterObj.value !== undefined && filterObj.value !== null && filterObj.value !== "") {
+        queryParams[`${field}.value`] = filterObj.value;
+      }
+      if (filterObj.matchMode !== undefined && filterObj.matchMode !== null) {
+        queryParams[`${field}.matchMode`] = filterObj.matchMode;
+      }
+    });
+  }
+
+  if (selectedCustomer) {
+    const parts = selectedCustomer.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      queryParams.firstName = parts[0];
+      queryParams.lastName = parts.slice(1).join(" ");
+    } else {
+      queryParams.firstName = selectedCustomer;
+    }
+  }
+
+  const qs = new URLSearchParams();
+  Object.entries(queryParams).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) qs.append(k, String(v));
+  });
+
+  const response = await axiosInstance.get(`/analysis/details-customers-grid?${qs.toString()}`);
+
+  return {
+    data: response.data.customers,
+    count: response.data.count,
+  };
+};
 
   return (
     <Card className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-md rounded-xl">

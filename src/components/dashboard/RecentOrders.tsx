@@ -304,272 +304,248 @@ export default function RecentOrders() {
     </div>
   ); // Dialog pagination helpers
 
-  const getDialogFirstRecord = () =>
-    dialogTotalRecords === 0 ? 0 : dialogPage * dialogRows + 1;
   const getDialogLastRecord = () =>
     Math.min(dialogTotalRecords, (dialogPage + 1) * dialogRows);
 
-  return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
-            {/* Header */}     {' '}
-      <div className="flex justify-between items-start sm:items-center flex-wrap gap-2 mb-4">
-                <h2 className="app-subheading flex-1">Recent Orders</h2>       {' '}
-        <div className="flex gap-2 items-center">
-            {/* The 'Export' button */} {' '}
-          <button
-            className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
-            onClick={exportData}
-          >
-                Export  {' '}
-          </button>
-            {/* The full table icon */} {' '}
-          <button
-            onClick={() => setShowDialog(true)}
-            title="Open full table"
-            className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-600 px-2 py-1 text-xl"
-          >
-                <FaTable /> {' '}
-          </button>
-            {/* 'View More' button for desktop */}
-           {' '}
-          <CommonButton
-            variant="responsive"
-            onClick={handleViewMore}
-            showMobile={false}
-            text="View more"
-          />
-        </div>
-             {' '}
-      </div>
-            {/* Main Table or Mobile Cards */}     {' '}
-      {loading ? (
-        <div className="flex justify-center items-center py-8">
-                    <ProgressSpinner />       {' '}
-        </div>
-      ) : isMobile ? (
-        <>{mobileCardRender && orders.map(mobileCardRender)}</>
-      ) : (
-        <DataTable
-          value={orders}
-          rows={5}
-          paginator={false}
-          sortField={sortField}
-          sortOrder={sortOrder === 'asc' ? 1 : -1}
-          onSort={(e: DataTableSortEvent) => {
-            setSortField(e.sortField || sortField);
-            setSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
-          }}
-          filters={filters}
-          filterDisplay="menu"
-          onFilter={(e: DataTableFilterEvent) => setFilters(e.filters)}
-          emptyMessage="No orders found."
-          responsiveLayout="scroll"
-          size="small"
-          className="text-xs [&_.p-datatable-tbody_td]:py-0.5 [&_.p-datatable-thead_th]:py-1"
-          key={`main-datatable-${sortField}-${sortOrder}-${JSON.stringify(
-            filters
-          )}`}
-        >
-                   {' '}
-          <Column
-            field="product_name"
-            header="Product Name"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Product')}
-            style={{ minWidth: '10rem' }}
-          />
-                   {' '}
-          <Column
-            field="category_name"
-            header="Category"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Category')}
-            style={{ minWidth: '8rem' }}
-          />
-                   {' '}
-          <Column
-            field="unit_price"
-            header="Price (USD)"
-            body={(row) => formatUSD(row.unit_price)}
-            sortable
-            style={{ minWidth: '7rem' }}
-          />
-                   {' '}
-          <Column
-            field="shipment_status"
-            header="Shipment Status"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Status')}
-            body={shipmentStatusBody}
-            style={{ minWidth: '9rem' }}
-          />
-                   {' '}
-          <Column
-            field="order_type"
-            header="Order Type"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Type')}
-            style={{ minWidth: '8rem' }}
-          />
-                 {' '}
-        </DataTable>
-      )}
-            {/* Dialog for full table */}     {' '}
-      <Dialog
-        visible={showDialog}
-        onHide={() => setShowDialog(false)}
-        style={{ width: '90vw', maxWidth: '1100px' }}
-        header="All Recent Orders"
-        modal
-      >
-               {' '}
-        {dialogLoading ? (
-          <div className="flex justify-center items-center py-8">
-                        <ProgressSpinner />         {' '}
-          </div>
-        ) : (
-          <>
-                       {' '}
-            <DataTable
-              key={`dialog-datatable-${dialogSortField}-${dialogSortOrder}-${JSON.stringify(
-                dialogFilters
-              )}`}
-              value={dialogOrders}
-              paginator={false}
-              rows={dialogRows}
-              sortField={dialogSortField}
-              sortOrder={dialogSortOrder === 'asc' ? 1 : -1}
-              onSort={(e: DataTableSortEvent) => {
-                setDialogSortField(e.sortField || dialogSortField);
-                setDialogSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
-              }}
-              filters={dialogFilters}
-              filterDisplay="menu"
-              onFilter={(e: DataTableFilterEvent) =>
-                setDialogFilters(e.filters)
-              }
-              emptyMessage="No orders found."
-              responsiveLayout="scroll"
-              size="small"
-              className="w-full"
-            >
-                           {' '}
-              <Column
-                field="product_name"
-                header="Product Name"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Product')}
-                style={{ minWidth: '10rem' }}
-              />
-                           {' '}
-              <Column
-                field="category_name"
-                header="Category"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Category')}
-                style={{ minWidth: '8rem' }}
-              />
-                           {' '}
-              <Column
-                field="unit_price"
-                header="Price (USD)"
-                body={(row) => formatUSD(row.unit_price)}
-                sortable
-                style={{ minWidth: '7rem' }}
-              />
-                           {' '}
-              <Column
-                field="shipment_status"
-                header="Shipment Status"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Status')}
-                body={shipmentStatusBody}
-                style={{ minWidth: '9rem' }}
-              />
-                           {' '}
-              <Column
-                field="order_type"
-                header="Order Type"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Type')}
-                style={{ minWidth: '8rem' }}
-              />
-                         {' '}
-            </DataTable>
-                        {/* Dialog Pagination */}           {' '}
-            <div className="flex justify-between items-center text-sm mt-3 text-gray-600 dark:text-gray-400">
-                           {' '}
-              <div>
-                                Showing {getDialogFirstRecord()} -{' '}
-                {getDialogLastRecord()} of                 {dialogTotalRecords} 
-                           {' '}
-              </div>
-                           {' '}
-              <div className="flex gap-2">
-                               {' '}
-                <button
-                  onClick={() => setDialogPage(0)}
-                  disabled={dialogPage === 0}
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
-                >
-                                    ⏮                {' '}
-                </button>
-                               {' '}
-                <button
-                  onClick={() => setDialogPage(Math.max(0, dialogPage - 1))}
-                  disabled={dialogPage === 0}
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
-                >
-                                    Prev                {' '}
-                </button>
-                               {' '}
-                <button
-                  onClick={() =>
-                    setDialogPage((prev) =>
-                      prev + 1 < Math.ceil(dialogTotalRecords / dialogRows)
-                        ? prev + 1
-                        : prev
-                    )
-                  }
-                  disabled={
-                    dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)
-                  }
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
-                >
-                                    Next                {' '}
-                </button>
-                               {' '}
-                <button
-                  onClick={() =>
-                    setDialogPage(
-                      Math.ceil(dialogTotalRecords / dialogRows) - 1
-                    )
-                  }
-                  disabled={
-                    dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)
-                  }
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
-                >
-                                    ⏭                {' '}
-                </button>
-                             {' '}
-              </div>
-                         {' '}
-            </div>
-                     {' '}
-          </>
-        )}
-             {' '}
-      </Dialog>
-         {' '}
-    </div>
-  );
-}
+  // Dialog pagination helpers
+  const getDialogFirstRecord = () =>
+    dialogTotalRecords === 0 ? 0 : dialogPage * dialogRows + 1;
+  return (
+    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
+      {/* Header */}
+      <div className="flex justify-between items-start sm:items-center flex-wrap gap-2 mb-4">
+        <h2 className="app-subheading flex-1">Recent Orders</h2>
+        <div className="flex gap-2 items-center">
+  {/* The 'Export' button */}
+  <button
+    className="px-4 py-2 text-sm border rounded-md dark:border-white/20 dark:hover:bg-white/10 dark:text-white/90"
+    onClick={exportData}
+  >
+    Export
+  </button>
+  {/* The full table icon */}
+  <button
+    onClick={() => setShowDialog(true)}
+    title="Open full table"
+    className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-600 px-2 py-1 text-xl"
+  >
+    <FaTable />
+  </button>
+  {/* 'View More' button for desktop */}
+  <CommonButton
+    variant="responsive"
+    onClick={handleViewMore}
+    showMobile={false}
+    text="View more"
+  />
+</div>
+      </div>
+
+      {/* Main Table or Mobile Cards */}
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <ProgressSpinner />
+        </div>
+      ) : isMobile ? (
+        <>{mobileCardRender && orders.map(mobileCardRender)}</>
+      ) : (
+        <DataTable
+          value={orders}
+          rows={5}
+          paginator={false}
+          sortField={sortField}
+          sortOrder={sortOrder === 'asc' ? 1 : -1}
+          onSort={(e: DataTableSortEvent) => {
+            setSortField(e.sortField || sortField);
+            setSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
+          }}
+          filters={filters}
+          filterDisplay="menu"
+          onFilter={(e: DataTableFilterEvent) => setFilters(e.filters)}
+          emptyMessage="No orders found."
+          responsiveLayout="scroll"
+          size="small"
+          className="text-xs [&_.p-datatable-tbody_td]:py-0.5 [&_.p-datatable-thead_th]:py-1"
+          key={`main-datatable-${sortField}-${sortOrder}-${JSON.stringify(
+            filters
+          )}`}
+        >
+          <Column
+            field="product_name"
+            header="Product Name"
+            sortable
+            filter
+            filterElement={renderFilterInput('Search Product')}
+            style={{ minWidth: '10rem' }}
+          />
+          <Column
+            field="category_name"
+            header="Category"
+            sortable
+            filter
+            filterElement={renderFilterInput('Search Category')}
+            style={{ minWidth: '8rem' }}
+          />
+          <Column
+            field="unit_price"
+            header="Price (USD)"
+            body={(row) => formatUSD(row.unit_price)}
+            sortable
+            style={{ minWidth: '7rem' }}
+          />
+          <Column
+            field="shipment_status"
+            header="Shipment Status"
+            sortable
+            filter
+            filterElement={renderFilterInput('Search Status')}
+            body={shipmentStatusBody}
+            style={{ minWidth: '9rem' }}
+          />
+          <Column
+            field="order_type"
+            header="Order Type"
+            sortable
+            filter
+            filterElement={renderFilterInput('Search Type')}
+            style={{ minWidth: '8rem' }}
+          />
+        </DataTable>
+      )}
+
+      {/* Dialog for full table */}
+      <Dialog
+        visible={showDialog}
+        onHide={() => setShowDialog(false)}
+        style={{ width: '90vw', maxWidth: '1100px' }}
+        header="All Recent Orders"
+        modal
+      >
+        {dialogLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <ProgressSpinner />
+          </div>
+        ) : (
+          <>
+            <DataTable
+              key={`dialog-datatable-${dialogSortField}-${dialogSortOrder}-${JSON.stringify(
+                dialogFilters
+              )}`}
+              value={dialogOrders}
+              paginator={false}
+              rows={dialogRows}
+              sortField={dialogSortField}
+              sortOrder={dialogSortOrder === 'asc' ? 1 : -1}
+              onSort={(e: DataTableSortEvent) => {
+                setDialogSortField(e.sortField || dialogSortField);
+                setDialogSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
+              }}
+              filters={dialogFilters}
+              filterDisplay="menu"
+              onFilter={(e: DataTableFilterEvent) =>
+                setDialogFilters(e.filters)
+              }
+              emptyMessage="No orders found."
+              responsiveLayout="scroll"
+              size="small"
+              className="w-full"
+            >
+              <Column
+                field="product_name"
+                header="Product Name"
+                sortable
+                filter
+                filterElement={renderFilterInput('Search Product')}
+                style={{ minWidth: '10rem' }}
+              />
+              <Column
+                field="category_name"
+                header="Category"
+                sortable
+                filter
+                filterElement={renderFilterInput('Search Category')}
+                style={{ minWidth: '8rem' }}
+              />
+              <Column
+                field="unit_price"
+                header="Price (USD)"
+                body={(row) => formatUSD(row.unit_price)}
+                sortable
+                style={{ minWidth: '7rem' }}
+              />
+              <Column
+                field="shipment_status"
+                header="Shipment Status"
+                sortable
+                filter
+                filterElement={renderFilterInput('Search Status')}
+                body={shipmentStatusBody}
+                style={{ minWidth: '9rem' }}
+              />
+              <Column
+                field="order_type"
+                header="Order Type"
+                sortable
+                filter
+                filterElement={renderFilterInput('Search Type')}
+                style={{ minWidth: '8rem' }}
+              />
+            </DataTable>
+
+            {/* Dialog Pagination */}
+            <div className="flex justify-between items-center text-sm mt-3 text-gray-600 dark:text-gray-400">
+              <div>
+                Showing {getDialogFirstRecord()} - {getDialogLastRecord()} of{' '}
+                {dialogTotalRecords}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDialogPage(0)}
+                  disabled={dialogPage === 0}
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                >
+                  ⏮
+                </button>
+                <button
+                  onClick={() => setDialogPage(Math.max(0, dialogPage - 1))}
+                  disabled={dialogPage === 0}
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() =>
+                    setDialogPage((prev) =>
+                      prev + 1 < Math.ceil(dialogTotalRecords / dialogRows)
+                        ? prev + 1
+                        : prev
+                    )
+                  }
+                  disabled={
+                    dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)
+                  }
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                >
+                  Next
+                </button>
+                <button
+                  onClick={() =>
+                    setDialogPage(
+                      Math.ceil(dialogTotalRecords / dialogRows) - 1
+                    )
+                  }
+                  disabled={
+                    dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)
+                  }
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                >
+                  ⏭
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </Dialog>
+    </div>
+  );
+  }

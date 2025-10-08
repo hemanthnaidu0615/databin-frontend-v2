@@ -87,45 +87,51 @@ const exportData = async () => {
     fetchData();
   }, [startDate, endDate, enterpriseKey]);
 
-  const fetchGridData = () => async (tableParams: any = {}) => {
-    const {
-      page = 0,
-      rows = 10,
-      sortField = "revenue",
-      sortOrder = "desc",
-      filters = {},
-    } = tableParams;
+const fetchGridData = (extraFilters: Record<string, any> = {}) => async (tableParams: any = {}) => {
+  const {
+    page = 0,
+    rows = 10,
+    sortField = "revenue",
+    sortOrder = "desc",
+  } = tableParams || {};
 
-    const queryParams: Record<string, any> = {
-      startDate: formatDateTime(startDate),
-      endDate: formatDateTime(endDate),
-      page,
-      size: rows,
-      sortField,
-      sortOrder,
-    };
-
-    if (enterpriseKey) {
-      queryParams.enterpriseKey = enterpriseKey;
-    }
-
-    // Convert PrimeReact-style filters to backend query parameters
-    Object.entries(filters).forEach(([key, { value, matchMode }]: any) => {
-      if (value) {
-        queryParams[`${key}.value`] = value;
-        queryParams[`${key}.matchMode`] = matchMode || "contains";
-      }
-    });
-
-    const response = await axiosInstance.get("/revenue/top-customers", { params: queryParams });
-
-    const responseData = response.data as { data: any[]; count: number };
-
-    return {
-      data: responseData.data,
-      count: responseData.count,
-    };
+  const queryParams: Record<string, any> = {
+    startDate: formatDateTime(startDate),
+    endDate: formatDateTime(endDate),
+    page,
+    size: rows,
+    sortField,
+    sortOrder,
+    ...extraFilters, 
   };
+
+  if (enterpriseKey) {
+    queryParams.enterpriseKey = enterpriseKey;
+  }
+
+  Object.entries(tableParams || {}).forEach(([k, v]) => {
+    if (k.endsWith(".value") || k.endsWith(".matchMode")) {
+      queryParams[k] = v;
+    }
+  });
+
+  const filtersObj = (tableParams && tableParams.filters) || {};
+  Object.entries(filtersObj).forEach(([key, filterObj]: any) => {
+    const { value, matchMode } = filterObj || {};
+    if (value !== undefined && value !== null && value !== "") {
+      queryParams[`${key}.value`] = value;
+      queryParams[`${key}.matchMode`] = matchMode || "contains";
+    }
+  });
+
+  const response = await axiosInstance.get("/revenue/top-customers", { params: queryParams });
+  const responseData = response.data as { data: any[]; count: number };
+
+  return {
+    data: responseData.data,
+    count: responseData.count,
+  };
+};
 
   const apexOptions: ApexOptions = {
     chart: {
