@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import Chart from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import { useNavigate } from "react-router-dom";
-import { axiosInstance } from "../../axios";
-import { formatDateTime, formatVal } from "../utils/kpiUtils";
-import { useDateRangeEnterprise } from "../utils/useGlobalFilters";
-import CommonButton from "../modularity/buttons/Button";
-import FilteredDataDialog from "../modularity/tables/FilteredDataDialog";
-import { TableColumn } from "../modularity/tables/BaseDataTable";
-import { FaTable } from "react-icons/fa";
-import * as XLSX from "xlsx";
+import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
+import Chart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
+import { useNavigate } from 'react-router-dom';
+import { axiosInstance } from '../../axios';
+import { formatDateTime, formatVal } from '../utils/kpiUtils';
+import { useDateRangeEnterprise } from '../utils/useGlobalFilters';
+import CommonButton from '../modularity/buttons/Button';
+import FilteredDataDialog from '../modularity/tables/FilteredDataDialog';
+import { TableColumn } from '../modularity/tables/BaseDataTable';
+import { FaTable } from 'react-icons/fa';
+import * as XLSX from 'xlsx';
 import ExportIcon from './../../images/export.png';
 
 type OrderTrendsCategoryProps = {
-  size?: "small" | "full";
+  size?: 'small' | 'full';
   onViewMore?: () => void;
   onRemove?: () => void;
 };
@@ -26,7 +26,10 @@ type TrendItem = {
 };
 
 const renderMobileCard = (item: TrendItem, index: number) => (
-  <div key={index} className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700">
+  <div
+    key={index}
+    className="p-4 mb-3 rounded shadow-md bg-white dark:bg-gray-800 border dark:border-gray-700"
+  >
     <div className="text-sm font-semibold mb-2">Month: {item.month}</div>
     <div className="text-sm text-gray-500 dark:text-gray-300 mb-1">
       Category: <span className="font-medium">{item.category}</span>
@@ -38,10 +41,10 @@ const renderMobileCard = (item: TrendItem, index: number) => (
 );
 
 const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
-  size = "full",
+  size = 'full',
 }) => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = theme === 'dark';
   const [chartData, setChartData] = useState<{
     categories: string[];
     series: { name: string; data: number[] }[];
@@ -49,42 +52,44 @@ const OrderTrendsCategory: React.FC<OrderTrendsCategoryProps> = ({
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const { dateRange, enterpriseKey } = useDateRangeEnterprise();
-const exportToXLSX = (data: any[]) => {
-  const renamedData = data.map(item => ({
-    "Month": item.month,
-    "Category": item.category,
-    "Sales": item.sales,
-  }));
-  const worksheet = XLSX.utils.json_to_sheet(renamedData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Order Trends");
-  XLSX.writeFile(workbook, "order_trends_export.xlsx");
-};
+  const exportToXLSX = (data: any[]) => {
+    const renamedData = data.map((item) => ({
+      Month: item.month,
+      Category: item.category,
+      Sales: item.sales,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(renamedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Order Trends');
+    XLSX.writeFile(workbook, 'order_trends_export.xlsx');
+  };
 
-const exportData = async () => {
-  try {
-    if (!startDate || !endDate) {
-      alert('Date range not available. Please select a date range.');
-      return;
-    }
+  const exportData = async () => {
+    try {
+      if (!startDate || !endDate) {
+        alert('Date range not available. Please select a date range.');
+        return;
+      }
 
-    const query = new URLSearchParams({
-      startDate: formatDateTime(startDate),
-      endDate: formatDateTime(endDate),
-      size: '100000', // A large size to get all data
-    });
-    if (enterpriseKey) {
-      query.append("enterpriseKey", enterpriseKey);
-    }
+      const query = new URLSearchParams({
+        startDate: formatDateTime(startDate),
+        endDate: formatDateTime(endDate),
+        size: '100000', // A large size to get all data
+      });
+      if (enterpriseKey) {
+        query.append('enterpriseKey', enterpriseKey);
+      }
 
-    const res = await axiosInstance.get(`/order-trends-by-category?${query.toString()}`);
-    const dataToExport = res.data.data || [];
-    exportToXLSX(dataToExport);
-  } catch (err) {
-    console.error("Export failed:", err);
-    alert("Failed to export data.");
-  }
-};
+      const res = await axiosInstance.get(
+        `/order-trends-by-category?${query.toString()}`
+      );
+      const dataToExport = res.data.data || [];
+      exportToXLSX(dataToExport);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Failed to export data.');
+    }
+  };
   const [startDate, endDate] = dateRange;
   const navigate = useNavigate();
 
@@ -97,15 +102,16 @@ const exportData = async () => {
         const params = new URLSearchParams({
           startDate: formattedStartDate,
           endDate: formattedEndDate,
-          size: "1000",
+          size: '1000',
         });
 
         if (enterpriseKey) {
-          params.append("enterpriseKey", enterpriseKey);
+          params.append('enterpriseKey', enterpriseKey);
         }
 
-
-        const response = await axiosInstance.get(`/order-trends-by-category?${params.toString()}`);
+        const response = await axiosInstance.get(
+          `/order-trends-by-category?${params.toString()}`
+        );
         const data = (response.data as { data: TrendItem[] }).data;
 
         const trendsByMonth: Record<string, Record<string, number>> = {};
@@ -137,7 +143,7 @@ const exportData = async () => {
 
         setChartData({ categories: months, series });
       } catch (error) {
-        console.error("Failed to fetch order trends:", error);
+        console.error('Failed to fetch order trends:', error);
       }
     };
 
@@ -148,44 +154,55 @@ const exportData = async () => {
 
   const options: ApexOptions = {
     chart: {
-      type: "line",
+      type: 'line',
       zoom: { enabled: false },
       toolbar: { show: false },
-      foreColor: isDark ? "#d1d5db" : "#a855f7",
+      foreColor: isDark ? '#d1d5db' : '#a855f7',
     },
     xaxis: {
       categories: chartData.categories,
-      title: { text: "Month", style: { color: isDark ? "#d1d5db" : "#a855f7" } },
-      labels: { style: { colors: isDark ? "#d1d5db" : "#a855f7" } },
+      title: {
+        text: 'Month',
+        style: { color: isDark ? '#d1d5db' : '#a855f7' },
+      },
+      labels: { style: { colors: isDark ? '#d1d5db' : '#a855f7' } },
     },
     yaxis: {
-      title: { text: "Order Amount", style: { color: isDark ? "#d1d5db" : "#a855f7" } },
-      labels: { style: { colors: isDark ? "#d1d5db" : "#a855f7" }, formatter: formatVal },
+      title: {
+        text: 'Order Amount',
+        style: { color: isDark ? '#d1d5db' : '#a855f7' },
+      },
+      labels: {
+        style: { colors: isDark ? '#d1d5db' : '#a855f7' },
+        formatter: formatVal,
+      },
     },
     tooltip: {
-      theme: isDark ? "dark" : "light",
+      theme: isDark ? 'dark' : 'light',
       y: { formatter: formatVal },
     },
-    stroke: { curve: "smooth", width: 2 },
+    stroke: { curve: 'smooth', width: 2 },
     markers: { size: 4 },
-    colors: isDark ? ["#c084fc", "#86efac", "#fde047"] : ["#a855f7", "#22C55E", "#EAB308"],
+    colors: isDark
+      ? ['#c084fc', '#86efac', '#fde047']
+      : ['#a855f7', '#22C55E', '#EAB308'],
     legend: {
-      position: "bottom",
-      labels: { colors: isDark ? "#d1d5db" : "#a855f7" },
+      position: 'bottom',
+      labels: { colors: isDark ? '#d1d5db' : '#a855f7' },
     },
   };
 
   const handleViewMore = () => {
-    sessionStorage.setItem("scrollPosition", window.scrollY.toString());
-    navigate("/orders");
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+    navigate('/orders');
   };
 
   const columns: TableColumn<TrendItem>[] = [
-    { field: "month", header: "Month", sortable: true, filter: true },
-    { field: "category", header: "Category", sortable: true, filter: true },
+    { field: 'month', header: 'Month', sortable: true, filter: true },
+    { field: 'category', header: 'Category', sortable: true, filter: true },
     {
-      field: "sales",
-      header: "Sales",
+      field: 'sales',
+      header: 'Sales',
       sortable: true,
       filter: false,
       body: (row) => <span>{formatVal(row.sales)}</span>,
@@ -198,19 +215,20 @@ const exportData = async () => {
       endDate: formatDateTime(endDate),
       page: params.page,
       size: params.size,
-      sortField: params.sortField || "month",
-      sortOrder: params.sortOrder || "asc",
+      sortField: params.sortField || 'month',
+      sortOrder: params.sortOrder || 'asc',
       ...(enterpriseKey ? { enterpriseKey } : {}),
     });
 
-    
     Object.keys(params).forEach((key) => {
-      if (key.includes(".value") || key.includes(".matchMode")) {
+      if (key.includes('.value') || key.includes('.matchMode')) {
         query.append(key, params[key]);
       }
     });
 
-    const res = await axiosInstance.get(`/order-trends-by-category?${query.toString()}`);
+    const res = await axiosInstance.get(
+      `/order-trends-by-category?${query.toString()}`
+    );
     const responseData = res.data as { data?: TrendItem[]; count?: number };
 
     return {
@@ -219,21 +237,17 @@ const exportData = async () => {
     };
   };
 
-
   return (
     <>
       <div className="rounded-xl border border-gray-200 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900 p-4 sm:p-5">
-        {size === "full" && (
+        {size === 'full' && (
           <div className="flex justify-between items-center mb-8">
             <h2 className="app-subheading">Order Trends By Product Category</h2>
-            <div className="flex items-center ">
+            <div className="flex items-center">
               {/* The new Export button */}
-    <button 
-      onClick={exportData}
-    >
-    <img src={ExportIcon} alt="Export" className="w-6" />
-
-    </button>
+              <button onClick={exportData}>
+                <img src={ExportIcon} alt="Export" className="w-6" />
+              </button>
               <button
                 onClick={() => setDialogVisible(true)}
                 className="h-9 w-9 flex items-center justify-center text-purple-500 hover:text-purple-700 dark:hover:text-purple-400 transition-colors"
@@ -251,8 +265,13 @@ const exportData = async () => {
           </div>
         )}
 
-        <div className="h-[420px] sm:h-[490px]">
-          <Chart options={options} series={chartData.series} type="line" height="100%" />
+        <div className="aspect-[1.4/1] w-full mt-0">
+          <Chart
+            options={options}
+            series={chartData.series}
+            type="line"
+            height="100%"
+          />
         </div>
       </div>
 
@@ -270,4 +289,3 @@ const exportData = async () => {
 };
 
 export default OrderTrendsCategory;
-

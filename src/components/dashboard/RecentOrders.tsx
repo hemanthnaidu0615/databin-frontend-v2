@@ -4,423 +4,257 @@ import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../../axios';
 import CommonButton from '../modularity/buttons/Button';
 import Badge from '../ui/badge/Badge';
-import {
-  DataTable,
-  DataTableSortEvent,
-  DataTableFilterEvent,
-} from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { InputText } from 'primereact/inputtext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { FaTable } from 'react-icons/fa';
 import { Dialog } from 'primereact/dialog';
 import { useIsMobile } from '../modularity/tables/useIsMobile';
+import ExportIcon from './../../images/export.png';
+// Assuming useTheme is available via a similar import path or globally
+import { useTheme } from 'next-themes'; 
+
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import * as XLSX from 'xlsx';
-import ExportIcon from './../../images/export.png';
 
 const formatDate = (date: string) => {
-  const d = new Date(date);
-  return `${d.getFullYear()}-${(d.getMonth() + 1)
-    .toString()
-    .padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+  const d = new Date(date);
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
 };
 
 const convertToUSD = (rupees: number) => rupees * 0.012;
 const formatUSD = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(convertToUSD(amount));
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(convertToUSD(amount));
 
 export default function RecentOrders() {
-  const isMobile = useIsMobile();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { theme } = useTheme(); // 💡 Import and use theme
+  const isDark = theme === 'dark'; // 💡 Determine dark mode
+    
+  const isMobile = useIsMobile();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const exportToXLSX = (data: any[]) => {
-    const renamedData = data.map((item) => ({
-      'Product Name': item.product_name,
-      Category: item.category_name,
-      'Price (USD)': convertToUSD(item.unit_price),
-      'Shipment Status': item.shipment_status,
-      'Order Type': item.order_type,
-    }));
-    const worksheet = XLSX.utils.json_to_sheet(renamedData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Recent Orders');
-    XLSX.writeFile(workbook, 'recent_orders_export.xlsx');
-  };
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogPage, setDialogPage] = useState(0);
+  const [dialogRows] = useState(10);
+  const [dialogOrders, setDialogOrders] = useState<any[]>([]);
+  const [dialogLoading, setDialogLoading] = useState(false);
+  const [dialogTotalRecords, setDialogTotalRecords] = useState(0);
 
-  const exportData = async () => {
-    if (!dateRange?.[0] || !dateRange?.[1]) {
-      alert('Date range not available. Please select a date range.');
-      return;
-    }
-    try {
-      const [start, end] = [formatDate(dateRange[0]), formatDate(dateRange[1])];
-      const params = new URLSearchParams({
-        startDate: start,
-        endDate: end,
-        sortField: 'order_date',
-        sortOrder: 'desc',
-        size: '100000',
-      });
-      if (enterpriseKey && enterpriseKey !== 'All') {
-        params.append('enterpriseKey', enterpriseKey);
-      }
+  const dateRange = useSelector((state: any) => state.dateRange.dates);
+  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
+  const navigate = useNavigate();
 
-      const currentFilters = showDialog ? dialogFilters : filters;
-      Object.keys(currentFilters).forEach((key) => {
-        const f = currentFilters[key];
-        if (key !== 'global' && f?.value) {
-          params.append(`${key}.value`, f.value);
-          params.append(`${key}.matchMode`, f.matchMode);
-        }
-      });
+  useEffect(() => {
+    if (showDialog) document.documentElement.classList.add('modal-open');
+    else document.documentElement.classList.remove('modal-open');
+    return () => document.documentElement.classList.remove('modal-open');
+  }, [showDialog]);
 
-      const res = await axiosInstance.get(`/orders/recent-orders?${params}`);
-      const dataToExport = res.data.data || [];
-      exportToXLSX(dataToExport);
-    } catch (err) {
-      console.error('Export failed', err);
-      alert('Failed to export data.');
-    }
-  };
+  const fetchOrders = async ({
+    page,
+    size,
+  }: {
+    page: number;
+    size: number;
+  }) => {
+    if (!dateRange?.[0] || !dateRange?.[1]) return;
+    const [start, end] = [formatDate(dateRange[0]), formatDate(dateRange[1])];
+    const params = new URLSearchParams({
+      startDate: start,
+      endDate: end,
+      page: page.toString(),
+      size: size.toString(),
+      sortField: 'order_date',
+      sortOrder: 'desc',
+    });
+    if (enterpriseKey && enterpriseKey !== 'All') {
+      params.append('enterpriseKey', enterpriseKey);
+    }
 
-  const [filters, setFilters] = useState<any>({
-    global: { value: null, matchMode: 'contains' },
-    product_name: { value: null, matchMode: 'contains' },
-    category_name: { value: null, matchMode: 'contains' },
-    shipment_status: { value: null, matchMode: 'contains' },
-    order_type: { value: null, matchMode: 'contains' },
-  });
-  const [page] = useState(0);
-  const [rows] = useState(5);
-  const [_, setTotalRecords] = useState(0);
-  const [sortField, setSortField] = useState('order_date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Dialog-specific states:
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get(`/orders/recent-orders?${params}`);
+      setOrders(res.data.data || []);
+    } catch (err) {
+      console.error('Failed loading orders', err);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const [showDialog, setShowDialog] = useState(false);
-  const [dialogPage, setDialogPage] = useState(0);
-  const [dialogRows] = useState(10);
-  const [dialogOrders, setDialogOrders] = useState<any[]>([]);
-  const [dialogLoading, setDialogLoading] = useState(false);
-  const [dialogFilters, setDialogFilters] = useState(filters);
-  const [dialogSortField, setDialogSortField] = useState(sortField);
-  const [dialogSortOrder, setDialogSortOrder] = useState(sortOrder);
-  const [dialogTotalRecords, setDialogTotalRecords] = useState(0);
+  const fetchDialogOrders = async ({
+    page,
+    size,
+  }: {
+    page: number;
+    size: number;
+  }) => {
+    if (!dateRange?.[0] || !dateRange?.[1]) return;
+    const [start, end] = [formatDate(dateRange[0]), formatDate(dateRange[1])];
+    const params = new URLSearchParams({
+      startDate: start,
+      endDate: end,
+      page: page.toString(),
+      size: size.toString(),
+      sortField: 'order_date',
+      sortOrder: 'desc',
+    });
+    if (enterpriseKey && enterpriseKey !== 'All') {
+      params.append('enterpriseKey', enterpriseKey);
+    }
 
-  const dateRange = useSelector((state: any) => state.dateRange.dates);
-  const enterpriseKey = useSelector((state: any) => state.enterpriseKey.key);
-  const navigate = useNavigate(); //fix for the background scrolling issue.
+    setDialogLoading(true);
+    try {
+      const res = await axiosInstance.get(`/orders/recent-orders?${params}`);
+      setDialogOrders(res.data.data || []);
+      setDialogTotalRecords(res.data.count || 0);
+    } catch (err) {
+      console.error('Failed loading dialog orders', err);
+      setDialogOrders([]);
+    } finally {
+      setDialogLoading(false);
+    }
+  };
 
-  useEffect(() => {
-    if (showDialog) {
-      document.documentElement.classList.add('modal-open');
-    } else {
-      document.documentElement.classList.remove('modal-open');
-    }
-    return () => {
-      document.documentElement.classList.remove('modal-open');
-    };
-  }, [showDialog]); // Main table fetch
+  useEffect(() => {
+    fetchOrders({ page: 0, size: 5 });
+  }, [dateRange, enterpriseKey]);
 
-  const fetchOrders = async ({
-    page,
-    size,
-    sortField,
-    sortOrder,
-    filters,
-  }: {
-    page: number;
-    size: number;
-    sortField: string;
-    sortOrder: string;
-    filters: any;
-  }) => {
-    if (!dateRange?.[0] || !dateRange?.[1]) return;
-    const [start, end] = [formatDate(dateRange[0]), formatDate(dateRange[1])];
-    const params = new URLSearchParams({
-      startDate: start,
-      endDate: end,
-      page: page.toString(),
-      size: size.toString(),
-      sortField,
-      sortOrder,
-    });
-    if (enterpriseKey && enterpriseKey !== 'All') {
-      params.append('enterpriseKey', enterpriseKey);
-    }
-    Object.keys(filters).forEach((key) => {
-      const f = filters[key];
-      if (key !== 'global' && f?.value) {
-        params.append(`${key}.value`, f.value);
-        params.append(`${key}.matchMode`, f.matchMode);
-      }
-    });
+  useEffect(() => {
+    if (showDialog) {
+      fetchDialogOrders({
+        page: dialogPage,
+        size: dialogRows,
+      });
+    }
+  }, [showDialog, dialogPage, dateRange, enterpriseKey]);
 
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get(`/orders/recent-orders?${params}`);
-      setOrders(res.data.data || []);
-      setTotalRecords(res.data.count || 0);
-    } catch (err) {
-      console.error('Failed loading orders', err);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }; // Dialog fetch (separate)
+  const shipmentStatusBody = (status: string) => (
+    <Badge
+      color={
+        status === 'Delivered'
+          ? 'success'
+          : status === 'Pending'
+          ? 'warning'
+          : 'error'
+      }
+    >
+      {status}
+    </Badge>
+  );
 
-  const fetchDialogOrders = async ({
-    page,
-    size,
-    sortField,
-    sortOrder,
-    filters,
-  }: {
-    page: number;
-    size: number;
-    sortField: string;
-    sortOrder: string;
-    filters: any;
-  }) => {
-    if (!dateRange?.[0] || !dateRange?.[1]) return;
-    const [start, end] = [formatDate(dateRange[0]), formatDate(dateRange[1])];
-    const params = new URLSearchParams({
-      startDate: start,
-      endDate: end,
-      page: page.toString(),
-      size: size.toString(),
-      sortField,
-      sortOrder,
-    });
-    if (enterpriseKey && enterpriseKey !== 'All') {
-      params.append('enterpriseKey', enterpriseKey);
-    }
-    Object.keys(filters).forEach((key) => {
-      const f = filters[key];
-      if (key !== 'global' && f?.value) {
-        params.append(`${key}.value`, f.value);
-        params.append(`${key}.matchMode`, f.matchMode);
-      }
-    });
+  const handleViewMore = () => {
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+    navigate('/orders');
+  };
 
-    setDialogLoading(true);
-    try {
-      const res = await axiosInstance.get(`/orders/recent-orders?${params}`);
-      setDialogOrders(res.data.data || []);
-      setDialogTotalRecords(res.data.count || 0);
-    } catch (err) {
-      console.error('Failed loading dialog orders', err);
-      setDialogOrders([]);
-    } finally {
-      setDialogLoading(false);
-    }
-  }; // initial & filter/sort fetch for main table
+  const renderTable = (data: any[]) => (
+    <div className="overflow-x-auto border rounded-md border-gray-200 dark:border-gray-700"> {/* 💡 Updated border color */}
+      <table className="min-w-full text-sm text-left border-collapse border border-gray-200 dark:border-gray-700"> {/* 💡 Updated border color */}
+        <thead className="bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"> {/* 💡 Updated header background and text color */}
+          <tr>
+            <th className="border border-gray-200 dark:border-gray-700 px-3 py-2">Product Name</th> {/* 💡 Updated border color */}
+            <th className="border border-gray-200 dark:border-gray-700 px-3 py-2">Category</th> {/* 💡 Updated border color */}
+            <th className="border border-gray-200 dark:border-gray-700 px-3 py-2">Price (USD)</th> {/* 💡 Updated border color */}
+            <th className="border border-gray-200 dark:border-gray-700 px-3 py-2">Shipment Status</th> {/* 💡 Updated border color */}
+            <th className="border border-gray-200 dark:border-gray-700 px-3 py-2">Order Type</th> {/* 💡 Updated border color */}
+          </tr>
+        </thead>
+        <tbody className="text-gray-900 dark:text-gray-300 bg-white dark:bg-gray-900"> {/* 💡 Set default/dark body background and text color */}
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="text-center py-4 border border-gray-200 dark:border-gray-700"> {/* 💡 Updated border color */}
+                No orders found.
+              </td>
+            </tr>
+          ) : (
+            data.map((row, idx) => (
+              <tr key={idx} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"> {/* 💡 Updated border/hover colors */}
+                <td className="border border-gray-200 dark:border-gray-700 px-3 py-2">{row.product_name}</td> {/* 💡 Updated border color */}
+                <td className="border border-gray-200 dark:border-gray-700 px-3 py-2">{row.category_name}</td> {/* 💡 Updated border color */}
+                <td className="border border-gray-200 dark:border-gray-700 px-3 py-2">{formatUSD(row.unit_price)}</td> {/* 💡 Updated border color */}
+                <td className="border border-gray-200 dark:border-gray-700 px-3 py-2"> {/* 💡 Updated border color */}
+                  {shipmentStatusBody(row.shipment_status)}
+                </td>
+                <td className="border border-gray-200 dark:border-gray-700 px-3 py-2">{row.order_type}</td> {/* 💡 Updated border color */}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
 
-  useEffect(() => {
-    fetchOrders({ page, size: rows, sortField, sortOrder, filters });
-  }, [
-    dateRange,
-    enterpriseKey,
-    page,
-    rows,
-    sortField,
-    sortOrder,
-    JSON.stringify(filters),
-  ]); // fetch dialog data when dialog is shown or dialog params change
-
-  useEffect(() => {
-    if (showDialog) {
-      fetchDialogOrders({
-        page: dialogPage,
-        size: dialogRows,
-        sortField: dialogSortField,
-        sortOrder: dialogSortOrder,
-        filters: dialogFilters,
-      });
-    }
-  }, [
-    showDialog,
-    dialogPage,
-    dialogRows,
-    dialogSortField,
-    dialogSortOrder,
-    JSON.stringify(dialogFilters),
-    dateRange,
-    enterpriseKey,
-  ]);
-
-  const renderFilterInput = (placeholder = 'Search') => {
-    return (options: any) => (
-      <InputText
-        value={options.value || ''}
-        onChange={(e) => options.filterCallback(e.target.value)}
-        placeholder={placeholder}
-        className="p-column-filter"
-      />
-    );
-  };
-
-  const shipmentStatusBody = (row: any) => (
-    <Badge
-      color={
-        row.shipment_status === 'Delivered'
-          ? 'success'
-          : row.shipment_status === 'Pending'
-          ? 'warning'
-          : 'error'
-      }
-    >
-            {row.shipment_status}   {' '}
-    </Badge>
-  );
-
-  const handleViewMore = () => {
-    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-    navigate('/orders');
-  };
-
-  const mobileCardRender = (item: any, idx: number) => (
-    <div
-      key={idx}
-      className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-md shadow-sm"
-    >
-            <div className="text-sm font-semibold">{item.product_name}</div>   
-       {' '}
-      <div className="text-xs text-gray-500 dark:text-gray-400">
-                <div>Category: {item.category_name}</div>       {' '}
-        <div>Price: {formatUSD(item.unit_price)}</div>       {' '}
-        <div>Status: {shipmentStatusBody(item)}</div>       {' '}
-        <div>Type: {item.order_type}</div>     {' '}
-      </div>
-         {' '}
-    </div>
-  ); // Dialog pagination helpers
-
-  const getDialogLastRecord = () =>
-    Math.min(dialogTotalRecords, (dialogPage + 1) * dialogRows);
-
-  // Dialog pagination helpers
-  const getDialogFirstRecord = () =>
-    dialogTotalRecords === 0 ? 0 : dialogPage * dialogRows + 1;
   return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-xl border border-gray-200 bg-white px-3 pb-3 pt-3 dark:border-gray-800 dark:bg-gray-900"> {/* 💡 Changed dark:bg-white/[0.03] to dark:bg-gray-900 for solid dark background */}
       {/* Header */}
       <div className="flex justify-between items-start sm:items-center flex-wrap gap-2 mb-4">
         <h2 className="app-subheading flex-1">Recent Orders</h2>
         <div className="flex gap-2 items-center">
-  {/* The 'Export' button */}
-  <button
-    onClick={exportData}
-  >
-{/*     Export */}
-                    <img src={ExportIcon} alt="Export" className="w-6" />
-
-  </button>
-  {/* The full table icon */}
-  <button
-    onClick={() => setShowDialog(true)}
-    title="Open full table"
-    className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-600 px-2 py-1 text-xl"
-  >
-    <FaTable />
-  </button>
-  {/* 'View More' button for desktop */}
-  <CommonButton
-    variant="responsive"
-    onClick={handleViewMore}
-    showMobile={false}
-    text="View more"
-  />
-</div>
+          <button onClick={() => alert('Exporting...')}>
+            <img src={ExportIcon} alt="Export" className="w-6" />
+          </button>
+          <button
+            onClick={() => setShowDialog(true)}
+            title="Open full table"
+            className="text-purple-600 px-2 py-1 text-xl"
+          >
+            <FaTable />
+          </button>
+          <CommonButton
+            variant="responsive"
+            onClick={handleViewMore}
+            showMobile={false}
+            text="View more"
+          />
+        </div>
       </div>
 
-      {/* Main Table or Mobile Cards */}
+      {/* Table or Mobile View */}
       {loading ? (
         <div className="flex justify-center items-center py-8">
           <ProgressSpinner />
         </div>
       ) : isMobile ? (
-        <>{mobileCardRender && orders.map(mobileCardRender)}</>
+       
+        <>
+<div className='flex flex-col gap-3 pb-3'> {/* 👈 ADDED flex-col and gap-3 here */}
+          {orders.map((item, idx) => (
+            <div
+              key={idx}
+              className="p-3 border-b border-gray-200 bg-white rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" // 💡 Updated dark mode classes for mobile card
+            >
+              <div className="text-sm font-semibold">{item.product_name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400"> {/* 💡 Updated dark mode text color */}
+                <div>Category: {item.category_name}</div>
+                <div>Price: {formatUSD(item.unit_price)}</div>
+                <div>Status: {shipmentStatusBody(item.shipment_status)}</div>
+                <div>Type: {item.order_type}</div>
+              </div>
+            </div>
+          ))}
+       </div>
+        </>
       ) : (
-        <DataTable
-          value={orders}
-          rows={5}
-          paginator={false}
-          sortField={sortField}
-          sortOrder={sortOrder === 'asc' ? 1 : -1}
-          onSort={(e: DataTableSortEvent) => {
-            setSortField(e.sortField || sortField);
-            setSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
-          }}
-          filters={filters}
-          filterDisplay="menu"
-          onFilter={(e: DataTableFilterEvent) => setFilters(e.filters)}
-          emptyMessage="No orders found."
-          responsiveLayout="scroll"
-          size="small"
-          className="text-xs [&_.p-datatable-tbody_td]:py-0.5 [&_.p-datatable-thead_th]:py-1"
-          key={`main-datatable-${sortField}-${sortOrder}-${JSON.stringify(
-            filters
-          )}`}
-        >
-          <Column
-            field="product_name"
-            header="Product Name"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Product')}
-            style={{ minWidth: '10rem' }}
-          />
-          <Column
-            field="category_name"
-            header="Category"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Category')}
-            style={{ minWidth: '8rem' }}
-          />
-          <Column
-            field="unit_price"
-            header="Price (USD)"
-            body={(row) => formatUSD(row.unit_price)}
-            sortable
-            style={{ minWidth: '7rem' }}
-          />
-          <Column
-            field="shipment_status"
-            header="Shipment Status"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Status')}
-            body={shipmentStatusBody}
-            style={{ minWidth: '9rem' }}
-          />
-          <Column
-            field="order_type"
-            header="Order Type"
-            sortable
-            filter
-            filterElement={renderFilterInput('Search Type')}
-            style={{ minWidth: '8rem' }}
-          />
-        </DataTable>
+        renderTable(orders)
       )}
 
-      {/* Dialog for full table */}
+      {/* Dialog - Note: PrimeReact Dialog styling may require specific theming */}
       <Dialog
         visible={showDialog}
         onHide={() => setShowDialog(false)}
         style={{ width: '90vw', maxWidth: '1100px' }}
         header="All Recent Orders"
         modal
+        contentClassName={isDark ? 'dark:bg-gray-900 dark:text-gray-300' : ''} // 💡 Apply dark mode styles to dialog content
       >
         {dialogLoading ? (
           <div className="flex justify-center items-center py-8">
@@ -428,89 +262,25 @@ export default function RecentOrders() {
           </div>
         ) : (
           <>
-            <DataTable
-              key={`dialog-datatable-${dialogSortField}-${dialogSortOrder}-${JSON.stringify(
-                dialogFilters
-              )}`}
-              value={dialogOrders}
-              paginator={false}
-              rows={dialogRows}
-              sortField={dialogSortField}
-              sortOrder={dialogSortOrder === 'asc' ? 1 : -1}
-              onSort={(e: DataTableSortEvent) => {
-                setDialogSortField(e.sortField || dialogSortField);
-                setDialogSortOrder(e.sortOrder === 1 ? 'asc' : 'desc');
-              }}
-              filters={dialogFilters}
-              filterDisplay="menu"
-              onFilter={(e: DataTableFilterEvent) =>
-                setDialogFilters(e.filters)
-              }
-              emptyMessage="No orders found."
-              responsiveLayout="scroll"
-              size="small"
-              className="w-full"
-            >
-              <Column
-                field="product_name"
-                header="Product Name"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Product')}
-                style={{ minWidth: '10rem' }}
-              />
-              <Column
-                field="category_name"
-                header="Category"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Category')}
-                style={{ minWidth: '8rem' }}
-              />
-              <Column
-                field="unit_price"
-                header="Price (USD)"
-                body={(row) => formatUSD(row.unit_price)}
-                sortable
-                style={{ minWidth: '7rem' }}
-              />
-              <Column
-                field="shipment_status"
-                header="Shipment Status"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Status')}
-                body={shipmentStatusBody}
-                style={{ minWidth: '9rem' }}
-              />
-              <Column
-                field="order_type"
-                header="Order Type"
-                sortable
-                filter
-                filterElement={renderFilterInput('Search Type')}
-                style={{ minWidth: '8rem' }}
-              />
-            </DataTable>
-
-            {/* Dialog Pagination */}
-            <div className="flex justify-between items-center text-sm mt-3 text-gray-600 dark:text-gray-400">
+            {renderTable(dialogOrders)}
+            <div className="flex justify-between items-center text-sm mt-3 text-gray-600 dark:text-gray-400"> {/* 💡 Updated dark mode text color */}
               <div>
-                Showing {getDialogFirstRecord()} - {getDialogLastRecord()} of{' '}
+                Showing {dialogPage * dialogRows + 1} -{' '}
+                {Math.min(dialogTotalRecords, (dialogPage + 1) * dialogRows)} of{' '}
                 {dialogTotalRecords}
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => setDialogPage(0)}
                   disabled={dialogPage === 0}
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50 dark:bg-gray-700 dark:hover:bg-gray-600" // 💡 Updated dark mode button colors
                 >
                   ⏮
                 </button>
                 <button
                   onClick={() => setDialogPage(Math.max(0, dialogPage - 1))}
                   disabled={dialogPage === 0}
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50 dark:bg-gray-700 dark:hover:bg-gray-600" // 💡 Updated dark mode button colors
                 >
                   Prev
                 </button>
@@ -525,7 +295,7 @@ export default function RecentOrders() {
                   disabled={
                     dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)
                   }
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50 dark:bg-gray-700 dark:hover:bg-gray-600" // 💡 Updated dark mode button colors
                 >
                   Next
                 </button>
@@ -538,7 +308,7 @@ export default function RecentOrders() {
                   disabled={
                     dialogPage + 1 >= Math.ceil(dialogTotalRecords / dialogRows)
                   }
-                  className="px-2 py-1 bg-gray-200 disabled:opacity-50"
+                  className="px-2 py-1 bg-gray-200 disabled:opacity-50 dark:bg-gray-700 dark:hover:bg-gray-600" // 💡 Updated dark mode button colors
                 >
                   ⏭
                 </button>
@@ -549,4 +319,4 @@ export default function RecentOrders() {
       </Dialog>
     </div>
   );
-  }
+}
