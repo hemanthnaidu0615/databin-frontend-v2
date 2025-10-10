@@ -1,15 +1,15 @@
-import { memo } from "react";
-import PageMeta from "../../components/common/PageMeta";
-import EcommerceMetrics from "../../components/dashboard/DashboardKPI";
-import StatisticsChart from "../../components/dashboard/SalesAndRevenue";
-import RecentOrders from "../../components/dashboard/RecentOrders";
-import OrderTracking from "../../components/dashboard/OrderTracking";
-import DemographicCard from "../../components/dashboard/CustomerDemographic";
-import OrderTrendsCategory from "../../components/dashboard/OrderTrendsCategory";
-import RevenuePerCustomer from "../../components/dashboard/RevenuePerCustomer";
-import ShipmentPerformance from "../../components/dashboard/ShipmentPerformance";
-import CustomerSegmentation from "../../components/dashboard/BestSelling";
-import FulfillmentEfficiency from "../../components/dashboard/FulfillmentEfficiency";
+import { memo } from 'react';
+import PageMeta from '../../components/common/PageMeta';
+import EcommerceMetrics from '../../components/dashboard/DashboardKPI';
+import StatisticsChart from '../../components/dashboard/SalesAndRevenue';
+import RecentOrders from '../../components/dashboard/RecentOrders';
+import OrderTracking from '../../components/dashboard/OrderTracking';
+import DemographicCard from '../../components/dashboard/CustomerDemographic';
+import OrderTrendsCategory from '../../components/dashboard/OrderTrendsCategory';
+import RevenuePerCustomer from '../../components/dashboard/RevenuePerCustomer';
+import ShipmentPerformance from '../../components/dashboard/ShipmentPerformance';
+import CustomerSegmentation from '../../components/dashboard/BestSelling';
+import FulfillmentEfficiency from '../../components/dashboard/FulfillmentEfficiency';
 
 const Memoized = {
   EcommerceMetrics: memo(EcommerceMetrics),
